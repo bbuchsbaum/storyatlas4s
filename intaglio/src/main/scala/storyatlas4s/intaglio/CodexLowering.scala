@@ -3,6 +3,7 @@ package storyatlas4s.intaglio
 import _root_.intaglio as ig
 import _root_.intaglio.GraphicsError
 import cats.syntax.all.*
+import storyatlas4s.layout.{PaginatedCodex, PlacedPage}
 import storymodel4s.view.*
 
 /** Pure lowering of a [[CodexFlow]] to an Intaglio annotation overlay.
@@ -11,8 +12,9 @@ import storymodel4s.view.*
   * discourse length as an integer (as the Atlas lowering does) and draws only what the flow already
   * allocated: one row band per `(AnnotationKind, lane)` with the explicit overflow slot as the last
   * row of each kind, and one extent per support span at exact discourse offsets. Each annotation
-  * becomes one named group (`data-name` = `AnnotationId`). Until `PlacedCodex` exists an annotation
-  * is one fragment; with pagination the group name becomes the fragment id (V-I2).
+  * becomes one named group (`data-name` = `AnnotationId`). The paginated form is the second entry
+  * point: `lower(placed)` draws one overlay per page whose group names are the fragment ids (V-I2);
+  * see [[PagedCodexLowering]].
   *
   * Row 0 is an unnamed rail of the source runs (exact spans, no text), so the overlay is legible on
   * its own; rows for a kind start at `1 + ordinal * (maxLanesPerKind + 1)`.
@@ -31,6 +33,15 @@ object CodexLowering:
       groups <- flow.annotations.traverse(a => annotationGroup(a, flow.lanes, rowsPerKind, style))
       plot = ig.Grob.group(rail ++ rowLabels ++ groups, viewport = Some(viewport))
     yield ig.Scene(Vector(header, plot))
+
+  /** The paginated entry point: one page-framed overlay scene per page, one named group per
+    * annotation piece (`data-name` = `FragmentId`), positioned by the paginator's geometry.
+    */
+  def lower(placed: PaginatedCodex): Either[GraphicsError, Vector[ig.Scene]] =
+    PagedCodexLowering.lowerPages(placed)
+
+  def lower(placed: PaginatedCodex, page: PlacedPage): Either[GraphicsError, ig.Scene] =
+    PagedCodexLowering.lowerPage(placed, page)
 
   /** Fails closed rather than silently coalescing an out-of-range lane or an unplaced annotation
     * onto the overflow row: a `Lane(index)` with index >= maxLanesPerKind, or a missing slot, is a
