@@ -58,7 +58,8 @@ the grakern override stays required until grakern is pushed.
 sbt <overrides> "cli/run edition --out target/edition"
 ```
 
-writes, for the researcher-reviewed *War of the Ghosts* fixture:
+writes (relative paths resolve against the repository root), for the
+researcher-reviewed *War of the Ghosts* fixture:
 
 - `atlas-story.svg`, `atlas-episode.svg`, `atlas-scene.svg` and their `.txt`
   twins (Discourse Atlas at the three narrative levels the fixture suite
@@ -71,6 +72,16 @@ writes, for the researcher-reviewed *War of the Ghosts* fixture:
 Every page prints its basis ("researcher-reviewed narrative acceptance
 fixture"). Story text is never copied into this repository; the twins render
 it from the storymodel4s fixture at run time.
+
+## Workspace registration
+
+Registered in the workspace catalog (`../packages.toml`) as package
+`storyatlas4s` (kind application, stage prototype, JVM + Scala.js) with two
+`source-pin` dependency edges: `storymodel4s` at `8492e43…` (`viewJVM`,
+`viewJS`, `fixturesJVM`, `fixturesJS`) and `intaglio` at `596b398…`
+(`coreJVM`, `coreJS`, `svgJVM`, `svgJS`). `tools/workspace.py check` reports
+one policy warning for this repository — storymodel4s is a prototype-stage
+provider — which is expected until storymodel4s advances a lifecycle stage.
 
 ## License
 
