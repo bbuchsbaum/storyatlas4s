@@ -15,10 +15,11 @@ Status: prototype, slice 1 (static War of the Ghosts edition). Unpublished.
 | Module | Platforms | Depends on | Owns |
 |---|---|---|---|
 | `storyatlas4s-intaglio` | JVM, JS | storymodel4s `view` (SHA pin), intaglio `core`/`svg` (SHA pin) | pure lowering `NarrativeScene → intaglio.Scene` and `CodexFlow → intaglio.Scene`; `GraphicsName` = `MarkId` / `AnnotationId` |
+| `storyatlas4s-layout` | JVM, JS | storymodel4s `view` (SHA pin) | `Paginator.paginate(flow, page, metrics)`: pure pagination of a `CodexFlow` into pages, lines, and annotation fragments with V-I2 ids; `Measurer` seam with metrics-as-data (`TextMetrics`), the fixed `MonospaceMeasurer` (publication), an optional AWT measurer (JVM), a DOM measurer stub (JS); `PaginatedCodex` twin and `LayoutReceipt` |
 | `storyatlas4s-cli` | JVM | above + storymodel4s `fixtures` | `edition --out <dir>`: atlas SVGs at Story/Episode/Scene zoom, Codex overlays for the Reading and Overview lenses, textual twins, `receipt.json` |
 
-Planned (later beads): `storyatlas4s-layout` (`TextLayoutCapability`
-implementations) and `storyatlas4s-app` (Laminar shell).
+Planned (later beads): `codex.html` from the paginated codex in the edition, and
+`storyatlas4s-app` (Laminar shell with the real DOM measurer).
 
 ## Identity and the renderer protocol
 
@@ -29,9 +30,29 @@ that name is always the rendered **mark or annotation identity**, never an
 `Set[Address]`; a `data-name` resolves to an address through
 `NarrativeScene.navigation` (Atlas) or `CodexFlow.navigation` (Codex).
 
-Until `PlacedCodex` exists in storymodel4s, a Codex annotation is one fragment,
-named by its `AnnotationId`; when pagination lands, fragment ids derive from
-`(AnnotationId, page, line)` (V-I2) and the group name follows.
+The Codex overlay in `intaglio` still names one group per annotation by its
+`AnnotationId`. The `layout` module already produces the paginated form: a text
+line is `line/p<page>/l<line>`, and an annotation piece on a line is
+`<AnnotationId>/p<page>/l<line>/r<ref>` (V-I2; `ref` is the index of the
+support `SpanRef` the piece is cut from, always `r0` for contiguous
+annotations). Wiring those ids into the overlay group names and `codex.html`
+is the next bead.
+
+## Pagination
+
+`storyatlas4s-layout` is the owned deterministic publication backend of ADR
+0002 D3. A `Measurer` turns each source run into `RunMetrics` — one integer
+advance per UTF-16 code unit in the measurer's layout units (`unitsPerPixel`),
+plus a line height — and `TextMetrics` assembles the flow-wide table with a
+SHA-256 identity. `Paginator.paginate` is then a pure function of
+`(CodexFlow, PageSpec, TextMetrics)`: greedy first-fit line breaking (break
+after whitespace, hard break at newline, code-point break inside an overlong
+word, a glyph wider than the page placed alone and flagged), lines filled into
+pages top to bottom. Lines tile the canonical text exactly; every annotation
+support span is cut into one piece per line it crosses, never merged or
+dropped. Integer arithmetic throughout makes the result byte-identical on JVM
+and JS; the `LayoutReceipt` records the paginator version, page spec,
+measurer, style, units, metrics checksum, and counts.
 
 ## Building
 

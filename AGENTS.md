@@ -12,6 +12,12 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   `storyatlas4s.intaglio`. Pure lowering `NarrativeScene → intaglio.Scene` and
   `CodexFlow → intaglio.Scene` (annotation overlay). `GraphicsName` is the
   `MarkId` (Atlas) or `AnnotationId` (Codex), never an `Address`.
+- `layout`: `crossProject(JVM, JS)`, `CrossType.Pure`, package
+  `storyatlas4s.layout`. Pure `Paginator` over metrics-as-data (`TextMetrics`
+  from a `Measurer`), `PaginatedCodex` with V-I2 fragment ids, its textual
+  twin, and `LayoutReceipt`. Platform sources: `layout/.jvm` (optional
+  `AwtMeasurer`), `layout/.js` (`DomMeasurer` stub until the app bead). No
+  doubles and no JVM-only API in the shared sources.
 - `cli`: JVM only, package `storyatlas4s.cli`. `edition --out <dir>` compiles
   the War of the Ghosts fixture (from storymodel4s `fixtures`) to atlas SVGs,
   a Codex overlay, textual twins, and `receipt.json`.
@@ -39,7 +45,7 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   `STORYATLAS4S_INTAGLIO_BUILD`, `STORYMODEL4S_GRAKERN_BUILD`.
 - Run `sbt <overrides> compileAll testAll scalafmtCheckAll` before declaring
   work complete. Platform-independent tests live in `intaglio/src/test` and
-  must pass on both JVM and Scala.js.
+  `layout/src/test` and must pass on both JVM and Scala.js.
 - Keep `-Wunused:all -Wvalue-discard` warning-clean.
 - Do not run sbt inside the sibling checkouts you point the overrides at while
   other work is gating there; point the overrides at an isolated clone instead.

@@ -131,5 +131,7 @@ final case class PaginatedCodex private[layout] (
   def annotationOf(fragment: AnnotationFragment): Option[TextAnnotation] =
     annotationsById.get(fragment.annotation)
 
+  def textualTwin: String = PaginatedCodexTextualTwin.render(this)
+
   private lazy val annotationsById: Map[AnnotationId, TextAnnotation] =
     flow.annotations.iterator.map(a => a.id -> a).toMap
