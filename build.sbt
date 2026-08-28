@@ -51,9 +51,9 @@ lazy val intaglioSvgJVM = ProjectRef(intaglioBuild, "svgJVM")
 lazy val intaglioSvgJS = ProjectRef(intaglioBuild, "svgJS")
 
 lazy val commonSettings = Seq(
+  // sbt-typelevel already sets -Wvalue-discard; repeating it is itself a warning.
   scalacOptions ++= Seq(
     "-Wunused:all",
-    "-Wvalue-discard",
     "-Wconf:msg=package scala contains object and package with same name.*caps:silent"
   ),
   libraryDependencies ++= Seq(
@@ -107,6 +107,8 @@ lazy val cli = project
   .settings(
     name := "storyatlas4s-cli",
     run / fork := true,
+    // Relative `--out` paths resolve against the repository root, not `cli/`.
+    run / baseDirectory := (ThisBuild / baseDirectory).value,
     Compile / sourceGenerators += Def.task {
       val file = (Compile / sourceManaged).value / "storyatlas4s" / "cli" / "Pins.scala"
       IO.write(
@@ -124,6 +126,19 @@ lazy val cli = project
   )
   .dependsOn(intaglio.jvm, storymodel4sFixturesJVM, intaglioSvgJVM)
 
-addCommandAlias("compileAll", ";intaglioJVM/compile;intaglioJS/compile;cli/compile")
-addCommandAlias("testAll", ";intaglioJVM/test;intaglioJS/test;cli/test")
-addCommandAlias("checkAll", ";scalafmtCheckAll;scalafmtSbtCheck;compileAll;testAll")
+// Command aliases. storymodel4s and intaglio, loaded here as external builds, register their own
+// `compileAll`/`testAll` aliases in the same global `onLoad` chain and the last registration wins,
+// so a plain `addCommandAlias` would be shadowed. Instead, `onLoad` queues one command that
+// (re)registers this build's aliases after every external build has run its hooks.
+lazy val storyatlas4sAliases: Seq[(String, String)] = Seq(
+  "compileAll" -> ";intaglioJVM/compile;intaglioJS/compile;cli/compile",
+  "testAll" -> ";intaglioJVM/test;intaglioJS/test;cli/test",
+  "checkAll" -> ";scalafmtCheckAll;scalafmtSbtCheck;compileAll;testAll"
+)
+lazy val registerAliases = Command.command("storyatlas4sAliases") { state =>
+  storyatlas4sAliases.foldLeft(state) { case (s, (name, value)) =>
+    BasicCommands.addAlias(s, name, value)
+  }
+}
+Global / commands += registerAliases
+Global / onLoad := (Global / onLoad).value.andThen(state => "storyatlas4sAliases" :: state)
