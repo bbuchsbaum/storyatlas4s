@@ -9,9 +9,12 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
 ## Layout
 
 - `intaglio`: `crossProject(JVM, JS)`, `CrossType.Pure`, package
-  `storyatlas4s.intaglio`. Pure lowering `NarrativeScene → intaglio.Scene` and
-  `CodexFlow → intaglio.Scene` (annotation overlay). `GraphicsName` is the
-  `MarkId` (Atlas) or `AnnotationId` (Codex), never an `Address`.
+  `storyatlas4s.intaglio`, depends on `layout`. Pure lowering
+  `NarrativeScene → intaglio.Scene`, `CodexFlow → intaglio.Scene` (annotation
+  overlay), and `PaginatedCodex → Vector[intaglio.Scene]` (one page-framed
+  overlay per page, `PagedCodexLowering`). `GraphicsName` is the `MarkId`
+  (Atlas), `AnnotationId` (flow-level Codex), or `FragmentId` (paginated
+  Codex), never an `Address`.
 - `layout`: `crossProject(JVM, JS)`, `CrossType.Pure`, package
   `storyatlas4s.layout`. Pure `Paginator` over metrics-as-data (`TextMetrics`
   from a `Measurer`), `PaginatedCodex` with V-I2 fragment ids, its textual
@@ -20,7 +23,9 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   doubles and no JVM-only API in the shared sources.
 - `cli`: JVM only, package `storyatlas4s.cli`. `edition --out <dir>` compiles
   the War of the Ghosts fixture (from storymodel4s `fixtures`) to atlas SVGs,
-  a Codex overlay, textual twins, and `receipt.json`.
+  Codex overlays, paginated `codex-<lens>.html` documents (`CodexHtml`, a pure
+  `PaginatedCodex → String`; DOM text rail + inline SVG overlay per page),
+  textual twins, and `receipt.json` with the `LayoutReceipt` folded in.
 - Sibling sources are immutable git-SHA `ProjectRef` pins declared in
   `build.sbt` (`storymodel4sRevision`, `intaglioRevision`). No `../sibling`
   composite builds, no `-SNAPSHOT` dependencies.

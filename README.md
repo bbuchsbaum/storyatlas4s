@@ -14,12 +14,12 @@ Status: prototype, slice 1 (static War of the Ghosts edition). Unpublished.
 
 | Module | Platforms | Depends on | Owns |
 |---|---|---|---|
-| `storyatlas4s-intaglio` | JVM, JS | storymodel4s `view` (SHA pin), intaglio `core`/`svg` (SHA pin) | pure lowering `NarrativeScene → intaglio.Scene` and `CodexFlow → intaglio.Scene`; `GraphicsName` = `MarkId` / `AnnotationId` |
 | `storyatlas4s-layout` | JVM, JS | storymodel4s `view` (SHA pin) | `Paginator.paginate(flow, page, metrics)`: pure pagination of a `CodexFlow` into pages, lines, and annotation fragments with V-I2 ids; `Measurer` seam with metrics-as-data (`TextMetrics`), the fixed `MonospaceMeasurer` (publication), an optional AWT measurer (JVM), a DOM measurer stub (JS); `PaginatedCodex` twin and `LayoutReceipt` |
-| `storyatlas4s-cli` | JVM | above + storymodel4s `fixtures` | `edition --out <dir>`: atlas SVGs at Story/Episode/Scene zoom, Codex overlays for the Reading and Overview lenses, textual twins, `receipt.json` |
+| `storyatlas4s-intaglio` | JVM, JS | `layout`, storymodel4s `view` (SHA pin), intaglio `core`/`svg` (SHA pin) | pure lowering `NarrativeScene → intaglio.Scene`, `CodexFlow → intaglio.Scene`, and `PaginatedCodex → Vector[intaglio.Scene]` (one page overlay per page); `GraphicsName` = `MarkId` / `AnnotationId` / `FragmentId` |
+| `storyatlas4s-cli` | JVM | above + storymodel4s `fixtures` | `edition --out <dir>`: atlas SVGs at Story/Episode/Scene zoom, Codex overlays and paginated `codex-<lens>.html` pages for the Reading and Overview lenses, textual twins, `receipt.json` |
 
-Planned (later beads): `codex.html` from the paginated codex in the edition, and
-`storyatlas4s-app` (Laminar shell with the real DOM measurer).
+Planned (later beads): `storyatlas4s-app` (Laminar shell with the real DOM
+measurer).
 
 ## Identity and the renderer protocol
 
@@ -30,13 +30,14 @@ that name is always the rendered **mark or annotation identity**, never an
 `Set[Address]`; a `data-name` resolves to an address through
 `NarrativeScene.navigation` (Atlas) or `CodexFlow.navigation` (Codex).
 
-The Codex overlay in `intaglio` still names one group per annotation by its
-`AnnotationId`. The `layout` module already produces the paginated form: a text
-line is `line/p<page>/l<line>`, and an annotation piece on a line is
+The flow-level Codex overlay in `intaglio` names one group per annotation by
+its `AnnotationId`. The paginated form uses the `layout` module's fragment ids:
+a text line is `line/p<page>/l<line>`, and an annotation piece on a line is
 `<AnnotationId>/p<page>/l<line>/r<ref>` (V-I2; `ref` is the index of the
 support `SpanRef` the piece is cut from, always `r0` for contiguous
-annotations). Wiring those ids into the overlay group names and `codex.html`
-is the next bead.
+annotations). In `codex-<lens>.html` the line ids are the `data-name` of the
+text spans and the piece ids are the `data-name` of the groups in each page's
+inline SVG overlay, so one name resolves the same way in both layers.
 
 ## Pagination
 
@@ -87,8 +88,23 @@ researcher-reviewed *War of the Ghosts* fixture:
   exercises; x = exact discourse offset, y = context lane);
 - `codex-reading.svg`, `codex-overview.svg` and `.txt` twins (annotation
   overlay over discourse offsets; the Reading lens has no annotation channels);
+- `codex-reading.html`, `codex-overview.html` and their `-pages.txt` twins:
+  the paginated Codex, one document per lens (a 480x640px page of 16px
+  monospace under the fixed `MonospaceMeasurer`). Each page is a text rail of
+  one `<span class="line" data-name="line/p<page>/l<line>">` per placed line —
+  the spans' concatenated text content is the canonical text exactly (V-T2;
+  only `&`, `<`, `>` are escaped, newlines survive under `white-space: pre`) —
+  under an inline SVG overlay lowered from the same `PaginatedCodex`, one
+  `<g data-name="<piece id>">` per annotation piece at the paginator's pixel
+  geometry. No script, no external resource; kind and lane are the band's row
+  within the line, spelled out in the page legend and the twin, never a colour
+  (V-U5). The `-pages.txt` twin is `PaginatedCodex.textualTwin`;
 - `receipt.json`: basis, source checksum, sibling pins, and per-file
-  configuration checksums, mark counts, and SHA-256 of the written text.
+  configuration checksums, mark counts, SHA-256 of the written text, and — for
+  the paginated files — the `LayoutReceipt` fields (V-D3).
+
+The edition is byte-identical across runs (the suite writes it twice and
+compares).
 
 Every page prints its basis ("researcher-reviewed narrative acceptance
 fixture"). Story text is never copied into this repository; the twins render
