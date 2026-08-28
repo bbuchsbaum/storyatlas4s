@@ -6,9 +6,12 @@ import storymodel4s.view.CodexFlow
 /** The owned deterministic paginator: a pure function of `(flow, page, metrics)` (ADR 0002 D13).
   *
   * Line breaking is greedy first-fit over the metrics table: a line may end after any whitespace
-  * (the whitespace hangs, counting toward the span but not the width), must end after `\n`, and a
-  * word wider than the page breaks at the last code point that fits. A glyph wider than the page is
-  * placed alone and the line is marked `overflow`, so pagination is total. Lines fill pages top to
+  * (`Character.isWhitespace`, so tabs but not NBSP or U+200B; the whitespace hangs, counting toward
+  * the span but not the width), must end after `\n`, and a word wider than the page breaks at the
+  * last code point that fits. A glyph wider than the page is placed alone and the line is marked
+  * `overflow`, so pagination is total. Leading whitespace is a break opportunity like any other:
+  * `"  abc"` on a page three glyphs wide becomes the lines `"  "` (width 0) and `"abc"`, because
+  * the whitespace run is an earlier break than the word that does not fit. Lines fill pages top to
   * bottom with no widow or orphan control. No character is added, dropped, or reordered.
   */
 object Paginator:
@@ -29,24 +32,38 @@ object Paginator:
       metrics: TextMetrics
   ): Either[LayoutError, PaginatedCodex] =
     val text = flow.source.canonicalText
-    val widthUnits = page.widthPx * metrics.unitsPerPixel
-    val linesPerPage = (page.heightPx * metrics.unitsPerPixel) / metrics.lineHeight
+    val units = metrics.unitsPerPixel
     if metrics.advances.length != text.length then
       Left(
         LayoutError.MetricsMismatch(
           s"metrics cover ${metrics.advances.length} code units, canonical text has ${text.length}"
         )
       )
-    else if linesPerPage < 1 then
-      Left(
-        LayoutError.InvalidSpec(
-          "PageSpec.heightPx",
-          s"${page.heightPx}px holds no line of height ${metrics.lineHeight}/${metrics.unitsPerPixel}px"
-        )
-      )
     else
-      val raw = breakLines(text, metrics, widthUnits)
       for
+        widthUnits <- Bounds
+          .product(page.widthPx, units)
+          .toRight(
+            LayoutError
+              .InvalidSpec("PageSpec.widthPx", s"${page.widthPx}px x $units units overflows")
+          )
+        heightUnits <- Bounds
+          .product(page.heightPx, units)
+          .toRight(
+            LayoutError
+              .InvalidSpec("PageSpec.heightPx", s"${page.heightPx}px x $units units overflows")
+          )
+        linesPerPage = heightUnits / metrics.lineHeight
+        _ <-
+          if linesPerPage >= 1 then Right(())
+          else
+            Left(
+              LayoutError.InvalidSpec(
+                "PageSpec.heightPx",
+                s"${page.heightPx}px holds no line of height ${metrics.lineHeight}/${units}px"
+              )
+            )
+        raw = breakLines(text, metrics, widthUnits)
         lines <- placeAnnotations(flow, raw, linesPerPage)
         pages = lines.grouped(linesPerPage).toVector.zipWithIndex.map((ls, i) => PlacedPage(i, ls))
       yield

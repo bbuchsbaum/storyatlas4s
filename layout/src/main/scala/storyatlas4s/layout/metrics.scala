@@ -4,6 +4,24 @@ import cats.syntax.all.*
 import storymodel4s.core.Checksum
 import storymodel4s.view.CodexFlow
 
+/** Integer bounds shared by every metric table so no width sum can silently wrap. */
+private[layout] object Bounds:
+  val SumReason: String = s"advances sum beyond ${Int.MaxValue}"
+
+  /** True when the sum of `advances` fits an `Int`, computed in `Long`. */
+  def sumFits(advances: Vector[Int]): Boolean =
+    var total = 0L
+    var index = 0
+    while index < advances.length && total <= Int.MaxValue do
+      total += advances(index)
+      index += 1
+    total <= Int.MaxValue
+
+  /** `a * b` when it fits an `Int`. */
+  def product(a: Int, b: Int): Option[Int] =
+    val value = a.toLong * b.toLong
+    if value > Int.MaxValue || value < Int.MinValue then None else Some(value.toInt)
+
 /** One nonempty piece of text handed to a measurer; a source run's text, never a copy kept. */
 final case class TextRun private (text: String)
 
@@ -28,6 +46,8 @@ object RunMetrics:
     if advances.isEmpty then Left(LayoutError.InvalidSpec("RunMetrics.advances", "empty"))
     else if advances.exists(_ < 0) then
       Left(LayoutError.InvalidSpec("RunMetrics.advances", "negative advance"))
+    else if !Bounds.sumFits(advances) then
+      Left(LayoutError.InvalidSpec("RunMetrics.advances", Bounds.SumReason))
     else if lineHeight <= 0 then
       Left(LayoutError.InvalidSpec("RunMetrics.lineHeight", s"$lineHeight is not positive"))
     else if unitsPerPixel <= 0 then
@@ -56,7 +76,9 @@ final case class TextMetrics private (
     advances: Vector[Int],
     checksum: Checksum
 ):
-  /** Width of the code units in `[start, endExclusive)`; total for any in-range arguments. */
+  /** Width of the code units in `[start, endExclusive)`; total for any arguments, and exact because
+    * the constructor bounds the sum of all advances by `Int.MaxValue`.
+    */
   def widthOf(start: Int, endExclusive: Int): Int =
     var index = math.max(start, 0)
     val end = math.min(endExclusive, advances.length)
@@ -75,12 +97,18 @@ object TextMetrics:
       advances: Vector[Int]
   ): Either[LayoutError, TextMetrics] =
     if measurer.trim.isEmpty then Left(LayoutError.InvalidSpec("TextMetrics.measurer", "empty"))
+    else if measurer.exists(c => c.isWhitespace || c.isControl) then
+      Left(
+        LayoutError.InvalidSpec("TextMetrics.measurer", "contains whitespace or control characters")
+      )
     else if unitsPerPixel <= 0 then
       Left(LayoutError.InvalidSpec("TextMetrics.unitsPerPixel", s"$unitsPerPixel is not positive"))
     else if lineHeight <= 0 then
       Left(LayoutError.InvalidSpec("TextMetrics.lineHeight", s"$lineHeight is not positive"))
     else if advances.exists(_ < 0) then
       Left(LayoutError.InvalidSpec("TextMetrics.advances", "negative advance"))
+    else if !Bounds.sumFits(advances) then
+      Left(LayoutError.InvalidSpec("TextMetrics.advances", Bounds.SumReason))
     else
       Right(
         new TextMetrics(
@@ -120,10 +148,11 @@ object TextMetrics:
               )
         yield metrics
       }
+      first <- runs.headOption.toRight(LayoutError.Measurement(measurer.name, "flow has no runs"))
       lineHeights = runs.map(_.lineHeight).distinct
       units = runs.map(_.unitsPerPixel).distinct
       _ <-
-        if lineHeights.length <= 1 && units.length <= 1 then Right(())
+        if lineHeights.length == 1 && units.length == 1 then Right(())
         else
           Left(
             LayoutError.Measurement(
@@ -134,8 +163,8 @@ object TextMetrics:
       metrics <- of(
         measurer.name,
         style,
-        units.headOption.getOrElse(1),
-        lineHeights.headOption.getOrElse(1),
+        first.unitsPerPixel,
+        first.lineHeight,
         runs.flatMap(_.advances)
       )
     yield metrics
@@ -176,15 +205,20 @@ final case class TableMeasurer private[layout] (
     val text = run.text
     val advances = Vector.newBuilder[Int]
     var index = 0
+    var tooWide = false
     while index < text.length do
       val codePoint = text.codePointAt(index)
-      val advance = advancePerEm(codePoint) * style.sizePx
-      advances += advance
+      val advance = advancePerEm(codePoint).toLong * style.sizePx
+      if advance > Int.MaxValue then tooWide = true
+      advances += advance.toInt
       if Character.charCount(codePoint) == 2 then
         advances += 0
         index += 2
       else index += 1
-    RunMetrics.of(advances.result(), lineHeightPerEm * style.sizePx, unitsPerEm)
+    val lineHeight = lineHeightPerEm.toLong * style.sizePx
+    if tooWide || lineHeight > Int.MaxValue then
+      Left(LayoutError.Measurement(name, s"advances at ${style.sizePx}px exceed ${Int.MaxValue}"))
+    else RunMetrics.of(advances.result(), lineHeight.toInt, unitsPerEm)
 
   def advancePerEm(codePoint: Int): Int =
     if codePoint == '\n'.toInt then 0 else overrides.getOrElse(codePoint, defaultAdvancePerEm)

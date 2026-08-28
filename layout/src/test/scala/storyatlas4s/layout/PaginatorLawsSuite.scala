@@ -174,6 +174,38 @@ class PaginatorLawsSuite extends ScalaCheckSuite:
       metrics.checksum != other.checksum
     }
 
+  property("the twin never shows an unreadable line"):
+    forAll(LayoutGens.cases) { c =>
+      !paginate(c).textualTwin.contains(PaginatedCodexTextualTwin.UnreadableMarker)
+    }
+
+  test("a page box that overflows Int in layout units is rejected, not flagged as overflow"):
+    val flow = ok(source("abc def"))
+    val style = ok(TextStyle.of("mono", 12))
+    val metrics = ok(TextMetrics.measure(flow, style, MonospaceMeasurer.instance))
+    Paginator.paginate(flow, ok(PageSpec.of(3_000_000, 12)), metrics) match
+      case Left(LayoutError.InvalidSpec("PageSpec.widthPx", _)) => ()
+      case other => fail(s"expected InvalidSpec on width, got $other")
+    Paginator.paginate(flow, ok(PageSpec.of(12, 3_000_000)), metrics) match
+      case Left(LayoutError.InvalidSpec("PageSpec.heightPx", _)) => ()
+      case other => fail(s"expected InvalidSpec on height, got $other")
+
+  test("metric tables whose advances sum beyond Int are rejected at every constructor"):
+    val huge = Vector(Int.MaxValue, 1)
+    assert(RunMetrics.of(huge, 1, 1).isLeft)
+    assert(TextMetrics.of("t/1", ok(TextStyle.of("t", 1)), 1, 1, huge).isLeft)
+    val table = ok(TableMeasurer.of("t/1", 1, 1, Int.MaxValue))
+    assert(table.measure(ok(TextRun.of("ab")), ok(TextStyle.of("t", 2))).isLeft)
+    assert(TextMetrics.of("bad name", ok(TextStyle.of("t", 1)), 1, 1, Vector(1)).isLeft)
+    assert(TextMetrics.of("bad\nname", ok(TextStyle.of("t", 1)), 1, 1, Vector(1)).isLeft)
+
+  test("leading whitespace breaks before a word that does not fit"):
+    val flow = ok(source("x\n  abc"))
+    val table = ok(TableMeasurer.of("t/1", 1, 1, 1))
+    val placed = ok(Paginator.layout(flow, ok(PageSpec.of(3, 1)), ok(TextStyle.of("t", 1)), table))
+    assertEquals(placed.textFragments.map(f => ok(placed.text(f))), Vector("x\n", "  ", "abc"))
+    assertEquals(placed.textFragments.map(_.width), Vector(1, 0, 3))
+
   test("metrics measured for another text are rejected, and a page shorter than a line"):
     val a = ok(source("alpha beta"))
     val b = ok(source("gamma"))

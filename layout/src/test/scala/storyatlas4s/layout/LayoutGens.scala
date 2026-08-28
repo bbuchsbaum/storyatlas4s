@@ -15,7 +15,9 @@ object LayoutGens:
   private def liftOption[A](option: Option[A]): Gen[A] =
     option.fold(Gen.fail[A])(Gen.const)
 
-  /** `a`/`b`/`c` glyphs, spaces, newlines, and an astral emoji (a surrogate pair). */
+  /** `a`/`b`/`c` glyphs, spaces, tabs, newlines, NBSP, a zero-width space, an astral emoji (a
+    * surrogate pair), and a lone high surrogate; tables are sometimes all zero.
+    */
   val rawText: Gen[String] =
     Gen
       .nonEmptyListOf(
@@ -24,8 +26,12 @@ object LayoutGens:
           3 -> Gen.const("b"),
           2 -> Gen.const("c"),
           4 -> Gen.const(" "),
+          1 -> Gen.const("\t"),
           1 -> Gen.const("\n"),
-          1 -> Gen.const("🙂")
+          1 -> Gen.const("\u00a0"),
+          1 -> Gen.const("\u200b"),
+          1 -> Gen.const("🙂"),
+          1 -> Gen.const("\ud83d")
         )
       )
       .map(_.mkString)
@@ -98,10 +104,11 @@ object LayoutGens:
   /** A table with one unit per em (so units per pixel is 1) and random glyph widths. */
   val measurer: Gen[TableMeasurer] =
     for
-      default <- Gen.choose(0, 12)
-      a <- Gen.choose(0, 12)
-      space <- Gen.choose(0, 12)
-      smile <- Gen.choose(0, 24)
+      zero <- Gen.frequency(9 -> false, 1 -> true)
+      default <- if zero then Gen.const(0) else Gen.choose(0, 12)
+      a <- if zero then Gen.const(0) else Gen.choose(0, 12)
+      space <- if zero then Gen.const(0) else Gen.choose(0, 12)
+      smile <- if zero then Gen.const(0) else Gen.choose(0, 24)
       lineHeight <- Gen.choose(1, 4)
       measurer <- lift(
         TableMeasurer.of(

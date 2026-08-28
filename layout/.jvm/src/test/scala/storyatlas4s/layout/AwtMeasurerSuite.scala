@@ -8,7 +8,7 @@ class AwtMeasurerSuite extends FunSuite:
     either.fold(e => fail(s"unexpected failure: ${e.message}"), identity)
 
   test("advances are one per code unit, zero on newlines and low surrogates, positive on glyphs"):
-    val measurer = ok(AwtMeasurer.of("Monospaced"))
+    val measurer = ok(AwtMeasurer.of())
     val style = ok(TextStyle.of("Monospaced", 12))
     val text = "abc\n🙂"
     val metrics = ok(measurer.measure(ok(TextRun.of(text)), style))
@@ -19,8 +19,17 @@ class AwtMeasurerSuite extends FunSuite:
     assertEquals(metrics.advances(0), metrics.advances(1))
     assertEquals(metrics.lineHeight, 1200 * 12)
     assertEquals(metrics.unitsPerPixel, 1000)
-    assert(measurer.name.startsWith("awt/Monospaced/"))
+    assertEquals(measurer.name, "awt/1000/1200")
 
-  test("rejects an empty family and non-positive units"):
-    assert(AwtMeasurer.of("  ").isLeft)
-    assert(AwtMeasurer.of("Monospaced", unitsPerPixel = 0).isLeft)
+  test("a family AWT cannot resolve fails instead of measuring the substitute font"):
+    val measurer = ok(AwtMeasurer.of())
+    val style = ok(TextStyle.of("storyatlas4s-no-such-font-family", 12))
+    measurer.measure(ok(TextRun.of("abc")), style) match
+      case Left(LayoutError.Measurement(name, reason)) =>
+        assertEquals(name, measurer.name)
+        assert(reason.contains("storyatlas4s-no-such-font-family"), reason)
+      case other => fail(s"expected Measurement failure, got $other")
+
+  test("rejects non-positive units and line height"):
+    assert(AwtMeasurer.of(unitsPerPixel = 0).isLeft)
+    assert(AwtMeasurer.of(lineHeightPerEm = 0).isLeft)

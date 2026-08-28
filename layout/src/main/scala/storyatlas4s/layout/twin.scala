@@ -71,7 +71,10 @@ object PaginatedCodexTextualTwin:
       .append(text.width)
     if text.overflow then out.append(" overflow")
     // Rendered from the source at twin time, never stored in the placed codex (V-T3).
-    out.append(" |").append(escape(placed.text(text).getOrElse(""))).append("|\n")
+    // The slice cannot fail: every line span was cut from this flow's canonical text by the
+    // paginator and `PaginatedCodex` has no public constructor; the marker keeps the twin total
+    // and honest, and the laws assert it never appears.
+    out.append(" |").append(placed.text(text).fold(unreadable, escape)).append("|\n")
     line.annotations.foreach { piece =>
       out.append("  ").append(piece.id.value).append(' ').append(piece.span.toString)
       placed.annotationOf(piece) match
@@ -98,6 +101,12 @@ object PaginatedCodexTextualTwin:
     case Some(LaneSlot.Lane(index)) => index.value.toString
     case Some(LaneSlot.Overflow)    => "overflow"
     case None                       => "unallocated"
+
+  /** The visible form of a line whose text could not be sliced; never produced in practice. */
+  val UnreadableMarker: String = "<unreadable"
+
+  private def unreadable(error: LayoutError): String =
+    s"$UnreadableMarker: ${error.message}>"
 
   private def escape(text: String): String =
     text.replace("\\", "\\\\").replace("\n", "\\n")
