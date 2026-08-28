@@ -3,19 +3,23 @@ package storyatlas4s.cli
 import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
 import storyatlas4s.intaglio.{AtlasLowering, CodexLowering, GraphicsNames}
+import storyatlas4s.layout.{LayoutReceipt, MonospaceMeasurer, PageSpec, Paginator, TextStyle}
 import storymodel4s.core.*
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel
 import storymodel4s.story.*
 import storymodel4s.view.*
 
-/** One file of a static edition, with the facts its receipt records. */
+/** One file of a static edition, with the facts its receipt records; `layout` is the paginator's
+  * receipt for a placed artifact (V-D3), absent for flow-level ones.
+  */
 final case class EditionFile(
     name: String,
     artifact: String,
     detail: String,
     configChecksum: Checksum,
     names: Int,
-    content: String
+    content: String,
+    layout: Option[LayoutReceipt] = None
 ):
   def checksum: Checksum = Checksum.ofText(content)
 
@@ -43,21 +47,37 @@ final case class Edition(
         "sharedState" -> Json.strings(EvidenceVisibility.stateParts(state)),
         "files" -> Json.arr(
           files.map(f =>
-            Json.obj(
-              "file" -> Json.Str(f.name),
-              "artifact" -> Json.Str(f.artifact),
-              "detail" -> Json.Str(f.detail),
-              "configChecksum" -> Json.Str(f.configChecksum.hex),
-              "names" -> Json.Num(f.names.toLong),
-              "sha256" -> Json.Str(f.checksum.hex)
+            Json.Obj(
+              Vector(
+                "file" -> Json.Str(f.name),
+                "artifact" -> Json.Str(f.artifact),
+                "detail" -> Json.Str(f.detail),
+                "configChecksum" -> Json.Str(f.configChecksum.hex),
+                "names" -> Json.Num(f.names.toLong),
+                "sha256" -> Json.Str(f.checksum.hex)
+              ) ++ f.layout.map(layoutJson).map("layout" -> _)
             )
           )
         )
       )
       .render
 
+  /** `LayoutReceipt.fields` verbatim, in order, so the JSON and the twin derive from one rendering.
+    */
+  private def layoutJson(receipt: LayoutReceipt): Json =
+    Json.Obj(receipt.fields.map((key, value) => key -> Json.Str(value)))
+
 object Edition:
   val ReceiptFile: String = "receipt.json"
+
+  /** The publication page: a 480x640px box of 16px monospace (50 columns, 33 lines) under the fixed
+    * metric measurer, so every break is checkable by counting characters, identical on any platform
+    * (ADR 0002 D3), and the fixture spans several pages.
+    */
+  val pageWidthPx: Int = 480
+  val pageHeightPx: Int = 640
+  val fontFamily: String = "monospace"
+  val fontSizePx: Int = 16
 
   /** The view compilers are storymodel4s's; the version recorded is its pinned revision. */
   val compilerVersion: String = s"storymodel4s@${Pins.storymodel4sRevision}"
@@ -133,6 +153,11 @@ object Edition:
       options <- SvgOptions(1600, 640, Some(s"Narrative Codex overlay — $detail")).left
         .map(_.message)
       svg <- SvgRenderer.render(lowered, options).left.map(_.message)
+      page <- PageSpec.of(pageWidthPx, pageHeightPx).left.map(_.message)
+      style <- TextStyle.of(fontFamily, fontSizePx).left.map(_.message)
+      placed <- Paginator.layout(flow, page, style, MonospaceMeasurer.instance).left.map(_.message)
+      html <- CodexHtml.render(placed, detail)
+      pieces = placed.annotationFragments.length
     yield Vector(
       EditionFile(s"$stem.svg", "codex", detail, config, names, svg.value),
       EditionFile(
@@ -142,6 +167,16 @@ object Edition:
         config,
         flow.annotations.length,
         flow.textualTwin
+      ),
+      EditionFile(s"$stem.html", "codex-pages", detail, config, pieces, html, Some(placed.receipt)),
+      EditionFile(
+        s"$stem-pages.txt",
+        "codex-pages-twin",
+        detail,
+        config,
+        pieces,
+        placed.textualTwin,
+        Some(placed.receipt)
       )
     )
 

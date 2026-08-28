@@ -10,7 +10,8 @@ object Main:
       |
       |  edition   compile the researcher-reviewed War of the Ghosts fixture (storymodel4s
       |            fixtures) to Discourse Atlas SVGs (Story, Episode, Scene zoom), Codex overlays
-      |            (Reading, Overview lenses), their textual twins, and receipt.json in <dir>.
+      |            and paginated Codex HTML pages (Reading, Overview lenses), their textual twins,
+      |            and receipt.json in <dir>.
       |""".stripMargin
 
   def main(args: Array[String]): Unit =
