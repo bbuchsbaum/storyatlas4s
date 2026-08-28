@@ -47,6 +47,11 @@ class EditionSuite extends FunSuite:
       assertEquals(names.distinct.length, names.length, svg.name)
       val twin =
         e.files.find(_.name == svg.name.stripSuffix(".svg") + ".txt").getOrElse(fail("twin"))
+      assertEquals(
+        twin.names,
+        svg.names,
+        s"${twin.name} names ${twin.names} != ${svg.name} ${svg.names}"
+      )
       names.foreach(n => assert(twin.content.contains(n), s"${twin.name} lacks $n"))
     }
 
