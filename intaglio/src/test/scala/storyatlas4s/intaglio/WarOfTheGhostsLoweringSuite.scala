@@ -106,7 +106,7 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
   test("Codex overlay lowers every annotation exactly once, named by its AnnotationId"):
     val f = flow(CodexLens.Overview, relationState)
     assert(f.annotations.nonEmpty)
-    val lowered = ok(CodexLowering.lower(f))
+    val lowered = ok(CodexLowering.lower(f, length))
     val names = GraphicsNames.collect(lowered).map(_.value)
     assertEquals(names.sorted, f.annotations.map(_.id.value).sorted)
     assertEquals(names.distinct.length, names.length)
@@ -132,8 +132,8 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
     )
     val f = ok(CodexCompiler(provenance).compile(model, st, spec))
     assert(f.lanes.overflow.nonEmpty, "expected overflow under a one-lane policy")
-    val a = ok(CodexLowering.lower(f))
-    val b = ok(CodexLowering.lower(f))
+    val a = ok(CodexLowering.lower(f, length))
+    val b = ok(CodexLowering.lower(f, length))
     assertEquals(a, b)
     assertEquals(svg(a), svg(b))
     val names = GraphicsNames.collect(a).map(_.value).toSet
@@ -142,6 +142,6 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
   test("the Reading lens has no annotation channels: the overlay carries no names"):
     val f = flow(CodexLens.Reading)
     assertEquals(f.annotations, Vector.empty)
-    val lowered = ok(CodexLowering.lower(f))
+    val lowered = ok(CodexLowering.lower(f, length))
     assertEquals(GraphicsNames.collect(lowered), Vector.empty)
     assertEquals(dataNames(svg(lowered)), Vector.empty)

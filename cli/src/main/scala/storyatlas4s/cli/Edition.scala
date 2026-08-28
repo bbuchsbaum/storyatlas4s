@@ -128,7 +128,7 @@ object Edition:
         .left
         .map(_.message)
       flow <- CodexCompiler(provenance).compile(model, state, spec).left.map(_.message)
-      lowered <- CodexLowering.lower(flow).left.map(_.message)
+      lowered <- CodexLowering.lower(flow, model.source.canonicalText.length).left.map(_.message)
       names = GraphicsNames.collect(lowered).length
       options <- SvgOptions(1600, 640, Some(s"Narrative Codex overlay — $detail")).left
         .map(_.message)
