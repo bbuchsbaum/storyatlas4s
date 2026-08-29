@@ -8,3 +8,6 @@
 target/
 **/target/
 .DS_Store
+
+# agent git worktrees (never committed)
+.worktrees/
