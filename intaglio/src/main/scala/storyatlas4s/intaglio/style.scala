@@ -18,6 +18,7 @@ private[intaglio] object Style:
       region: ig.GraphicParams,
       run: ig.GraphicParams,
       annotation: ig.GraphicParams,
+      band: ig.GraphicParams,
       landmark: ig.GraphicParams,
       thread: ig.GraphicParams,
       portal: ig.GraphicParams,
@@ -36,6 +37,9 @@ private[intaglio] object Style:
       region <- ig.GraphicParams.checked(stroke = Some(grey), fill = Some(fill), lineWidth = 0.8)
       run <- ig.GraphicParams.checked(stroke = None, fill = Some(runFill))
       annotation <- ig.GraphicParams.checked(stroke = Some(ig.Rgba.Black), fill = Some(fill))
+      // Page-overlay bands are fill-only: stacked in a line box they can be a pixel tall, and a
+      // stroke on each would smear into one stripe.
+      band <- ig.GraphicParams.checked(stroke = None, fill = Some(fill))
       landmark <- ig.GraphicParams.checked(stroke = Some(ig.Rgba.Black), fill = Some(ig.Rgba.Black))
       thread <- ig.GraphicParams.checked(stroke = Some(ig.Rgba.Black), lineWidth = 1.5)
       portal <- ig.GraphicParams.checked(
@@ -46,7 +50,7 @@ private[intaglio] object Style:
       route <- ig.GraphicParams.checked(stroke = Some(ig.Rgba.Black), lineWidth = 1.0)
       label <- ig.GraphicParams.checked(stroke = Some(ig.Rgba.Black), fontSize = small)
       header <- ig.GraphicParams.checked(stroke = Some(ig.Rgba.Black), fontSize = base)
-    yield Params(region, run, annotation, landmark, thread, portal, route, label, header)
+    yield Params(region, run, annotation, band, landmark, thread, portal, route, label, header)
 
   /** Plot area inside the page: the root frame is y-up npc; the plot frame is y-down native. */
   def plotViewport(xUpper: Double, yUpper: Double): Either[GraphicsError, ig.Viewport] =

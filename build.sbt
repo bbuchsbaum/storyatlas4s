@@ -65,12 +65,12 @@ lazy val commonSettings = Seq(
 
 // Module graph (docs/plans/2026-08-28-storyatlas4s-scaffold.md §2):
 //
-//   storymodel4s view ──┐
-//   intaglio core/svg ──┴─▶ intaglio (JVM, JS)  pure lowering: view artifacts → intaglio scenes
-//                                 │
 //   storymodel4s view ─────▶ layout (JVM, JS)  pure paginator: CodexFlow + metrics → pages/lines
 //                                 │
-//   storymodel4s fixtures ────────┴─▶ cli (JVM)   `edition`: WOG fixture → SVG + twins + receipt
+//   storymodel4s view ──┐         │
+//   intaglio core/svg ──┴─────────┴─▶ intaglio (JVM, JS)  pure lowering: view artifacts and
+//                                 │                        paginated codices → intaglio scenes
+//   storymodel4s fixtures ────────┴─▶ cli (JVM)   `edition`: WOG fixture → SVG + HTML + twins + receipt
 //
 // Nothing here compiles a story or infers a claim: every artifact is compiled in storymodel4s.
 // `layout` is the one place that lays out a page, and it does so as a pure function of the flow
@@ -78,12 +78,13 @@ lazy val commonSettings = Seq(
 
 lazy val root = tlCrossRootProject.aggregate(intaglio, layout, cli)
 
-/** Pure lowering of `NarrativeScene` and `CodexFlow` to Intaglio scenes; `GraphicsName` is the mark
-  * or annotation identity (ADR 0002 §6).
+/** Pure lowering of `NarrativeScene`, `CodexFlow`, and `PaginatedCodex` to Intaglio scenes;
+  * `GraphicsName` is the mark, annotation, or fragment identity (ADR 0002 §6).
   */
 lazy val intaglio = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .in(file("intaglio"))
+  .dependsOn(layout)
   .settings(commonSettings)
   .settings(name := "storyatlas4s-intaglio")
   .jvmConfigure(
@@ -139,7 +140,13 @@ lazy val cli = project
       Seq(file)
     }.taskValue
   )
-  .dependsOn(intaglio.jvm, storymodel4sFixturesJVM, intaglioSvgJVM)
+  // `test->test` lends the layout generators to the V-T2 law over generated flows.
+  .dependsOn(
+    intaglio.jvm,
+    layout.jvm % "compile->compile;test->test",
+    storymodel4sFixturesJVM,
+    intaglioSvgJVM
+  )
 
 // Command aliases. storymodel4s and intaglio, loaded here as external builds, register their own
 // `compileAll`/`testAll` aliases in the same global `onLoad` chain and the last registration wins,
@@ -147,8 +154,8 @@ lazy val cli = project
 // (re)registers this build's aliases after every external build has run its hooks.
 lazy val storyatlas4sAliases: Seq[(String, String)] = Seq(
   "compileAll" ->
-    ";intaglioJVM/compile;intaglioJS/compile;layoutJVM/compile;layoutJS/compile;cli/compile",
-  "testAll" -> ";intaglioJVM/test;intaglioJS/test;layoutJVM/test;layoutJS/test;cli/test",
+    ";layoutJVM/compile;layoutJS/compile;intaglioJVM/compile;intaglioJS/compile;cli/compile",
+  "testAll" -> ";layoutJVM/test;layoutJS/test;intaglioJVM/test;intaglioJS/test;cli/test",
   "checkAll" -> ";scalafmtCheckAll;scalafmtSbtCheck;compileAll;testAll"
 )
 lazy val registerAliases = Command.command("storyatlas4sAliases") { state =>
