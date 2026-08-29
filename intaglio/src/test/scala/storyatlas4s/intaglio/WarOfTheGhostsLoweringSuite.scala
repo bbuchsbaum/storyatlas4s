@@ -14,6 +14,8 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
   private val model = Wog.model
   private val length = model.source.canonicalText.length
   private val levels = Vector(NarrativeLevel.Story, NarrativeLevel.Episode, NarrativeLevel.Scene)
+  private val surfaceDetails =
+    Vector(SurfaceDetail.Hidden, SurfaceDetail.Sentences, SurfaceDetail.Tokens)
 
   private def ok[E, A](either: Either[E, A]): A =
     either.fold(e => fail(s"unexpected failure: $e"), identity)
@@ -21,9 +23,12 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
   private def state(layers: Set[RelationLayer] = Set.empty): CommonViewState =
     ok(CommonViewState.of(relationLayers = layers))
 
-  private def scene(level: NarrativeLevel, st: CommonViewState = state()): NarrativeScene =
-    val spec =
-      AtlasSpec(ZoomLevel(level, SurfaceDetail.Hidden), ThreadPolicy.All(PositiveInt.unsafe(3)))
+  private def scene(
+      level: NarrativeLevel,
+      st: CommonViewState = state(),
+      surface: SurfaceDetail = SurfaceDetail.Hidden
+  ): NarrativeScene =
+    val spec = AtlasSpec(ZoomLevel(level, surface), ThreadPolicy.All(PositiveInt.unsafe(3)))
     val provenance = ok(
       ViewProvenance.fixture(
         model.source.canonicalChecksum,
@@ -51,16 +56,136 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
   private def dataNames(svg: String): Vector[String] =
     dataName.findAllMatchIn(svg).map(_.group(1)).toVector
 
+  private def surfaceMarks(scene: NarrativeScene): Vector[VisualPrimitive.SurfaceUnit] =
+    scene.marks.collect { case mark: VisualPrimitive.SurfaceUnit => mark }
+
+  private def allGrobs(grob: ig.Grob): Vector[ig.Grob] =
+    grob +: grob.children.flatMap(allGrobs)
+
+  private def namedChildren(
+      elements: Vector[ig.DeviceElement],
+      wanted: String
+  ): Option[Vector[ig.DeviceElement]] =
+    elements.iterator
+      .map {
+        case ig.DeviceElement.Group(Some(name), _, _, children) if name.value == wanted =>
+          Some(children)
+        case ig.DeviceElement.Group(_, _, _, children) => namedChildren(children, wanted)
+        case _: ig.DeviceElement.Mark                  => None
+      }
+      .collectFirst { case Some(children) => children }
+
+  private def namedPolygon(scene: ig.DeviceScene, wanted: String): Vector[ig.DevicePoint] =
+    namedChildren(scene.elements, wanted)
+      .flatMap(
+        _.collectFirst {
+          case ig.DeviceElement.Mark(ig.DevicePrimitive.Polyline(points, true, _, _)) => points
+          case ig.DeviceElement.Mark(ig.DevicePrimitive.CompoundPolygon(rings, _, _)) =>
+            rings.flatten
+        }
+      )
+      .getOrElse(fail(s"no closed polygon for $wanted"))
+
   private val relationState = state(Set(RelationLayer.Causal, RelationLayer.Reference))
 
   test("every Atlas mark is lowered exactly once, named by its MarkId, at each zoom level"):
     levels.foreach { level =>
-      val s = scene(level, relationState)
-      assert(s.marks.nonEmpty, s"no marks at $level")
-      val names = GraphicsNames.collect(ok(AtlasLowering.lower(s, length))).map(_.value)
-      assertEquals(names.sorted, s.marks.map(_.identity.mark.value).sorted, level.toString)
-      assertEquals(names.distinct.length, names.length, level.toString)
+      surfaceDetails.foreach { detail =>
+        val s = scene(level, relationState, detail)
+        assert(s.marks.nonEmpty, s"no marks at $level/$detail")
+        val names = GraphicsNames.collect(ok(AtlasLowering.lower(s, length))).map(_.value)
+        val clue = s"$level/$detail"
+        assertEquals(names.sorted, s.marks.map(_.identity.mark.value).sorted, clue)
+        assertEquals(names.distinct.length, names.length, clue)
+      }
     }
+
+  test("surface detail is a cumulative, separately framed, text-free layout rail"):
+    val hidden = scene(NarrativeLevel.Scene, relationState, SurfaceDetail.Hidden)
+    val sentences = scene(NarrativeLevel.Scene, relationState, SurfaceDetail.Sentences)
+    val tokens = scene(NarrativeLevel.Scene, relationState, SurfaceDetail.Tokens)
+    val hiddenSurface = surfaceMarks(hidden)
+    val sentenceSurface = surfaceMarks(sentences)
+    val tokenSurface = surfaceMarks(tokens)
+
+    assertEquals(hiddenSurface, Vector.empty)
+    assert(sentenceSurface.nonEmpty)
+    assert(sentenceSurface.forall(_.kind == SurfaceUnitKind.Sentence))
+    assert(tokenSurface.exists(_.kind == SurfaceUnitKind.Token))
+    assertEquals(
+      sentenceSurface.map(_.identity.mark.value).sorted,
+      tokenSurface
+        .filter(_.kind == SurfaceUnitKind.Sentence)
+        .map(_.identity.mark.value)
+        .sorted
+    )
+
+    assertEquals(ok(AtlasLowering.lower(hidden, length)).grobs.length, 2)
+    val hiddenPlotViewport = ok(AtlasLowering.lower(hidden, length)).grobs.last.viewport
+    Vector(sentences, tokens).foreach { compiled =>
+      val lowered = ok(AtlasLowering.lower(compiled, length))
+      assertEquals(lowered.grobs.length, 3)
+      val rail = lowered.grobs(1)
+      val plot = lowered.grobs(2)
+      assert(rail.viewport.exists(_.clip == ig.Clip.On))
+      assert(plot.viewport.exists(_.clip == ig.Clip.Off))
+      assertNotEquals(rail.viewport, plot.viewport)
+      assertEquals(
+        plot.viewport,
+        hiddenPlotViewport,
+        "surface detail must not change ContextLane plot geometry"
+      )
+
+      val expectedSurfaceNames = surfaceMarks(compiled).map(_.identity.mark.value).sorted
+      val railNames = rail.children.flatMap(_.name).map(_.value).sorted
+      assertEquals(railNames, expectedSurfaceNames)
+      rail.children.foreach { markGroup =>
+        assert(
+          !allGrobs(markGroup).exists(_.isInstanceOf[ig.Grob.Text]),
+          s"surface mark ${markGroup.name.map(_.value)} copied text into the graphics rail"
+        )
+      }
+    }
+
+  test("surface rail preserves exact discourse spans and uses non-metric kind subrows"):
+    val compiled = scene(NarrativeLevel.Scene, relationState, SurfaceDetail.Tokens)
+    val sentence =
+      surfaceMarks(compiled).find(_.kind == SurfaceUnitKind.Sentence).getOrElse(fail("no sentence"))
+    val token =
+      surfaceMarks(compiled).find(_.kind == SurfaceUnitKind.Token).getOrElse(fail("no token"))
+    val lowered = ok(AtlasLowering.lower(compiled, length))
+    val device = ok(ig.DeviceScene.fromScene(lowered, ig.DeviceContext.unsafe(1200.0, 400.0)))
+    val surfaceIds = surfaceMarks(compiled).map(_.identity.mark.value).toSet
+    val clip = device.elements
+      .collectFirst {
+        case ig.DeviceElement.Group(_, Some(candidate), _, children)
+            if surfaceIds.exists(id => namedChildren(children, id).nonEmpty) =>
+          candidate
+      }
+      .getOrElse(fail("surface rail has no independent clipped viewport"))
+
+    def checkSpan(mark: VisualPrimitive.SurfaceUnit): Vector[ig.DevicePoint] =
+      val points = namedPolygon(device, mark.identity.mark.value)
+      val minX = points.map(_.x).min
+      val maxX = points.map(_.x).max
+      val expectedMin = clip.x + clip.width * mark.span.start.toDouble / length.toDouble
+      val expectedMax = clip.x + clip.width * mark.span.endExclusive.toDouble / length.toDouble
+      assert(
+        math.abs(minX - expectedMin) <= 1.0e-6,
+        s"${mark.identity.mark}: $minX != $expectedMin"
+      )
+      assert(
+        math.abs(maxX - expectedMax) <= 1.0e-6,
+        s"${mark.identity.mark}: $maxX != $expectedMax"
+      )
+      points
+
+    val pointsById = surfaceMarks(compiled).map(mark => mark.identity.mark -> checkSpan(mark)).toMap
+    val sentencePoints = pointsById(sentence.identity.mark)
+    val tokenPoints = pointsById(token.identity.mark)
+    val sentenceMidY = (sentencePoints.map(_.y).min + sentencePoints.map(_.y).max) / 2.0
+    val tokenMidY = (tokenPoints.map(_.y).min + tokenPoints.map(_.y).max) / 2.0
+    assertNotEquals(sentenceMidY, tokenMidY, "unit kind must not be encoded by colour alone")
 
   test("the Scene level with relation layers lowers portals and routes under their own MarkIds"):
     val s = scene(NarrativeLevel.Scene, relationState)
@@ -74,10 +199,12 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
 
   test("Atlas lowering and SVG serialization are deterministic (V-D1)"):
     levels.foreach { level =>
-      val a = ok(AtlasLowering.lower(scene(level), length))
-      val b = ok(AtlasLowering.lower(scene(level), length))
-      assertEquals(a, b)
-      assertEquals(svg(a), svg(b))
+      surfaceDetails.foreach { detail =>
+        val a = ok(AtlasLowering.lower(scene(level, surface = detail), length))
+        val b = ok(AtlasLowering.lower(scene(level, surface = detail), length))
+        assertEquals(a, b, s"$level/$detail")
+        assertEquals(svg(a), svg(b), s"$level/$detail")
+      }
     }
 
   test("the SVG carries exactly one data-name per mark, each resolving through SceneNavigation"):

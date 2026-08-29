@@ -83,9 +83,14 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
 
 ## Design contract
 
-- No view-side inference (ADR 0002 D4): the lowering draws exactly the marks
-  and annotations it is given, at the offsets and lanes it is given. It never
-  computes a layout, hull, or coordinate that `view` did not.
+- No view-side scientific inference (ADR 0002 D4): the lowering draws exactly
+  the marks and annotations it is given and preserves every provider-supplied
+  projection coordinate. It never invents semantic order, hulls, or positions.
+  When a projection contract explicitly declares that a mark has no projection
+  coordinate, the lowering may assign deterministic layout-only device
+  placement for legibility only when the contract also declares that placement
+  non-metric and meaningless. Device placement never feeds back into the model,
+  identity, selection, or another projection.
 - Identity: one SVG `data-name` per mark or annotation, equal to its
   `MarkId`/`AnnotationId`; semantic selection stays `Set[Address]` and resolves
   through `SceneNavigation`/`NavigationIndex`, never through renderer names.
