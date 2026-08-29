@@ -338,7 +338,7 @@ object AppView:
       )
     )
 
-  private def renderPlacement(placement: SelectionPlacement): String = placement match
+  private def renderPlacement(placement: SelectionPlacement[MarkId]): String = placement match
     case SelectionPlacement.OnMark(marks) =>
       s"on-mark (${marks.toVector.map(_.value).mkString(", ")})"
     case SelectionPlacement.ViaAncestor(ancestor) => s"via-ancestor (${ancestor.render})"

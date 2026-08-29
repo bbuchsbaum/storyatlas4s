@@ -48,7 +48,7 @@ final case class Compiled(
     selectedFragments: Set[String],
     fragmentTargets: Map[String, Address],
     codexPlacements: Vector[(Address, CodexPlacement)],
-    atlasPlacements: Vector[(Address, SelectionPlacement)],
+    atlasPlacements: Vector[(Address, SelectionPlacement[MarkId])],
     receipts: Vector[(String, String)]
 ):
   def canonicalText: String = flow.source.canonicalText
