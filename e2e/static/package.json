@@ -1,0 +1,11 @@
+{
+  "name": "storyatlas4s-e2e-static",
+  "private": true,
+  "description": "L1(a) static-edition Playwright laws for storyatlas4s. Pin Playwright here; Chromium is the browser that pin installs.",
+  "scripts": {
+    "test": "node static.cjs ../../target/edition"
+  },
+  "devDependencies": {
+    "playwright": "1.55.1"
+  }
+}

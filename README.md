@@ -111,6 +111,25 @@ researcher-reviewed *War of the Ghosts* fixture:
 The edition is byte-identical across runs (the suite writes it twice and
 compares).
 
+### Static-edition browser laws (L1(a))
+
+```sh
+sbt <overrides> "cli/run edition --out target/edition"
+node e2e/static/static.cjs target/edition
+```
+
+drives headless Chromium through Playwright **1.55.1** (the pin in
+`e2e/static/package.json`; Chromium is the browser that pin installs —
+`npm --prefix e2e/static i && npx --prefix e2e/static playwright install chromium`
+once). The suite opens each `codex-*.html` over `file://` and again through an
+in-process static server. It hashes the live `.line` rail against
+`receipt.json`'s `sourceChecksum` (V-T2, no story text in this repository),
+checks `data-name` uniqueness and piece counts against the `LayoutReceipt`
+(V-I2), checks that the header prints the receipt fields (V-D3), and asserts
+there is no `<script>` and no external `href`/`src`. Screenshots under
+`e2e/static/diagnostics/` are failure diagnostics only; they are not a visual
+golden and are not a merge gate.
+
 ## The app
 
 ```sh
