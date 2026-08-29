@@ -19,7 +19,7 @@ final case class EditionFile(
     configChecksum: Checksum,
     names: Int,
     content: String,
-    layout: Option[LayoutReceipt] = None
+    layout: Option[LayoutReceipt]
 ):
   def checksum: Checksum = Checksum.ofText(content)
 
@@ -129,8 +129,16 @@ object Edition:
       options <- SvgOptions(1600, 420, Some(s"Narrative Atlas — $detail")).left.map(_.message)
       svg <- SvgRenderer.render(lowered, options).left.map(_.message)
     yield Vector(
-      EditionFile(s"$stem.svg", "atlas", detail, config, names, svg.value),
-      EditionFile(s"$stem.txt", "atlas-twin", detail, config, scene.marks.length, scene.textualTwin)
+      EditionFile(s"$stem.svg", "atlas", detail, config, names, svg.value, None),
+      EditionFile(
+        s"$stem.txt",
+        "atlas-twin",
+        detail,
+        config,
+        scene.marks.length,
+        scene.textualTwin,
+        None
+      )
     )
 
   private def codexFiles(
@@ -156,17 +164,18 @@ object Edition:
       page <- PageSpec.of(pageWidthPx, pageHeightPx).left.map(_.message)
       style <- TextStyle.of(fontFamily, fontSizePx).left.map(_.message)
       placed <- Paginator.layout(flow, page, style, MonospaceMeasurer.instance).left.map(_.message)
-      html <- CodexHtml.render(placed, detail)
+      html <- CodexHtml.render(placed, detail).left.map(_.message)
       pieces = placed.annotationFragments.length
     yield Vector(
-      EditionFile(s"$stem.svg", "codex", detail, config, names, svg.value),
+      EditionFile(s"$stem.svg", "codex", detail, config, names, svg.value, None),
       EditionFile(
         s"$stem.txt",
         "codex-twin",
         detail,
         config,
         flow.annotations.length,
-        flow.textualTwin
+        flow.textualTwin,
+        None
       ),
       EditionFile(s"$stem.html", "codex-pages", detail, config, pieces, html, Some(placed.receipt)),
       EditionFile(

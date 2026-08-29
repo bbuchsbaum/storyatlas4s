@@ -19,23 +19,62 @@ import storyatlas4s.layout.{PaginatedCodex, PlacedLine, PlacedPage}
   * fixed-height block, so a soft break falls where the paginator put it without any character being
   * added. No script, no external resource, no colour carries meaning: the row a band sits in is its
   * kind and lane, and the legend spells the rows out (V-U5).
+  *
+  * V-T2 must also survive the file: an unpaired surrogate cannot be encoded as UTF-8 and U+0000 is
+  * rewritten to U+FFFD by every HTML parser, so a canonical text containing either is refused
+  * ([[CodexHtml.Error.UnencodableText]]) rather than written with a silent substitution.
   */
 object CodexHtml:
 
-  /** The document, or why a page could not be lowered or a line could not be sliced. */
-  def render(placed: PaginatedCodex, detail: String): Either[String, String] =
+  /** Why a document could not be written. */
+  enum Error:
+    /** The canonical text has a code unit no HTML file can carry back to the DOM unchanged. */
+    case UnencodableText(offset: Int, codeUnit: Char, reason: String)
+    case Lowering(reason: String)
+    case Rendering(reason: String)
+    case Text(reason: String)
+    case MissingOverlay(page: Int, lowered: Int)
+
+    def message: String = this match
+      case UnencodableText(offset, unit, reason) =>
+        f"canonical text at offset $offset has U+${unit.toInt}%04X: $reason"
+      case Lowering(reason)              => s"overlay lowering failed: $reason"
+      case Rendering(reason)             => s"overlay rendering failed: $reason"
+      case Text(reason)                  => reason
+      case MissingOverlay(page, lowered) => s"page $page has no overlay ($lowered lowered)"
+
+  /** The first code unit of `text` that would not survive UTF-8 encoding and HTML parsing. */
+  def unencodable(text: String): Option[Error.UnencodableText] =
+    var index = 0
+    var found: Option[Error.UnencodableText] = None
+    while index < text.length && found.isEmpty do
+      val c = text.charAt(index)
+      if c == '\u0000' then
+        found = Some(Error.UnencodableText(index, c, "HTML parsers replace U+0000 with U+FFFD"))
+      else if Character.isHighSurrogate(c) then
+        if index + 1 < text.length && Character.isLowSurrogate(text.charAt(index + 1)) then
+          index += 1
+        else found = Some(Error.UnencodableText(index, c, "unpaired high surrogate"))
+      else if Character.isLowSurrogate(c) then
+        found = Some(Error.UnencodableText(index, c, "unpaired low surrogate"))
+      index += 1
+    found
+
+  /** The document, or why it cannot be written faithfully. */
+  def render(placed: PaginatedCodex, detail: String): Either[Error, String] =
     val flow = placed.flow
     val receipt = placed.receipt
     for
-      rows <- PagedCodexLowering.rows(placed).left.map(_.message)
-      scenes <- CodexLowering.lower(placed).left.map(_.message)
+      _ <- unencodable(flow.source.canonicalText).toLeft(())
+      rows <- PagedCodexLowering.rows(placed).left.map(e => Error.Lowering(e.message))
+      scenes <- CodexLowering.lower(placed).left.map(e => Error.Lowering(e.message))
       options <- SvgOptions(
         placed.page.widthPx,
         placed.page.heightPx,
         Some(s"Narrative Codex overlay — $detail")
-      ).left.map(_.message)
+      ).left.map(e => Error.Rendering(e.message))
       overlays <- scenes.traverse(scene =>
-        SvgRenderer.render(scene, options).bimap(_.message, _.value)
+        SvgRenderer.render(scene, options).bimap(e => Error.Rendering(e.message), _.value)
       )
       pages <- placed.pages.traverse(page => renderPage(placed, page, overlays))
     yield
@@ -112,11 +151,11 @@ object CodexHtml:
       placed: PaginatedCodex,
       page: PlacedPage,
       overlays: Vector[String]
-  ): Either[String, String] =
+  ): Either[Error, String] =
     for
       overlay <- overlays
         .lift(page.index)
-        .toRight(s"page ${page.index} has no overlay (${overlays.length} lowered)")
+        .toRight(Error.MissingOverlay(page.index, overlays.length))
       lines <- page.lines.traverse(line => renderLine(placed, line))
     yield
       val out = new StringBuilder
@@ -131,11 +170,11 @@ object CodexHtml:
         .append("</div>\n</section>\n")
       out.result()
 
-  private def renderLine(placed: PaginatedCodex, line: PlacedLine): Either[String, String] =
+  private def renderLine(placed: PaginatedCodex, line: PlacedLine): Either[Error, String] =
     placed
       .text(line.text)
       .left
-      .map(_.message)
+      .map(e => Error.Text(e.message))
       .map(text =>
         s"""<span class="line" data-name="${escapeAttr(line.text.id.value)}">${escapeText(
             text
@@ -159,12 +198,24 @@ object CodexHtml:
   def escapeAttr(value: String): String =
     escapeText(value).replace("\"", "&quot;")
 
-  /** A bare identifier stays a CSS keyword (so `monospace` is the generic family); anything else is
-    * a quoted family name.
+  /** The family as one CSS identifier, so `monospace` stays the generic keyword and no character
+    * can leave the declaration or the `<style>` element: every character outside `[A-Za-z0-9_-]` is
+    * written as its hex escape plus a space (`CSS.escape` semantics), so a comma-separated list is
+    * still one family name, never a fallback list ([[storyatlas4s.layout.TextStyle]] holds a single
+    * family).
     */
-  private def cssFamily(family: String): String =
-    if family.forall(c => c.isLetterOrDigit || c == '-' || c == '_') then family
-    else "\"" + family.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+  private[cli] def cssFamily(family: String): String =
+    val out = new StringBuilder
+    var index = 0
+    while index < family.length do
+      val codePoint = family.codePointAt(index)
+      if codePoint < 0x80 && (Character.isLetterOrDigit(
+          codePoint
+        ) || codePoint == '-' || codePoint == '_')
+      then out.append(codePoint.toChar)
+      else out.append('\\').append(Integer.toHexString(codePoint)).append(' ')
+      index += Character.charCount(codePoint)
+    out.result()
 
   /** Fixed-point pixels (at most four decimals, no exponent), the SVG backend's formatting rule. */
   private def px(value: Double): String =

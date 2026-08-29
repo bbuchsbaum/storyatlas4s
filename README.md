@@ -97,8 +97,13 @@ researcher-reviewed *War of the Ghosts* fixture:
   under an inline SVG overlay lowered from the same `PaginatedCodex`, one
   `<g data-name="<piece id>">` per annotation piece at the paginator's pixel
   geometry. No script, no external resource; kind and lane are the band's row
-  within the line, spelled out in the page legend and the twin, never a colour
-  (V-U5). The `-pages.txt` twin is `PaginatedCodex.textualTwin`;
+  within the line (fill-only bands stacked in the line box), spelled out in the
+  page legend and the twin, never a colour (V-U5). With many rows the bands are
+  about a pixel tall; drawing lanes in the leading or a gutter with a minimum
+  row height is a follow-up. A canonical text with an unpaired surrogate or
+  U+0000 is refused rather than written with a substitution, since neither
+  survives UTF-8 encoding and HTML parsing (V-T2 on disk). The `-pages.txt`
+  twin is `PaginatedCodex.textualTwin`;
 - `receipt.json`: basis, source checksum, sibling pins, and per-file
   configuration checksums, mark counts, SHA-256 of the written text, and — for
   the paginated files — the `LayoutReceipt` fields (V-D3).

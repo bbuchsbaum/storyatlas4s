@@ -40,6 +40,9 @@ object CodexLowering:
   def lower(placed: PaginatedCodex): Either[GraphicsError, Vector[ig.Scene]] =
     PagedCodexLowering.lowerPages(placed)
 
+  /** One page of the paginated overlay, for a caller that renders pages independently; equal to the
+    * corresponding element of `lower(placed)`.
+    */
   def lower(placed: PaginatedCodex, page: PlacedPage): Either[GraphicsError, ig.Scene] =
     PagedCodexLowering.lowerPage(placed, page)
 

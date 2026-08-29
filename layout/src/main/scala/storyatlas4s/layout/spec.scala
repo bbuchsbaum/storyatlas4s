@@ -17,6 +17,11 @@ object PageSpec:
     else Right(new PageSpec(widthPx, heightPx))
 
 /** A font request in CSS pixels; the measurer decides what it resolves to and says so in its name.
+  *
+  * `family` is one family name (a generic keyword such as `monospace` or a single face), never a
+  * comma-separated fallback list: the receipt names the metric a page was broken under, and a list
+  * would leave that choice to the renderer. `<` and `>` are refused so a family can never close a
+  * markup element it is written into.
   */
 final case class TextStyle private (family: String, sizePx: Int)
 
@@ -25,6 +30,8 @@ object TextStyle:
     if family.trim.isEmpty then Left(LayoutError.InvalidSpec("TextStyle.family", "empty"))
     else if family.exists(c => c.isControl) then
       Left(LayoutError.InvalidSpec("TextStyle.family", "contains control characters"))
+    else if family.exists(c => c == '<' || c == '>') then
+      Left(LayoutError.InvalidSpec("TextStyle.family", "contains markup delimiters"))
     else if sizePx <= 0 then
       Left(LayoutError.InvalidSpec("TextStyle.sizePx", s"$sizePx is not positive"))
     else Right(new TextStyle(family.trim, sizePx))

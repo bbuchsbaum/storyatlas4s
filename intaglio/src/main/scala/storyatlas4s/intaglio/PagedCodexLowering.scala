@@ -146,7 +146,7 @@ object PagedCodexLowering:
         top,
         geometry.x(line, piece.span.endExclusive),
         top + geometry.rowHeight,
-        style.annotation
+        style.band
       )
     yield ig.Grob.group(Vector(band), name = Some(name))
 
