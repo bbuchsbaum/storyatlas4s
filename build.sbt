@@ -3,6 +3,10 @@ import org.typelevel.sbt.gha.JavaSpec
 val Scala3 = "3.7.4"
 val munitV = "1.3.4"
 val munitCheckV = "1.3.0"
+// Pinned to the workspace's Laminar precedent (cardsaplenty): Laminar 17.2.1 / scalajs-dom 2.8.1 on
+// Scala.js 1.22 (sbt-scalajs in project/plugins.sbt).
+val laminarV = "17.2.1"
+val scalaJsDomV = "2.8.1"
 
 ThisBuild / tlBaseVersion := "0.1"
 ThisBuild / organization := "io.github.canardlapin"
@@ -115,6 +119,8 @@ lazy val layout = crossProject(JVMPlatform, JSPlatform)
   .settings(name := "storyatlas4s-layout")
   .jvmConfigure(_.dependsOn(storymodel4sViewJVM, storymodel4sFixturesJVM % Test))
   .jsConfigure(_.dependsOn(storymodel4sViewJS, storymodel4sFixturesJS % Test))
+  // The DOM measurer measures on a 2-D canvas context; the seam itself stays platform-free.
+  .jsSettings(libraryDependencies += "org.scala-js" %%% "scalajs-dom" % scalaJsDomV)
 
 /** JVM command line: `edition --out <dir>` writes the War of the Ghosts static edition. */
 lazy val cli = project
