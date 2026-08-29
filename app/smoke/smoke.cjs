@@ -14,7 +14,8 @@
 //   5. both continuous zoom controls commit exact typed states with hysteresis, real surface mark
 //      changes, and exact restoration;
 //   6. one semantic focus and selection is OnMark, ViaAncestor, or OffProjection exactly as the
-//      two storymodel4s compilers report, including the hidden-selection horizon shape (V-L2);
+//      two storymodel4s compilers report; ViaAncestor is a labelled proxy rather than direct ARIA
+//      selection, including through the hidden-selection horizon shape (V-L2);
 //   7. no page error and no console error.
 // Playwright must resolve from e2e/static at the exact pin below; no global-package fallback and no
 // system Chrome. Install its browser with `npx --prefix e2e/static playwright install chromium`.
@@ -542,6 +543,42 @@ async function main() {
       resolvedAttr: "data-resolved-mark-ids",
       nonEmpty: true,
     });
+    const selectionProxies = await page.$$eval(
+      ".atlas svg .selection-proxy",
+      (xs) => xs.length
+    );
+    const focusProxies = await page.$$eval(".atlas svg .focus-proxy", (xs) => xs.length);
+    check(selectionProxies >= 1, `Story zoom exposes selection proxy (${selectionProxies})`);
+    check(focusProxies >= 1, `Story zoom exposes focus proxy (${focusProxies})`);
+    check(
+      (await page.$$eval(".atlas svg .selected", (xs) => xs.length)) === 0,
+      "Story zoom does not misstate the ancestor as directly selected"
+    );
+    check(
+      (await page.$$eval(".atlas svg .focused", (xs) => xs.length)) === 0,
+      "Story zoom does not misstate the ancestor as direct semantic focus"
+    );
+    check(
+      (await page.$$eval('.atlas svg [aria-pressed="true"]', (xs) => xs.length)) === 0,
+      "Story zoom proxy is not aria-pressed as the original address"
+    );
+    check(
+      (await page.$$eval('.atlas svg [aria-current="true"]', (xs) => xs.length)) === 0,
+      "Story zoom proxy is not aria-current as the original address"
+    );
+    const proxyFor = await page.$eval(
+      ".atlas svg .selection-proxy",
+      (element) => element.getAttribute("data-selection-proxy-for")
+    );
+    check(proxyFor?.split(" ").includes(address), "selection proxy names the preserved address");
+    const proxyLabel = await page.$eval(
+      ".atlas svg .selection-proxy",
+      (element) => element.getAttribute("aria-label")
+    );
+    check(
+      proxyLabel?.includes(`selection proxy for ${address} via `),
+      "selection proxy accessibly explains original and visible addresses"
+    );
     await checkRail("via-ancestor selection", text);
 
     // Find the canonical fixture interval where the selected late mark is hidden while some
@@ -580,6 +617,13 @@ async function main() {
         resolvedAttr: "data-resolved-mark-ids",
         nonEmpty: true,
       });
+      check(
+        (await page.$$eval(
+          ".atlas svg .selected, .atlas svg .focused, .atlas svg .selection-proxy, .atlas svg .focus-proxy",
+          (xs) => xs.length
+        )) === 0,
+        "off-projection selection has no direct or proxy Atlas treatment"
+      );
       await checkIdentityDomain({
         label: `reader at ${hiddenSelection.candidate} Codex`,
         liveSelector: ".codex .overlay svg [data-name]",
@@ -602,6 +646,15 @@ async function main() {
     check(
       restoredPlacements.some((p) => p.startsWith("Atlas: on-mark")),
       "restored Scene zoom returns the selection to on-mark"
+    );
+    check(
+      (await page.$$eval(".atlas svg .selection-proxy, .atlas svg .focus-proxy", (xs) => xs.length)) ===
+        0,
+      "restored Scene zoom removes ancestor proxy treatment"
+    );
+    check(
+      (await page.$$eval(".atlas svg .selected", (xs) => xs.length)) >= 1,
+      "restored Scene zoom returns direct selection treatment"
     );
     await checkRail("restored selected Scene", text);
 

@@ -275,6 +275,9 @@ object AppView:
         else
           "Overlay rows, top to bottom within each line: " +
             c.rows.zipWithIndex.map((row, i) => s"${i + 1}: ${row.label}").mkString("; ") + "."
+        ,
+        " Direct interaction and visible-ancestor proxy interaction use distinct line and SVG " +
+          "patterns."
       ),
       onClick --> (ev => activate(ev.target, ev.shiftKey)),
       onKeyDown.filter(ev => ev.key == "Enter" || ev.key == " ") --> { ev =>
@@ -298,9 +301,13 @@ object AppView:
                   cls("line"),
                   cls(SvgDom.SelectedClass) := line.selected,
                   cls(SvgDom.FocusedClass) := line.focused,
+                  cls(SvgDom.SelectionProxyClass) := line.selectionProxy,
+                  cls(SvgDom.FocusProxyClass) := line.focusProxy,
                   dataAttr("name") := line.id,
                   dataAttr("selected") := line.selected.toString,
                   dataAttr("focused") := line.focused.toString,
+                  dataAttr("selection-proxy") := line.selectionProxy.toString,
+                  dataAttr("focus-proxy") := line.focusProxy.toString,
                   styleAttr := s"height:${lineHeightPx}px",
                   line.text
                 )
@@ -312,8 +319,7 @@ object AppView:
                 SvgDom.inject(
                   ctx.thisNode.ref,
                   page.overlay,
-                  c.selectedFragments,
-                  c.focusedFragments,
+                  c.codexInteractions,
                   name =>
                     c.fragmentTargets.get(name).map(a => s"annotation piece $name → ${a.render}")
                 )
@@ -348,7 +354,8 @@ object AppView:
       p(
         cls("legend"),
         s"${c.scene.marks.length} mark(s). x = ${c.scene.contract.x}; y = ${c.scene.contract.y}. " +
-          "Click a mark (shift-click extends) or focus it and press Enter to select its address."
+          "Click a mark (shift-click extends) or focus it and press Enter to select its address. " +
+          "Direct interaction and visible-ancestor proxy interaction use distinct patterns."
       ),
       onClick --> (ev => activate(ev.target, ev.shiftKey)),
       onKeyDown.filter(ev => ev.key == "Enter" || ev.key == " ") --> { ev =>
@@ -361,8 +368,7 @@ object AppView:
           SvgDom.inject(
             ctx.thisNode.ref,
             c.atlasSvg,
-            c.selectedMarks,
-            c.focusedMarks,
+            c.atlasInteractions,
             name =>
               MarkId
                 .from(name)

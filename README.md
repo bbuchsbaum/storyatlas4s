@@ -179,10 +179,13 @@ to. The page then mounts a Laminar shell into `#app`:
   its `data-name` through `SceneNavigation` to an `Address` and sets semantic
   focus plus `CommonViewState.selection`; clicking an overlay band resolves
   through `NavigationIndex` the same way. The Codex marks focused and selected
-  lines, and the panel prints each compiled placement as `on-mark`,
-  `via-ancestor`, or `off-projection`. Focus, selection, and horizon survive
-  every representation change. A monotone intent revision prevents a delayed
-  compilation from replacing a newer requested state.
+  lines only for direct `on-mark` placements. A `via-ancestor` placement uses a
+  separate dotted/double proxy treatment whose accessible label names both the
+  preserved original address and the visible ancestor; it never sets the
+  ancestor's `aria-pressed` or `aria-current` state as though the identities
+  were equal. `off-projection` remains panel-only. Focus, selection, and
+  horizon survive every representation change. A monotone intent revision
+  prevents a delayed compilation from replacing a newer requested state.
 - **Receipts.** Source and configuration checksums, the compiler version and
   sibling pins, the shared-state parts, the current horizon, the
   `LayoutReceipt` fields, and the measurer in use, as text.
@@ -226,7 +229,8 @@ between, that the Reading lens and the measurer switch leave the rail
 unchanged, that surface zoom creates real sentence and token marks, that
 hysteresis absorbs threshold jitter, that exact identities restore, that a
 focused selection traverses `on-mark`, `via-ancestor`, and `off-projection`,
-and that the page logs no error.
+that an ancestor proxy is visually and accessibly distinct from direct
+selection, and that the page logs no error.
 
 Every page prints its basis ("researcher-reviewed narrative acceptance
 fixture"). Story text is never copied into this repository; the twins render

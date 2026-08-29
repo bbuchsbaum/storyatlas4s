@@ -9,8 +9,15 @@ import storymodel4s.core.*
 import storymodel4s.story.*
 import storymodel4s.view.*
 
-/** One placed line of the text rail: exact text plus selected and focused annotation presence. */
-final case class CodexLine(id: String, text: String, selected: Boolean, focused: Boolean)
+/** One placed line of the text rail with direct and proxy interaction presence kept distinct. */
+final case class CodexLine(
+    id: String,
+    text: String,
+    selected: Boolean,
+    focused: Boolean,
+    selectionProxy: Boolean,
+    focusProxy: Boolean
+)
 
 /** One page of the Codex: the rail lines and the page's overlay SVG (V-I2 names inside). */
 final case class CodexPage(index: Int, lines: Vector[CodexLine], overlay: String)
@@ -30,10 +37,8 @@ final case class Compiled(
     scene: NarrativeScene,
     atlasSvg: String,
     atlasNames: Int,
-    selectedMarks: Set[String],
-    focusedMarks: Set[String],
-    selectedFragments: Set[String],
-    focusedFragments: Set[String],
+    atlasInteractions: Vector[InteractionDecoration[String, Address]],
+    codexInteractions: Vector[InteractionDecoration[String, Address]],
     fragmentTargets: Map[String, Address],
     codexPlacements: Vector[(Address, SelectionPlacement[AnnotationId])],
     atlasPlacements: Vector[(Address, SelectionPlacement[MarkId])],
@@ -41,6 +46,32 @@ final case class Compiled(
 ):
   def canonicalText: String = flow.source.canonicalText
   def pieces: Int = placed.annotationFragments.length
+
+  def selectedMarks: Set[String] = directTargets(atlasInteractions, InteractionRole.Selection)
+  def focusedMarks: Set[String] = directTargets(atlasInteractions, InteractionRole.Focus)
+  def selectedProxyMarks: Set[String] = proxyTargets(atlasInteractions, InteractionRole.Selection)
+  def focusedProxyMarks: Set[String] = proxyTargets(atlasInteractions, InteractionRole.Focus)
+  def selectedFragments: Set[String] = directTargets(codexInteractions, InteractionRole.Selection)
+  def focusedFragments: Set[String] = directTargets(codexInteractions, InteractionRole.Focus)
+  def selectedProxyFragments: Set[String] =
+    proxyTargets(codexInteractions, InteractionRole.Selection)
+  def focusedProxyFragments: Set[String] = proxyTargets(codexInteractions, InteractionRole.Focus)
+
+  private def directTargets(
+      decorations: Vector[InteractionDecoration[String, Address]],
+      role: InteractionRole
+  ): Set[String] =
+    decorations.collect {
+      case InteractionDecoration(target, `role`, SemanticRepresentation.Direct(_)) => target
+    }.toSet
+
+  private def proxyTargets(
+      decorations: Vector[InteractionDecoration[String, Address]],
+      role: InteractionRole
+  ): Set[String] =
+    decorations.collect {
+      case InteractionDecoration(target, `role`, SemanticRepresentation.Proxy(_, _)) => target
+    }.toSet
 
 /** The pure step from a choice to what is drawn: the same calls `cli/Edition` makes, in the
   * browser.
@@ -120,25 +151,30 @@ object AppCompiler:
         Some(s"Narrative Atlas — zoom ${choice.zoom.narrative}/${choice.zoom.surface}")
       ).left.map(_.message)
       atlasSvg <- SvgRenderer.render(lowered, atlasOptions).bimap(_.message, _.value)
-      // Selection and focus resolve through navigation indexes, never renderer names.
-      selectedAnnotations = choice.selection.toVector.flatMap(flow.navigation.annotationsFor).toSet
-      selectedFragments = placed.annotationFragments
-        .filter(f => selectedAnnotations.contains(f.annotation))
-        .map(_.id.value)
-        .toSet
-      focusedAnnotations = choice.focus.toVector.flatMap(flow.navigation.annotationsFor).toSet
-      focusedFragments = placed.annotationFragments
-        .filter(f => focusedAnnotations.contains(f.annotation))
-        .map(_.id.value)
-        .toSet
-      selectedMarks = choice.selection.toVector
-        .flatMap(scene.navigation.marksFor)
-        .map(_.value)
-        .toSet
-      focusedMarks = choice.focus.toVector
-        .flatMap(scene.navigation.marksFor)
-        .map(_.value)
-        .toSet
+      fragmentsByAnnotation = placed.annotationFragments
+        .groupMap(_.annotation)(_.id.value)
+        .view
+        .mapValues(_.distinct.sorted)
+        .toMap
+      codexInteractions <- interactionsFor(
+        choice,
+        codexPlacements.toMap,
+        annotation => fragmentsByAnnotation.getOrElse(annotation, Vector.empty),
+        ancestor =>
+          flow.navigation
+            .exactAnnotationsFor(ancestor)
+            .flatMap(annotation => fragmentsByAnnotation.getOrElse(annotation, Vector.empty))
+      )
+      atlasInteractions <- interactionsFor(
+        choice,
+        atlasPlacements.toMap,
+        mark => Vector(mark.value),
+        ancestor => scene.navigation.marksFor(ancestor).map(_.value)
+      )
+      selectedFragments = directTargets(codexInteractions, InteractionRole.Selection)
+      focusedFragments = directTargets(codexInteractions, InteractionRole.Focus)
+      selectedProxyFragments = proxyTargets(codexInteractions, InteractionRole.Selection)
+      focusedProxyFragments = proxyTargets(codexInteractions, InteractionRole.Focus)
       fragmentTargets = placed.annotationFragments
         .flatMap(f => flow.navigation.targetOf(f.annotation).map(f.id.value -> _))
         .toMap
@@ -153,7 +189,9 @@ object AppCompiler:
                 line.text.id.value,
                 text,
                 line.annotations.exists(piece => selectedFragments.contains(piece.id.value)),
-                line.annotations.exists(piece => focusedFragments.contains(piece.id.value))
+                line.annotations.exists(piece => focusedFragments.contains(piece.id.value)),
+                line.annotations.exists(piece => selectedProxyFragments.contains(piece.id.value)),
+                line.annotations.exists(piece => focusedProxyFragments.contains(piece.id.value))
               )
             )
         )
@@ -172,15 +210,90 @@ object AppCompiler:
         scene,
         atlasSvg,
         GraphicsNames.collect(lowered).length,
-        selectedMarks,
-        focusedMarks,
-        selectedFragments,
-        focusedFragments,
+        atlasInteractions,
+        codexInteractions,
         fragmentTargets,
         codexPlacements,
         atlasPlacements,
         receipts(model, state, flow, placed, scene, measurer, codexConfig, atlasConfig)
       )
+
+  private[app] def interactionsFor[Mark](
+      choice: ViewChoice,
+      placements: Map[Address, SelectionPlacement[Mark]],
+      directTargets: Mark => Vector[String],
+      proxyTargets: Address => Vector[String]
+  ): Either[String, Vector[InteractionDecoration[String, Address]]] =
+    def forRole(
+        addresses: Vector[Address],
+        role: InteractionRole
+    ): Either[String, Vector[InteractionDecoration[String, Address]]] =
+      addresses
+        .traverse { address =>
+          placements
+            .get(address)
+            .toRight(s"Compiler omitted placement for ${address.render}")
+            .flatMap {
+              case SelectionPlacement.OnMark(marks) =>
+                requireTargets(address, "direct", marks.toVector.flatMap(directTargets)).map(
+                  _.map(target =>
+                    InteractionDecoration(
+                      target,
+                      role,
+                      SemanticRepresentation.Direct(address)
+                    )
+                  )
+                )
+              case SelectionPlacement.ViaAncestor(ancestor) =>
+                requireTargets(address, s"proxy via ${ancestor.render}", proxyTargets(ancestor))
+                  .map(
+                    _.map(target =>
+                      InteractionDecoration(
+                        target,
+                        role,
+                        SemanticRepresentation.Proxy(address, ancestor)
+                      )
+                    )
+                  )
+              case SelectionPlacement.OffProjection => Right(Vector.empty)
+            }
+        }
+        .map(_.flatten)
+
+    for
+      selected <- forRole(
+        choice.selection.toVector.sortBy(_.render),
+        InteractionRole.Selection
+      )
+      focused <- forRole(choice.focus.toVector, InteractionRole.Focus)
+    yield (selected ++ focused).sortBy(value =>
+      InteractionDecoration.sortKey(value, identity, _.render)
+    )
+
+  private def requireTargets(
+      address: Address,
+      placement: String,
+      targets: Vector[String]
+  ): Either[String, Vector[String]] =
+    val named = targets.distinct.sorted
+    if named.nonEmpty then Right(named)
+    else Left(s"${address.render} has $placement placement without a renderer target")
+
+  private def directTargets(
+      decorations: Vector[InteractionDecoration[String, Address]],
+      role: InteractionRole
+  ): Set[String] =
+    decorations.collect {
+      case InteractionDecoration(target, `role`, SemanticRepresentation.Direct(_)) => target
+    }.toSet
+
+  private def proxyTargets(
+      decorations: Vector[InteractionDecoration[String, Address]],
+      role: InteractionRole
+  ): Set[String] =
+    decorations.collect {
+      case InteractionDecoration(target, `role`, SemanticRepresentation.Proxy(_, _)) => target
+    }.toSet
 
   /** The receipt as ordered text pairs: what a saved view must record (V-D3). */
   private def receipts(

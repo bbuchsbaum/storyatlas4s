@@ -1,5 +1,6 @@
 package storyatlas4s.app
 
+import cats.data.NonEmptyVector
 import munit.FunSuite
 import storyatlas4s.edition.EditionSpec
 import storyatlas4s.layout.MonospaceMeasurer
@@ -102,6 +103,8 @@ class AppCompilerSuite extends FunSuite:
     assertEquals(c.state.focus, Some(address))
     assert(c.selectedMarks.contains(landmark.identity.mark.value))
     assert(c.focusedMarks.contains(landmark.identity.mark.value))
+    assert(c.selectedProxyMarks.isEmpty)
+    assert(c.focusedProxyMarks.isEmpty)
     c.atlasPlacements match
       case Vector((a, SelectionPlacement.OnMark(marks))) =>
         assertEquals(a, address)
@@ -114,6 +117,13 @@ class AppCompilerSuite extends FunSuite:
       case other => fail(s"expected one Codex on-mark placement, got $other")
     assert(c.selectedFragments.nonEmpty)
     assertEquals(c.focusedFragments, c.selectedFragments)
+    assert(c.selectedProxyFragments.isEmpty)
+    assert(c.focusedProxyFragments.isEmpty)
+    assert(
+      (c.atlasInteractions ++ c.codexInteractions).forall(
+        _.representation == SemanticRepresentation.Direct(address)
+      )
+    )
     val selectedLines = c.pages.flatMap(_.lines).filter(_.selected)
     assert(selectedLines.nonEmpty)
     assertEquals(c.pages.flatMap(_.lines).filter(_.focused), selectedLines)
@@ -151,7 +161,14 @@ class AppCompilerSuite extends FunSuite:
       case Vector((a, SelectionPlacement.ViaAncestor(ancestor))) =>
         assertEquals(a, address)
         assertNotEquals(ancestor, address)
-        assert(story.scene.navigation.marksFor(ancestor).nonEmpty)
+        val expected = story.scene.navigation.marksFor(ancestor).map(_.value).toSet
+        assert(expected.nonEmpty)
+        assertEquals(story.selectedMarks, Set.empty)
+        assertEquals(story.selectedProxyMarks, expected)
+        assertEquals(
+          story.atlasInteractions.map(_.representation).distinct,
+          Vector(SemanticRepresentation.Proxy(address, ancestor))
+        )
       case other => fail(s"expected one Atlas via-ancestor placement, got $other")
 
     val hiddenAt = model
@@ -188,6 +205,62 @@ class AppCompilerSuite extends FunSuite:
     assertEquals(c.atlasPlacements, Vector(last.address -> SelectionPlacement.OffProjection))
     assertEquals(c.codexPlacements, Vector(last.address -> SelectionPlacement.OffProjection))
     assert(c.selectedMarks.isEmpty)
+    assert(c.selectedProxyMarks.isEmpty)
+    assert(c.selectedFragments.isEmpty)
+    assert(c.selectedProxyFragments.isEmpty)
+
+  test("direct, proxy, and off-projection decorations obey one cross-face law"):
+    val original = Addressable[StoryRef].address(StoryRef.Situation(Wog.S.battle))
+    val visible = Addressable[StoryRef].address(StoryRef.Segment(Wog.G.sc2c))
+    val choice = omniscient.copy(selection = Set(original), focus = Some(original))
+
+    def interactions(
+        placement: SelectionPlacement[String],
+        target: String
+    ): Vector[InteractionDecoration[String, storymodel4s.core.Address]] =
+      ok(
+        AppCompiler.interactionsFor(
+          choice,
+          Map(original -> placement),
+          mark => Vector(mark),
+          ancestor => if ancestor == visible then Vector(target) else Vector.empty
+        )
+      )
+
+    val direct = interactions(SelectionPlacement.OnMark(NonEmptyVector.one("direct")), "unused")
+    assertEquals(direct.map(_.role).toSet, Set(InteractionRole.Selection, InteractionRole.Focus))
+    assertEquals(
+      direct.map(_.representation).distinct,
+      Vector(SemanticRepresentation.Direct(original))
+    )
+
+    val atlasProxy = interactions(SelectionPlacement.ViaAncestor(visible), "atlas-proxy")
+    val codexProxy = interactions(SelectionPlacement.ViaAncestor(visible), "codex-proxy")
+    assertEquals(
+      atlasProxy.map(value => value.role -> value.representation),
+      codexProxy.map(value => value.role -> value.representation)
+    )
+    assertEquals(
+      atlasProxy.map(_.representation).distinct,
+      Vector(SemanticRepresentation.Proxy(original, visible))
+    )
+    assertEquals(
+      interactions(SelectionPlacement.OffProjection, "unused"),
+      Vector.empty
+    )
+    assert(
+      AppCompiler
+        .interactionsFor[String](
+          choice,
+          Map[storymodel4s.core.Address, SelectionPlacement[String]](
+            original -> SelectionPlacement.ViaAncestor(visible)
+          ),
+          mark => Vector(mark),
+          _ => Vector.empty
+        )
+        .isLeft,
+      "a compiler-reported proxy without a render target must fail closed"
+    )
 
   test("the compiled view is a pure function of the choice (V-D1)"):
     val episodeZoom = omniscient.zoom.copy(narrative = NarrativeLevel.Episode)

@@ -6,8 +6,9 @@
 <title>storyatlas4s — Narrative Codex and Atlas</title>
 <style>
 /* No external resource: no font, no stylesheet, no script beyond app.js. Colour never carries
-   meaning (ADR 0002 V-U5): kind and lane are the overlay row and the legend; selection is an
-   outline, a dashed stroke, aria-pressed, and the side panel's text. */
+   meaning (ADR 0002 V-U5): kind and lane are the overlay row and the legend; direct interaction
+   uses dashed/heavy treatment, while an ancestor proxy uses dotted/double treatment and truthful
+   accessibility text. */
 body { margin: 0; padding: 1rem; background: #ffffff; color: #000000; font: 14px/1.5 sans-serif; }
 header, footer { max-width: 100em; margin: 0 auto 1rem; }
 h1 { font-size: 1.3em; margin: 0 0 0.25em; }
@@ -27,18 +28,24 @@ nav ul { margin: 0; padding-left: 1.2em; }
 .page { position: relative; margin: 0; border: 1px solid #000000; }
 .text { position: absolute; top: 0; left: 0; margin: 0; width: 100%; height: 100%; overflow: hidden; }
 .line { display: block; white-space: pre; overflow: hidden; }
+.line.selection-proxy { outline: 2px dotted #000000; outline-offset: -2px; }
 .line.selected { outline: 2px dashed #000000; outline-offset: -2px; }
+.line.focus-proxy { border-left: 4px double #000000; box-sizing: border-box; }
 .line.focused { box-shadow: inset 4px 0 #000000; }
 .overlay { position: absolute; top: 0; left: 0; }
 .overlay svg { display: block; pointer-events: none; }
 .overlay svg [data-name] { pointer-events: visiblePainted; cursor: pointer; }
 .overlay svg [data-name]:focus, .atlas-svg svg [data-name]:focus { outline: 2px solid #000000; }
+.overlay svg .selection-proxy * { stroke: #000000; stroke-width: 1.5px; stroke-dasharray: 1 3; }
 .overlay svg .selected * { stroke: #000000; stroke-width: 1.5px; stroke-dasharray: 3 2; }
+.overlay svg .focus-proxy * { stroke-width: 1.5px; stroke-dasharray: 5 2 1 2; }
 .overlay svg .focused * { stroke-width: 2px; }
 .page-label { position: absolute; left: 0; bottom: -1.5em; font-size: 11px; }
 .atlas-svg svg { display: block; max-width: 100%; height: auto; border: 1px solid #000000; }
 .atlas-svg svg [data-name] { cursor: pointer; }
+.atlas-svg svg .selection-proxy * { stroke: #000000; stroke-width: 2px; stroke-dasharray: 1 4; }
 .atlas-svg svg .selected * { stroke: #000000; stroke-width: 3px; stroke-dasharray: 6 3; }
+.atlas-svg svg .focus-proxy * { stroke-width: 2.5px; stroke-dasharray: 7 3 1 3; }
 .atlas-svg svg .focused * { stroke-width: 4px; }
 .panel { display: flex; flex-direction: column; gap: 1rem; }
 .panel section { border: 1px solid #000000; padding: 0.5em 0.75em; }
