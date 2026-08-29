@@ -2,6 +2,7 @@ package storyatlas4s.cli
 
 import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
+import storyatlas4s.edition.{EditionSpec, Pins}
 import storyatlas4s.intaglio.{AtlasLowering, CodexLowering, GraphicsNames}
 import storyatlas4s.layout.{LayoutReceipt, MonospaceMeasurer, PageSpec, Paginator, TextStyle}
 import storymodel4s.core.*
@@ -41,9 +42,12 @@ final case class Edition(
         "basis" -> Json.Str(provenanceBasis.label),
         "sourceChecksum" -> Json.Str(sourceChecksum.hex),
         "modelReceiptChecksum" -> modelReceiptChecksum.fold[Json](Json.Null)(c => Json.Str(c.hex)),
-        "compilerVersion" -> Json.Str(Edition.compilerVersion),
+        "compilerVersion" -> Json.Str(EditionSpec.compilerVersion),
         "storymodel4sRevision" -> Json.Str(Pins.storymodel4sRevision),
         "intaglioRevision" -> Json.Str(Pins.intaglioRevision),
+        "atlasBoxPx" -> Json.Str(EditionSpec.atlasBox),
+        "codexOverlayBoxPx" -> Json.Str(EditionSpec.codexOverlayBox),
+        "pageBoxPx" -> Json.Str(EditionSpec.pageBox),
         "sharedState" -> Json.strings(EvidenceVisibility.stateParts(state)),
         "files" -> Json.arr(
           files.map(f =>
@@ -70,21 +74,9 @@ final case class Edition(
 object Edition:
   val ReceiptFile: String = "receipt.json"
 
-  /** The publication page: a 480x640px box of 16px monospace (50 columns, 33 lines) under the fixed
-    * metric measurer, so every break is checkable by counting characters, identical on any platform
-    * (ADR 0002 D3), and the fixture spans several pages.
-    */
-  val pageWidthPx: Int = 480
-  val pageHeightPx: Int = 640
-  val fontFamily: String = "monospace"
-  val fontSizePx: Int = 16
-
-  /** The view compilers are storymodel4s's; the version recorded is its pinned revision. */
-  val compilerVersion: String = s"storymodel4s@${Pins.storymodel4sRevision}"
-
-  private val atlasLevels =
-    Vector(NarrativeLevel.Story, NarrativeLevel.Episode, NarrativeLevel.Scene)
-  private val codexLenses = Vector(CodexLens.Reading, CodexLens.Overview)
+  /** Every constant of the edition lives in [[EditionSpec]], shared with the browser shell. */
+  private val atlasLevels = EditionSpec.levels
+  private val codexLenses = EditionSpec.lenses
 
   /** The slice-1 acceptance artifact: the researcher-reviewed War of the Ghosts fixture. */
   def warOfTheGhosts: Either[String, Edition] =
@@ -93,10 +85,14 @@ object Edition:
   def build(model: StoryModel[ModelStatus.Validated], fixture: String): Either[String, Edition] =
     for
       state <- CommonViewState
-        .of(relationLayers = Set(RelationLayer.Causal, RelationLayer.Reference))
+        .of(relationLayers = EditionSpec.relationLayers)
         .left
         .map(_.message)
-      threads <- PositiveInt.from(3).map(ThreadPolicy.All.apply).left.map(_.message)
+      threads <- PositiveInt
+        .from(EditionSpec.threadMax)
+        .map(ThreadPolicy.All.apply)
+        .left
+        .map(_.message)
       atlas <- atlasLevels.flatTraverse(level => atlasFiles(model, state, level, threads))
       codex <- codexLenses.flatTraverse(lens => codexFiles(model, state, lens))
     yield Edition(
@@ -117,16 +113,20 @@ object Edition:
     val spec = AtlasSpec(ZoomLevel(level, SurfaceDetail.Hidden), threads)
     val config = AtlasCompiler.configurationChecksum(state, spec)
     val stem = s"atlas-${level.toString.toLowerCase}"
-    val detail = s"zoom ${level}/${SurfaceDetail.Hidden}"
+    val detail = s"zoom ${level}/${SurfaceDetail.Hidden}, box ${EditionSpec.atlasBox}"
     for
       provenance <- ViewProvenance
-        .fixture(model.source.canonicalChecksum, compilerVersion, config)
+        .fixture(model.source.canonicalChecksum, EditionSpec.compilerVersion, config)
         .left
         .map(_.message)
       scene <- AtlasCompiler(provenance).compile(model, state, spec).left.map(_.message)
       lowered <- AtlasLowering.lower(scene, model.source.canonicalText.length).left.map(_.message)
       names = GraphicsNames.collect(lowered).length
-      options <- SvgOptions(1600, 420, Some(s"Narrative Atlas — $detail")).left.map(_.message)
+      options <- SvgOptions(
+        EditionSpec.atlasWidthPx,
+        EditionSpec.atlasHeightPx,
+        Some(s"Narrative Atlas — $detail")
+      ).left.map(_.message)
       svg <- SvgRenderer.render(lowered, options).left.map(_.message)
     yield Vector(
       EditionFile(s"$stem.svg", "atlas", detail, config, names, svg.value, None),
@@ -152,17 +152,20 @@ object Edition:
       spec <- CodexSpec.forLens(lens, ChannelBudget.All).left.map(_.message)
       config = CodexCompiler.configurationChecksum(state, spec)
       provenance <- ViewProvenance
-        .fixture(model.source.canonicalChecksum, compilerVersion, config)
+        .fixture(model.source.canonicalChecksum, EditionSpec.compilerVersion, config)
         .left
         .map(_.message)
       flow <- CodexCompiler(provenance).compile(model, state, spec).left.map(_.message)
       lowered <- CodexLowering.lower(flow, model.source.canonicalText.length).left.map(_.message)
       names = GraphicsNames.collect(lowered).length
-      options <- SvgOptions(1600, 640, Some(s"Narrative Codex overlay — $detail")).left
-        .map(_.message)
+      options <- SvgOptions(
+        EditionSpec.codexOverlayWidthPx,
+        EditionSpec.codexOverlayHeightPx,
+        Some(s"Narrative Codex overlay — $detail")
+      ).left.map(_.message)
       svg <- SvgRenderer.render(lowered, options).left.map(_.message)
-      page <- PageSpec.of(pageWidthPx, pageHeightPx).left.map(_.message)
-      style <- TextStyle.of(fontFamily, fontSizePx).left.map(_.message)
+      page <- PageSpec.of(EditionSpec.pageWidthPx, EditionSpec.pageHeightPx).left.map(_.message)
+      style <- TextStyle.of(EditionSpec.fontFamily, EditionSpec.fontSizePx).left.map(_.message)
       placed <- Paginator.layout(flow, page, style, MonospaceMeasurer.instance).left.map(_.message)
       html <- CodexHtml.render(placed, detail).left.map(_.message)
       pieces = placed.annotationFragments.length

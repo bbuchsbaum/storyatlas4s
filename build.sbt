@@ -3,6 +3,10 @@ import org.typelevel.sbt.gha.JavaSpec
 val Scala3 = "3.7.4"
 val munitV = "1.3.4"
 val munitCheckV = "1.3.0"
+// Pinned to the workspace's Laminar precedent (cardsaplenty): Laminar 17.2.1 / scalajs-dom 2.8.1 on
+// Scala.js 1.22 (sbt-scalajs in project/plugins.sbt).
+val laminarV = "17.2.1"
+val scalaJsDomV = "2.8.1"
 
 ThisBuild / tlBaseVersion := "0.1"
 ThisBuild / organization := "io.github.canardlapin"
@@ -71,12 +75,14 @@ lazy val commonSettings = Seq(
 //   intaglio core/svg ──┴─────────┴─▶ intaglio (JVM, JS)  pure lowering: view artifacts and
 //                                 │                        paginated codices → intaglio scenes
 //   storymodel4s fixtures ────────┴─▶ cli (JVM)   `edition`: WOG fixture → SVG + HTML + twins + receipt
+//                                 └─▶ app (JS)    Laminar shell: the same compilers, paginator, and
+//                                                 lowerings run in the browser over the WOG fixture
 //
 // Nothing here compiles a story or infers a claim: every artifact is compiled in storymodel4s.
 // `layout` is the one place that lays out a page, and it does so as a pure function of the flow
 // and measured text metrics (ADR 0002 D3/D13), receipted.
 
-lazy val root = tlCrossRootProject.aggregate(intaglio, layout, cli)
+lazy val root = tlCrossRootProject.aggregate(intaglio, layout, edition, cli, app)
 
 /** Pure lowering of `NarrativeScene`, `CodexFlow`, and `PaginatedCodex` to Intaglio scenes;
   * `GraphicsName` is the mark, annotation, or fragment identity (ADR 0002 §6).
@@ -115,6 +121,43 @@ lazy val layout = crossProject(JVMPlatform, JSPlatform)
   .settings(name := "storyatlas4s-layout")
   .jvmConfigure(_.dependsOn(storymodel4sViewJVM, storymodel4sFixturesJVM % Test))
   .jsConfigure(_.dependsOn(storymodel4sViewJS, storymodel4sFixturesJS % Test))
+  // The DOM measurer measures on a 2-D canvas context; the seam itself stays platform-free.
+  .jsSettings(libraryDependencies += "org.scala-js" %%% "scalajs-dom" % scalaJsDomV)
+
+/** `Pins.scala` in package `pkg`: the sibling revisions this build compiles against, so a receipt
+  * can name them without reading the build.
+  */
+def pinsGenerator(pkg: String) = Def.task {
+  val file =
+    (Compile / sourceManaged).value / "storyatlas4s" / pkg.stripPrefix(
+      "storyatlas4s."
+    ) / "Pins.scala"
+  IO.write(
+    file,
+    s"""package $pkg
+       |
+       |/** The immutable sibling revisions this build compiles against (generated from build.sbt). */
+       |object Pins:
+       |  val storymodel4sRevision: String = "$storymodel4sRevision"
+       |  val intaglioRevision: String = "$intaglioRevision"
+       |""".stripMargin
+  )
+  Seq(file)
+}
+
+/** The edition's fixed configuration (`EditionSpec`: page box, font, relation layers, thread
+  * budget, lenses, zoom levels, SVG boxes) and the sibling pins (`Pins`), shared by `cli` (JVM) and
+  * `app` (JS) so the static edition and the browser compile the same artifacts.
+  */
+lazy val edition = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("edition"))
+  .dependsOn(layout)
+  .settings(commonSettings)
+  .settings(
+    name := "storyatlas4s-edition",
+    Compile / sourceGenerators += pinsGenerator("storyatlas4s.edition").taskValue
+  )
 
 /** JVM command line: `edition --out <dir>` writes the War of the Ghosts static edition. */
 lazy val cli = project
@@ -124,29 +167,54 @@ lazy val cli = project
     name := "storyatlas4s-cli",
     run / fork := true,
     // Relative `--out` paths resolve against the repository root, not `cli/`.
-    run / baseDirectory := (ThisBuild / baseDirectory).value,
-    Compile / sourceGenerators += Def.task {
-      val file = (Compile / sourceManaged).value / "storyatlas4s" / "cli" / "Pins.scala"
-      IO.write(
-        file,
-        s"""package storyatlas4s.cli
-           |
-           |/** The immutable sibling revisions this build compiles against (generated from build.sbt). */
-           |object Pins:
-           |  val storymodel4sRevision: String = "$storymodel4sRevision"
-           |  val intaglioRevision: String = "$intaglioRevision"
-           |""".stripMargin
-      )
-      Seq(file)
-    }.taskValue
+    run / baseDirectory := (ThisBuild / baseDirectory).value
   )
   // `test->test` lends the layout generators to the V-T2 law over generated flows.
   .dependsOn(
+    edition.jvm,
     intaglio.jvm,
     layout.jvm % "compile->compile;test->test",
     storymodel4sFixturesJVM,
     intaglioSvgJVM
   )
+
+/** Copies the linked app (`app.js`) and the static shell (`app/index.html`) into the edition
+  * directory, next to the files `cli/run edition --out target/edition` wrote.
+  */
+lazy val editionBundle =
+  taskKey[Seq[File]]("Copy the fast-linked app and index.html into target/edition")
+
+/** Browser shell (Laminar): loads the War of the Ghosts fixture from storymodel4s `fixtures` (the
+  * same object `cli/Edition` compiles — compiled into the JS bundle at link time, never copied
+  * here), compiles Codex and Atlas in the browser, paginates under the live `DomMeasurer`, and
+  * draws the Intaglio overlays. Plain script output (`NoModule`), so the edition's `index.html`
+  * opens from `file://` as well as from a static server. Linking it after a full-repo compile and
+  * test run exceeds the sbt launcher's default 1g heap, hence `.jvmopts` (4g, G1) at the root.
+  */
+lazy val app = project
+  .in(file("app"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "storyatlas4s-app",
+    scalaJSUseMainModuleInitializer := true,
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
+      "com.raquo" %%% "laminar" % laminarV
+    ),
+    editionBundle := {
+      val report = (Compile / fastLinkJS).value.data
+      val linked = (Compile / fastLinkJS / scalaJSLinkerOutputDirectory).value
+      val edition = (ThisBuild / baseDirectory).value / "target" / "edition"
+      val module = report.publicModules.headOption
+        .getOrElse(sys.error("fastLinkJS produced no public module"))
+      IO.createDirectory(edition)
+      IO.copyFile(linked / module.jsFileName, edition / "app.js")
+      IO.copyFile(baseDirectory.value / "index.html", edition / "index.html")
+      Seq(edition / "app.js", edition / "index.html")
+    }
+  )
+  .dependsOn(edition.js, intaglio.js, layout.js, storymodel4sFixturesJS, intaglioSvgJS)
 
 // Command aliases. storymodel4s and intaglio, loaded here as external builds, register their own
 // `compileAll`/`testAll` aliases in the same global `onLoad` chain and the last registration wins,
@@ -154,8 +222,9 @@ lazy val cli = project
 // (re)registers this build's aliases after every external build has run its hooks.
 lazy val storyatlas4sAliases: Seq[(String, String)] = Seq(
   "compileAll" ->
-    ";layoutJVM/compile;layoutJS/compile;intaglioJVM/compile;intaglioJS/compile;cli/compile",
-  "testAll" -> ";layoutJVM/test;layoutJS/test;intaglioJVM/test;intaglioJS/test;cli/test",
+    ";layoutJVM/compile;layoutJS/compile;intaglioJVM/compile;intaglioJS/compile;editionJVM/compile;editionJS/compile;cli/compile;app/compile",
+  "testAll" ->
+    ";layoutJVM/test;layoutJS/test;intaglioJVM/test;intaglioJS/test;editionJVM/test;editionJS/test;cli/test;app/test",
   "checkAll" -> ";scalafmtCheckAll;scalafmtSbtCheck;compileAll;testAll"
 )
 lazy val registerAliases = Command.command("storyatlas4sAliases") { state =>
