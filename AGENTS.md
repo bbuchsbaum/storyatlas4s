@@ -26,6 +26,17 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   Codex overlays, paginated `codex-<lens>.html` documents (`CodexHtml`, a pure
   `PaginatedCodex → String`; DOM text rail + inline SVG overlay per page),
   textual twins, and `receipt.json` with the `LayoutReceipt` folded in.
+- `app`: Scala.js only (`ModuleKind.NoModule`, Laminar 17.2.1, scalajs-dom
+  2.8.1), package `storyatlas4s.app`. `AppCompiler` is the pure step from a
+  `ViewChoice` (lens, zoom level, horizon, selection, measurer) to everything
+  drawn — the same compiler, paginator, and lowering calls `cli/Edition` makes,
+  under one `CommonViewState`; `AppView` binds it to the DOM with one
+  `Var[ViewChoice]`. `EditionSpec` mirrors `cli/Edition`'s constants (page,
+  font, relation layers, thread budget) because `cli` is JVM-only; keep them
+  in step. The model is `WarOfTheGhostsModel.model` from storymodel4s
+  `fixtures`, linked into `app.js`; never a copy. `app/index.html` is the
+  static shell; `app/editionBundle` copies it and `app.js` into
+  `target/edition`; `app/smoke/smoke.cjs` is the Playwright browser smoke.
 - Sibling sources are immutable git-SHA `ProjectRef` pins declared in
   `build.sbt` (`storymodel4sRevision`, `intaglioRevision`). No `../sibling`
   composite builds, no `-SNAPSHOT` dependencies.
@@ -48,9 +59,13 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
 
   Environment equivalents: `STORYATLAS4S_STORYMODEL4S_BUILD`,
   `STORYATLAS4S_INTAGLIO_BUILD`, `STORYMODEL4S_GRAKERN_BUILD`.
-- Run `sbt <overrides> compileAll testAll scalafmtCheckAll` before declaring
-  work complete. Platform-independent tests live in `intaglio/src/test` and
-  `layout/src/test` and must pass on both JVM and Scala.js.
+- Run `sbt <overrides> compileAll testAll scalafmtCheckAll app/fastLinkJS`
+  before declaring work complete. Platform-independent tests live in
+  `intaglio/src/test` and `layout/src/test` and must pass on both JVM and
+  Scala.js; `app/test` and `layout/.js` tests run under Node (no DOM). For a
+  change that touches the shell, also run the browser smoke:
+  `sbt <overrides> "cli/run edition --out target/edition" app/editionBundle`
+  then `node app/smoke/smoke.cjs target/edition/index.html`.
 - Keep `-Wunused:all -Wvalue-discard` warning-clean.
 - Do not run sbt inside the sibling checkouts you point the overrides at while
   other work is gating there; point the overrides at an isolated clone instead.
@@ -72,6 +87,10 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   through `SceneNavigation`/`NavigationIndex`, never through renderer names.
 - Intaglio never sees canonical text, addresses, claims, or projection kinds;
   the Atlas lowering takes the discourse length as an integer, nothing more.
+- The shell infers nothing and never encodes meaning in colour alone: kind and
+  lane are the overlay row and the legend; selection is an outline, a dashed
+  stroke, `aria-pressed`, and the panel's placement text; the horizon and every
+  checksum are printed. No external resource (font, stylesheet, CDN, fetch).
 - Determinism (V-D1/V-D2): same input, byte-identical output on JVM and JS.
 - Prefer precise ADTs, smart constructors, and `Either` over exceptions.
 - WOG story text stays data in storymodel4s; never copy it here.
