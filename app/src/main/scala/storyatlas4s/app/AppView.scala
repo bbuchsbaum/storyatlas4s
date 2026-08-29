@@ -175,6 +175,8 @@ object AppView:
 
   private def codexSection(c: Compiled, select: (Address, Boolean) => Unit): HtmlElement =
     val receipt = c.placed.receipt
+    val fragmentIds = c.placed.annotationFragments.map(_.id.value).sorted
+    val resolvedFragmentIds = c.fragmentTargets.keys.toVector.sorted
     val lineHeightPx = receipt.lineHeight.toDouble / receipt.unitsPerPixel
     val font = s"${receipt.style.sizePx}px/${lineHeightPx}px ${receipt.style.cssFamily}"
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
@@ -183,6 +185,8 @@ object AppView:
       cls("codex"),
       aria.label("Narrative Codex"),
       dataAttr("fragments") := c.pieces.toString,
+      dataAttr("fragment-ids") := fragmentIds.mkString(" "),
+      dataAttr("resolved-fragment-ids") := resolvedFragmentIds.mkString(" "),
       dataAttr("lines") := c.placed.lines.length.toString,
       h2(s"Narrative Codex — lens ${c.choice.lens}"),
       p(
@@ -242,6 +246,8 @@ object AppView:
     )
 
   private def atlasSection(c: Compiled, select: (Address, Boolean) => Unit): HtmlElement =
+    val markIds = c.scene.marks.map(_.identity.mark.value).sorted
+    val resolvedMarkIds = c.scene.navigation.addressOf.keys.map(_.value).toVector.sorted
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
       SvgDom
         .nameAt(target)
@@ -252,6 +258,8 @@ object AppView:
       cls("atlas"),
       aria.label("Narrative Atlas"),
       dataAttr("marks") := c.scene.marks.length.toString,
+      dataAttr("mark-ids") := markIds.mkString(" "),
+      dataAttr("resolved-mark-ids") := resolvedMarkIds.mkString(" "),
       dataAttr("names") := c.atlasNames.toString,
       h2(s"Narrative Atlas — zoom ${c.scene.zoom.narrative}/${c.scene.zoom.surface}"),
       p(
@@ -309,8 +317,14 @@ object AppView:
                 li(
                   code(address.render),
                   ul(
-                    li("Codex: ", codex.fold("unresolved")(_.render)),
-                    li("Atlas: ", atlas.fold("unresolved")(renderPlacement))
+                    li(
+                      "Codex: ",
+                      codex.fold("unresolved")(placement => renderPlacement(placement, _.value))
+                    ),
+                    li(
+                      "Atlas: ",
+                      atlas.fold("unresolved")(placement => renderPlacement(placement, _.value))
+                    )
                   )
                 )
               }
@@ -338,8 +352,11 @@ object AppView:
       )
     )
 
-  private def renderPlacement(placement: SelectionPlacement[MarkId]): String = placement match
+  private def renderPlacement[Mark](
+      placement: SelectionPlacement[Mark],
+      renderMark: Mark => String
+  ): String = placement match
     case SelectionPlacement.OnMark(marks) =>
-      s"on-mark (${marks.toVector.map(_.value).mkString(", ")})"
+      s"on-mark (${marks.toVector.map(renderMark).mkString(", ")})"
     case SelectionPlacement.ViaAncestor(ancestor) => s"via-ancestor (${ancestor.render})"
     case SelectionPlacement.OffProjection         => "off-projection"

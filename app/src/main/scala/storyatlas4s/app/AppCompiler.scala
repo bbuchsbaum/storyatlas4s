@@ -17,18 +17,6 @@ final case class CodexLine(id: String, text: String, selected: Boolean)
 /** One page of the Codex: the rail lines and the page's overlay SVG (V-I2 names inside). */
 final case class CodexPage(index: Int, lines: Vector[CodexLine], overlay: String)
 
-/** Where a selected address is represented in the Codex under the current lens and horizon: the
-  * Codex analogue of [[storymodel4s.view.SelectionPlacement]], shown as text (V-U5).
-  */
-enum CodexPlacement:
-  case OnAnnotation(annotations: Int, pieces: Int)
-  case NotAnnotated
-
-  def render: String = this match
-    case OnAnnotation(annotations, pieces) =>
-      s"on-annotation ($annotations annotation(s), $pieces placed piece(s))"
-    case NotAnnotated => "not-annotated (no annotation under this lens and horizon)"
-
 /** Everything the shell draws for one [[ViewChoice]]: both artifacts compiled in storymodel4s under
   * one `CommonViewState`, the paginated Codex, the lowered overlays and Atlas, the selection's
   * placements in both, and the receipts. Nothing here is inferred: every field is read off a
@@ -47,7 +35,7 @@ final case class Compiled(
     selectedMarks: Set[String],
     selectedFragments: Set[String],
     fragmentTargets: Map[String, Address],
-    codexPlacements: Vector[(Address, CodexPlacement)],
+    codexPlacements: Vector[(Address, SelectionPlacement[AnnotationId])],
     atlasPlacements: Vector[(Address, SelectionPlacement[MarkId])],
     receipts: Vector[(String, String)]
 ):
@@ -111,6 +99,19 @@ object AppCompiler:
         .left
         .map(_.message)
       scene <- AtlasCompiler(atlasProvenance).compile(model, state, atlasSpec).left.map(_.message)
+      orderedSelection = choice.selection.toVector.sortBy(_.render)
+      codexPlacements <- orderedSelection.traverse(address =>
+        flow.selectionPlacements
+          .get(address)
+          .toRight(s"Codex compiler omitted placement for ${address.render}")
+          .map(address -> _)
+      )
+      atlasPlacements <- orderedSelection.traverse(address =>
+        scene.selectionPlacements
+          .get(address)
+          .toRight(s"Atlas compiler omitted placement for ${address.render}")
+          .map(address -> _)
+      )
       lowered <- AtlasLowering.lower(scene, text.length).left.map(_.message)
       atlasOptions <- SvgOptions(
         EditionSpec.atlasWidthPx,
@@ -150,16 +151,6 @@ object AppCompiler:
       val pages = placed.pages.zip(lines).zip(overlays).map { case ((p, ls), overlay) =>
         CodexPage(p.index, ls, overlay)
       }
-      val ordered = choice.selection.toVector.sortBy(_.render)
-      val codexPlacements = ordered.map { address =>
-        val annotations = flow.navigation.annotationsFor(address)
-        val pieces = placed.annotationFragments.count(f => annotations.contains(f.annotation))
-        address -> (
-          if annotations.isEmpty then CodexPlacement.NotAnnotated
-          else CodexPlacement.OnAnnotation(annotations.length, pieces)
-        )
-      }
-      val atlasPlacements = ordered.flatMap(a => scene.selectionPlacements.get(a).map(a -> _))
       Compiled(
         choice,
         state,

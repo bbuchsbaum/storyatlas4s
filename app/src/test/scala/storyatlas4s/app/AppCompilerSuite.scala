@@ -3,7 +3,9 @@ package storyatlas4s.app
 import munit.FunSuite
 import storyatlas4s.edition.EditionSpec
 import storyatlas4s.layout.MonospaceMeasurer
+import storymodel4s.core.Addressable
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel as Wog
+import storymodel4s.story.StoryRef
 import storymodel4s.view.*
 
 /** The state → scene wiring under the publication measurer (no DOM under Node): what the shell
@@ -32,6 +34,14 @@ class AppCompilerSuite extends FunSuite:
     assert(c.pages.length > 1)
     c.pages.foreach(p => assert(p.overlay.startsWith("<svg "), s"page ${p.index}"))
     assertEquals(c.atlasNames, c.scene.marks.length)
+    assertEquals(
+      c.scene.marks.map(_.identity.mark).toSet,
+      c.scene.navigation.addressOf.keySet
+    )
+    assertEquals(
+      c.placed.annotationFragments.map(_.id.value).toSet,
+      c.fragmentTargets.keySet
+    )
     val receipts = c.receipts.toMap
     assertEquals(receipts("sourceChecksum"), model.source.canonicalChecksum.hex)
     assertEquals(receipts("measurerInUse"), MonospaceMeasurer.instance.name)
@@ -80,9 +90,7 @@ class AppCompilerSuite extends FunSuite:
     assertEquals(reading.pages.map(_.lines.map(_.text)), overview.pages.map(_.lines.map(_.text)))
     assertEquals(reading.receipts.toMap.apply("codexChannels"), "none")
 
-  test(
-    "selecting a landmark's address places it on-mark in the Atlas and on-annotation in the Codex"
-  ):
+  test("selecting a landmark's address places it on-mark in both compiled artifacts"):
     val base = compile(omniscient)
     val landmark = base.scene.marks
       .collectFirst { case m: VisualPrimitive.Landmark => m }
@@ -97,11 +105,10 @@ class AppCompilerSuite extends FunSuite:
         assert(marks.toVector.contains(landmark.identity.mark))
       case other => fail(s"expected one on-mark placement, got $other")
     c.codexPlacements match
-      case Vector((a, CodexPlacement.OnAnnotation(annotations, pieces))) =>
+      case Vector((a, SelectionPlacement.OnMark(annotations))) =>
         assertEquals(a, address)
-        assert(annotations >= 1)
-        assertEquals(pieces, c.selectedFragments.size)
-      case other => fail(s"expected one on-annotation placement, got $other")
+        assertEquals(annotations.toVector, c.flow.navigation.annotationsFor(address))
+      case other => fail(s"expected one Codex on-mark placement, got $other")
     assert(c.selectedFragments.nonEmpty)
     val selectedLines = c.pages.flatMap(_.lines).filter(_.selected)
     assert(selectedLines.nonEmpty)
@@ -113,10 +120,47 @@ class AppCompilerSuite extends FunSuite:
     assertEquals(selectedLines.map(_.id).toSet, linesWithSelectedPiece)
     // Every piece resolves to an address through the navigation index, never a renderer name.
     assertEquals(c.fragmentTargets.keySet, c.placed.annotationFragments.map(_.id.value).toSet)
-    // The same address under the Reading lens is not annotated, and the Codex says so as text.
+    // The same address under the Reading lens has no honest visual anchor.
     val reading = compile(omniscient.copy(lens = CodexLens.Reading, selection = Set(address)))
-    assertEquals(reading.codexPlacements, Vector(address -> CodexPlacement.NotAnnotated))
-    assert(reading.codexPlacements.head._2.render.startsWith("not-annotated"))
+    assertEquals(
+      reading.codexPlacements,
+      Vector(address -> SelectionPlacement.OffProjection)
+    )
+
+  test("V-L2: Story zoom uses a visible ancestor but will not climb from hidden evidence"):
+    val address = Addressable[StoryRef]
+      .address(StoryRef.Situation(Wog.S.battle))
+    val story = compile(
+      omniscient.copy(level = NarrativeLevel.Story, selection = Set(address))
+    )
+    story.atlasPlacements match
+      case Vector((a, SelectionPlacement.ViaAncestor(ancestor))) =>
+        assertEquals(a, address)
+        assertNotEquals(ancestor, address)
+        assert(story.scene.navigation.marksFor(ancestor).nonEmpty)
+      case other => fail(s"expected one Atlas via-ancestor placement, got $other")
+
+    val hiddenAt = model
+      .supporting(StoryRef.Situation(Wog.S.battle))
+      .getOrElse(fail("battle has no source support"))
+      .minSpan
+      .start
+    val hidden = compile(
+      omniscient.copy(
+        level = NarrativeLevel.Story,
+        horizon = EpistemicHorizon.ReaderAt(hiddenAt),
+        selection = Set(address)
+      )
+    )
+    assert(hidden.scene.marks.nonEmpty, "the horizon retains visible non-selected marks")
+    assertEquals(
+      hidden.atlasPlacements,
+      Vector(address -> SelectionPlacement.OffProjection)
+    )
+    assertEquals(
+      hidden.codexPlacements,
+      Vector(address -> SelectionPlacement.OffProjection)
+    )
 
   test("a selected address past the horizon is off-projection, shown as text"):
     val base = compile(omniscient)
@@ -128,7 +172,7 @@ class AppCompilerSuite extends FunSuite:
       omniscient.copy(horizon = EpistemicHorizon.ReaderAt(1), selection = Set(last.address))
     )
     assertEquals(c.atlasPlacements, Vector(last.address -> SelectionPlacement.OffProjection))
-    assertEquals(c.codexPlacements, Vector(last.address -> CodexPlacement.NotAnnotated))
+    assertEquals(c.codexPlacements, Vector(last.address -> SelectionPlacement.OffProjection))
     assert(c.selectedMarks.isEmpty)
 
   test("the compiled view is a pure function of the choice (V-D1)"):
