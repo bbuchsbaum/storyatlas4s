@@ -21,6 +21,11 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   twin, and `LayoutReceipt`. Platform sources: `layout/.jvm` (optional
   `AwtMeasurer`), `layout/.js` (`DomMeasurer` stub until the app bead). No
   doubles and no JVM-only API in the shared sources.
+- `edition`: `crossProject(JVM, JS)`, `CrossType.Pure`, package
+  `storyatlas4s.edition`, depends on `layout`. `EditionSpec` (page box, font,
+  relation layers, thread budget, lenses, zoom levels, SVG boxes) and the
+  generated `Pins`; the one place an edition constant lives, consumed by both
+  `cli` and `app`.
 - `cli`: JVM only, package `storyatlas4s.cli`. `edition --out <dir>` compiles
   the War of the Ghosts fixture (from storymodel4s `fixtures`) to atlas SVGs,
   Codex overlays, paginated `codex-<lens>.html` documents (`CodexHtml`, a pure
@@ -31,9 +36,8 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   `ViewChoice` (lens, zoom level, horizon, selection, measurer) to everything
   drawn — the same compiler, paginator, and lowering calls `cli/Edition` makes,
   under one `CommonViewState`; `AppView` binds it to the DOM with one
-  `Var[ViewChoice]`. `EditionSpec` mirrors `cli/Edition`'s constants (page,
-  font, relation layers, thread budget) because `cli` is JVM-only; keep them
-  in step. The model is `WarOfTheGhostsModel.model` from storymodel4s
+  `Var[ViewChoice]`. Every edition constant comes from `edition/EditionSpec`,
+  shared with `cli`. The model is `WarOfTheGhostsModel.model` from storymodel4s
   `fixtures`, linked into `app.js`; never a copy. `app/index.html` is the
   static shell; `app/editionBundle` copies it and `app.js` into
   `target/edition`; `app/smoke/smoke.cjs` is the Playwright browser smoke.

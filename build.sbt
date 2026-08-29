@@ -82,7 +82,7 @@ lazy val commonSettings = Seq(
 // `layout` is the one place that lays out a page, and it does so as a pure function of the flow
 // and measured text metrics (ADR 0002 D3/D13), receipted.
 
-lazy val root = tlCrossRootProject.aggregate(intaglio, layout, cli, app)
+lazy val root = tlCrossRootProject.aggregate(intaglio, layout, edition, cli, app)
 
 /** Pure lowering of `NarrativeScene`, `CodexFlow`, and `PaginatedCodex` to Intaglio scenes;
   * `GraphicsName` is the mark, annotation, or fragment identity (ADR 0002 §6).
@@ -145,6 +145,20 @@ def pinsGenerator(pkg: String) = Def.task {
   Seq(file)
 }
 
+/** The edition's fixed configuration (`EditionSpec`: page box, font, relation layers, thread
+  * budget, lenses, zoom levels, SVG boxes) and the sibling pins (`Pins`), shared by `cli` (JVM) and
+  * `app` (JS) so the static edition and the browser compile the same artifacts.
+  */
+lazy val edition = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("edition"))
+  .dependsOn(layout)
+  .settings(commonSettings)
+  .settings(
+    name := "storyatlas4s-edition",
+    Compile / sourceGenerators += pinsGenerator("storyatlas4s.edition").taskValue
+  )
+
 /** JVM command line: `edition --out <dir>` writes the War of the Ghosts static edition. */
 lazy val cli = project
   .in(file("cli"))
@@ -153,11 +167,11 @@ lazy val cli = project
     name := "storyatlas4s-cli",
     run / fork := true,
     // Relative `--out` paths resolve against the repository root, not `cli/`.
-    run / baseDirectory := (ThisBuild / baseDirectory).value,
-    Compile / sourceGenerators += pinsGenerator("storyatlas4s.cli").taskValue
+    run / baseDirectory := (ThisBuild / baseDirectory).value
   )
   // `test->test` lends the layout generators to the V-T2 law over generated flows.
   .dependsOn(
+    edition.jvm,
     intaglio.jvm,
     layout.jvm % "compile->compile;test->test",
     storymodel4sFixturesJVM,
@@ -174,7 +188,8 @@ lazy val editionBundle =
   * same object `cli/Edition` compiles — compiled into the JS bundle at link time, never copied
   * here), compiles Codex and Atlas in the browser, paginates under the live `DomMeasurer`, and
   * draws the Intaglio overlays. Plain script output (`NoModule`), so the edition's `index.html`
-  * opens from `file://` as well as from a static server.
+  * opens from `file://` as well as from a static server. Linking it after a full-repo compile and
+  * test run exceeds the sbt launcher's default 1g heap, hence `.jvmopts` (4g, G1) at the root.
   */
 lazy val app = project
   .in(file("app"))
@@ -187,7 +202,6 @@ lazy val app = project
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
       "com.raquo" %%% "laminar" % laminarV
     ),
-    Compile / sourceGenerators += pinsGenerator("storyatlas4s.app").taskValue,
     editionBundle := {
       val report = (Compile / fastLinkJS).value.data
       val linked = (Compile / fastLinkJS / scalaJSLinkerOutputDirectory).value
@@ -200,7 +214,7 @@ lazy val app = project
       Seq(edition / "app.js", edition / "index.html")
     }
   )
-  .dependsOn(intaglio.js, layout.js, storymodel4sFixturesJS, intaglioSvgJS)
+  .dependsOn(edition.js, intaglio.js, layout.js, storymodel4sFixturesJS, intaglioSvgJS)
 
 // Command aliases. storymodel4s and intaglio, loaded here as external builds, register their own
 // `compileAll`/`testAll` aliases in the same global `onLoad` chain and the last registration wins,
@@ -208,9 +222,9 @@ lazy val app = project
 // (re)registers this build's aliases after every external build has run its hooks.
 lazy val storyatlas4sAliases: Seq[(String, String)] = Seq(
   "compileAll" ->
-    ";layoutJVM/compile;layoutJS/compile;intaglioJVM/compile;intaglioJS/compile;cli/compile;app/compile",
+    ";layoutJVM/compile;layoutJS/compile;intaglioJVM/compile;intaglioJS/compile;editionJVM/compile;editionJS/compile;cli/compile;app/compile",
   "testAll" ->
-    ";layoutJVM/test;layoutJS/test;intaglioJVM/test;intaglioJS/test;cli/test;app/test",
+    ";layoutJVM/test;layoutJS/test;intaglioJVM/test;intaglioJS/test;editionJVM/test;editionJS/test;cli/test;app/test",
   "checkAll" -> ";scalafmtCheckAll;scalafmtSbtCheck;compileAll;testAll"
 )
 lazy val registerAliases = Command.command("storyatlas4sAliases") { state =>

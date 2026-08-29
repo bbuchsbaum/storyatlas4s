@@ -120,14 +120,14 @@ object DomMeasurer:
         case Some(px) => Right(px)
         case None     =>
           try
+            // A font string the canvas rejects leaves the previous font in place, so the previous
+            // font is set to a sentinel first: an echo equal to the sentinel is a refusal, and the
+            // echo must carry the requested size (the canvas normalises the family spelling).
+            context.font = Sentinel
             context.font = font
-            // A font string the canvas rejects leaves the previous font in place; the size is the
-            // one part of the request every accepted string echoes back, so its absence is refusal.
-            if !context.font.contains(s"${style.sizePx}px") then
-              Left(
-                LayoutError
-                  .Measurement(name, s"canvas rejected font '$font' (got '${context.font}')")
-              )
+            val echoed = context.font
+            if echoed == Sentinel || !echoed.contains(s"${style.sizePx}px") then
+              Left(LayoutError.Measurement(name, s"canvas rejected font '$font' (got '$echoed')"))
             else
               val px = context.measureText(text).width
               cache.update((font, text), px)
@@ -138,16 +138,9 @@ object DomMeasurer:
                 LayoutError.Measurement(name, Option(e.getMessage).getOrElse(e.getClass.getName))
               )
 
-  /** The canvas font shorthand for a style: a generic keyword or an identifier is written bare, any
-    * other family is a quoted string with `\` and `"` escaped, so one `TextStyle` family is always
-    * one family here too (never a fallback list).
-    */
+  /** A font no request can equal: the size is never one a `TextStyle` carries at that spelling. */
+  private val Sentinel: String = "1px sans-serif"
+
+  /** The canvas font shorthand for a style: size and the style's one CSS family. */
   private[layout] def cssFont(style: TextStyle): String =
-    val family = style.family
-    val bare = family.forall(c =>
-      (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-'
-    ) && !family.head.isDigit
-    val rendered =
-      if bare then family
-      else "\"" + family.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
-    s"${style.sizePx}px $rendered"
+    s"${style.sizePx}px ${style.cssFamily}"

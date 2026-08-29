@@ -2,6 +2,7 @@ package storyatlas4s.app
 
 import com.raquo.laminar.api.L.*
 import org.scalajs.dom
+import storyatlas4s.edition.EditionSpec
 import storyatlas4s.layout.{LayoutError, Measurer, MonospaceMeasurer}
 import storymodel4s.core.Address
 import storymodel4s.story.{ModelStatus, StoryModel}
@@ -21,16 +22,21 @@ object AppView:
       domMeasurer: Either[LayoutError, Measurer]
   ): HtmlElement =
     val text = model.source.canonicalText
+    // The choice never names a measurer that does not exist: when the DOM measurer is unavailable
+    // the initial choice is the table and the Dom option is not offered; if it were chosen anyway,
+    // compilation fails with the measurer's own reason instead of substituting another metric.
     val initial = domMeasurer.fold(
       _ => ViewChoice.initial.copy(measurer = MeasurerChoice.Monospace),
       _ => ViewChoice.initial
     )
     val choice = Var(initial)
-    def measurerFor(pick: MeasurerChoice): Measurer = pick match
-      case MeasurerChoice.Monospace => MonospaceMeasurer.instance
-      case MeasurerChoice.Dom       => domMeasurer.getOrElse(MonospaceMeasurer.instance)
+    def measurerFor(pick: MeasurerChoice): Either[String, Measurer] = pick match
+      case MeasurerChoice.Monospace => Right(MonospaceMeasurer.instance)
+      case MeasurerChoice.Dom       => domMeasurer.left.map(_.message)
     val compiled: Signal[Either[String, Compiled]] =
-      choice.signal.map(c => AppCompiler.compile(model, c, measurerFor(c.measurer)))
+      choice.signal.map(c =>
+        measurerFor(c.measurer).flatMap(measurer => AppCompiler.compile(model, c, measurer))
+      )
 
     /** Click or keyboard activation of a named element: resolve to an address, then select. */
     def select(address: Address, extend: Boolean): Unit =
@@ -55,7 +61,7 @@ object AppView:
             cls("workspace"),
             codexSection(c, select),
             atlasSection(c, select),
-            panel(c, choice)
+            panel(c, choice, domMeasurer)
           )
       }
     )
@@ -103,16 +109,9 @@ object AppView:
         "Measurer ",
         select(
           idAttr("measurer"),
-          MeasurerChoice.values.toVector.map { m =>
-            val note = (m, domMeasurer) match
-              case (MeasurerChoice.Dom, Left(error)) => s" — unavailable: ${error.message}"
-              case _                                 => ""
-            option(
-              value(m.toString),
-              disabled := (m == MeasurerChoice.Dom && domMeasurer.isLeft),
-              m.label + note
-            )
-          },
+          MeasurerChoice.values.toVector
+            .filter(m => m != MeasurerChoice.Dom || domMeasurer.isRight)
+            .map(m => option(value(m.toString), m.label)),
           controlled(
             value <-- choice.signal.map(_.measurer.toString),
             onChange.mapToValue --> { v =>
@@ -177,7 +176,7 @@ object AppView:
   private def codexSection(c: Compiled, select: (Address, Boolean) => Unit): HtmlElement =
     val receipt = c.placed.receipt
     val lineHeightPx = receipt.lineHeight.toDouble / receipt.unitsPerPixel
-    val font = s"${receipt.style.sizePx}px/${lineHeightPx}px ${cssFamily(receipt.style.family)}"
+    val font = s"${receipt.style.sizePx}px/${lineHeightPx}px ${receipt.style.cssFamily}"
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
       SvgDom.nameAt(target).flatMap(c.fragmentTargets.get).foreach(select(_, extend))
     sectionTag(
@@ -283,7 +282,11 @@ object AppView:
       )
     )
 
-  private def panel(c: Compiled, choice: Var[ViewChoice]): HtmlElement =
+  private def panel(
+      c: Compiled,
+      choice: Var[ViewChoice],
+      domMeasurer: Either[LayoutError, Measurer]
+  ): HtmlElement =
     asideTag(
       cls("panel"),
       aria.label("Selection, twins, receipts"),
@@ -325,7 +328,10 @@ object AppView:
         cls("receipts"),
         h2("Receipts"),
         dl(
-          c.receipts.flatMap { (key, value) =>
+          (c.receipts :+ ("domMeasurer" -> domMeasurer.fold(
+            error => s"unavailable: ${error.message}",
+            measurer => s"available: ${measurer.name}"
+          ))).flatMap { (key, value) =>
             Vector(dt(key), dd(dataAttr("key") := key, value))
           }
         )
@@ -337,12 +343,3 @@ object AppView:
       s"on-mark (${marks.toVector.map(_.value).mkString(", ")})"
     case SelectionPlacement.ViaAncestor(ancestor) => s"via-ancestor (${ancestor.render})"
     case SelectionPlacement.OffProjection         => "off-projection"
-
-  /** One CSS family name: a generic keyword or identifier bare, anything else quoted. The value is
-    * written through the CSSOM (`style` attribute of an element we own), never into a stylesheet.
-    */
-  private def cssFamily(family: String): String =
-    val bare = family.forall(c =>
-      (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-'
-    ) && !family.head.isDigit
-    if bare then family else "\"" + family.replace("\\", "\\\\").replace("\"", "\\\"") + "\""

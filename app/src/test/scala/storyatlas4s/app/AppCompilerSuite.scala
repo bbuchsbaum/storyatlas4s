@@ -1,6 +1,7 @@
 package storyatlas4s.app
 
 import munit.FunSuite
+import storyatlas4s.edition.EditionSpec
 import storyatlas4s.layout.MonospaceMeasurer
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel as Wog
 import storymodel4s.view.*

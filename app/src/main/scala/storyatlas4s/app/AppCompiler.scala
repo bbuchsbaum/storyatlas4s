@@ -2,6 +2,7 @@ package storyatlas4s.app
 
 import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
+import storyatlas4s.edition.{EditionSpec, Pins}
 import storyatlas4s.intaglio.{AtlasLowering, CodexLowering, GraphicsNames, PagedCodexLowering}
 import storyatlas4s.layout.{Measurer, PageSpec, PaginatedCodex, Paginator, TextStyle}
 import storymodel4s.core.*
@@ -207,6 +208,7 @@ object AppCompiler:
       "codexAnnotations" -> flow.annotations.length.toString,
       "codexAnnotationFragments" -> placed.annotationFragments.length.toString,
       "atlasZoom" -> s"${scene.zoom.narrative}/${scene.zoom.surface}",
+      "atlasBoxPx" -> EditionSpec.atlasBox,
       "atlasConfigChecksum" -> atlasConfig.hex,
       "atlasMarks" -> scene.marks.length.toString,
       "measurerInUse" -> measurer.name

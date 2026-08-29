@@ -16,8 +16,9 @@ Status: prototype, slice 1 (static War of the Ghosts edition). Unpublished.
 |---|---|---|---|
 | `storyatlas4s-layout` | JVM, JS | storymodel4s `view` (SHA pin) | `Paginator.paginate(flow, page, metrics)`: pure pagination of a `CodexFlow` into pages, lines, and annotation fragments with V-I2 ids; `Measurer` seam with metrics-as-data (`TextMetrics`), the fixed `MonospaceMeasurer` (publication), an optional AWT measurer (JVM), a DOM measurer stub (JS); `PaginatedCodex` twin and `LayoutReceipt` |
 | `storyatlas4s-intaglio` | JVM, JS | `layout`, storymodel4s `view` (SHA pin), intaglio `core`/`svg` (SHA pin) | pure lowering `NarrativeScene → intaglio.Scene`, `CodexFlow → intaglio.Scene`, and `PaginatedCodex → Vector[intaglio.Scene]` (one page overlay per page); `GraphicsName` = `MarkId` / `AnnotationId` / `FragmentId` |
-| `storyatlas4s-cli` | JVM | above + storymodel4s `fixtures` | `edition --out <dir>`: atlas SVGs at Story/Episode/Scene zoom, Codex overlays and paginated `codex-<lens>.html` pages for the Reading and Overview lenses, textual twins, `receipt.json` |
-| `storyatlas4s-app` | JS | `intaglio`, `layout`, storymodel4s `fixtures` (SHA pin), intaglio `svg`, Laminar 17.2.1, scalajs-dom 2.8.1 | the browser shell: the same compilers, paginator, and lowerings run in the browser over the War of the Ghosts fixture; DOM text rail + Intaglio SVG overlay per page, Reading/Overview lenses, Story/Episode/Scene zoom, the epistemic playhead (`ReaderAt` horizon), selection as `Set[Address]` shared by Codex and Atlas, textual twins and receipts as text; the live `DomMeasurer` |
+| `storyatlas4s-edition` | JVM, JS | `layout` | `EditionSpec`: the edition's fixed configuration (page box, font, relation layers, thread budget, lenses, zoom levels, SVG boxes) and `Pins` (sibling revisions, generated from `build.sbt`), shared by `cli` and `app` so both compile the same artifacts |
+| `storyatlas4s-cli` | JVM | `edition` + above + storymodel4s `fixtures` | `edition --out <dir>`: atlas SVGs at Story/Episode/Scene zoom, Codex overlays and paginated `codex-<lens>.html` pages for the Reading and Overview lenses, textual twins, `receipt.json` |
+| `storyatlas4s-app` | JS | `edition`, `intaglio`, `layout`, storymodel4s `fixtures` (SHA pin), intaglio `svg`, Laminar 17.2.1, scalajs-dom 2.8.1 | the browser shell: the same compilers, paginator, and lowerings run in the browser over the War of the Ghosts fixture; DOM text rail + Intaglio SVG overlay per page, Reading/Overview lenses, Story/Episode/Scene zoom, the epistemic playhead (`ReaderAt` horizon), selection as `Set[Address]` shared by Codex and Atlas, textual twins and receipts as text; the live `DomMeasurer` |
 
 ## Identity and the renderer protocol
 
@@ -103,8 +104,8 @@ researcher-reviewed *War of the Ghosts* fixture:
   U+0000 is refused rather than written with a substitution, since neither
   survives UTF-8 encoding and HTML parsing (V-T2 on disk). The `-pages.txt`
   twin is `PaginatedCodex.textualTwin`;
-- `receipt.json`: basis, source checksum, sibling pins, and per-file
-  configuration checksums, mark counts, SHA-256 of the written text, and — for
+- `receipt.json`: basis, source checksum, sibling pins, the Atlas, Codex
+  overlay, and page boxes (`EditionSpec`), and per-file configuration checksums, mark counts, SHA-256 of the written text, and — for
   the paginated files — the `LayoutReceipt` fields (V-D3).
 
 The edition is byte-identical across runs (the suite writes it twice and
@@ -165,7 +166,22 @@ to. The page then mounts a Laminar shell into `#app`:
 No inference happens in the shell: every element is read off a compiled
 `CodexFlow`, `PaginatedCodex`, or `NarrativeScene`. No external resource:
 no font, no stylesheet, no CDN; the only script is `app.js`
-(`ModuleKind.NoModule`, so `file://` works).
+(`ModuleKind.NoModule`, so `file://` works). The build needs the root
+`.jvmopts` (4g heap, G1): linking the app after a full-repo compile and test
+run exceeds the sbt launcher's 1g default.
+
+Follow-ups recorded from review (not implemented):
+
+- Two `asInstanceOf` sites remain in `layout/.js` and `app`: the canvas idiom
+  (`createElement("canvas")` returns `Element`; `getContext("2d")` returns
+  `js.Dynamic`) has no typed facade for the 2-D context, and `SvgDom.inject`
+  could use the typed `querySelectorAll` instead of casting each node.
+- Content security: ship `app.css` instead of the inline `<style>`, set the
+  rail's font and line height through the CSSOM instead of the `style`
+  attribute string, and add a `<meta http-equiv="Content-Security-Policy">`
+  so the page can declare that it loads nothing external.
+- Coalesce slider recompiles (`onChange` or a `requestAnimationFrame`
+  throttle): today every `input` event recompiles both artifacts.
 
 ### Browser smoke
 

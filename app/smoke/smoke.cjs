@@ -106,6 +106,8 @@ async function main() {
   check(String(lines) === (await receipt("layout.lines")), `rail has layout.lines spans (${lines})`);
   const measurer0 = await receipt("measurerInUse");
   check(measurer0.startsWith("dom-canvas/"), `the DOM canvas measurer is in use (${measurer0})`);
+  check((await receipt("domMeasurer")).startsWith("available: dom-canvas/"), "the panel reports the DOM measurer available");
+  check((await receipt("atlasBoxPx")) === "1600x420px", "the receipts print the Atlas box");
   const pagesDom = await page.$$eval(".codex .page", (xs) => xs.length);
   check(String(pagesDom) === (await receipt("layout.pages")), `one DOM page per layout page (${pagesDom})`);
 
@@ -152,21 +154,34 @@ async function main() {
   await page.selectOption("#measurer", "Dom");
   await page.waitForFunction(() => document.querySelector('.receipts dd[data-key="measurerInUse"]')?.textContent?.startsWith("dom-canvas"));
 
-  // 5. Selection through a click on a mark.
+  // 5. Selection through a real click on a mark: the last named group is drawn on top (landmarks
+  //    come last in draw order), so nothing intercepts the pointer; Playwright hit-tests honestly.
   const marksBefore = await marks();
-  await page.click(".atlas .atlas-svg svg g[data-name]", { force: true });
+  await page.locator(".atlas .atlas-svg svg g[data-name]").last().click();
   await page.waitForSelector(".panel .selection li code");
   const address = await page.$eval(".panel .selection li code", (c) => c.textContent);
   const placements = await page.$$eval(".panel .selection li li", (xs) => xs.map((x) => x.textContent));
   check(address.startsWith("story/"), `selected address ${address}`);
   check(placements.some((p) => p.startsWith("Atlas: on-mark")), `Atlas placement as text: ${placements.find((p) => p.startsWith("Atlas:"))}`);
-  check(placements.some((p) => p.startsWith("Codex: ")), `Codex placement as text: ${placements.find((p) => p.startsWith("Codex:"))}`);
+  check(placements.some((p) => p.startsWith("Codex: on-annotation")), `Codex placement as text: ${placements.find((p) => p.startsWith("Codex:"))}`);
   const selectedMarks = await page.$$eval(".atlas svg .selected", (xs) => xs.length);
   check(selectedMarks >= 1, `selected mark(s) marked in the Atlas (${selectedMarks})`);
   check((await marks()) === marksBefore, "selection does not change the mark count");
   check((await railText()) === text, "selection: rail unchanged");
   const pressed = await page.$$eval('.atlas svg [aria-pressed="true"]', (xs) => xs.length);
   check(pressed === selectedMarks, "aria-pressed matches the selected marks");
+
+  // 5b. Selection through the keyboard: focus the first named group and press Enter.
+  await page.click(".panel .selection button");
+  await page.waitForFunction(() => !document.querySelector(".panel .selection li code"));
+  await page.locator(".atlas .atlas-svg svg g[data-name]").first().focus();
+  await page.keyboard.press("Enter");
+  await page.waitForSelector(".panel .selection li code");
+  const keyboardAddress = await page.$eval(".panel .selection li code", (c) => c.textContent);
+  const keyboardPlacements = await page.$$eval(".panel .selection li li", (xs) => xs.map((x) => x.textContent));
+  check(keyboardAddress.startsWith("story/"), `keyboard-selected address ${keyboardAddress}`);
+  check(keyboardPlacements.some((p) => p.startsWith("Atlas: on-mark")), "keyboard selection: Atlas on-mark");
+  check((await railText()) === text, "keyboard selection: rail unchanged");
 
   // 6. Errors.
   check(pageErrors.length === 0, `no page error ${pageErrors.length ? JSON.stringify(pageErrors) : ""}`);

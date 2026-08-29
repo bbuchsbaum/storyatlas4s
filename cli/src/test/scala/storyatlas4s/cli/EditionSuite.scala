@@ -4,6 +4,7 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.{Files, Path}
 import munit.FunSuite
+import storyatlas4s.edition.Pins
 import storymodel4s.view.ViewBasis
 
 class EditionSuite extends FunSuite:

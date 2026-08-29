@@ -23,7 +23,17 @@ object PageSpec:
   * would leave that choice to the renderer. `<` and `>` are refused so a family can never close a
   * markup element it is written into.
   */
-final case class TextStyle private (family: String, sizePx: Int)
+final case class TextStyle private (family: String, sizePx: Int):
+  /** The family as one CSS family value: a generic keyword or identifier (`[A-Za-z][A-Za-z0-9-]*`)
+    * bare, anything else as a quoted string with `\\` and `"` escaped — so it is always one family,
+    * never a fallback list, wherever a font shorthand or `font-family` value is assembled.
+    */
+  def cssFamily: String =
+    val identifier = family.headOption.exists(c => c.isLetter && c < 0x80) && family.forall(c =>
+      (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-'
+    )
+    if identifier then family
+    else "\"" + family.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
 object TextStyle:
   def of(family: String, sizePx: Int): Either[LayoutError, TextStyle] =
