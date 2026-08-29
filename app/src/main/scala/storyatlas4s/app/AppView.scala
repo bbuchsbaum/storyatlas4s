@@ -8,12 +8,11 @@ import storymodel4s.core.Address
 import storymodel4s.story.{ModelStatus, StoryModel}
 import storymodel4s.view.*
 
-/** The Laminar shell: one `Var[ViewChoice]`, one derived `Signal` of the compiled artifacts, and
-  * three regions bound to it — the paginated Codex (DOM text rail under an SVG overlay per page,
-  * ADR 0002 D6), the Atlas at the chosen zoom level, and a side panel with the selection's
-  * placements, the textual twins, and the receipts. Every change (lens, zoom, horizon, selection,
-  * measurer) recompiles both artifacts through storymodel4s's compilers under one
-  * `CommonViewState`, so Codex and Atlas agree by construction (D2).
+/** The Laminar shell: one exact `Var[ViewChoice]`, a last-intent-wins compilation runtime, and
+  * three synchronized regions — the paginated Codex, the Atlas at a two-axis semantic zoom state,
+  * and an audit panel. Continuous gesture coordinates never enter a receipt; they commit an exact
+  * [[ZoomLevel]] through [[SemanticZoom]] before storymodel4s compiles both artifacts under one
+  * `CommonViewState`.
   */
 object AppView:
 
@@ -33,9 +32,27 @@ object AppView:
     def measurerFor(pick: MeasurerChoice): Either[String, Measurer] = pick match
       case MeasurerChoice.Monospace => Right(MonospaceMeasurer.instance)
       case MeasurerChoice.Dom       => domMeasurer.left.map(_.message)
-    val compiled: Signal[Either[String, Compiled]] =
-      choice.signal.map(c =>
-        measurerFor(c.measurer).flatMap(measurer => AppCompiler.compile(model, c, measurer))
+    val display = Var[CompilationDisplay[ViewChoice, Either[String, Compiled]]](
+      CompilationDisplay.Idle
+    )
+    def submit(
+        intent: CompileIntent[ViewChoice],
+        complete: Either[String, Compiled] => Unit
+    ): Unit =
+      val _ = dom.window.setTimeout(
+        () =>
+          complete(
+            measurerFor(intent.request.measurer)
+              .flatMap(measurer => AppCompiler.compile(model, intent.request, measurer))
+          ),
+        0
+      )
+    val runtime = CompilationRuntime(submit, display.set)
+    val controlsElement = SemanticZoom
+      .at(initial.zoom)
+      .fold(
+        error => div(cls("error"), role("alert"), s"Semantic zoom unavailable: ${error.message}"),
+        gesture => controls(text, choice, domMeasurer, gesture)
       )
 
     /** Click or keyboard activation of a named element: resolve to an address, then select. */
@@ -45,33 +62,58 @@ object AppView:
           if !extend then Set(address)
           else if c.selection.contains(address) then c.selection - address
           else c.selection + address
-        c.copy(selection = next)
+        c.copy(selection = next, focus = Some(address))
       }
 
     div(
       cls("shell"),
-      dataAttr("state") <-- compiled.map(_.fold(_ => "error", _ => "ready")),
+      onMountCallback(ctx => (choice.signal.foreach(runtime.request)(using ctx.owner): Unit)),
+      dataAttr("state") <-- display.signal.map {
+        case CompilationDisplay.Idle         => "idle"
+        case CompilationDisplay.Pending(_)   => "compiling"
+        case CompilationDisplay.Ready(value) => value.result.fold(_ => "error", _ => "ready")
+      },
+      dataAttr("intent-revision") <-- display.signal.map {
+        case CompilationDisplay.Idle            => "none"
+        case CompilationDisplay.Pending(intent) => intent.revision.value.toString
+        case CompilationDisplay.Ready(value)    => value.intent.revision.value.toString
+      },
       dataAttr("horizon") <-- choice.signal.map(c => Playhead.position(text, c.horizon).toString),
-      controls(text, choice, domMeasurer),
-      child <-- compiled.map {
-        case Left(problem) =>
-          div(cls("error"), role("alert"), s"Compilation failed: $problem")
-        case Right(c) =>
+      dataAttr("zoom") <-- choice.signal.map(c => s"${c.zoom.narrative}/${c.zoom.surface}"),
+      dataAttr("focus") <-- choice.signal.map(_.focus.fold("none")(_.render)),
+      controlsElement,
+      child <-- display.signal.map {
+        case CompilationDisplay.Idle =>
+          div(cls("compiling"), role("status"), "Waiting to compile the initial view.")
+        case CompilationDisplay.Pending(intent) =>
           div(
-            cls("workspace"),
-            codexSection(c, select),
-            atlasSection(c, select),
-            panel(c, choice, domMeasurer)
+            cls("compiling"),
+            role("status"),
+            s"Compiling intent ${intent.revision.value}: " +
+              s"${intent.request.zoom.narrative}/${intent.request.zoom.surface}."
           )
+        case CompilationDisplay.Ready(value) =>
+          value.result match
+            case Left(problem) =>
+              div(cls("error"), role("alert"), s"Compilation failed: $problem")
+            case Right(c) =>
+              div(
+                cls("workspace"),
+                codexSection(c, select),
+                atlasSection(c, select),
+                panel(c, choice, domMeasurer, value.intent.revision)
+              )
       }
     )
 
   private def controls(
       text: String,
       choice: Var[ViewChoice],
-      domMeasurer: Either[LayoutError, Measurer]
+      domMeasurer: Either[LayoutError, Measurer],
+      initialGesture: SemanticZoom
   ): HtmlElement =
     val length = text.length
+    var gesture = initialGesture
     form(
       cls("controls"),
       onSubmit.preventDefault --> Observer.empty,
@@ -90,18 +132,56 @@ object AppView:
           )
         )
       ),
-      label(
-        "Atlas zoom ",
-        select(
-          idAttr("zoom"),
-          EditionSpec.levels.map(l => option(value(l.toString), l.toString)),
-          controlled(
-            value <-- choice.signal.map(_.level.toString),
-            onChange.mapToValue --> { v =>
-              EditionSpec.levels
-                .find(_.toString == v)
-                .foreach(l => choice.update(_.copy(level = l)))
+      fieldSet(
+        cls("semantic-zoom"),
+        dataAttr("hysteresis") := SemanticZoom.Hysteresis.toString,
+        legend("Semantic zoom (continuous gesture; exact typed state)"),
+        label(
+          forId("narrative-zoom"),
+          "Narrative level",
+          input(
+            idAttr("narrative-zoom"),
+            typ("range"),
+            minAttr("0"),
+            maxAttr((EditionSpec.levels.length - 1).toString),
+            stepAttr("0.01"),
+            value(gesture.narrativePosition.toString),
+            onInput.mapToValue --> { value =>
+              value.toDoubleOption.foreach { position =>
+                val before = gesture.committed
+                gesture = gesture.moveNarrative(position)
+                if gesture.committed != before then choice.update(_.copy(zoom = gesture.committed))
+              }
             }
+          ),
+          outputTag(
+            forId("narrative-zoom"),
+            dataAttr("committed") <-- choice.signal.map(_.zoom.narrative.toString),
+            child.text <-- choice.signal.map(_.zoom.narrative.toString)
+          )
+        ),
+        label(
+          forId("surface-zoom"),
+          "Surface detail",
+          input(
+            idAttr("surface-zoom"),
+            typ("range"),
+            minAttr("0"),
+            maxAttr((EditionSpec.surfaceDetails.length - 1).toString),
+            stepAttr("0.01"),
+            value(gesture.surfacePosition.toString),
+            onInput.mapToValue --> { value =>
+              value.toDoubleOption.foreach { position =>
+                val before = gesture.committed
+                gesture = gesture.moveSurface(position)
+                if gesture.committed != before then choice.update(_.copy(zoom = gesture.committed))
+              }
+            }
+          ),
+          outputTag(
+            forId("surface-zoom"),
+            dataAttr("committed") <-- choice.signal.map(_.zoom.surface.toString),
+            child.text <-- choice.signal.map(_.zoom.surface.toString)
           )
         )
       ),
@@ -217,8 +297,10 @@ object AppView:
                 span(
                   cls("line"),
                   cls(SvgDom.SelectedClass) := line.selected,
+                  cls(SvgDom.FocusedClass) := line.focused,
                   dataAttr("name") := line.id,
                   dataAttr("selected") := line.selected.toString,
+                  dataAttr("focused") := line.focused.toString,
                   styleAttr := s"height:${lineHeightPx}px",
                   line.text
                 )
@@ -231,6 +313,7 @@ object AppView:
                   ctx.thisNode.ref,
                   page.overlay,
                   c.selectedFragments,
+                  c.focusedFragments,
                   name =>
                     c.fragmentTargets.get(name).map(a => s"annotation piece $name → ${a.render}")
                 )
@@ -279,6 +362,7 @@ object AppView:
             ctx.thisNode.ref,
             c.atlasSvg,
             c.selectedMarks,
+            c.focusedMarks,
             name =>
               MarkId
                 .from(name)
@@ -293,42 +377,48 @@ object AppView:
   private def panel(
       c: Compiled,
       choice: Var[ViewChoice],
-      domMeasurer: Either[LayoutError, Measurer]
+      domMeasurer: Either[LayoutError, Measurer],
+      revision: IntentRevision
   ): HtmlElement =
+    def placement(address: Address): HtmlElement =
+      val codex = c.codexPlacements.collectFirst { case (a, p) if a == address => p }
+      val atlas = c.atlasPlacements.collectFirst { case (a, p) if a == address => p }
+      li(
+        code(address.render),
+        ul(
+          li(
+            "Codex: ",
+            codex.fold("unresolved")(value => renderPlacement(value, _.value))
+          ),
+          li(
+            "Atlas: ",
+            atlas.fold("unresolved")(value => renderPlacement(value, _.value))
+          )
+        )
+      )
     asideTag(
       cls("panel"),
-      aria.label("Selection, twins, receipts"),
+      aria.label("Focus, selection, twins, receipts"),
       sectionTag(
         cls("selection"),
-        h2("Selection"),
-        if c.choice.selection.isEmpty then
-          p("Nothing selected. Selection is a set of addresses shared by Codex and Atlas (V-I3).")
+        h2("Focus and selection"),
+        c.choice.focus.fold[HtmlElement](p("No semantic focus."))(address =>
+          div(cls("focus-address"), h3("Focus"), ul(placement(address)))
+        ),
+        if c.choice.selection.isEmpty && c.choice.focus.isEmpty then
+          p("Nothing selected. Addresses are shared by Codex and Atlas (V-I3).")
+        else
+          button(
+            typ("button"),
+            "Clear focus and selection",
+            onClick --> (_ => choice.update(_.copy(selection = Set.empty, focus = None)))
+          )
+        ,
+        if c.choice.selection.isEmpty then p("Selection set: empty.")
         else
           div(
-            button(
-              typ("button"),
-              "Clear selection",
-              onClick --> (_ => choice.update(_.copy(selection = Set.empty)))
-            ),
-            ul(
-              c.choice.selection.toVector.sortBy(_.render).map { address =>
-                val codex = c.codexPlacements.collectFirst { case (a, p) if a == address => p }
-                val atlas = c.atlasPlacements.collectFirst { case (a, p) if a == address => p }
-                li(
-                  code(address.render),
-                  ul(
-                    li(
-                      "Codex: ",
-                      codex.fold("unresolved")(placement => renderPlacement(placement, _.value))
-                    ),
-                    li(
-                      "Atlas: ",
-                      atlas.fold("unresolved")(placement => renderPlacement(placement, _.value))
-                    )
-                  )
-                )
-              }
-            )
+            h3("Selection set"),
+            ul(c.choice.selection.toVector.sortBy(_.render).map(placement))
           )
       ),
       sectionTag(
@@ -342,10 +432,14 @@ object AppView:
         cls("receipts"),
         h2("Receipts"),
         dl(
-          (c.receipts :+ ("domMeasurer" -> domMeasurer.fold(
-            error => s"unavailable: ${error.message}",
-            measurer => s"available: ${measurer.name}"
-          ))).flatMap { (key, value) =>
+          (c.receipts ++ Vector(
+            "intentRevision" -> revision.value.toString,
+            "zoomHysteresis" -> SemanticZoom.Hysteresis.toString,
+            "domMeasurer" -> domMeasurer.fold(
+              error => s"unavailable: ${error.message}",
+              measurer => s"available: ${measurer.name}"
+            )
+          )).flatMap { (key, value) =>
             Vector(dt(key), dd(dataAttr("key") := key, value))
           }
         )

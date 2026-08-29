@@ -1,7 +1,7 @@
 package storyatlas4s.app
 
 import storymodel4s.core.Address
-import storymodel4s.view.{CodexLens, EpistemicHorizon, NarrativeLevel}
+import storymodel4s.view.{CodexLens, EpistemicHorizon, NarrativeLevel, SurfaceDetail, ZoomLevel}
 
 /** Which measurer paginates the Codex: the fixed publication table, or the live DOM canvas. */
 enum MeasurerChoice:
@@ -11,14 +11,16 @@ enum MeasurerChoice:
     case Monospace => "monospace table (publication)"
     case Dom       => "DOM canvas (live)"
 
-/** Everything the shell lets a reader choose. The semantic part (`selection`, `horizon`) becomes
-  * the `CommonViewState` both compilers share; the rest picks a lens, a zoom level, and a measurer.
+/** Everything the shell lets a reader choose. `selection`, `focus`, and `horizon` become the
+  * `CommonViewState` both compilers share; the rest picks a Codex lens, an exact two-axis semantic
+  * zoom state, and a measurer.
   */
 final case class ViewChoice(
     lens: CodexLens,
-    level: NarrativeLevel,
+    zoom: ZoomLevel,
     horizon: EpistemicHorizon,
     selection: Set[Address],
+    focus: Option[Address],
     measurer: MeasurerChoice
 )
 
@@ -26,9 +28,10 @@ object ViewChoice:
   val initial: ViewChoice =
     ViewChoice(
       CodexLens.Overview,
-      NarrativeLevel.Scene,
+      ZoomLevel(NarrativeLevel.Scene, SurfaceDetail.Hidden),
       EpistemicHorizon.Omniscient,
       Set.empty,
+      None,
       MeasurerChoice.Dom
     )
 

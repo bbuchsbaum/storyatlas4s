@@ -8,7 +8,7 @@ those artifacts to [Intaglio](https://github.com/canardlapin/intaglio) scenes
 and writes figures, textual twins, and receipts. It infers nothing and lays out
 nothing.
 
-Status: prototype, slice 1 (static War of the Ghosts edition). Unpublished.
+Status: prototype, slice 1 (static and live War of the Ghosts edition). Unpublished.
 
 ## Modules
 
@@ -17,8 +17,8 @@ Status: prototype, slice 1 (static War of the Ghosts edition). Unpublished.
 | `storyatlas4s-layout` | JVM, JS | storymodel4s `view` (SHA pin) | `Paginator.paginate(flow, page, metrics)`: pure pagination of a `CodexFlow` into pages, lines, and annotation fragments with V-I2 ids; `Measurer` seam with metrics-as-data (`TextMetrics`), the fixed `MonospaceMeasurer` (publication), an optional AWT measurer (JVM), a DOM measurer stub (JS); `PaginatedCodex` twin and `LayoutReceipt` |
 | `storyatlas4s-intaglio` | JVM, JS | `layout`, storymodel4s `view` (SHA pin), intaglio `core`/`svg` (SHA pin) | pure lowering `NarrativeScene → intaglio.Scene`, `CodexFlow → intaglio.Scene`, and `PaginatedCodex → Vector[intaglio.Scene]` (one page overlay per page); `GraphicsName` = `MarkId` / `AnnotationId` / `FragmentId` |
 | `storyatlas4s-edition` | JVM, JS | `layout` | `EditionSpec`: the edition's fixed configuration (page box, font, relation layers, thread budget, lenses, zoom levels, SVG boxes) and `Pins` (sibling revisions, generated from `build.sbt`), shared by `cli` and `app` so both compile the same artifacts |
-| `storyatlas4s-cli` | JVM | `edition` + above + storymodel4s `fixtures` | `edition --out <dir>`: atlas SVGs at Story/Episode/Scene zoom, Codex overlays and paginated `codex-<lens>.html` pages for the Reading and Overview lenses, textual twins, `receipt.json` |
-| `storyatlas4s-app` | JS | `edition`, `intaglio`, `layout`, storymodel4s `fixtures` (SHA pin), intaglio `svg`, Laminar 17.2.1, scalajs-dom 2.8.1 | the browser shell: the same compilers, paginator, and lowerings run in the browser over the War of the Ghosts fixture; DOM text rail + Intaglio SVG overlay per page, Reading/Overview lenses, Story/Episode/Scene zoom, the epistemic playhead (`ReaderAt` horizon), selection as `Set[Address]` shared by Codex and Atlas, textual twins and receipts as text; the live `DomMeasurer` |
+| `storyatlas4s-cli` | JVM | `edition` + above + storymodel4s `fixtures` | `edition --out <dir>`: atlas SVGs at every configured NarrativeLevel × SurfaceDetail state, Codex overlays and paginated `codex-<lens>.html` pages for the Reading and Overview lenses, textual twins, `receipt.json` |
+| `storyatlas4s-app` | JS | `edition`, `intaglio`, `layout`, storymodel4s `fixtures` (SHA pin), intaglio `svg`, Laminar 17.2.1, scalajs-dom 2.8.1 | the browser shell: the same compilers, paginator, and lowerings run in the browser over the War of the Ghosts fixture; DOM text rail + Intaglio SVG overlay per page, Reading/Overview lenses, independent continuous narrative/surface zoom controls that commit exact typed states with hysteresis, the epistemic playhead (`ReaderAt` horizon), semantic focus plus selection as addresses shared by Codex and Atlas, last-intent-wins compilation, textual twins and receipts as text; the live `DomMeasurer` |
 
 ## Identity and the renderer protocol
 
@@ -83,9 +83,10 @@ sbt <overrides> "cli/run edition --out target/edition"
 writes (relative paths resolve against the repository root), for the
 researcher-reviewed *War of the Ghosts* fixture:
 
-- `atlas-story.svg`, `atlas-episode.svg`, `atlas-scene.svg` and their `.txt`
-  twins (Discourse Atlas at the three narrative levels the fixture suite
-  exercises; x = exact discourse offset, y = context lane);
+- `atlas-<story|episode|scene>-<hidden|sentences|tokens>.svg` and their `.txt`
+  twins (the full configured two-axis semantic-zoom cross product; surface
+  marks are compiled by storymodel4s, x = exact discourse offset, and the
+  surface rail's vertical coordinate is layout-only);
 - `codex-reading.svg`, `codex-overview.svg` and `.txt` twins (annotation
   overlay over discourse offsets; the Reading lens has no annotation channels);
 - `codex-reading.html`, `codex-overview.html` and their `-pages.txt` twins:
@@ -169,15 +170,19 @@ to. The page then mounts a Laminar shell into `#app`:
   the DOM. An explicit **Omniscient** control restores the horizon-free view
   (reader-at-the-end is not omniscient: an ungrounded claim is invisible at any
   offset). The twins for the current state are in the side panel.
-- **Atlas and selection.** The Story / Episode / Scene zoom levels render
-  from `AtlasLowering`. Clicking a mark (or focusing it and pressing Enter;
-  shift extends) resolves its `data-name` through `SceneNavigation` to an
-  `Address` and sets `CommonViewState.selection`; clicking an overlay band
-  resolves through `NavigationIndex` the same way. The Codex outlines the
-  lines carrying the selected annotation's pieces, and the panel prints the
-  placement in both artifacts as text — `on-mark` / `via-ancestor` /
-  `off-projection` (V-L2) for the Atlas, `on-annotation` / `not-annotated`
-  for the Codex — never as a colour alone (V-U5).
+- **Atlas, semantic zoom, focus, and selection.** Independent continuous
+  controls commit Story / Episode / Scene and Hidden / Sentences / Tokens
+  through deterministic midpoint thresholds with hysteresis. Each committed
+  `ZoomLevel` recompiles through storymodel4s and renders through
+  `AtlasLowering`; gesture coordinates never enter the scientific receipt.
+  Clicking a mark (or focusing it and pressing Enter; shift extends) resolves
+  its `data-name` through `SceneNavigation` to an `Address` and sets semantic
+  focus plus `CommonViewState.selection`; clicking an overlay band resolves
+  through `NavigationIndex` the same way. The Codex marks focused and selected
+  lines, and the panel prints each compiled placement as `on-mark`,
+  `via-ancestor`, or `off-projection`. Focus, selection, and horizon survive
+  every representation change. A monotone intent revision prevents a delayed
+  compilation from replacing a newer requested state.
 - **Receipts.** Source and configuration checksums, the compiler version and
   sibling pins, the shared-state parts, the current horizon, the
   `LayoutReceipt` fields, and the measurer in use, as text.
@@ -199,8 +204,10 @@ Follow-ups recorded from review (not implemented):
   rail's font and line height through the CSSOM instead of the `style`
   attribute string, and add a `<meta http-equiv="Content-Security-Policy">`
   so the page can declare that it loads nothing external.
-- Coalesce slider recompiles (`onChange` or a `requestAnimationFrame`
-  throttle): today every `input` event recompiles both artifacts.
+- Move book-scale compilation into a worker and add measured range/progressive
+  materialization. The current WOG shell schedules work off the input handler,
+  absorbs threshold jitter, and rejects stale completions, but compilation
+  itself still runs on the browser's main thread.
 
 ### Browser smoke
 
@@ -208,18 +215,18 @@ Follow-ups recorded from review (not implemented):
 node app/smoke/smoke.cjs target/edition/index.html
 ```
 
-drives headless Chromium through Playwright (resolved from the working tree,
-`NODE_PATH`, or the global npm root; `npm i -g playwright && npx playwright
-install chromium` once) and checks against the live DOM that the rail's text
+drives headless Chromium through Playwright at the exact pin in `e2e/static`
+(`npm --prefix e2e/static ci` and
+`npx --prefix e2e/static playwright install --only-shell chromium` once) and
+checks against the live DOM that the rail's text
 content hashes to the source checksum the receipts print (V-T2 without any
 copy of the text), that the reader-at-0 view has no Atlas mark and no Codex
 piece while the rail is unchanged, that a mid-text horizon lies strictly
 between, that the Reading lens and the measurer switch leave the rail
-unchanged, that a click on a mark yields an `on-mark` / `on-annotation`
-placement in the panel, and that the page logs no error. Without Playwright,
-do the same by hand: open `index.html`, compare the receipts' `sourceChecksum`
-with `sha256` of the rail text (select all text inside a page), drag the
-playhead to 0 and back, and click a mark.
+unchanged, that surface zoom creates real sentence and token marks, that
+hysteresis absorbs threshold jitter, that exact identities restore, that a
+focused selection traverses `on-mark`, `via-ancestor`, and `off-projection`,
+and that the page logs no error.
 
 Every page prints its basis ("researcher-reviewed narrative acceptance
 fixture"). Story text is never copied into this repository; the twins render

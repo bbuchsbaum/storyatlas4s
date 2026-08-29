@@ -4,20 +4,20 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.{Files, Path}
 import munit.FunSuite
-import storyatlas4s.edition.Pins
+import storyatlas4s.edition.{EditionSpec, Pins}
 import storymodel4s.view.ViewBasis
 
 class EditionSuite extends FunSuite:
   private def ok[E, A](either: Either[E, A]): A =
     either.fold(e => fail(s"unexpected failure: $e"), identity)
 
-  private val expectedFiles = Vector(
-    "atlas-story.svg",
-    "atlas-story.txt",
-    "atlas-episode.svg",
-    "atlas-episode.txt",
-    "atlas-scene.svg",
-    "atlas-scene.txt",
+  private val expectedAtlasFiles = EditionSpec.zoomLevels.flatMap { zoom =>
+    val stem =
+      s"atlas-${zoom.narrative.toString.toLowerCase}-${zoom.surface.toString.toLowerCase}"
+    Vector(s"$stem.svg", s"$stem.txt")
+  }
+
+  private val expectedFiles = expectedAtlasFiles ++ Vector(
     "codex-reading.svg",
     "codex-reading.txt",
     "codex-reading.html",
@@ -53,6 +53,19 @@ class EditionSuite extends FunSuite:
     assert(a.files.find(_.name == "codex-reading.svg").exists(_.names == 0))
     assert(a.files.find(_.name == "codex-overview.html").exists(_.names > 0))
     assert(a.files.find(_.name == "codex-reading.html").exists(_.names == 0))
+
+  test("the static edition emits every configured two-axis zoom with real surface marks"):
+    val edition = ok(Edition.warOfTheGhosts)
+    assertEquals(edition.files.count(_.artifact == "atlas"), EditionSpec.zoomLevels.length)
+    EditionSpec.levels.foreach { level =>
+      val prefix = s"atlas-${level.toString.toLowerCase}-"
+      val names = EditionSpec.surfaceDetails.map { surface =>
+        val file = s"$prefix${surface.toString.toLowerCase}.svg"
+        edition.files.find(_.name == file).getOrElse(fail(s"missing $file")).names
+      }
+      assert(names(0) < names(1), s"$level Hidden/Sentences must differ: $names")
+      assert(names(1) < names(2), s"$level Sentences/Tokens must differ: $names")
+    }
 
   test("each codex.html names every line and piece once, and its pages twin lists each piece"):
     val e = ok(Edition.warOfTheGhosts)

@@ -189,11 +189,13 @@ makes their limits inspectable.
 
 The current prototype proves a narrower set of capabilities on the
 researcher-reviewed *War of the Ghosts* fixture: deterministic pagination,
-exact DOM text, Intaglio overlays, three narrative levels, a reader horizon,
-shared address selection, textual twins, and receipts. At the storymodel4s
-revision pinned by this checkout, `SurfaceDetail` is receipted, but the provider
-does not yet compile its surface marks; the control must remain hidden until it
-changes the representation. Feature values, Chronology Loom, recall mapping,
+exact DOM text, Intaglio overlays, three narrative levels, independently
+controlled Hidden, Sentences, and Tokens surface detail, a reader horizon,
+shared address focus and selection, textual twins, and receipts. The pinned
+storymodel4s revision compiles checked surface marks, and the live and static
+StoryAtlas artifacts exercise the configured two-axis zoom states. Continuous
+input commits finite states through hysteresis, and stale compilation results
+cannot replace a newer intent. Feature values, Chronology Loom, recall mapping,
 autobiographical interviews, population views, general model loading, and
 novel-scale interaction are not yet implemented. They must remain described as
 targets until their contracts and acceptance laws pass.

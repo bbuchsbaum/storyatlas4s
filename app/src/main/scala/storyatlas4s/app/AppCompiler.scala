@@ -9,18 +9,16 @@ import storymodel4s.core.*
 import storymodel4s.story.*
 import storymodel4s.view.*
 
-/** One placed line of the text rail: its fragment id, its exact text, and whether a selected
-  * annotation has a piece on it.
-  */
-final case class CodexLine(id: String, text: String, selected: Boolean)
+/** One placed line of the text rail: exact text plus selected and focused annotation presence. */
+final case class CodexLine(id: String, text: String, selected: Boolean, focused: Boolean)
 
 /** One page of the Codex: the rail lines and the page's overlay SVG (V-I2 names inside). */
 final case class CodexPage(index: Int, lines: Vector[CodexLine], overlay: String)
 
 /** Everything the shell draws for one [[ViewChoice]]: both artifacts compiled in storymodel4s under
-  * one `CommonViewState`, the paginated Codex, the lowered overlays and Atlas, the selection's
-  * placements in both, and the receipts. Nothing here is inferred: every field is read off a
-  * compiled artifact or a receipt.
+  * one `CommonViewState`, the paginated Codex, the lowered overlays and Atlas, the selection's and
+  * focus's placements in both, and the receipts. Nothing here is inferred: every field is read off
+  * a compiled artifact or a receipt.
   */
 final case class Compiled(
     choice: ViewChoice,
@@ -33,7 +31,9 @@ final case class Compiled(
     atlasSvg: String,
     atlasNames: Int,
     selectedMarks: Set[String],
+    focusedMarks: Set[String],
     selectedFragments: Set[String],
+    focusedFragments: Set[String],
     fragmentTargets: Map[String, Address],
     codexPlacements: Vector[(Address, SelectionPlacement[AnnotationId])],
     atlasPlacements: Vector[(Address, SelectionPlacement[MarkId])],
@@ -57,6 +57,7 @@ object AppCompiler:
       state <- CommonViewState
         .of(
           selection = choice.selection,
+          focus = choice.focus,
           horizon = choice.horizon,
           relationLayers = EditionSpec.relationLayers
         )
@@ -91,22 +92,22 @@ object AppCompiler:
       _ <-
         if overlays.length == placed.pages.length then Right(())
         else Left(s"${overlays.length} overlays for ${placed.pages.length} pages")
-      // Atlas: compile at the chosen level, lower, render.
-      atlasSpec = AtlasSpec(ZoomLevel(choice.level, SurfaceDetail.Hidden), threads)
+      // Atlas: compile at the exact chosen two-axis zoom, lower, render.
+      atlasSpec = AtlasSpec(choice.zoom, threads)
       atlasConfig = AtlasCompiler.configurationChecksum(state, atlasSpec)
       atlasProvenance <- ViewProvenance
         .fixture(model.source.canonicalChecksum, EditionSpec.compilerVersion, atlasConfig)
         .left
         .map(_.message)
       scene <- AtlasCompiler(atlasProvenance).compile(model, state, atlasSpec).left.map(_.message)
-      orderedSelection = choice.selection.toVector.sortBy(_.render)
-      codexPlacements <- orderedSelection.traverse(address =>
+      trackedAddresses = (choice.selection ++ choice.focus).toVector.sortBy(_.render)
+      codexPlacements <- trackedAddresses.traverse(address =>
         flow.selectionPlacements
           .get(address)
           .toRight(s"Codex compiler omitted placement for ${address.render}")
           .map(address -> _)
       )
-      atlasPlacements <- orderedSelection.traverse(address =>
+      atlasPlacements <- trackedAddresses.traverse(address =>
         scene.selectionPlacements
           .get(address)
           .toRight(s"Atlas compiler omitted placement for ${address.render}")
@@ -116,16 +117,25 @@ object AppCompiler:
       atlasOptions <- SvgOptions(
         EditionSpec.atlasWidthPx,
         EditionSpec.atlasHeightPx,
-        Some(s"Narrative Atlas — zoom ${choice.level}/${SurfaceDetail.Hidden}")
+        Some(s"Narrative Atlas — zoom ${choice.zoom.narrative}/${choice.zoom.surface}")
       ).left.map(_.message)
       atlasSvg <- SvgRenderer.render(lowered, atlasOptions).bimap(_.message, _.value)
-      // Selection: resolve through the navigation indexes, never through renderer names.
+      // Selection and focus resolve through navigation indexes, never renderer names.
       selectedAnnotations = choice.selection.toVector.flatMap(flow.navigation.annotationsFor).toSet
       selectedFragments = placed.annotationFragments
         .filter(f => selectedAnnotations.contains(f.annotation))
         .map(_.id.value)
         .toSet
+      focusedAnnotations = choice.focus.toVector.flatMap(flow.navigation.annotationsFor).toSet
+      focusedFragments = placed.annotationFragments
+        .filter(f => focusedAnnotations.contains(f.annotation))
+        .map(_.id.value)
+        .toSet
       selectedMarks = choice.selection.toVector
+        .flatMap(scene.navigation.marksFor)
+        .map(_.value)
+        .toSet
+      focusedMarks = choice.focus.toVector
         .flatMap(scene.navigation.marksFor)
         .map(_.value)
         .toSet
@@ -142,7 +152,8 @@ object AppCompiler:
               CodexLine(
                 line.text.id.value,
                 text,
-                line.annotations.exists(piece => selectedFragments.contains(piece.id.value))
+                line.annotations.exists(piece => selectedFragments.contains(piece.id.value)),
+                line.annotations.exists(piece => focusedFragments.contains(piece.id.value))
               )
             )
         )
@@ -162,7 +173,9 @@ object AppCompiler:
         atlasSvg,
         GraphicsNames.collect(lowered).length,
         selectedMarks,
+        focusedMarks,
         selectedFragments,
+        focusedFragments,
         fragmentTargets,
         codexPlacements,
         atlasPlacements,

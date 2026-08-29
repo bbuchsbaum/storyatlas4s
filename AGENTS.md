@@ -23,7 +23,7 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   doubles and no JVM-only API in the shared sources.
 - `edition`: `crossProject(JVM, JS)`, `CrossType.Pure`, package
   `storyatlas4s.edition`, depends on `layout`. `EditionSpec` (page box, font,
-  relation layers, thread budget, lenses, zoom levels, SVG boxes) and the
+  relation layers, thread budget, lenses, both zoom axes, SVG boxes) and the
   generated `Pins`; the one place an edition constant lives, consumed by both
   `cli` and `app`.
 - `cli`: JVM only, package `storyatlas4s.cli`. `edition --out <dir>` compiles
@@ -33,10 +33,13 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   textual twins, and `receipt.json` with the `LayoutReceipt` folded in.
 - `app`: Scala.js only (`ModuleKind.NoModule`, Laminar 17.2.1, scalajs-dom
   2.8.1), package `storyatlas4s.app`. `AppCompiler` is the pure step from a
-  `ViewChoice` (lens, zoom level, horizon, selection, measurer) to everything
-  drawn — the same compiler, paginator, and lowering calls `cli/Edition` makes,
-  under one `CommonViewState`; `AppView` binds it to the DOM with one
-  `Var[ViewChoice]`. Every edition constant comes from `edition/EditionSpec`,
+  `ViewChoice` (lens, exact `ZoomLevel`, horizon, focus, selection, measurer) to
+  everything drawn — the same compiler, paginator, and lowering calls
+  `cli/Edition` makes, under one `CommonViewState`; `AppView` binds it to the
+  DOM with one `Var[ViewChoice]`. Continuous gesture positions commit through
+  deterministic hysteresis and never enter the receipt; a monotone intent
+  revision rejects stale compilation results. Every edition constant comes
+  from `edition/EditionSpec`,
   shared with `cli`. The model is `WarOfTheGhostsModel.model` from storymodel4s
   `fixtures`, linked into `app.js`; never a copy. `app/index.html` is the
   static shell; `app/editionBundle` copies it and `app.js` into

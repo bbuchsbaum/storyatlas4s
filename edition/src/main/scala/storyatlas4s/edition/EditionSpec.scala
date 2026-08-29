@@ -1,7 +1,7 @@
 package storyatlas4s.edition
 
 import storymodel4s.story.RelationLayer
-import storymodel4s.view.{CodexLens, NarrativeLevel}
+import storymodel4s.view.{CodexLens, NarrativeLevel, SurfaceDetail, ZoomLevel}
 
 /** The edition's fixed configuration, shared by `cli/Edition` (JVM) and the browser shell (JS) so
   * both compile the same artifacts: the page box, the font request, the relation layers, the thread
@@ -27,6 +27,12 @@ object EditionSpec:
   val lenses: Vector[CodexLens] = Vector(CodexLens.Reading, CodexLens.Overview)
   val levels: Vector[NarrativeLevel] =
     Vector(NarrativeLevel.Story, NarrativeLevel.Episode, NarrativeLevel.Scene)
+  val surfaceDetails: Vector[SurfaceDetail] =
+    Vector(SurfaceDetail.Hidden, SurfaceDetail.Sentences, SurfaceDetail.Tokens)
+
+  /** Every independently configured semantic state emitted by the edition and offered live. */
+  val zoomLevels: Vector[ZoomLevel] =
+    levels.flatMap(level => surfaceDetails.map(surface => ZoomLevel(level, surface)))
 
   /** The Atlas document box in CSS pixels (the SVG carries a `viewBox`, so a shell may scale it).
     */

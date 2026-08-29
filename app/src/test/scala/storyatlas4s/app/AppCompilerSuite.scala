@@ -3,7 +3,7 @@ package storyatlas4s.app
 import munit.FunSuite
 import storyatlas4s.edition.EditionSpec
 import storyatlas4s.layout.MonospaceMeasurer
-import storymodel4s.core.Addressable
+import storymodel4s.core.{Addressable, SurfaceUnitKind}
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel as Wog
 import storymodel4s.story.StoryRef
 import storymodel4s.view.*
@@ -63,8 +63,9 @@ class AppCompilerSuite extends FunSuite:
       level <- EditionSpec.levels
       horizon <- horizons
     do
-      val c = compile(omniscient.copy(lens = lens, level = level, horizon = horizon))
-      assertEquals(rail(c), text, s"$lens/$level/$horizon")
+      val zoom = omniscient.zoom.copy(narrative = level)
+      val c = compile(omniscient.copy(lens = lens, zoom = zoom, horizon = horizon))
+      assertEquals(rail(c), text, s"$lens/$zoom/$horizon")
       assertEquals(c.pages.flatMap(_.lines).length, c.placed.lines.length)
 
   test("marks and pieces not yet visible at the horizon do not exist; counts are monotone"):
@@ -96,9 +97,11 @@ class AppCompilerSuite extends FunSuite:
       .collectFirst { case m: VisualPrimitive.Landmark => m }
       .getOrElse(fail("no landmark at Scene zoom"))
     val address = landmark.address
-    val c = compile(omniscient.copy(selection = Set(address)))
+    val c = compile(omniscient.copy(selection = Set(address), focus = Some(address)))
     assertEquals(c.state.selection, Set(address))
+    assertEquals(c.state.focus, Some(address))
     assert(c.selectedMarks.contains(landmark.identity.mark.value))
+    assert(c.focusedMarks.contains(landmark.identity.mark.value))
     c.atlasPlacements match
       case Vector((a, SelectionPlacement.OnMark(marks))) =>
         assertEquals(a, address)
@@ -110,8 +113,10 @@ class AppCompilerSuite extends FunSuite:
         assertEquals(annotations.toVector, c.flow.navigation.annotationsFor(address))
       case other => fail(s"expected one Codex on-mark placement, got $other")
     assert(c.selectedFragments.nonEmpty)
+    assertEquals(c.focusedFragments, c.selectedFragments)
     val selectedLines = c.pages.flatMap(_.lines).filter(_.selected)
     assert(selectedLines.nonEmpty)
+    assertEquals(c.pages.flatMap(_.lines).filter(_.focused), selectedLines)
     // The selected pieces sit on exactly the selected lines.
     val linesWithSelectedPiece = c.placed.lines
       .filter(_.annotations.exists(p => c.selectedFragments.contains(p.id.value)))
@@ -121,7 +126,13 @@ class AppCompilerSuite extends FunSuite:
     // Every piece resolves to an address through the navigation index, never a renderer name.
     assertEquals(c.fragmentTargets.keySet, c.placed.annotationFragments.map(_.id.value).toSet)
     // The same address under the Reading lens has no honest visual anchor.
-    val reading = compile(omniscient.copy(lens = CodexLens.Reading, selection = Set(address)))
+    val reading = compile(
+      omniscient.copy(
+        lens = CodexLens.Reading,
+        selection = Set(address),
+        focus = Some(address)
+      )
+    )
     assertEquals(
       reading.codexPlacements,
       Vector(address -> SelectionPlacement.OffProjection)
@@ -131,7 +142,10 @@ class AppCompilerSuite extends FunSuite:
     val address = Addressable[StoryRef]
       .address(StoryRef.Situation(Wog.S.battle))
     val story = compile(
-      omniscient.copy(level = NarrativeLevel.Story, selection = Set(address))
+      omniscient.copy(
+        zoom = omniscient.zoom.copy(narrative = NarrativeLevel.Story),
+        selection = Set(address)
+      )
     )
     story.atlasPlacements match
       case Vector((a, SelectionPlacement.ViaAncestor(ancestor))) =>
@@ -147,7 +161,7 @@ class AppCompilerSuite extends FunSuite:
       .start
     val hidden = compile(
       omniscient.copy(
-        level = NarrativeLevel.Story,
+        zoom = omniscient.zoom.copy(narrative = NarrativeLevel.Story),
         horizon = EpistemicHorizon.ReaderAt(hiddenAt),
         selection = Set(address)
       )
@@ -176,23 +190,82 @@ class AppCompilerSuite extends FunSuite:
     assert(c.selectedMarks.isEmpty)
 
   test("the compiled view is a pure function of the choice (V-D1)"):
-    val a = compile(omniscient.copy(level = NarrativeLevel.Episode))
-    val b = compile(omniscient.copy(level = NarrativeLevel.Episode))
+    val episodeZoom = omniscient.zoom.copy(narrative = NarrativeLevel.Episode)
+    val a = compile(omniscient.copy(zoom = episodeZoom))
+    val b = compile(omniscient.copy(zoom = episodeZoom))
     assertEquals(a.atlasSvg, b.atlasSvg)
     assertEquals(a.pages, b.pages)
     assertEquals(a.receipts, b.receipts)
     assertEquals(a.scene.textualTwin, b.scene.textualTwin)
     assertEquals(a.placed.textualTwin, b.placed.textualTwin)
 
-  test("the three zoom levels compile and differ in what they draw"):
-    val story = compile(omniscient.copy(level = NarrativeLevel.Story))
-    val episode = compile(omniscient.copy(level = NarrativeLevel.Episode))
-    val scene = compile(omniscient.copy(level = NarrativeLevel.Scene))
+  test("the configured two-axis zoom states compile and change representation"):
+    val story = compile(
+      omniscient.copy(zoom = ZoomLevel(NarrativeLevel.Story, SurfaceDetail.Hidden))
+    )
+    val episode = compile(
+      omniscient.copy(zoom = ZoomLevel(NarrativeLevel.Episode, SurfaceDetail.Hidden))
+    )
+    val scene = compile(
+      omniscient.copy(zoom = ZoomLevel(NarrativeLevel.Scene, SurfaceDetail.Hidden))
+    )
     assert(story.scene.marks.nonEmpty)
     assert(!story.scene.marks.exists(_.isInstanceOf[VisualPrimitive.Landmark]))
     assert(scene.scene.marks.exists(_.isInstanceOf[VisualPrimitive.Landmark]))
     assertEquals(story.receipts.toMap.apply("atlasZoom"), "Story/Hidden")
     assertEquals(episode.receipts.toMap.apply("atlasZoom"), "Episode/Hidden")
+    EditionSpec.levels.foreach { level =>
+      val compiled = EditionSpec.surfaceDetails.map(surface =>
+        compile(omniscient.copy(zoom = ZoomLevel(level, surface)))
+      )
+      val counts = compiled.map(_.scene.marks.length)
+      assert(counts(0) < counts(1), s"$level Hidden/Sentences must differ: $counts")
+      assert(counts(1) < counts(2), s"$level Sentences/Tokens must differ: $counts")
+      assertEquals(
+        compiled.map(_.receipts.toMap.apply("atlasZoom")),
+        EditionSpec.surfaceDetails.map(surface => s"$level/$surface")
+      )
+    }
+
+  test("surface refinement conserves a focused token Address through compiled placement"):
+    val tokenView = compile(
+      omniscient.copy(zoom = ZoomLevel(NarrativeLevel.Scene, SurfaceDetail.Tokens))
+    )
+    val token = tokenView.scene.marks
+      .collectFirst {
+        case mark: VisualPrimitive.SurfaceUnit if mark.kind == SurfaceUnitKind.Token => mark
+      }
+      .getOrElse(fail("no token surface mark"))
+    val tracked = omniscient.copy(
+      zoom = ZoomLevel(NarrativeLevel.Scene, SurfaceDetail.Tokens),
+      selection = Set(token.address),
+      focus = Some(token.address),
+      horizon = EpistemicHorizon.ReaderAt(text.length)
+    )
+    val tokens = compile(tracked)
+    val sentences = compile(
+      tracked.copy(zoom = tracked.zoom.copy(surface = SurfaceDetail.Sentences))
+    )
+    val hidden = compile(tracked.copy(zoom = tracked.zoom.copy(surface = SurfaceDetail.Hidden)))
+
+    assertEquals(tokens.choice.selection, sentences.choice.selection)
+    assertEquals(tokens.choice.focus, sentences.choice.focus)
+    assertEquals(tokens.choice.horizon, sentences.choice.horizon)
+    tokens.atlasPlacements match
+      case Vector((address, SelectionPlacement.OnMark(marks))) =>
+        assertEquals(address, token.address)
+        assert(marks.toVector.nonEmpty)
+      case other => fail(s"expected token on-mark, got $other")
+    sentences.atlasPlacements match
+      case Vector((address, SelectionPlacement.ViaAncestor(ancestor))) =>
+        assertEquals(address, token.address)
+        assertNotEquals(ancestor, address)
+        assert(sentences.scene.navigation.marksFor(ancestor).nonEmpty)
+      case other => fail(s"expected sentence ancestor, got $other")
+    assertEquals(
+      hidden.atlasPlacements,
+      Vector(token.address -> SelectionPlacement.OffProjection)
+    )
 
   test("the playhead snaps to code point boundaries and clamps to the text"):
     val sample = "ab😀cd"

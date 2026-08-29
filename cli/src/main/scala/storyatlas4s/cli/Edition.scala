@@ -75,7 +75,7 @@ object Edition:
   val ReceiptFile: String = "receipt.json"
 
   /** Every constant of the edition lives in [[EditionSpec]], shared with the browser shell. */
-  private val atlasLevels = EditionSpec.levels
+  private val atlasZooms = EditionSpec.zoomLevels
   private val codexLenses = EditionSpec.lenses
 
   /** The slice-1 acceptance artifact: the researcher-reviewed War of the Ghosts fixture. */
@@ -93,7 +93,7 @@ object Edition:
         .map(ThreadPolicy.All.apply)
         .left
         .map(_.message)
-      atlas <- atlasLevels.flatTraverse(level => atlasFiles(model, state, level, threads))
+      atlas <- atlasZooms.flatTraverse(zoom => atlasFiles(model, state, zoom, threads))
       codex <- codexLenses.flatTraverse(lens => codexFiles(model, state, lens))
     yield Edition(
       fixture,
@@ -107,13 +107,14 @@ object Edition:
   private def atlasFiles(
       model: StoryModel[ModelStatus.Validated],
       state: CommonViewState,
-      level: NarrativeLevel,
+      zoom: ZoomLevel,
       threads: ThreadPolicy
   ): Either[String, Vector[EditionFile]] =
-    val spec = AtlasSpec(ZoomLevel(level, SurfaceDetail.Hidden), threads)
+    val spec = AtlasSpec(zoom, threads)
     val config = AtlasCompiler.configurationChecksum(state, spec)
-    val stem = s"atlas-${level.toString.toLowerCase}"
-    val detail = s"zoom ${level}/${SurfaceDetail.Hidden}, box ${EditionSpec.atlasBox}"
+    val stem =
+      s"atlas-${zoom.narrative.toString.toLowerCase}-${zoom.surface.toString.toLowerCase}"
+    val detail = s"zoom ${zoom.narrative}/${zoom.surface}, box ${EditionSpec.atlasBox}"
     for
       provenance <- ViewProvenance
         .fixture(model.source.canonicalChecksum, EditionSpec.compilerVersion, config)

@@ -11,9 +11,11 @@
 //      FragmentIds independently equal the compiled fragment set and its navigation keys (V-I2);
 //   3. playhead identity sets are empty at 0, capacity-bounded mid-story, and restore exactly;
 //   4. Reading and measurer changes preserve the rail and their own compiled identity contracts;
-//   5. one semantic selection is OnMark, ViaAncestor, or OffProjection exactly as the two
-//      storymodel4s compilers report, including the hidden-selection horizon shape (V-L2);
-//   6. no page error and no console error.
+//   5. both continuous zoom controls commit exact typed states with hysteresis, real surface mark
+//      changes, and exact restoration;
+//   6. one semantic focus and selection is OnMark, ViaAncestor, or OffProjection exactly as the
+//      two storymodel4s compilers report, including the hidden-selection horizon shape (V-L2);
+//   7. no page error and no console error.
 // Playwright must resolve from e2e/static at the exact pin below; no global-package fallback and no
 // system Chrome. Install its browser with `npx --prefix e2e/static playwright install chromium`.
 
@@ -165,6 +167,23 @@ async function main() {
         value
       );
     };
+    const setSemanticZoom = async (selector, value, expected) => {
+      await page.$eval(
+        selector,
+        (el, v) => {
+          el.value = String(v);
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+        },
+        value
+      );
+      await page.waitForFunction(
+        (zoom) =>
+          document.querySelector('.receipts dd[data-key="atlasZoom"]')?.textContent === zoom,
+        expected
+      );
+      check((await attr(".shell", "data-zoom")) === expected, `${selector}: ${expected}`);
+      check((await receipt("atlasZoom")) === expected, `${selector}: receipt names ${expected}`);
+    };
 
     await page.goto(url);
     await page.waitForSelector(ready, { timeout: 60000 });
@@ -233,6 +252,65 @@ async function main() {
           : "orphan MarkId mutation survived"
       );
     }
+
+    // 2b. ZOOM-4: independent continuous surface input commits finite typed states. A midpoint
+    // jitter inside the dead band causes no new intent; real sentence/token states add real marks.
+    check((await receipt("atlasZoom")) === "Scene/Hidden", "initial exact zoom is Scene/Hidden");
+    const initialIntent = await receipt("intentRevision");
+    await setSemanticZoom("#surface-zoom", 0.64, "Scene/Hidden");
+    check(
+      (await receipt("intentRevision")) === initialIntent,
+      "sub-threshold surface motion does not request compilation"
+    );
+    await setSemanticZoom("#surface-zoom", 0.66, "Scene/Sentences");
+    const sentenceIds = await checkIdentityDomain({
+      label: "Scene/Sentences Atlas",
+      liveSelector: ".atlas .atlas-svg svg [data-name]",
+      section: ".atlas",
+      compiledAttr: "data-mark-ids",
+      resolvedAttr: "data-resolved-mark-ids",
+      nonEmpty: true,
+    });
+    check(sentenceIds.length > atlasFullIds.length, "Sentences adds provider-compiled marks");
+    await checkRail("Scene/Sentences", text);
+    const sentenceIntent = await receipt("intentRevision");
+    for (const jitter of [0.61, 0.58, 0.63, 0.55, 0.62]) {
+      await setSemanticZoom("#surface-zoom", jitter, "Scene/Sentences");
+    }
+    check(
+      (await receipt("intentRevision")) === sentenceIntent,
+      "surface threshold jitter is absorbed by hysteresis"
+    );
+    await setSemanticZoom("#surface-zoom", 2, "Scene/Tokens");
+    const tokenIds = await checkIdentityDomain({
+      label: "Scene/Tokens Atlas",
+      liveSelector: ".atlas .atlas-svg svg [data-name]",
+      section: ".atlas",
+      compiledAttr: "data-mark-ids",
+      resolvedAttr: "data-resolved-mark-ids",
+      nonEmpty: true,
+    });
+    check(tokenIds.length > sentenceIds.length, "Tokens adds provider-compiled token marks");
+    await checkIdentityDomain({
+      label: "Scene/Tokens Codex",
+      liveSelector: ".codex .overlay svg [data-name]",
+      section: ".codex",
+      compiledAttr: "data-fragment-ids",
+      resolvedAttr: "data-resolved-fragment-ids",
+      nonEmpty: true,
+    });
+    await checkRail("Scene/Tokens", text);
+    await setSemanticZoom("#surface-zoom", 0, "Scene/Hidden");
+    const surfaceRestoredIds = await checkIdentityDomain({
+      label: "restored Scene/Hidden Atlas",
+      liveSelector: ".atlas .atlas-svg svg [data-name]",
+      section: ".atlas",
+      compiledAttr: "data-mark-ids",
+      resolvedAttr: "data-resolved-mark-ids",
+      nonEmpty: true,
+    });
+    check(sameIds(surfaceRestoredIds, atlasFullIds), "Hidden Atlas identities restore exactly");
+    await checkRail("restored Scene/Hidden", text);
 
     await setRange(0);
     const atlas0Ids = await checkIdentityDomain({
@@ -418,6 +496,9 @@ async function main() {
     );
     const selectedMarks = await page.$$eval(".atlas svg .selected", (xs) => xs.length);
     check(selectedMarks >= 1, `selected mark(s) marked in the Atlas (${selectedMarks})`);
+    const focusedMarks = await page.$$eval(".atlas svg .focused", (xs) => xs.length);
+    check(focusedMarks >= 1, `focused mark(s) marked in the Atlas (${focusedMarks})`);
+    check((await attr(".shell", "data-focus")) === address, "semantic focus is the Address");
     const afterSelection = await checkIdentityDomain({
       label: "selected Atlas",
       liveSelector: ".atlas .atlas-svg svg [data-name]",
@@ -433,13 +514,10 @@ async function main() {
     await checkRail("on-mark selection", text);
     const pressed = await page.$$eval('.atlas svg [aria-pressed="true"]', (xs) => xs.length);
     check(pressed === selectedMarks, "aria-pressed matches the selected marks");
+    const current = await page.$$eval('.atlas svg [aria-current="true"]', (xs) => xs.length);
+    check(current === focusedMarks, "aria-current matches the focused marks");
 
-    await page.selectOption("#zoom", "Story");
-    await page.waitForFunction(
-      () =>
-        document.querySelector('.receipts dd[data-key="atlasZoom"]')?.textContent ===
-        "Story/Hidden"
-    );
+    await setSemanticZoom("#narrative-zoom", 0, "Story/Hidden");
     const storyPlacements = await placementTexts();
     check(
       storyPlacements.some((p) => p.startsWith("Atlas: via-ancestor")),
@@ -455,6 +533,7 @@ async function main() {
       (await page.$eval(".panel .selection li code", (c) => c.textContent)) === address,
       "zoom preserves the semantic selection address"
     );
+    check((await attr(".shell", "data-focus")) === address, "zoom preserves semantic focus");
     await checkIdentityDomain({
       label: "Story zoom Atlas",
       liveSelector: ".atlas .atlas-svg svg [data-name]",
@@ -518,12 +597,7 @@ async function main() {
         .querySelector('.receipts dd[data-key="horizon"]')
         ?.textContent?.startsWith("omniscient")
     );
-    await page.selectOption("#zoom", "Scene");
-    await page.waitForFunction(
-      () =>
-        document.querySelector('.receipts dd[data-key="atlasZoom"]')?.textContent ===
-        "Scene/Hidden"
-    );
+    await setSemanticZoom("#narrative-zoom", 2, "Scene/Hidden");
     const restoredPlacements = await placementTexts();
     check(
       restoredPlacements.some((p) => p.startsWith("Atlas: on-mark")),
