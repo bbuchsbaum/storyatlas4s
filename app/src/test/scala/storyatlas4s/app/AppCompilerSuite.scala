@@ -40,8 +40,8 @@ class AppCompilerSuite extends FunSuite:
       c.scene.navigation.addressOf.keySet
     )
     assertEquals(
-      c.placed.annotationFragments.map(_.id.value).toSet,
-      c.fragmentTargets.keySet
+      c.placed.annotationFragments.map(_.id).toSet,
+      c.fragmentTargets.names
     )
     val receipts = c.receipts.toMap
     assertEquals(receipts("sourceChecksum"), model.source.canonicalChecksum.hex)
@@ -101,8 +101,8 @@ class AppCompilerSuite extends FunSuite:
     val c = compile(omniscient.copy(selection = Set(address), focus = Some(address)))
     assertEquals(c.state.selection, Set(address))
     assertEquals(c.state.focus, Some(address))
-    assert(c.selectedMarks.contains(landmark.identity.mark.value))
-    assert(c.focusedMarks.contains(landmark.identity.mark.value))
+    assert(c.selectedMarks.contains(landmark.identity.mark))
+    assert(c.focusedMarks.contains(landmark.identity.mark))
     assert(c.selectedProxyMarks.isEmpty)
     assert(c.focusedProxyMarks.isEmpty)
     c.atlasPlacements match
@@ -129,12 +129,12 @@ class AppCompilerSuite extends FunSuite:
     assertEquals(c.pages.flatMap(_.lines).filter(_.focused), selectedLines)
     // The selected pieces sit on exactly the selected lines.
     val linesWithSelectedPiece = c.placed.lines
-      .filter(_.annotations.exists(p => c.selectedFragments.contains(p.id.value)))
+      .filter(_.annotations.exists(p => c.selectedFragments.contains(p.id)))
       .map(_.text.id.value)
       .toSet
     assertEquals(selectedLines.map(_.id).toSet, linesWithSelectedPiece)
     // Every piece resolves to an address through the navigation index, never a renderer name.
-    assertEquals(c.fragmentTargets.keySet, c.placed.annotationFragments.map(_.id.value).toSet)
+    assertEquals(c.fragmentTargets.names, c.placed.annotationFragments.map(_.id).toSet)
     // The same address under the Reading lens has no honest visual anchor.
     val reading = compile(
       omniscient.copy(
@@ -161,7 +161,7 @@ class AppCompilerSuite extends FunSuite:
       case Vector((a, SelectionPlacement.ViaAncestor(ancestor))) =>
         assertEquals(a, address)
         assertNotEquals(ancestor, address)
-        val expected = story.scene.navigation.marksFor(ancestor).map(_.value).toSet
+        val expected = story.scene.navigation.marksFor(ancestor).toSet
         assert(expected.nonEmpty)
         assertEquals(story.selectedMarks, Set.empty)
         assertEquals(story.selectedProxyMarks, expected)
@@ -169,6 +169,38 @@ class AppCompilerSuite extends FunSuite:
           story.atlasInteractions.map(_.representation).distinct,
           Vector(SemanticRepresentation.Proxy(address, ancestor))
         )
+        val court = story.codexProxyCourt.getOrElse(fail("no real-fragment Codex proxy court"))
+        assertEquals(court.original, address)
+        assertEquals(court.visible, ancestor)
+        assert(court.targets.names.nonEmpty)
+        assert(
+          court.interactions.exists {
+            case InteractionDecoration(
+                  _,
+                  InteractionRole.Selection,
+                  SemanticRepresentation.Proxy(`address`, `ancestor`)
+                ) =>
+              true
+            case _ => false
+          }
+        )
+
+        val composite = compile(
+          omniscient.copy(
+            zoom = omniscient.zoom.copy(narrative = NarrativeLevel.Story),
+            selection = Set(address, ancestor),
+            focus = Some(address)
+          )
+        )
+        val compositeCourt = composite.codexProxyCourt.getOrElse(fail("no composite court"))
+        val sharedTarget = compositeCourt.interactions
+          .groupBy(_.target)
+          .values
+          .find(states =>
+            states.exists(_.representation == SemanticRepresentation.Direct(ancestor)) &&
+              states.exists(_.representation == SemanticRepresentation.Proxy(address, ancestor))
+          )
+        assert(sharedTarget.nonEmpty, "one real fragment is direct and proxy simultaneously")
       case other => fail(s"expected one Atlas via-ancestor placement, got $other")
 
     val hiddenAt = model
@@ -218,12 +250,27 @@ class AppCompilerSuite extends FunSuite:
         placement: SelectionPlacement[String],
         target: String
     ): Vector[InteractionDecoration[String, storymodel4s.core.Address]] =
+      val expected = placement match
+        case SelectionPlacement.OnMark(marks)  => marks.toVector.map(_ -> original)
+        case SelectionPlacement.ViaAncestor(_) => Vector(target -> visible)
+        case SelectionPlacement.OffProjection  => Vector.empty
+      val index = ok(
+        RenderedTargetIndex.build(
+          InteractionSurface.Atlas,
+          expected,
+          expected.map(_._1),
+          identity
+        )
+      )
       ok(
         AppCompiler.interactionsFor(
           choice,
           Map(original -> placement),
           mark => Vector(mark),
-          ancestor => if ancestor == visible then Vector(target) else Vector.empty
+          ancestor => if ancestor == visible then Vector(target) else Vector.empty,
+          index,
+          identity,
+          identity
         )
       )
 
@@ -248,18 +295,135 @@ class AppCompilerSuite extends FunSuite:
       interactions(SelectionPlacement.OffProjection, "unused"),
       Vector.empty
     )
-    assert(
-      AppCompiler
-        .interactionsFor[String](
-          choice,
-          Map[storymodel4s.core.Address, SelectionPlacement[String]](
-            original -> SelectionPlacement.ViaAncestor(visible)
-          ),
-          mark => Vector(mark),
-          _ => Vector.empty
+    val emptyIndex = ok(
+      RenderedTargetIndex.build[String](
+        InteractionSurface.Atlas,
+        Vector.empty,
+        Vector.empty,
+        identity
+      )
+    )
+    assertEquals(
+      AppCompiler.interactionsFor[String, String](
+        choice,
+        Map(original -> SelectionPlacement.ViaAncestor(visible)),
+        mark => Vector(mark),
+        _ => Vector.empty,
+        emptyIndex,
+        identity,
+        identity
+      ),
+      Left(InteractionError.MissingProxyTarget(original, visible))
+    )
+
+  test("interaction target closure rejects phantom, partial, duplicate, and wrong identities"):
+    val original = Addressable[StoryRef].address(StoryRef.Situation(Wog.S.battle))
+    val visible = Addressable[StoryRef].address(StoryRef.Segment(Wog.G.sc2c))
+    val choice = omniscient.copy(selection = Set(original))
+    val exact = ok(
+      RenderedTargetIndex.build(
+        InteractionSurface.Atlas,
+        Vector("known" -> original),
+        Vector("known"),
+        identity
+      )
+    )
+
+    val oneMark = Map(original -> SelectionPlacement.OnMark(NonEmptyVector.one("m1")))
+    assertEquals(
+      AppCompiler.interactionsFor(
+        choice,
+        oneMark,
+        _ => Vector("ghost"),
+        _ => Vector.empty,
+        exact,
+        identity,
+        identity
+      ),
+      Left(
+        InteractionError.PhantomRenderedTarget(
+          InteractionSurface.Atlas,
+          "ghost"
         )
-        .isLeft,
-      "a compiler-reported proxy without a render target must fail closed"
+      )
+    )
+
+    val twoMarks = Map(original -> SelectionPlacement.OnMark(NonEmptyVector.of("m1", "m2")))
+    assertEquals(
+      AppCompiler.interactionsFor(
+        choice,
+        twoMarks,
+        mark => if mark == "m1" then Vector("known") else Vector.empty,
+        _ => Vector.empty,
+        exact,
+        identity,
+        identity
+      ),
+      Left(InteractionError.MissingPlacementMemberTarget(original, "m2"))
+    )
+
+    assertEquals(
+      AppCompiler.interactionsFor[String, String](
+        choice,
+        Map[storymodel4s.core.Address, SelectionPlacement[String]](
+          original -> SelectionPlacement.ViaAncestor(visible)
+        ),
+        _ => Vector.empty,
+        _ => Vector("ghost"),
+        exact,
+        identity,
+        identity
+      ),
+      Left(
+        InteractionError.PhantomRenderedTarget(
+          InteractionSurface.Atlas,
+          "ghost"
+        )
+      )
+    )
+
+    assertEquals(
+      RenderedTargetIndex.build(
+        InteractionSurface.Atlas,
+        Vector("known" -> original),
+        Vector("known", "known"),
+        identity
+      ),
+      Left(
+        InteractionError.DuplicateRenderedTarget(
+          InteractionSurface.Atlas,
+          "known",
+          2
+        )
+      )
+    )
+
+    val wrongIdentity = ok(
+      RenderedTargetIndex.build(
+        InteractionSurface.Atlas,
+        Vector("known" -> visible),
+        Vector("known"),
+        identity
+      )
+    )
+    assertEquals(
+      AppCompiler.interactionsFor(
+        choice,
+        oneMark,
+        _ => Vector("known"),
+        _ => Vector.empty,
+        wrongIdentity,
+        identity,
+        identity
+      ),
+      Left(
+        InteractionError.TargetIdentityMismatch(
+          InteractionSurface.Atlas,
+          "known",
+          original,
+          visible
+        )
+      )
     )
 
   test("the compiled view is a pure function of the choice (V-D1)"):

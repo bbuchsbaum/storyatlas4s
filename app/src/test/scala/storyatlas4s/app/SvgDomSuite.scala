@@ -1,14 +1,15 @@
 package storyatlas4s.app
 
 import munit.FunSuite
-import storymodel4s.core.Addressable
-import storymodel4s.fixtures.wog.WarOfTheGhostsModel as Wog
-import storymodel4s.story.StoryRef
+import storymodel4s.core.Address
 
 /** Direct and proxy interaction states must produce distinct, truthful DOM attributes. */
 class SvgDomSuite extends FunSuite:
-  private val original = Addressable[StoryRef].address(StoryRef.Situation(Wog.S.battle))
-  private val visible = Addressable[StoryRef].address(StoryRef.Segment(Wog.G.sc2c))
+  private def address(value: String): Address =
+    Address.parse(value).fold(error => fail(error.message), identity)
+
+  private val original = address("story/situation/wog:sit:battle")
+  private val visible = address("story/segment/wog:seg:sc2c-journey-battle")
 
   test("direct selection and focus claim the directly represented address"):
     val presentation = SvgDom.presentationFor(
@@ -83,5 +84,7 @@ class SvgDomSuite extends FunSuite:
 
     assert(presentation.directlySelected)
     assertEquals(presentation.selectionProxyFor, Vector(original.render))
+    assert(presentation.selectionIsComposite)
+    assert(!presentation.focusIsComposite)
     assert(presentation.label.contains(s"directly selected ${visible.render}"))
     assert(presentation.label.contains(s"selection proxy for ${original.render}"))

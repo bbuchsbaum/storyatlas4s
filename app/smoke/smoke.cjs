@@ -15,7 +15,8 @@
 //      changes, and exact restoration;
 //   6. one semantic focus and selection is OnMark, ViaAncestor, or OffProjection exactly as the
 //      two storymodel4s compilers report; ViaAncestor is a labelled proxy rather than direct ARIA
-//      selection, including through the hidden-selection horizon shape (V-L2);
+//      selection, including through the hidden-selection horizon shape (V-L2); an admitted
+//      real-fragment Codex diagnostic supplies ViaAncestor capacity absent from the WOG view;
 //   7. no page error and no console error.
 // Playwright must resolve from e2e/static at the exact pin below; no global-package fallback and no
 // system Chrome. Install its browser with `npx --prefix e2e/static playwright install chromium`.
@@ -74,7 +75,10 @@ async function main() {
     console.error("usage: node app/smoke/smoke.cjs <path-or-url to index.html>");
     process.exit(2);
   }
-  const url = /^[a-z]+:\/\//.test(target) ? target : "file://" + path.resolve(target);
+  const url = new URL(
+    /^[a-z]+:\/\//.test(target) ? target : "file://" + path.resolve(target)
+  );
+  url.searchParams.set("interaction-court", "1");
   const { chromium } = loadPlaywright();
   let browser;
   let context;
@@ -186,9 +190,9 @@ async function main() {
       check((await receipt("atlasZoom")) === expected, `${selector}: receipt names ${expected}`);
     };
 
-    await page.goto(url);
+    await page.goto(url.href);
     await page.waitForSelector(ready, { timeout: 60000 });
-    if (!["none", "orphan", "horizon"].includes(mutationMode)) {
+    if (!["none", "orphan", "horizon", "composite"].includes(mutationMode)) {
       throw new Error(`unknown STORYATLAS4S_SMOKE_MUTATION=${mutationMode}`);
     }
 
@@ -579,6 +583,43 @@ async function main() {
       proxyLabel?.includes(`selection proxy for ${address} via `),
       "selection proxy accessibly explains original and visible addresses"
     );
+    const court = ".codex-interaction-court";
+    check((await attr(court, "data-origin")) === "Diagnostic", "Codex proxy court is explicit");
+    check(
+      (await attr(court, "data-original")) === address,
+      "Codex proxy court preserves the original semantic address"
+    );
+    const courtVisible = await attr(court, "data-visible");
+    check(
+      courtVisible?.startsWith("story/"),
+      `Codex proxy court names the visible ancestor (${courtVisible})`
+    );
+    const codexCourtProxy = `${court} svg .selection-proxy`;
+    check(
+      (await page.$$eval(codexCourtProxy, (xs) => xs.length)) >= 1,
+      "real paginated Codex fragment receives ViaAncestor proxy treatment"
+    );
+    check(
+      (await page.$$eval(`${court} svg .selected`, (xs) => xs.length)) === 0,
+      "proxy-only Codex court does not claim direct selection"
+    );
+    check(
+      (await attr(codexCourtProxy, "aria-pressed")) === "false",
+      "Codex ViaAncestor fragment is not aria-pressed as the original"
+    );
+    const codexCourtLabel = await attr(codexCourtProxy, "aria-label");
+    check(
+      codexCourtLabel?.includes(`selection proxy for ${address} via ${courtVisible}`),
+      "Codex ViaAncestor label names original and visible addresses"
+    );
+    const codexProxyFilter = await page.$eval(
+      codexCourtProxy,
+      (element) => getComputedStyle(element).filter
+    );
+    check(
+      codexProxyFilter !== "none",
+      `Codex proxy has a non-colour halo (${codexProxyFilter})`
+    );
     await checkRail("via-ancestor selection", text);
 
     // Find the canonical fixture interval where the selected late mark is hidden while some
@@ -657,6 +698,91 @@ async function main() {
       "restored Scene zoom returns direct selection treatment"
     );
     await checkRail("restored selected Scene", text);
+
+    // 5a. A direct selection and an ancestor proxy may legally share one target. Both channels
+    // must remain visible on the live Atlas and on the real-fragment Codex diagnostic plate.
+    await setSemanticZoom("#narrative-zoom", 0, "Story/Hidden");
+    await page.waitForSelector(`${court} svg .selection-proxy`);
+    const visibleAncestor = await attr(court, "data-visible");
+    await page.locator(".atlas svg .selection-proxy").first().click({ modifiers: ["Shift"] });
+    await page.waitForFunction(
+      () =>
+        new Set(
+          [...document.querySelectorAll(".panel .selection li code")].map(
+            (node) => node.textContent
+          )
+        ).size >= 2
+    );
+    const atlasComposite = ".atlas svg .selected.selection-proxy.selection-direct-proxy";
+    const codexComposite = `${court} svg .selected.selection-proxy.selection-direct-proxy`;
+    await page.waitForSelector(atlasComposite);
+    await page.waitForSelector(codexComposite);
+    if (mutationMode === "composite") {
+      await page.addStyleTag({
+        content: ".selection-direct-proxy { filter: none !important; }",
+      });
+    }
+    const compositeStyle = async (selector) =>
+      page.$eval(selector, (element) => {
+        const child = element.querySelector("*");
+        return {
+          filter: getComputedStyle(element).filter,
+          dash: child ? getComputedStyle(child).strokeDasharray : "none",
+        };
+      });
+    const atlasCompositeStyle = await compositeStyle(atlasComposite);
+    check(
+      atlasCompositeStyle.filter !== "none" && atlasCompositeStyle.dash !== "none",
+      `Atlas direct+proxy keeps halo and direct dash (${JSON.stringify(atlasCompositeStyle)})`
+    );
+    const codexCompositeStyle = await compositeStyle(codexComposite);
+    check(
+      codexCompositeStyle.filter !== "none" && codexCompositeStyle.dash !== "none",
+      `Codex direct+proxy keeps halo and direct dash (${JSON.stringify(codexCompositeStyle)})`
+    );
+    check(
+      (await attr(codexComposite, "data-selection-proxy-for"))
+        ?.split(" ")
+        .includes(address),
+      "Codex composite still names the proxied original"
+    );
+    check(
+      (await attr(codexComposite, "aria-pressed")) === "true",
+      "Codex composite truthfully reports the visible ancestor's direct selection"
+    );
+    const compositeLabel = await attr(codexComposite, "aria-label");
+    check(
+      compositeLabel?.includes(`directly selected ${visibleAncestor}`) &&
+        compositeLabel?.includes(`selection proxy for ${address} via ${visibleAncestor}`),
+      "Codex composite label preserves both semantic roles"
+    );
+
+    // Activating the diagnostic fragment resolves through its visible address. The ordinary
+    // Codex then restores direct treatment and the synthetic proxy court disappears.
+    await page.$eval(codexComposite, (element) =>
+      element.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    );
+    await page.waitForFunction(
+      (visible) => {
+        const selected = new Set(
+          [...document.querySelectorAll(".panel .selection li code")].map(
+            (node) => node.textContent
+          )
+        );
+        return selected.size === 1 && selected.has(visible);
+      },
+      visibleAncestor
+    );
+    check(
+      (await page.$$eval(".codex .overlay svg .selected", (xs) => xs.length)) >= 1,
+      "activating the proxy restores ordinary direct Codex treatment"
+    );
+    check(
+      (await page.$$eval(".codex .overlay svg .selection-proxy", (xs) => xs.length)) === 0,
+      "direct restoration carries no stale Codex proxy class"
+    );
+    await checkRail("direct restoration from Codex proxy", text);
+    await setSemanticZoom("#narrative-zoom", 2, "Scene/Hidden");
 
     // 5b. Selection through the keyboard uses the same persistent Set[Address].
     await page.click(".panel .selection button");

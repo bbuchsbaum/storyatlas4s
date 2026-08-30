@@ -3,7 +3,7 @@ package storyatlas4s.app
 import com.raquo.laminar.api.L.*
 import org.scalajs.dom
 import storyatlas4s.edition.EditionSpec
-import storyatlas4s.layout.{LayoutError, Measurer, MonospaceMeasurer}
+import storyatlas4s.layout.{FragmentId, LayoutError, Measurer, MonospaceMeasurer}
 import storymodel4s.core.Address
 import storymodel4s.story.{ModelStatus, StoryModel}
 import storymodel4s.view.*
@@ -101,7 +101,8 @@ object AppView:
                 cls("workspace"),
                 codexSection(c, select),
                 atlasSection(c, select),
-                panel(c, choice, domMeasurer, value.intent.revision)
+                panel(c, choice, domMeasurer, value.intent.revision),
+                diagnosticCourt(c, select)
               )
       }
     )
@@ -256,11 +257,15 @@ object AppView:
   private def codexSection(c: Compiled, select: (Address, Boolean) => Unit): HtmlElement =
     val receipt = c.placed.receipt
     val fragmentIds = c.placed.annotationFragments.map(_.id.value).sorted
-    val resolvedFragmentIds = c.fragmentTargets.keys.toVector.sorted
+    val resolvedFragmentIds = c.fragmentTargets.names.toVector.map(_.value).sorted
     val lineHeightPx = receipt.lineHeight.toDouble / receipt.unitsPerPixel
     val font = s"${receipt.style.sizePx}px/${lineHeightPx}px ${receipt.style.cssFamily}"
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
-      SvgDom.nameAt(target).flatMap(c.fragmentTargets.get).foreach(select(_, extend))
+      SvgDom
+        .nameAt(target)
+        .flatMap(c.fragmentTargets.resolve)
+        .map(_._2)
+        .foreach(select(_, extend))
     sectionTag(
       cls("codex"),
       aria.label("Narrative Codex"),
@@ -316,12 +321,12 @@ object AppView:
             div(
               cls("overlay"),
               onMountCallback { ctx =>
-                SvgDom.inject(
+                mountSvg(
                   ctx.thisNode.ref,
                   page.overlay,
-                  c.codexInteractions,
-                  name =>
-                    c.fragmentTargets.get(name).map(a => s"annotation piece $name → ${a.render}")
+                  page.targets,
+                  c.codexInteractions.filter(value => page.targets.contains(value.target)),
+                  (name, address) => s"annotation piece ${name.value} → ${address.render}"
                 )
               }
             ),
@@ -336,12 +341,12 @@ object AppView:
 
   private def atlasSection(c: Compiled, select: (Address, Boolean) => Unit): HtmlElement =
     val markIds = c.scene.marks.map(_.identity.mark.value).sorted
-    val resolvedMarkIds = c.scene.navigation.addressOf.keys.map(_.value).toVector.sorted
+    val resolvedMarkIds = c.atlasTargets.names.map(_.value).toVector.sorted
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
       SvgDom
         .nameAt(target)
-        .flatMap(name => MarkId.from(name).toOption)
-        .flatMap(c.scene.navigation.addressOf.get)
+        .flatMap(c.atlasTargets.resolve)
+        .map(_._2)
         .foreach(select(_, extend))
     sectionTag(
       cls("atlas"),
@@ -365,20 +370,76 @@ object AppView:
       div(
         cls("atlas-svg"),
         onMountCallback { ctx =>
-          SvgDom.inject(
+          mountSvg(
             ctx.thisNode.ref,
             c.atlasSvg,
+            c.atlasTargets,
             c.atlasInteractions,
-            name =>
-              MarkId
-                .from(name)
-                .toOption
-                .flatMap(c.scene.navigation.addressOf.get)
-                .map(a => s"mark $name → ${a.render}")
+            (name, address) => s"mark ${name.value} → ${address.render}"
           )
         }
       )
     )
+
+  private def diagnosticCourt(c: Compiled, select: (Address, Boolean) => Unit): HtmlElement =
+    val enabled = dom.window.location.search.contains("interaction-court=1")
+    if !enabled then div(cls("interaction-court-disabled"), display.none)
+    else
+      c.codexProxyCourt.fold[HtmlElement](
+        sectionTag(
+          cls("codex-interaction-court"),
+          role("alert"),
+          dataAttr("origin") := "Diagnostic",
+          "No real-fragment Codex ViaAncestor diagnostic could be constructed."
+        )
+      ) { court =>
+        def activate(target: dom.EventTarget, extend: Boolean): Unit =
+          SvgDom
+            .nameAt(target)
+            .flatMap(court.targets.resolve)
+            .map(_._2)
+            .foreach(select(_, extend))
+        sectionTag(
+          cls("codex-interaction-court"),
+          aria.label("Diagnostic Codex interaction court"),
+          dataAttr("origin") := "Diagnostic",
+          dataAttr("original") := court.original.render,
+          dataAttr("visible") := court.visible.render,
+          onClick --> (ev => activate(ev.target, ev.shiftKey)),
+          onKeyDown.filter(ev => ev.key == "Enter" || ev.key == " ") --> { ev =>
+            ev.preventDefault()
+            activate(ev.target, ev.shiftKey)
+          },
+          div(
+            cls("overlay"),
+            onMountCallback { ctx =>
+              mountSvg(
+                ctx.thisNode.ref,
+                court.overlay,
+                court.targets,
+                court.interactions,
+                (name: FragmentId, address: Address) =>
+                  s"diagnostic annotation piece ${name.value} → ${address.render}"
+              )
+            }
+          )
+        )
+      }
+
+  private def mountSvg[Name](
+      container: dom.Element,
+      svg: String,
+      targets: RenderedTargetIndex[Name],
+      interactions: Vector[InteractionDecoration[Name, Address]],
+      label: (Name, Address) => String
+  ): Unit =
+    SvgDom.inject(container, svg, targets, interactions, label) match
+      case Right(())   => ()
+      case Left(error) =>
+        container.innerHTML = ""
+        container.setAttribute("data-interaction-error", error.message)
+        container.setAttribute("role", "alert")
+        container.textContent = s"Interaction rendering failed: ${error.message}"
 
   private def panel(
       c: Compiled,

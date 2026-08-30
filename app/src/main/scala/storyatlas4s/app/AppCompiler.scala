@@ -1,16 +1,17 @@
 package storyatlas4s.app
 
+import _root_.intaglio.value
 import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
 import storyatlas4s.edition.{EditionSpec, Pins}
 import storyatlas4s.intaglio.{AtlasLowering, CodexLowering, GraphicsNames, PagedCodexLowering}
-import storyatlas4s.layout.{Measurer, PageSpec, PaginatedCodex, Paginator, TextStyle}
+import storyatlas4s.layout.{FragmentId, Measurer, PageSpec, PaginatedCodex, Paginator, TextStyle}
 import storymodel4s.core.*
 import storymodel4s.story.*
 import storymodel4s.view.*
 
 /** One placed line of the text rail with direct and proxy interaction presence kept distinct. */
-final case class CodexLine(
+private[app] final case class CodexLine(
     id: String,
     text: String,
     selected: Boolean,
@@ -20,14 +21,28 @@ final case class CodexLine(
 )
 
 /** One page of the Codex: the rail lines and the page's overlay SVG (V-I2 names inside). */
-final case class CodexPage(index: Int, lines: Vector[CodexLine], overlay: String)
+private[app] final case class CodexPage(
+    index: Int,
+    lines: Vector[CodexLine],
+    overlay: String,
+    targets: RenderedTargetIndex[FragmentId]
+)
+
+/** An explicitly diagnostic Codex plate proving the otherwise absent ViaAncestor DOM capacity. */
+private[app] final case class CodexProxyCourt(
+    original: Address,
+    visible: Address,
+    overlay: String,
+    targets: RenderedTargetIndex[FragmentId],
+    interactions: Vector[InteractionDecoration[FragmentId, Address]]
+)
 
 /** Everything the shell draws for one [[ViewChoice]]: both artifacts compiled in storymodel4s under
   * one `CommonViewState`, the paginated Codex, the lowered overlays and Atlas, the selection's and
   * focus's placements in both, and the receipts. Nothing here is inferred: every field is read off
   * a compiled artifact or a receipt.
   */
-final case class Compiled(
+private[app] final case class Compiled(
     choice: ViewChoice,
     state: CommonViewState,
     flow: CodexFlow,
@@ -37,9 +52,11 @@ final case class Compiled(
     scene: NarrativeScene,
     atlasSvg: String,
     atlasNames: Int,
-    atlasInteractions: Vector[InteractionDecoration[String, Address]],
-    codexInteractions: Vector[InteractionDecoration[String, Address]],
-    fragmentTargets: Map[String, Address],
+    atlasTargets: RenderedTargetIndex[MarkId],
+    atlasInteractions: Vector[InteractionDecoration[MarkId, Address]],
+    codexInteractions: Vector[InteractionDecoration[FragmentId, Address]],
+    fragmentTargets: RenderedTargetIndex[FragmentId],
+    codexProxyCourt: Option[CodexProxyCourt],
     codexPlacements: Vector[(Address, SelectionPlacement[AnnotationId])],
     atlasPlacements: Vector[(Address, SelectionPlacement[MarkId])],
     receipts: Vector[(String, String)]
@@ -47,28 +64,31 @@ final case class Compiled(
   def canonicalText: String = flow.source.canonicalText
   def pieces: Int = placed.annotationFragments.length
 
-  def selectedMarks: Set[String] = directTargets(atlasInteractions, InteractionRole.Selection)
-  def focusedMarks: Set[String] = directTargets(atlasInteractions, InteractionRole.Focus)
-  def selectedProxyMarks: Set[String] = proxyTargets(atlasInteractions, InteractionRole.Selection)
-  def focusedProxyMarks: Set[String] = proxyTargets(atlasInteractions, InteractionRole.Focus)
-  def selectedFragments: Set[String] = directTargets(codexInteractions, InteractionRole.Selection)
-  def focusedFragments: Set[String] = directTargets(codexInteractions, InteractionRole.Focus)
-  def selectedProxyFragments: Set[String] =
+  def selectedMarks: Set[MarkId] = directTargets(atlasInteractions, InteractionRole.Selection)
+  def focusedMarks: Set[MarkId] = directTargets(atlasInteractions, InteractionRole.Focus)
+  def selectedProxyMarks: Set[MarkId] =
+    proxyTargets(atlasInteractions, InteractionRole.Selection)
+  def focusedProxyMarks: Set[MarkId] = proxyTargets(atlasInteractions, InteractionRole.Focus)
+  def selectedFragments: Set[FragmentId] =
+    directTargets(codexInteractions, InteractionRole.Selection)
+  def focusedFragments: Set[FragmentId] = directTargets(codexInteractions, InteractionRole.Focus)
+  def selectedProxyFragments: Set[FragmentId] =
     proxyTargets(codexInteractions, InteractionRole.Selection)
-  def focusedProxyFragments: Set[String] = proxyTargets(codexInteractions, InteractionRole.Focus)
+  def focusedProxyFragments: Set[FragmentId] =
+    proxyTargets(codexInteractions, InteractionRole.Focus)
 
-  private def directTargets(
-      decorations: Vector[InteractionDecoration[String, Address]],
+  private def directTargets[Name](
+      decorations: Vector[InteractionDecoration[Name, Address]],
       role: InteractionRole
-  ): Set[String] =
+  ): Set[Name] =
     decorations.collect {
       case InteractionDecoration(target, `role`, SemanticRepresentation.Direct(_)) => target
     }.toSet
 
-  private def proxyTargets(
-      decorations: Vector[InteractionDecoration[String, Address]],
+  private def proxyTargets[Name](
+      decorations: Vector[InteractionDecoration[Name, Address]],
       role: InteractionRole
-  ): Set[String] =
+  ): Set[Name] =
     decorations.collect {
       case InteractionDecoration(target, `role`, SemanticRepresentation.Proxy(_, _)) => target
     }.toSet
@@ -76,7 +96,7 @@ final case class Compiled(
 /** The pure step from a choice to what is drawn: the same calls `cli/Edition` makes, in the
   * browser.
   */
-object AppCompiler:
+private[app] object AppCompiler:
 
   def compile(
       model: StoryModel[ModelStatus.Validated],
@@ -151,8 +171,69 @@ object AppCompiler:
         Some(s"Narrative Atlas — zoom ${choice.zoom.narrative}/${choice.zoom.surface}")
       ).left.map(_.message)
       atlasSvg <- SvgRenderer.render(lowered, atlasOptions).bimap(_.message, _.value)
+      fragmentEntries <- placed.annotationFragments
+        .traverse(fragment =>
+          flow.navigation
+            .targetOf(fragment.annotation)
+            .toRight(
+              InteractionError.MissingNavigationTarget(
+                InteractionSurface.Codex,
+                fragment.id.value
+              )
+            )
+            .map(fragment.id -> _)
+        )
+        .left
+        .map(_.message)
+      fragmentTargets <- RenderedTargetIndex
+        .build(
+          InteractionSurface.Codex,
+          fragmentEntries,
+          overlayScenes.flatMap(GraphicsNames.collect).map(_.value),
+          _.value
+        )
+        .left
+        .map(_.message)
+      pageTargets <- placed.pages
+        .zip(overlayScenes)
+        .traverse { (placedPage, overlayScene) =>
+          val ids = placedPage.lines.flatMap(_.annotations).map(_.id).toSet
+          RenderedTargetIndex
+            .build(
+              InteractionSurface.Codex,
+              fragmentEntries.filter((id, _) => ids.contains(id)),
+              GraphicsNames.collect(overlayScene).map(_.value),
+              _.value
+            )
+            .map(placedPage.index -> _)
+        }
+        .left
+        .map(_.message)
+      atlasEntries <- scene.marks
+        .traverse(mark =>
+          scene.navigation.addressOf
+            .get(mark.identity.mark)
+            .toRight(
+              InteractionError.MissingNavigationTarget(
+                InteractionSurface.Atlas,
+                mark.identity.mark.value
+              )
+            )
+            .map(mark.identity.mark -> _)
+        )
+        .left
+        .map(_.message)
+      atlasTargets <- RenderedTargetIndex
+        .build(
+          InteractionSurface.Atlas,
+          atlasEntries,
+          GraphicsNames.collect(lowered).map(_.value),
+          _.value
+        )
+        .left
+        .map(_.message)
       fragmentsByAnnotation = placed.annotationFragments
-        .groupMap(_.annotation)(_.id.value)
+        .groupMap(_.annotation)(_.id)
         .view
         .mapValues(_.distinct.sorted)
         .toMap
@@ -163,21 +244,35 @@ object AppCompiler:
         ancestor =>
           flow.navigation
             .exactAnnotationsFor(ancestor)
-            .flatMap(annotation => fragmentsByAnnotation.getOrElse(annotation, Vector.empty))
-      )
+            .flatMap(annotation => fragmentsByAnnotation.getOrElse(annotation, Vector.empty)),
+        fragmentTargets,
+        _.value,
+        _.value
+      ).left.map(_.message)
       atlasInteractions <- interactionsFor(
         choice,
         atlasPlacements.toMap,
-        mark => Vector(mark.value),
-        ancestor => scene.navigation.marksFor(ancestor).map(_.value)
-      )
+        mark => Vector(mark),
+        ancestor => scene.navigation.marksFor(ancestor),
+        atlasTargets,
+        _.value,
+        _.value
+      ).left.map(_.message)
+      codexProxyCourt <- diagnosticCodexProxyCourt(
+        choice,
+        atlasPlacements,
+        codexPlacements,
+        flow,
+        placed,
+        fragmentsByAnnotation,
+        fragmentTargets,
+        pageTargets,
+        overlays
+      ).left.map(_.message)
       selectedFragments = directTargets(codexInteractions, InteractionRole.Selection)
       focusedFragments = directTargets(codexInteractions, InteractionRole.Focus)
       selectedProxyFragments = proxyTargets(codexInteractions, InteractionRole.Selection)
       focusedProxyFragments = proxyTargets(codexInteractions, InteractionRole.Focus)
-      fragmentTargets = placed.annotationFragments
-        .flatMap(f => flow.navigation.targetOf(f.annotation).map(f.id.value -> _))
-        .toMap
       lines <- placed.pages.traverse(p =>
         p.lines.traverse(line =>
           placed
@@ -188,17 +283,17 @@ object AppCompiler:
               CodexLine(
                 line.text.id.value,
                 text,
-                line.annotations.exists(piece => selectedFragments.contains(piece.id.value)),
-                line.annotations.exists(piece => focusedFragments.contains(piece.id.value)),
-                line.annotations.exists(piece => selectedProxyFragments.contains(piece.id.value)),
-                line.annotations.exists(piece => focusedProxyFragments.contains(piece.id.value))
+                line.annotations.exists(piece => selectedFragments.contains(piece.id)),
+                line.annotations.exists(piece => focusedFragments.contains(piece.id)),
+                line.annotations.exists(piece => selectedProxyFragments.contains(piece.id)),
+                line.annotations.exists(piece => focusedProxyFragments.contains(piece.id))
               )
             )
         )
       )
     yield
-      val pages = placed.pages.zip(lines).zip(overlays).map { case ((p, ls), overlay) =>
-        CodexPage(p.index, ls, overlay)
+      val pages = placed.pages.zip(lines).zip(overlays).zip(pageTargets.map(_._2)).map {
+        case (((p, ls), overlay), targets) => CodexPage(p.index, ls, overlay, targets)
       }
       Compiled(
         choice,
@@ -209,52 +304,72 @@ object AppCompiler:
         pages,
         scene,
         atlasSvg,
-        GraphicsNames.collect(lowered).length,
+        atlasTargets.size,
+        atlasTargets,
         atlasInteractions,
         codexInteractions,
         fragmentTargets,
+        codexProxyCourt,
         codexPlacements,
         atlasPlacements,
         receipts(model, state, flow, placed, scene, measurer, codexConfig, atlasConfig)
       )
 
-  private[app] def interactionsFor[Mark](
+  private[app] def interactionsFor[Mark, Name](
       choice: ViewChoice,
       placements: Map[Address, SelectionPlacement[Mark]],
-      directTargets: Mark => Vector[String],
-      proxyTargets: Address => Vector[String]
-  ): Either[String, Vector[InteractionDecoration[String, Address]]] =
+      directTargets: Mark => Vector[Name],
+      proxyTargets: Address => Vector[Name],
+      targetIndex: RenderedTargetIndex[Name],
+      renderMark: Mark => String,
+      renderName: Name => String
+  ): Either[InteractionError, Vector[InteractionDecoration[Name, Address]]] =
     def forRole(
         addresses: Vector[Address],
         role: InteractionRole
-    ): Either[String, Vector[InteractionDecoration[String, Address]]] =
+    ): Either[InteractionError, Vector[InteractionDecoration[Name, Address]]] =
       addresses
         .traverse { address =>
           placements
             .get(address)
-            .toRight(s"Compiler omitted placement for ${address.render}")
+            .toRight(InteractionError.MissingPlacement(address))
             .flatMap {
               case SelectionPlacement.OnMark(marks) =>
-                requireTargets(address, "direct", marks.toVector.flatMap(directTargets)).map(
-                  _.map(target =>
-                    InteractionDecoration(
-                      target,
-                      role,
-                      SemanticRepresentation.Direct(address)
-                    )
-                  )
-                )
+                marks.toVector
+                  .traverse { mark =>
+                    val targets = directTargets(mark).distinct
+                    if targets.isEmpty then
+                      Left(
+                        InteractionError.MissingPlacementMemberTarget(address, renderMark(mark))
+                      )
+                    else
+                      targets.traverse(target =>
+                        targetIndex.validate(
+                          InteractionDecoration(
+                            target,
+                            role,
+                            SemanticRepresentation.Direct(address)
+                          )
+                        )
+                      )
+                  }
+                  .map(_.flatten)
               case SelectionPlacement.ViaAncestor(ancestor) =>
-                requireTargets(address, s"proxy via ${ancestor.render}", proxyTargets(ancestor))
-                  .map(
-                    _.map(target =>
-                      InteractionDecoration(
-                        target,
-                        role,
-                        SemanticRepresentation.Proxy(address, ancestor)
+                if address == ancestor then Left(InteractionError.InvalidProxy(address, ancestor))
+                else
+                  val targets = proxyTargets(ancestor).distinct
+                  if targets.isEmpty then
+                    Left(InteractionError.MissingProxyTarget(address, ancestor))
+                  else
+                    targets.traverse(target =>
+                      targetIndex.validate(
+                        InteractionDecoration(
+                          target,
+                          role,
+                          SemanticRepresentation.Proxy(address, ancestor)
+                        )
                       )
                     )
-                  )
               case SelectionPlacement.OffProjection => Right(Vector.empty)
             }
         }
@@ -267,30 +382,93 @@ object AppCompiler:
       )
       focused <- forRole(choice.focus.toVector, InteractionRole.Focus)
     yield (selected ++ focused).sortBy(value =>
-      InteractionDecoration.sortKey(value, identity, _.render)
+      InteractionDecoration.sortKey(value, renderName, _.render)
     )
 
-  private def requireTargets(
-      address: Address,
-      placement: String,
-      targets: Vector[String]
-  ): Either[String, Vector[String]] =
-    val named = targets.distinct.sorted
-    if named.nonEmpty then Right(named)
-    else Left(s"${address.render} has $placement placement without a renderer target")
+  /** Builds an admitted diagnostic Codex plate from a real paginated fragment when the selected
+    * address has an Atlas ViaAncestor placement. WOG has no natural Codex ViaAncestor under the
+    * configured lenses, so this court exercises decoration, fragment identity, SVG injection, and
+    * CSS without claiming that the diagnostic placement came from CodexCompiler.
+    */
+  private def diagnosticCodexProxyCourt(
+      choice: ViewChoice,
+      atlasPlacements: Vector[(Address, SelectionPlacement[MarkId])],
+      codexPlacements: Vector[(Address, SelectionPlacement[AnnotationId])],
+      flow: CodexFlow,
+      placed: PaginatedCodex,
+      fragmentsByAnnotation: Map[AnnotationId, Vector[FragmentId]],
+      fragmentTargets: RenderedTargetIndex[FragmentId],
+      pageTargets: Vector[(Int, RenderedTargetIndex[FragmentId])],
+      overlays: Vector[String]
+  ): Either[InteractionError, Option[CodexProxyCourt]] =
+    atlasPlacements.collectFirst { case (original, SelectionPlacement.ViaAncestor(visible)) =>
+      original -> visible
+    } match
+      case None                      => Right(None)
+      case Some((original, visible)) =>
+        val targetsFor = (address: Address) =>
+          flow.navigation
+            .exactAnnotationsFor(address)
+            .flatMap(annotation => fragmentsByAnnotation.getOrElse(annotation, Vector.empty))
+            .distinct
+        targetsFor(visible).headOption match
+          case None              => Right(None)
+          case Some(firstTarget) =>
+            val diagnosticPlacements =
+              codexPlacements.toMap.updated(original, SelectionPlacement.ViaAncestor(visible))
+            interactionsFor(
+              choice,
+              diagnosticPlacements,
+              annotation => fragmentsByAnnotation.getOrElse(annotation, Vector.empty),
+              targetsFor,
+              fragmentTargets,
+              _.value,
+              _.value
+            ).flatMap { interactions =>
+              val pageByFragment = placed.annotationFragments.map(f => f.id -> f.page).toMap
+              val targetsByPage = pageTargets.toMap
+              val overlaysByPage =
+                placed.pages.zip(overlays).map((page, svg) => page.index -> svg).toMap
+              val court = for
+                page <- pageByFragment.get(firstTarget)
+                targets <- targetsByPage.get(page)
+                overlay <- overlaysByPage.get(page)
+              yield
+                val pageInteractions = interactions.filter(value => targets.contains(value.target))
+                CodexProxyCourt(original, visible, overlay, targets, pageInteractions)
+              court match
+                case Some(value) if value.interactions.exists {
+                      case InteractionDecoration(
+                            _,
+                            InteractionRole.Selection,
+                            SemanticRepresentation.Proxy(`original`, `visible`)
+                          ) =>
+                        true
+                      case _ => false
+                    } =>
+                  Right(Some(value))
+                case Some(_) => Left(InteractionError.MissingProxyTarget(original, visible))
+                case None    =>
+                  Left(
+                    InteractionError.MissingRenderedTarget(
+                      InteractionSurface.Codex,
+                      firstTarget.value
+                    )
+                  )
+            }
 
-  private def directTargets(
-      decorations: Vector[InteractionDecoration[String, Address]],
+  private def directTargets[Name](
+      decorations: Vector[InteractionDecoration[Name, Address]],
       role: InteractionRole
-  ): Set[String] =
+  ): Set[Name] =
     decorations.collect {
       case InteractionDecoration(target, `role`, SemanticRepresentation.Direct(_)) => target
     }.toSet
 
-  private def proxyTargets(
-      decorations: Vector[InteractionDecoration[String, Address]],
+  private def proxyTargets[Name](
+      decorations: Vector[InteractionDecoration[Name, Address]],
       role: InteractionRole
-  ): Set[String] =
+  ): Set[Name] =
     decorations.collect {
       case InteractionDecoration(target, `role`, SemanticRepresentation.Proxy(_, _)) => target
     }.toSet
