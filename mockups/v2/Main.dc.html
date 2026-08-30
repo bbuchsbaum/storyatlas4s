@@ -366,7 +366,7 @@
           <div style="display: flex; flex-direction: column; gap: 5px;">
             <span class="lbl" style="font-weight: 600;">Selection summary · not a ClaimMeta status</span>
             <span style="{{ selStatusStyle }}">{{ selStatus }}</span>
-            <span class="lbl" style="line-height: 1.4;">{{ selStatusWhy }}</span>
+            <span class="lbl" data-main-status-why="{{ selStatusWhy }}" style="line-height: 1.4;">{{ selStatusWhy }}</span>
           </div>
           <div style="display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #D7D2CB; padding-top: 6px;">
             <span class="lbl" style="font-weight: 600;">Field-level claims</span>
@@ -486,7 +486,7 @@ class Component extends DCLogic {
       { id:'s03', a:143, b:165, ep:'Episode 1 · shingle', sc:'Scene 1.1 · shingle',
         addr:'story/situation/syn:sit:disbelief', label:'He did not believe it',
         ctx:'narrated world (lane 0)', pol:'negative', mod:'none — asserted of the world',
-        status:'Composite field view', why:'The surface mental-state claim is SurfaceExplicit. He→Erran is StructurallyDerived; the antecedent of “it” retains two Hypothesized readings.',
+        status:'Composite field view', why:'The surface mental-state claim is SurfaceExplicit. He→Erran is Hypothesized; the antecedent of “it” retains two Hypothesized readings.',
         feat:'0.204', featMeta:F + ' · coverage 5/5 = 1.00',
         alt:'“it” has two retained readings: the reported proposition, or the act of telling. Neither is silently accepted.' },
       { id:'s04', a:166, b:250, ep:'Episode 1 · shingle', sc:'Scene 1.1 · shingle',

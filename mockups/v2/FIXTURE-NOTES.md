@@ -70,7 +70,7 @@ typed alignment state, not merely source addresses. The discriminating row is:
 ```text
 r02 "the guy took the bigger one"
   Source(s05)                         0.30
-  Distorted(s05, {Attribute})         0.41
+  Distorted(s05, {Object})            0.41
   Source(s04)                         0.19
   Unranked                            0.10
                                       ----

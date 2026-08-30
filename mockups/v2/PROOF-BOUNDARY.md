@@ -33,8 +33,8 @@ The review generator proves only that, for the exact files and environment in
 - fixture hashes, packet hashes, exact observation bytes, declared text
   typography, feature-ledger conservation, claim/upstream/span integrity, and scroll reachability
   pass executable courts with killing mutations;
-- no content-bearing exact-evidence region is silently clipped by its scroll viewport or any
-  outer clipping ancestor;
+- no content-bearing exact-evidence element clips its own exact text, and no such element is
+  silently clipped by its scroll viewport or any outer clipping ancestor;
 - no rendered descendant crosses the declared artboard bounds in that frozen
   default state;
 - the manifest binds every source and output byte with SHA-256, authenticates its own digest

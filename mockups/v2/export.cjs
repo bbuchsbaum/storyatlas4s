@@ -374,29 +374,35 @@ async function plateCourt(page, expected, plateName, fixtureRegistry) {
       };
     }
 
-    function clippingAncestors(item) {
-      const ancestors = [];
-      for (let ancestor = item.parentElement; ancestor; ancestor = ancestor.parentElement) {
-        if (!artboard.contains(ancestor) && ancestor !== artboard) break;
-        const axes = clippingAxes(ancestor);
-        if (axes.x || axes.y) ancestors.push({ element: ancestor, axes });
-        if (ancestor === artboard) break;
+    function clippingChain(item) {
+      const chain = [];
+      for (let element = item; element; element = element.parentElement) {
+        if (!artboard.contains(element) && element !== artboard) break;
+        const axes = clippingAxes(element);
+        if (axes.x || axes.y) chain.push({ element, axes, self: element === item });
+        if (element === artboard) break;
       }
-      return ancestors;
+      return chain;
     }
 
     const clippedEvidence = [];
     for (const item of document.querySelectorAll("[data-observation-ref]")) {
-      for (const ancestor of clippingAncestors(item)) {
-        const element = ancestor.element;
+      for (const clipping of clippingChain(item)) {
+        const element = clipping.element;
         const overflows =
-          (ancestor.axes.y && element.scrollHeight > element.clientHeight + 1) ||
-          (ancestor.axes.x && element.scrollWidth > element.clientWidth + 1);
-        if (overflows && !element.hasAttribute("data-dc-scroll-region")) {
+          (clipping.axes.y && element.scrollHeight > element.clientHeight + 1) ||
+          (clipping.axes.x && element.scrollWidth > element.clientWidth + 1);
+        // A scroll viewport may intentionally clip descendants, but an evidence element must
+        // never clip its own exact text. Scroll regions therefore have to remain ancestors.
+        if (
+          overflows &&
+          (clipping.self || !element.hasAttribute("data-dc-scroll-region"))
+        ) {
           clippedEvidence.push({
             ref: item.dataset.observationRef || null,
             tag: element.tagName.toLowerCase(),
-            id: element.id || null
+            id: element.id || null,
+            self: clipping.self
           });
           break;
         }
@@ -416,13 +422,13 @@ async function plateCourt(page, expected, plateName, fixtureRegistry) {
         const rr = region.getBoundingClientRect();
         const ir = item.getBoundingClientRect();
         const visible = { left: rr.left, top: rr.top, right: rr.right, bottom: rr.bottom };
-        for (const ancestor of clippingAncestors(item)) {
-          const ar = ancestor.element.getBoundingClientRect();
-          if (ancestor.axes.x) {
+        for (const clipping of clippingChain(item)) {
+          const ar = clipping.element.getBoundingClientRect();
+          if (clipping.axes.x) {
             visible.left = Math.max(visible.left, ar.left);
             visible.right = Math.min(visible.right, ar.right);
           }
-          if (ancestor.axes.y) {
+          if (clipping.axes.y) {
             visible.top = Math.max(visible.top, ar.top);
             visible.bottom = Math.min(visible.bottom, ar.bottom);
           }
@@ -566,6 +572,7 @@ async function mainClaimCourt(page, fixtureRegistry) {
   );
   if (!source) throw new Error("claim court has no canonical source fixture");
   const records = [];
+  const summaries = [];
   for (const unit of source.units) {
     await page.evaluate((unitId) => {
       const row = document.querySelector(`[data-main-sentence="${unitId}"]`);
@@ -588,6 +595,9 @@ async function mainClaimCourt(page, fixtureRegistry) {
         alternativeGroup: node.dataset.claimAlternativeGroup || ""
       })), unit.id);
     if (claims.length === 0) throw new Error(`claim court found no claims for ${unit.id}`);
+    const summaryWhy =
+      (await page.locator("[data-main-status-why]").getAttribute("data-main-status-why")) || "";
+    summaries.push({ unit: unit.id, why: summaryWhy });
     records.push(...claims);
   }
   await page.evaluate(() => document.querySelector('[data-main-sentence="s05"]').click());
@@ -603,15 +613,18 @@ async function mainClaimCourt(page, fixtureRegistry) {
     "Hypothesized",
     "HumanAdjudicated"
   ]);
-  function validate(claims) {
+  function validate(claims, summaryRecords) {
     const ids = new Set();
     const alternativeGroups = new Map();
+    const statusesByUnit = new Map();
     for (const claim of claims) {
       if (!claim.id || ids.has(claim.id)) throw new Error(`duplicate or empty claim id ${claim.id}`);
       ids.add(claim.id);
       if (!allowedStatuses.has(claim.status)) {
         throw new Error(`${claim.id} uses noncanonical EpistemicStatus ${claim.status}`);
       }
+      if (!statusesByUnit.has(claim.unit)) statusesByUnit.set(claim.unit, new Set());
+      statusesByUnit.get(claim.unit).add(claim.status);
       if (!claim.receipt) throw new Error(`${claim.id} has no receipt`);
       if (claim.value.includes("|")) throw new Error(`${claim.id} collapses alternatives`);
       const spans = claim.support
@@ -655,25 +668,128 @@ async function mainClaimCourt(page, fixtureRegistry) {
     for (const [group, members] of alternativeGroups) {
       if (members.length < 2) throw new Error(`${group} does not retain separate alternatives`);
     }
+    for (const summary of summaryRecords) {
+      const unitStatuses = statusesByUnit.get(summary.unit) || new Set();
+      for (const status of allowedStatuses) {
+        if (summary.why.includes(status) && !unitStatuses.has(status)) {
+          throw new Error(`${summary.unit} summary cites absent status ${status}`);
+        }
+      }
+    }
     return { ids: [...ids].sort(), alternativeGroups: Object.fromEntries(alternativeGroups) };
   }
 
-  const checked = validate(records);
+  const checked = validate(records, summaries);
   const mutation = JSON.parse(JSON.stringify(records));
   const alone = mutation.find((claim) => claim.id === "c-s05-alone-unaccompanied");
   alone.support = "283:290";
   let mutationKilled = false;
   try {
-    validate(mutation);
+    validate(mutation, summaries);
   } catch (error) {
     mutationKilled = /source span does not round-trip/.test(String(error.message));
   }
   if (!mutationKilled) throw new Error("claim support-span mutation survived");
+  const summaryMutation = JSON.parse(JSON.stringify(summaries));
+  const s03Summary = summaryMutation.find((summary) => summary.unit === "s03");
+  s03Summary.why = s03Summary.why.replace("He→Erran is Hypothesized", "He→Erran is StructurallyDerived");
+  let summaryMutationKilled = false;
+  try {
+    validate(records, summaryMutation);
+  } catch (error) {
+    summaryMutationKilled = /s03 summary cites absent status StructurallyDerived/.test(
+      String(error.message)
+    );
+  }
+  if (!summaryMutationKilled) throw new Error("claim-summary status mutation survived");
   return {
     claims: records.length,
     ids: checked.ids,
     alternativeGroups: checked.alternativeGroups,
-    mutation: { name: "claim-support-span", killed: true }
+    mutation: { name: "claim-support-span", killed: true },
+    summaryMutation: { name: "claim-summary-status", killed: true }
+  };
+}
+
+async function recallSemanticCourt(page) {
+  const allowedFacets = new Set([
+    "Actor",
+    "Action",
+    "Object",
+    "Location",
+    "Outcome",
+    "Cause",
+    "Context",
+    "RoleReversal",
+    "Polarity",
+    "Modality"
+  ]);
+
+  function validate(snapshot) {
+    const distorted = snapshot.alignState.match(/^Distorted\([^,]+,\{([^}]+)\}\)$/);
+    const stateFacets = distorted ? distorted[1].split(",") : [];
+    for (const facet of [...stateFacets, ...snapshot.facets]) {
+      if (!allowedFacets.has(facet)) throw new Error(`noncanonical Facet ${facet}`);
+    }
+  }
+
+  async function snapshot(rowId) {
+    await page.locator(`[data-recall-row="${rowId}"]`).click();
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    );
+    return page.evaluate(() => ({
+      alignState:
+        document.querySelector("[data-recall-align-state]")?.dataset.recallAlignState || "",
+      facets: Array.from(document.querySelectorAll("[data-recall-facet]"), (node) =>
+        node.dataset.recallFacet || ""
+      ),
+      compatibility: document.querySelector("[data-recall-compat]")?.textContent?.trim() || "",
+      recallText:
+        document.querySelector('[data-dc-exact-evidence="recall-selection"]')?.textContent?.trim() ||
+        ""
+    }));
+  }
+
+  const r02 = await snapshot("r02");
+  validate(r02);
+  if (r02.alignState !== "Distorted(s05,{Object})") {
+    throw new Error(`r02 exact AlignState drifted: ${r02.alignState}`);
+  }
+
+  const r03 = await snapshot("r03");
+  validate(r03);
+  if (r03.alignState !== "Source(s02)" || !r03.recallText.includes("told him")) {
+    throw new Error(`r03 reporting-frame probe drifted: ${JSON.stringify(r03)}`);
+  }
+  if (
+    !r03.compatibility.includes("retains “told him”") ||
+    !r03.compatibility.includes("External(SourceConsistentInference)") ||
+    /report asserted as event|assert(?:s|ed)? the .* as (?:narrated-world )?fact/i.test(
+      r03.compatibility
+    )
+  ) {
+    throw new Error(`r03 compatibility overclaims: ${r03.compatibility}`);
+  }
+
+  const mutation = { ...r02, alignState: "Distorted(s05,{Attribute})" };
+  let mutationKilled = false;
+  try {
+    validate(mutation);
+  } catch (error) {
+    mutationKilled = /noncanonical Facet Attribute/.test(String(error.message));
+  }
+  if (!mutationKilled) throw new Error("noncanonical recall Facet mutation survived");
+
+  await snapshot("r02");
+  return {
+    r02: { alignState: r02.alignState, facets: r02.facets },
+    r03: {
+      alignState: r03.alignState,
+      recallText: r03.recallText,
+      compatibility: r03.compatibility
+    },
+    mutation: { name: "noncanonical-facet-attribute", killed: true }
   };
 }
 
@@ -690,7 +806,9 @@ async function main() {
   let temporarySourceDir;
   let directiveChecks;
   let clipAncestorMutation;
+  let clipSelfMutation;
   let claimChecks;
+  let recallChecks;
   const entries = [];
   try {
     temporarySourceDir = fs.mkdtempSync(path.join(os.tmpdir(), "storyatlas-v2-export-"));
@@ -728,6 +846,7 @@ async function main() {
       const resolutionError = await page.getAttribute("html", "data-dc-error");
       if (resolutionError) throw new Error(`${sourceName}: ${resolutionError}`);
       if (name === "Main") claimChecks = await mainClaimCourt(page, fixtureRegistry);
+      if (name === "RecallMatrix") recallChecks = await recallSemanticCourt(page);
       const resolved = (await frozenHtml(page, sourceName, name)).replace(/[ \t]+$/gm, "");
       if (
         resolved.includes("{{") ||
@@ -826,6 +945,35 @@ async function main() {
           region.style.removeProperty("flex-grow");
           wrapper.replaceWith(region);
         });
+
+        const selfClipState = await page.evaluate(() => {
+          const item = document.querySelector('[data-observation-ref="s01"]');
+          const style = item.getAttribute("style");
+          item.style.cssText +=
+            ";display:inline-block;width:1px;overflow:hidden;white-space:nowrap";
+          return { style };
+        });
+        const selfClipMutationResult = await plateCourt(page, viewport, name, fixtureRegistry);
+        const selfClipFinding = (selfClipMutationResult.clippedEvidence || []).find(
+          (finding) => finding.ref === "s01" && finding.self === true
+        );
+        const selfClipReachabilityFailure =
+          selfClipMutationResult.error === "observation-clipped-by-ancestor" &&
+          selfClipMutationResult.ref === "s01";
+        if (!selfClipFinding && !selfClipReachabilityFailure) {
+          throw new Error(`${sourceName}: self-clipping evidence mutation survived`);
+        }
+        clipSelfMutation = {
+          name: "one-pixel-self-clipping-evidence",
+          killed: true,
+          diagnostic: selfClipMutationResult.error || "clippedEvidence:self"
+        };
+        mutations.push(clipSelfMutation);
+        await page.evaluate(({ style }) => {
+          const item = document.querySelector('[data-observation-ref="s01"]');
+          if (style === null) item.removeAttribute("style");
+          else item.setAttribute("style", style);
+        }, selfClipState);
       }
 
       await page.screenshot({ path: pngPath, fullPage: true, animations: "disabled" });
@@ -906,8 +1054,10 @@ async function main() {
       directives: directiveChecks,
       fixtureMutation,
       claimChecks,
+      recallChecks,
       visibleSiblingMutation: "killed independently on every plate",
       clipAncestorMutation,
+      clipSelfMutation,
       rendererStructuralDigest: benchmark.structuralDigest
     },
     views: entries,

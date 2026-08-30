@@ -122,7 +122,7 @@
             <span class="lbl" style="font-size: 10px;">identifiers only · exact text is in the dual Codex</span>
           </div>
           <sc-for list="{{ rows }}" as="r" hint-placeholder-count="11">
-            <div style="{{ r.rowStyle }}" onClick="{{ r.pick }}" tabindex="0" role="button" aria-label="{{ r.aria }}">
+            <div data-recall-row="{{ r.id }}" style="{{ r.rowStyle }}" onClick="{{ r.pick }}" tabindex="0" role="button" aria-label="{{ r.aria }}">
               <span class="m" style="{{ r.idStyle }}">{{ r.id }}</span>
               <span class="m" style="{{ r.textStyle }}">{{ r.summary }}</span>
             </div>
@@ -246,7 +246,7 @@
           <span class="m" data-dc-exact-evidence="source-selection" style="font-size: 16px; line-height: 24.8px; border-left: 3px solid #2F4693; padding-left: 8px;">{{ selSourceText }}</span>
         </div>
         <div style="display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 5px 12px; font-size: 12px;">
-          <span style="font-weight: 600;">AlignState</span><span class="m" style="font-size: 11px; overflow-wrap: anywhere;">{{ selAlignState }}</span>
+          <span style="font-weight: 600;">AlignState</span><span class="m" data-recall-align-state="{{ selAlignState }}" style="font-size: 11px; overflow-wrap: anywhere;">{{ selAlignState }}</span>
           <span style="font-weight: 600;">State mass</span><span class="m" style="font-size: 12.5px;">{{ selMass }}</span>
           <span style="font-weight: 600;">Anchor total</span><span class="m" style="font-size: 12.5px;">{{ selAnchorMass }}</span>
           <span style="font-weight: 600;">Rank in row</span><span class="m" style="font-size: 12.5px;">{{ selRank }}</span>
@@ -258,7 +258,7 @@
           <span class="lbl" style="font-weight: 600;">Fidelity facets — part of Distorted identity</span>
           <span class="lbl" style="line-height: 1.4; font-size: 10.5px;">A unit can identify the right anchor and still misstate it. A non-empty facet set makes this a distinct Distorted state; it is never merged into Source mass.</span>
           <sc-for list="{{ facets }}" as="f" hint-placeholder-count="5">
-            <div style="display: flex; align-items: center; gap: 7px;">
+            <div data-recall-facet="{{ f.name }}" style="display: flex; align-items: center; gap: 7px;">
               <span style="{{ f.mark }}"></span>
               <span style="font-size: 11.5px; flex-grow: 1;">{{ f.name }}</span>
               <span class="m" style="font-size: 11px; color: {{ f.color }};">{{ f.state }}</span>
@@ -268,7 +268,7 @@
 
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <span class="lbl" style="font-weight: 600;">Structural compatibility</span>
-          <span style="font-size: 12px; line-height: 1.4;">{{ selCompat }}</span>
+          <span data-recall-compat style="font-size: 12px; line-height: 1.4;">{{ selCompat }}</span>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -339,7 +339,7 @@ class Component extends DCLogic {
     var rows = [
       { id:'r01', summary:'two boats on beach', text:'there were two boats on the beach', mass:{s01:0.88,s04:0.07}, unr:0.05 },
       { id:'r02', summary:'takes bigger boat', text:'the guy took the bigger one', mass:{s05:0.71,s04:0.19},
-        states:[{kind:'Source',dest:'s05',facets:[],v:0.30},{kind:'Distorted',dest:'s05',facets:['Attribute'],v:0.41},{kind:'Source',dest:'s04',facets:[],v:0.19}], unr:0.10 },
+        states:[{kind:'Source',dest:'s05',facets:[],v:0.30},{kind:'Distorted',dest:'s05',facets:['Object'],v:0.41},{kind:'Source',dest:'s04',facets:[],v:0.19}], unr:0.10 },
       { id:'r03', summary:'uncle says shore empty', text:'his uncle told him the other side was empty', mass:{s02:0.46,s04:0.21,SourceConsistentInference:0.28}, unr:0.05 },
       { id:'r04', summary:'fog; cannot see', text:"there was a lot of fog, you couldn't see anything", mass:{s06:0.44,s08:0.41}, unr:0.15 },
       { id:'r05', summary:'shouting from shore', text:'somebody was shouting at him from the shore', mass:{s07:0.79,s01:0.06}, unr:0.15 },
@@ -535,26 +535,26 @@ class Component extends DCLogic {
 
     var facetTable = {
       'r02|s05': [
-        { name: 'Attribute', state: 'conflict — “bigger” vs “smaller”', bad: true },
-        { name: 'Role', state: 'consistent', bad: false },
+        { name: 'Object', state: 'conflict — “bigger” vs “smaller” boat', bad: true },
+        { name: 'RoleReversal', state: 'consistent', bad: false },
         { name: 'Polarity', state: 'consistent', bad: false },
         { name: 'Location', state: 'consistent', bad: false },
-        { name: 'Reported as fact', state: 'not applicable', bad: false }
+        { name: 'Context', state: 'not applicable', bad: false }
       ],
       'r03|s02': [
-        { name: 'Agent supplied', state: 'conflict — source names no teller', bad: true },
-        { name: 'Reported as fact', state: 'conflict — report asserted as event', bad: true },
+        { name: 'Actor', state: 'supplied separately — source names no teller', bad: false },
+        { name: 'Context', state: 'consistent — “told him” retains report context', bad: false },
         { name: 'Polarity', state: 'consistent', bad: false },
-        { name: 'Role', state: 'consistent', bad: false },
+        { name: 'RoleReversal', state: 'consistent', bad: false },
         { name: 'Location', state: 'not applicable', bad: false }
       ]
     };
     var defFacets = [
-      { name: 'Role', state: 'consistent', bad: false },
+      { name: 'RoleReversal', state: 'consistent', bad: false },
       { name: 'Polarity', state: 'consistent', bad: false },
       { name: 'Location', state: 'consistent', bad: false },
-      { name: 'Attribute', state: 'consistent', bad: false },
-      { name: 'Reported as fact', state: 'not applicable', bad: false }
+      { name: 'Object', state: 'consistent', bad: false },
+      { name: 'Context', state: 'not applicable', bad: false }
     ];
     var fset = selAlign === 'Distorted' ? (facetTable[selRowId + '|' + selCol] || defFacets) : defFacets;
     var facets = fset.map(function (f) {
@@ -567,8 +567,8 @@ class Component extends DCLogic {
     });
 
     var compat = {
-      'r02|s05': 'Discriminating probe: Source(s05)=0.30 and Distorted(s05,{Attribute})=0.41 share an anchor but remain different states. Their 0.71 anchor total is never presented as faithful source mass.',
-      'r03|s02': 'Compatible with the reporting frame, not with the world. The source states a telling occurred and does not name a teller; the unit supplies one and asserts the content as fact.',
+      'r02|s05': 'Discriminating probe: Source(s05)=0.30 and Distorted(s05,{Object})=0.41 share an anchor but remain different states. Their 0.71 anchor total is never presented as faithful source mass.',
+      'r03|s02': 'Faithful to the reporting frame: the unit retains “told him” rather than asserting the shore state as narrated-world fact. The supplied uncle-as-teller identity is represented separately as External(SourceConsistentInference), not as a Distorted(Context) state.',
       'r04|s06': 'Compatible with two targets. The mass is genuinely bimodal; no winner is manufactured.',
       'r10|Unranked': 'No destination was ranked. The participant marked residual content they could not retrieve. The full unit mass is held here rather than distributed.'
     };

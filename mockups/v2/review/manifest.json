@@ -193,11 +193,41 @@
         "mutation": {
           "name": "claim-support-span",
           "killed": true
+        },
+        "summaryMutation": {
+          "name": "claim-summary-status",
+          "killed": true
+        }
+      },
+      "recallChecks": {
+        "r02": {
+          "alignState": "Distorted(s05,{Object})",
+          "facets": [
+            "Object",
+            "RoleReversal",
+            "Polarity",
+            "Location",
+            "Context"
+          ]
+        },
+        "r03": {
+          "alignState": "Source(s02)",
+          "recallText": "his uncle told him the other side was empty",
+          "compatibility": "Faithful to the reporting frame: the unit retains “told him” rather than asserting the shore state as narrated-world fact. The supplied uncle-as-teller identity is represented separately as External(SourceConsistentInference), not as a Distorted(Context) state."
+        },
+        "mutation": {
+          "name": "noncanonical-facet-attribute",
+          "killed": true
         }
       },
       "visibleSiblingMutation": "killed independently on every plate",
       "clipAncestorMutation": {
         "name": "one-pixel-outer-clipping-ancestor",
+        "killed": true,
+        "diagnostic": "observation-clipped-by-ancestor"
+      },
+      "clipSelfMutation": {
+        "name": "one-pixel-self-clipping-evidence",
         "killed": true,
         "diagnostic": "observation-clipped-by-ancestor"
       },
@@ -366,7 +396,7 @@
           "scripts": 0,
           "directives": 0,
           "unresolved": false,
-          "textLength": 11541,
+          "textLength": 11530,
           "externalResourceAttributes": 0,
           "cssImports": 0
         },
@@ -846,6 +876,11 @@
             "name": "one-pixel-outer-clipping-ancestor",
             "killed": true,
             "diagnostic": "observation-clipped-by-ancestor"
+          },
+          {
+            "name": "one-pixel-self-clipping-evidence",
+            "killed": true,
+            "diagnostic": "observation-clipped-by-ancestor"
           }
         ]
       },
@@ -1125,7 +1160,7 @@
           "scripts": 0,
           "directives": 0,
           "unresolved": false,
-          "textLength": 12440,
+          "textLength": 12437,
           "externalResourceAttributes": 0,
           "cssImports": 0
         },
@@ -1430,7 +1465,7 @@
       {
         "path": "FIXTURE-NOTES.md",
         "bytes": 5807,
-        "sha256": "c8f70bcac366b1f4d18b2de8b7712ba96e0065ddd99cfbc14117ee6c49a1919c"
+        "sha256": "58f8ea6976a56647b6e381f9194463bb68210ca92f8f8c00c49f35f63b501785"
       },
       {
         "path": "FocusOrder.dc.html",
@@ -1449,8 +1484,8 @@
       },
       {
         "path": "Main.dc.html",
-        "bytes": 66375,
-        "sha256": "6113343ce661c650c9958a5c2ef5be8111f0d6520ad0ff3cbebf5955947b2023"
+        "bytes": 66410,
+        "sha256": "a4033fb8f732e30e772e4b7f4cdd942d2f22f9d1f739b7d5f0784bceb6b6e680"
       },
       {
         "path": "Motion.dc.html",
@@ -1459,13 +1494,13 @@
       },
       {
         "path": "PROOF-BOUNDARY.md",
-        "bytes": 6546,
-        "sha256": "ea3657e6fc733b4fe02536e81011fd4213c58875b16c6f6f63a568251cce2c91"
+        "bytes": 6593,
+        "sha256": "b4752eab907cae468bada53367d3be28618d39236612666a4f41f3bfe6e04e0f"
       },
       {
         "path": "RecallMatrix.dc.html",
-        "bytes": 42826,
-        "sha256": "410bde3779509b1b2a5a1d764666ca2e73860751cbbb2d576fbc306567e53eea"
+        "bytes": 43051,
+        "sha256": "817288c41eab7a53fd46dfd72189e1e9794cf4c01d8e3ee9edd45a79d6a68bdb"
       },
       {
         "path": "Reflow.dc.html",
@@ -1479,8 +1514,8 @@
       },
       {
         "path": "StateBoard.dc.html",
-        "bytes": 32051,
-        "sha256": "156b7aa47aded1edb48985ba718ba1bca8ea4a7363983694df3e288451c69dad"
+        "bytes": 32048,
+        "sha256": "4817a98c469b4c3626a6e89a32cfff2c1c9a4adf1f3a622d885017d0c98ead3c"
       },
       {
         "path": "Tokens.dc.html",
@@ -1494,8 +1529,8 @@
       },
       {
         "path": "export.cjs",
-        "bytes": 43450,
-        "sha256": "30ac5537c10869d4c169a29370c25e70ce37a0ff3f63ed5ac077d86e755b8d16"
+        "bytes": 49408,
+        "sha256": "61d8214b8a47597acdf3a91b5c48438e4e142c2b2bc7c5c272e801adea87d0e1"
       },
       {
         "path": "fixture-court.cjs",
@@ -1524,8 +1559,8 @@
       },
       {
         "path": "storyatlas-mockup-v2.html",
-        "bytes": 2889617,
-        "sha256": "4dbd42accf4a5ba81088bc9fee57f573d1d61aafe251fa7c61030a9d06fe796d"
+        "bytes": 2889882,
+        "sha256": "123af82dbb471f3180eedf16eb95268999323dbb5bc7e5c838c1170146dd2460"
       },
       {
         "path": "support.js",
@@ -1606,8 +1641,8 @@
       },
       {
         "path": "main.html",
-        "bytes": 41501,
-        "sha256": "8eb4e5ee785b43a27dd4a561b57e3b5d91349ff3ea79674a9555511010a487bf"
+        "bytes": 41658,
+        "sha256": "af3d7e160399ad072fa69430c8503980957d83a9995dd4c752c13fd115f8b3ad"
       },
       {
         "path": "main.png",
@@ -1626,13 +1661,13 @@
       },
       {
         "path": "recall-matrix.html",
-        "bytes": 59985,
-        "sha256": "5e6b6e0b1ea78b88e933bb13e84f7a159d7f217899311a6117174d528f07a660"
+        "bytes": 60434,
+        "sha256": "876b841772645fe17059ab781ed6b7cae611d0e6d1e07367271c5f33030d0d6d"
       },
       {
         "path": "recall-matrix.png",
-        "bytes": 364415,
-        "sha256": "8baf3989f0cb971afe261b39447ae0813ca6b9ad8d775635420f5f6eca0b7c1a"
+        "bytes": 365172,
+        "sha256": "cc0099c47b90e9caacd6e2569a865c2687e0f499e2e4e8896281471cc7c821f9"
       },
       {
         "path": "reflow.html",
@@ -1666,13 +1701,13 @@
       },
       {
         "path": "state-board.html",
-        "bytes": 37386,
-        "sha256": "4855999bea175151fcd4fae124ddd2577920bc029292ed925716fa6b6d2eddea"
+        "bytes": 37383,
+        "sha256": "2b24cb3a3bf33dd06b3af53ea87dd03d8ec5088549ee17f314904bbe3efbd94a"
       },
       {
         "path": "state-board.png",
-        "bytes": 521989,
-        "sha256": "75257ad367e40600584e60a2b40cac6a9b5f096ad54f3252f0c644ab5200b3c2"
+        "bytes": 521391,
+        "sha256": "1ec10cf45c6063a7e9a8e2715de85dac0f762b022c952dfe5bca225d9467f662"
       },
       {
         "path": "tokens.html",
@@ -1686,7 +1721,7 @@
       }
     ]
   },
-  "artifactDigest": "3dd04832dbbe9a3501f5af3048378a62d9809362aa10e04164ac550835dca9e8",
+  "artifactDigest": "6cc785f98724dc392852e13c16ffc805df6a1b590317ab6b2189a010895039cc",
   "reproducibleRule": "storyatlas4s-canonical-json-sha256-v1:target=schema+reproducibleRule+reproducible",
   "reproducible": {
     "schema": "storyatlas4s.mockup-reproducible-build.v1",
@@ -1781,7 +1816,7 @@
         "providerOutcome": "MissingReason.ProviderAbstained"
       }
     },
-    "sourceSetDigest": "e4c1d6da4b82f462dce1c0d774affbad82247061e85baa1a236df92c1ca8e252",
+    "sourceSetDigest": "d20f61f90209b871b168635da3fcdab067c0685098771b6c0232e9aa164d4a61",
     "rendererStructuralDigest": "75719b4118ca3d558704c2645c9eaa2a32d025fa7983eae8f5bc07058b3a068e",
     "views": [
       {
@@ -1934,7 +1969,7 @@
           "scripts": 0,
           "directives": 0,
           "unresolved": false,
-          "textLength": 11541,
+          "textLength": 11530,
           "externalResourceAttributes": 0,
           "cssImports": 0
         },
@@ -2611,7 +2646,7 @@
           "scripts": 0,
           "directives": 0,
           "unresolved": false,
-          "textLength": 12440,
+          "textLength": 12437,
           "externalResourceAttributes": 0,
           "cssImports": 0
         },
@@ -2862,7 +2897,7 @@
       {
         "path": "FIXTURE-NOTES.md",
         "bytes": 5807,
-        "sha256": "c8f70bcac366b1f4d18b2de8b7712ba96e0065ddd99cfbc14117ee6c49a1919c"
+        "sha256": "58f8ea6976a56647b6e381f9194463bb68210ca92f8f8c00c49f35f63b501785"
       },
       {
         "path": "FocusOrder.dc.html",
@@ -2881,8 +2916,8 @@
       },
       {
         "path": "Main.dc.html",
-        "bytes": 66375,
-        "sha256": "6113343ce661c650c9958a5c2ef5be8111f0d6520ad0ff3cbebf5955947b2023"
+        "bytes": 66410,
+        "sha256": "a4033fb8f732e30e772e4b7f4cdd942d2f22f9d1f739b7d5f0784bceb6b6e680"
       },
       {
         "path": "Motion.dc.html",
@@ -2891,13 +2926,13 @@
       },
       {
         "path": "PROOF-BOUNDARY.md",
-        "bytes": 6546,
-        "sha256": "ea3657e6fc733b4fe02536e81011fd4213c58875b16c6f6f63a568251cce2c91"
+        "bytes": 6593,
+        "sha256": "b4752eab907cae468bada53367d3be28618d39236612666a4f41f3bfe6e04e0f"
       },
       {
         "path": "RecallMatrix.dc.html",
-        "bytes": 42826,
-        "sha256": "410bde3779509b1b2a5a1d764666ca2e73860751cbbb2d576fbc306567e53eea"
+        "bytes": 43051,
+        "sha256": "817288c41eab7a53fd46dfd72189e1e9794cf4c01d8e3ee9edd45a79d6a68bdb"
       },
       {
         "path": "Reflow.dc.html",
@@ -2911,8 +2946,8 @@
       },
       {
         "path": "StateBoard.dc.html",
-        "bytes": 32051,
-        "sha256": "156b7aa47aded1edb48985ba718ba1bca8ea4a7363983694df3e288451c69dad"
+        "bytes": 32048,
+        "sha256": "4817a98c469b4c3626a6e89a32cfff2c1c9a4adf1f3a622d885017d0c98ead3c"
       },
       {
         "path": "Tokens.dc.html",
@@ -2926,8 +2961,8 @@
       },
       {
         "path": "export.cjs",
-        "bytes": 43450,
-        "sha256": "30ac5537c10869d4c169a29370c25e70ce37a0ff3f63ed5ac077d86e755b8d16"
+        "bytes": 49408,
+        "sha256": "61d8214b8a47597acdf3a91b5c48438e4e142c2b2bc7c5c272e801adea87d0e1"
       },
       {
         "path": "fixture-court.cjs",
@@ -2956,8 +2991,8 @@
       },
       {
         "path": "storyatlas-mockup-v2.html",
-        "bytes": 2889617,
-        "sha256": "4dbd42accf4a5ba81088bc9fee57f573d1d61aafe251fa7c61030a9d06fe796d"
+        "bytes": 2889882,
+        "sha256": "123af82dbb471f3180eedf16eb95268999323dbb5bc7e5c838c1170146dd2460"
       },
       {
         "path": "support.js",
@@ -3008,8 +3043,8 @@
       },
       {
         "path": "main.html",
-        "bytes": 41501,
-        "sha256": "8eb4e5ee785b43a27dd4a561b57e3b5d91349ff3ea79674a9555511010a487bf"
+        "bytes": 41658,
+        "sha256": "af3d7e160399ad072fa69430c8503980957d83a9995dd4c752c13fd115f8b3ad"
       },
       {
         "path": "motion.html",
@@ -3018,8 +3053,8 @@
       },
       {
         "path": "recall-matrix.html",
-        "bytes": 59985,
-        "sha256": "5e6b6e0b1ea78b88e933bb13e84f7a159d7f217899311a6117174d528f07a660"
+        "bytes": 60434,
+        "sha256": "876b841772645fe17059ab781ed6b7cae611d0e6d1e07367271c5f33030d0d6d"
       },
       {
         "path": "reflow.html",
@@ -3033,8 +3068,8 @@
       },
       {
         "path": "state-board.html",
-        "bytes": 37386,
-        "sha256": "4855999bea175151fcd4fae124ddd2577920bc029292ed925716fa6b6d2eddea"
+        "bytes": 37383,
+        "sha256": "2b24cb3a3bf33dd06b3af53ea87dd03d8ec5088549ee17f314904bbe3efbd94a"
       },
       {
         "path": "tokens.html",
@@ -3043,7 +3078,7 @@
       }
     ]
   },
-  "reproducibleDigest": "d3a378c3444d3e6d435ba6b1f9e4663499be52a895bb03fb9b0f13d5f84a5530",
+  "reproducibleDigest": "b244afd9f83e29fcd20adb27ec75c4447dc563f537d4403e6711b5612e1d1e0a",
   "diagnostics": {
     "meaning": "Unsigned generation context and machine-dependent timing. Exact output bytes remain bound by artifactDigest.",
     "browser": {
@@ -3055,9 +3090,9 @@
       "arch": "arm64"
     },
     "generatorContext": {
-      "preCommitSourceHead": "343aa6257ab0f718eb275780714dd31b48d0928b",
+      "preCommitSourceHead": "dda53463a1556f1b18bfd8a24c937d439fc89dfc",
       "worktreeDirty": true,
-      "sourceSetDigest": "e4c1d6da4b82f462dce1c0d774affbad82247061e85baa1a236df92c1ca8e252"
+      "sourceSetDigest": "d20f61f90209b871b168635da3fcdab067c0685098771b6c0232e9aa164d4a61"
     },
     "rendererGap": {
       "interactionGateMs": 16.7,
@@ -3091,8 +3126,8 @@
     },
     "manifestVerifier": {
       "verified": {
-        "artifactDigest": "3dd04832dbbe9a3501f5af3048378a62d9809362aa10e04164ac550835dca9e8",
-        "reproducibleDigest": "d3a378c3444d3e6d435ba6b1f9e4663499be52a895bb03fb9b0f13d5f84a5530",
+        "artifactDigest": "6cc785f98724dc392852e13c16ffc805df6a1b590317ab6b2189a010895039cc",
+        "reproducibleDigest": "b244afd9f83e29fcd20adb27ec75c4447dc563f537d4403e6711b5612e1d1e0a",
         "sources": 25,
         "outputs": 29,
         "reproducibleSources": 25,
