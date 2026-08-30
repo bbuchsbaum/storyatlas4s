@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StoryAtlas mockup v2 — geometric hatch court</title>
+<style>
+body{margin:0;padding:24px;background:#f9f5ef;color:#221d19;font:13px/1.5 system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}.mono{font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.notice{background:#221d19;color:#f9f5ef;padding:8px 12px;font-weight:700;letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px}.card{border:1px solid #817b74;padding:12px;background:#fff}
+svg{display:block;width:100%;height:auto;border:1px solid #d7d2cb;background:#fff}.pass{color:#2f4693}.fail{color:#852a12}
+.metrics{display:grid;grid-template-columns:max-content 1fr;gap:3px 12px;margin:10px 0 0}.metrics dt{font-weight:650}.metrics dd{margin:0;font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums}
+pre{white-space:pre-wrap;background:#f0ebe3;border:1px solid #817b74;padding:12px;max-height:260px;overflow:auto}
+</style>
+</head>
+<body>
+<div class="notice">DIAGNOSTIC COURT — NOT SOURCE OR MODEL OUTPUT</div>
+<h1>2,300-mark geometric hatch court</h1>
+<p>The same axis-aligned marks are rendered with per-mark clipped geometry and with one shared SVG pattern.
+Structural gates are 10,000 SVG elements and 2 MiB serialized SVG. Timing is a browser/machine diagnostic,
+not portable scientific evidence.</p>
+<div class="grid">
+  <section class="card"><h2>Explicit clipped geometry</h2><div id="geometric"></div><p id="geometric-verdict"></p><dl class="metrics"><dt>SVG elements</dt><dd id="geometric-elements"></dd><dt>Serialized SVG</dt><dd id="geometric-bytes"></dd></dl></section>
+  <section class="card"><h2>Shared pattern reference</h2><div id="pattern"></div><p id="pattern-verdict"></p><dl class="metrics"><dt>SVG elements</dt><dd id="pattern-elements"></dd><dt>Serialized SVG</dt><dd id="pattern-bytes"></dd></dl></section>
+</div>
+<h2>Measured receipt payload</h2>
+<pre id="results" class="mono" aria-live="polite">running…</pre>
+<script>
+(() => {
+  "use strict";
+  const NS = "http://www.w3.org/2000/svg";
+  const MARKS = 2300;
+  const COLUMNS = 100;
+  const SEGMENTS = 10;
+  const ELEMENT_GATE = 10000;
+  const BYTE_GATE = 2 * 1024 * 1024;
+  const FRAME_GATE_MS = 16.7;
+
+  const svgElement = (name, attributes = {}) => {
+    const element = document.createElementNS(NS, name);
+    for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, String(value));
+    return element;
+  };
+  const coordinates = (index) => ({ x: (index % COLUMNS) * 10, y: Math.floor(index / COLUMNS) * 10 });
+  const p95 = (values) => values.slice().sort((a, b) => a - b)[Math.floor((values.length - 1) * .95)];
+
+  function geometric() {
+    const svg = svgElement("svg", { viewBox: "0 0 1000 230", role: "img", "aria-label": "2,300 marks using explicit clipped hatch segments" });
+    const defs = svgElement("defs");
+    const marks = svgElement("g", { id: "geometric-marks" });
+    svg.append(defs, marks);
+    for (let index = 0; index < MARKS; index += 1) {
+      const { x, y } = coordinates(index);
+      const clip = svgElement("clipPath", { id: `clip-${index}` });
+      clip.appendChild(svgElement("rect", { x, y, width: 8, height: 8 }));
+      defs.appendChild(clip);
+      const mark = svgElement("g", { "data-mark": index, "clip-path": `url(#clip-${index})` });
+      mark.appendChild(svgElement("rect", { x, y, width: 8, height: 8, fill: "#f0ebe3", stroke: "#817b74", "stroke-width": .35 }));
+      for (let segment = 0; segment < SEGMENTS; segment += 1) {
+        const offset = segment * 2 - 5;
+        mark.appendChild(svgElement("line", { x1: x + offset, y1: y + 8, x2: x + offset + 8, y2: y, stroke: "#544d47", "stroke-width": .45 }));
+      }
+      marks.appendChild(mark);
+    }
+    return { svg, marks };
+  }
+
+  function patterned() {
+    const svg = svgElement("svg", { viewBox: "0 0 1000 230", role: "img", "aria-label": "2,300 marks using one shared SVG hatch pattern" });
+    const defs = svgElement("defs");
+    const pattern = svgElement("pattern", { id: "shared-hatch", width: 4, height: 4, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" });
+    pattern.appendChild(svgElement("rect", { width: 4, height: 4, fill: "#f0ebe3" }));
+    pattern.appendChild(svgElement("line", { x1: 0, y1: 0, x2: 0, y2: 4, stroke: "#544d47", "stroke-width": .8 }));
+    defs.appendChild(pattern);
+    const marks = svgElement("g", { id: "pattern-marks" });
+    svg.append(defs, marks);
+    for (let index = 0; index < MARKS; index += 1) {
+      const { x, y } = coordinates(index);
+      marks.appendChild(svgElement("rect", { x, y, width: 8, height: 8, fill: "url(#shared-hatch)", stroke: "#817b74", "stroke-width": .35, "data-mark": index }));
+    }
+    return { svg, marks };
+  }
+
+  function measureInteraction(svg, marks) {
+    const children = marks.children;
+    const selection = [];
+    const transform = [];
+    for (let warm = 0; warm < 40; warm += 1) {
+      children[warm % children.length].classList.toggle("selected");
+      svg.getBoundingClientRect();
+    }
+    for (let step = 0; step < 200; step += 1) {
+      let start = performance.now();
+      const child = children[(step * 37) % children.length];
+      child.setAttribute("opacity", child.getAttribute("opacity") === "0.6" ? "1" : "0.6");
+      child.getBoundingClientRect();
+      selection.push(performance.now() - start);
+      start = performance.now();
+      marks.setAttribute("transform", `translate(${step % 3} ${step % 2})`);
+      svg.getBoundingClientRect();
+      transform.push(performance.now() - start);
+    }
+    marks.removeAttribute("transform");
+    return { selectionP95Ms: p95(selection), transformP95Ms: p95(transform) };
+  }
+
+  function run(label, factory, mount) {
+    const started = performance.now();
+    const built = factory();
+    mount.appendChild(built.svg);
+    built.svg.getBoundingClientRect();
+    const constructionMs = performance.now() - started;
+    const serializedBytes = new TextEncoder().encode(built.svg.outerHTML).length;
+    const elementCount = built.svg.querySelectorAll("*").length;
+    const interaction = measureInteraction(built.svg, built.marks);
+    return {
+      label,
+      marks: MARKS,
+      hatchSegmentsPerMark: label === "geometric" ? SEGMENTS : 0,
+      elementCount,
+      serializedBytes,
+      constructionMs,
+      ...interaction,
+      gates: {
+        elementBudget: elementCount <= ELEMENT_GATE,
+        byteBudget: serializedBytes <= BYTE_GATE,
+        selectionP95: interaction.selectionP95Ms <= FRAME_GATE_MS,
+        transformP95: interaction.transformP95Ms <= FRAME_GATE_MS
+      }
+    };
+  }
+
+  const geometricResult = run("geometric", geometric, document.getElementById("geometric"));
+  const patternResult = run("shared-pattern", patterned, document.getElementById("pattern"));
+  for (const [id, result] of [["geometric-verdict", geometricResult], ["pattern-verdict", patternResult]]) {
+    const structuralPass = result.gates.elementBudget && result.gates.byteBudget;
+    const node = document.getElementById(id);
+    node.className = structuralPass ? "pass" : "fail";
+    node.textContent = structuralPass ? "PASS structural viewport budget" : "MISS structural viewport budget";
+  }
+  for (const [prefix, result] of [["geometric", geometricResult], ["pattern", patternResult]]) {
+    document.getElementById(`${prefix}-elements`).textContent = result.elementCount.toLocaleString("en-US");
+    document.getElementById(`${prefix}-bytes`).textContent = `${result.serializedBytes.toLocaleString("en-US")} bytes`;
+  }
+  const receipt = {
+    schema: "storyatlas4s.renderer-gap-court.v1",
+    workload: { marks: MARKS, columns: COLUMNS, geometricSegmentsPerMark: SEGMENTS },
+    gates: { maxSvgElements: ELEMENT_GATE, maxSerializedSvgBytes: BYTE_GATE, interactionP95Ms: FRAME_GATE_MS },
+    results: { geometric: geometricResult, sharedPattern: patternResult },
+    interpretation: "Structural counts and bytes are reproducible. Timings are browser/machine diagnostics only."
+  };
+  window.__rendererGapResult = receipt;
+  document.getElementById("results").textContent = JSON.stringify(receipt, null, 2);
+  document.documentElement.dataset.benchmarkDone = "true";
+})();
+</script>
+</body>
+</html>

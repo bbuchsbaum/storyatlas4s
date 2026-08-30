@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en" data-storyatlas-frozen="true"><head>
+  <meta charset="utf-8">
+
+<style data-dc-resolved-style="true">
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: #F9F5EF; color: #221D19;
+      font: 13px/1.5 system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif; }
+    a { color: #24356F; } a:hover { color: #2F4693; }
+    .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, "DejaVu Sans Mono", monospace;
+         font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; letter-spacing: 0.03em; color: #544D47; }
+    .h2 { font-size: 13px; font-weight: 600; margin: 0; }
+    .seg { font-size: 11.5px; height: 30px; display: flex; align-items: center; padding: 0 10px;
+           background: #E7E1D8; color: #544D47; border-right: 1px solid #817B74; cursor: pointer; }
+    .seg:last-child { border-right: 0; }
+    .seg-on { background: #221D19; color: #F9F5EF; font-weight: 600; }
+    .seg-off { background: #F0EBE3; color: #B5B0A9; cursor: not-allowed; }
+    .row:hover .gut { background: #E7E1D8; }
+  </style><title>StoryAtlas mockup v2 — Main — frozen design specification</title><meta name="viewport" content="width=device-width, initial-scale=1"><style data-frozen-inert-style="true">*{cursor:default!important}</style><meta name="storyatlas-frozen-source" content="Main.dc.html"></head>
+<body>
+<x-dc style="display: block;">
+
+
+<div data-dc-artboard="" data-dc-layout="fixed" style="width: 1536px; height: 1024px; background: rgb(249, 245, 239); display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <!-- synthetic banner -->
+  <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 6px 24px; flex: none;">
+    <span style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
+    <span class="m" style="font-size: 10.5px; color: #F9F5EF;">every span, address, score, receipt and checksum below is invented · this is not <em>The War of the Ghosts</em></span>
+  </div>
+
+  <!-- app bar -->
+  <div style="display: flex; align-items: center; gap: 16px; padding: 0 24px; height: 46px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
+    <span style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em;">storyatlas4s</span>
+    <span style="width: 1px; height: 18px; background: #D7D2CB;"></span>
+    <span style="font-size: 12.5px;">Source exploration</span>
+    <span class="m" style="font-size: 11px; color: #544D47;">synthetic/two-boats-source@v1 · sha256 40c889d9…a43cc</span>
+    <span style="display: inline-flex; align-items: center; gap: 5px; border: 1px solid #817B74; background: #F9F5EF; padding: 2px 7px;">
+      <svg width="9" height="9" aria-hidden="true"><rect x="0.5" y="0.5" width="8" height="8" fill="none" stroke="#221D19"></rect></svg>
+      <span class="lbl">basis <span class="m" style="font-size: 10.5px;">synthetic design fixture — unadmitted, not human adjudicated</span></span>
+    </span>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+      <span class="lbl">Export</span>
+      <div style="display: flex; border: 1px solid #817B74;">
+        <span class="seg" style="">Plate (SVG)</span>
+        <span class="seg" style="">Page (text + graphics)</span>
+        <span class="seg" style="">Workspace state</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- focus bar: the shared selection contract -->
+  <div style="display: flex; align-items: center; gap: 10px; padding: 0 24px; height: 42px; border-bottom: 1px solid #817B74; background: #F9F5EF; flex: none;">
+    <span class="lbl" style="font-weight: 600;">Focus</span>
+    <span style="font-size: 12.5px; color: #69625C;">Story</span><span style="color: #B5B0A9;">›</span>
+    <span style="font-size: 12.5px; color: #69625C;">Episode 1 · shingle</span><span style="color: #B5B0A9;">›</span>
+    <span style="font-size: 12.5px; color: #69625C;">Scene 1.2 · launch</span><span style="color: #B5B0A9;">›</span>
+    <span style="font-size: 12.5px; font-weight: 600; border-bottom: 2px solid #2F4693; padding-bottom: 1px;">Scene</span>
+    <span class="m" style="font-size: 11.5px; color: #221D19; background: #F0EBE3; border: 1px solid #D7D2CB; padding: 1px 6px;">story/situation/syn:sit:launch-boat</span>
+    <span class="m" style="font-size: 11px; color: #544D47;">UTF-16 [251,291)</span>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+      <span class="lbl">placement</span>
+      <span style="display: inline-flex; align-items: center; gap: 5px; border: 1px solid #221D19; background: #F9F5EF; padding: 2px 7px;"><span class="m" style="font-size: 11px; font-weight: 600;">Codex: on-mark</span></span>
+      <span style="display: inline-flex; align-items: center; gap: 5px; border: 1px solid #221D19; background: #F9F5EF; padding: 2px 7px;"><span class="m" style="font-size: 11px; font-weight: 600;">Atlas: on-mark</span></span>
+      <span style="width: 1px; height: 18px; background: #D7D2CB;"></span>
+      <span class="lbl">Selection is a set of addresses shared by every visible face.</span>
+    </div>
+  </div>
+
+  <!-- thin global overview -->
+  <div style="display: flex; align-items: center; gap: 14px; padding: 0 24px; height: 62px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
+    <div style="display: flex; flex-direction: column; gap: 1px; width: 92px; flex: none;">
+      <span class="lbl" style="font-weight: 600;">Whole work</span>
+      <span class="lbl" style="font-size: 10px;">584 code units</span>
+    </div>
+    <svg width="1300" height="44" viewBox="0 0 1300 44" role="img" aria-label="Overview of the whole work, 584 code units. Horizontal position is exact discourse offset. Two episode regions, four scene regions, one feature track with a missing span, the current Codex viewport, and the current selection at code units 251 to 291.">
+      <defs><pattern id="ov-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#69625C" stroke-width="1.2"></line></pattern></defs>
+      <!-- episode regions -->
+      <rect x="0" y="2" width="647" height="11" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8"></rect>
+      <rect x="649" y="2" width="651" height="11" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8"></rect>
+      <text x="4" y="11" font-size="9" fill="#221D19" font-family="system-ui, sans-serif">Ep 1 · shingle</text>
+      <text x="653" y="11" font-size="9" fill="#221D19" font-family="system-ui, sans-serif">Ep 2 · channel</text>
+      <!-- scene regions -->
+      <rect x="0" y="16" width="556" height="8" fill="none" stroke="#817B74" stroke-width="0.8"></rect>
+      <rect x="558" y="16" width="89" height="8" fill="none" stroke="#817B74" stroke-width="0.8"></rect>
+      <rect x="649" y="16" width="435" height="8" fill="none" stroke="#817B74" stroke-width="0.8"></rect>
+      <rect x="1086" y="16" width="214" height="8" fill="none" stroke="#817B74" stroke-width="0.8"></rect>
+      <!-- one active feature, sparkline; hatched where the provider returned nothing -->
+      <polyline points="0,36 40,33 80,31 120,34 160,30 200,32 240,29 280,33 320,31 360,28 400,30 440,33 480,31 520,29 560,26 600,28 640,31" fill="none" stroke="#221D19" stroke-width="1"></polyline>
+      <rect x="783" y="26" width="153" height="12" fill="url(#ov-hatch)" stroke="#69625C" stroke-width="0.8"></rect>
+      <polyline points="649,30 690,32 730,29 770,31" fill="none" stroke="#221D19" stroke-width="1"></polyline>
+      <polyline points="938,33 980,29 1020,27 1060,30 1100,25 1140,28 1180,31 1220,29 1260,32 1300,30" fill="none" stroke="#221D19" stroke-width="1"></polyline>
+      <!-- codex viewport: whole fixture is on one page -->
+      <rect x="0" y="0" width="1300" height="40" fill="none" stroke="#221D19" stroke-width="1" stroke-dasharray="2 2"></rect>
+      <!-- selection -->
+      <rect x="558.7328767123287" y="0" width="89.04109589041104" height="40" fill="#2F4693" fill-opacity="0.1" stroke="#2F4693" stroke-width="2"></rect>
+      <line x1="0" y1="41.5" x2="1300" y2="41.5" stroke="#B5B0A9"></line>
+    </svg>
+    <div style="display: flex; flex-direction: column; gap: 2px; flex: none;">
+      <span class="lbl" style="font-size: 10px;">x = discourse offset</span>
+      <span class="lbl" style="font-size: 10px;">viewport ⌐ ¬ · selection ▮</span>
+      <span class="lbl" style="font-size: 10px; color: #653E00;">▨ feature missing</span>
+    </div>
+  </div>
+
+  <!-- ===================== main split ===================== -->
+  <div style="display: flex; gap: 24px; padding: 20px 24px; flex-grow: 1; min-height: 0;">
+
+    <!-- ---------- Narrative Codex ---------- -->
+    <div style="width: 648px; flex: none; display: flex; flex-direction: column; border: 1px solid #817B74; background: #F9F5EF; min-height: 0;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
+        <span class="h2">Narrative Codex</span>
+        <span class="m" style="font-size: 11px; color: #544D47;">lens Overview</span>
+        <div style="margin-left: auto; display: flex; border: 1px solid #817B74;">
+          <span class="seg" style="">Reading</span>
+          <span class="seg seg-on" style="">Overview</span>
+        </div>
+      </div>
+      <div style="padding: 5px 12px; border-bottom: 1px solid #D7D2CB; background: #F9F5EF; flex: none;">
+        <span class="lbl" style="line-height: 1.45;">Overlay rows, top to bottom within each line: 1: hierarchy lane 0; 2: context lane 0; 3: feature lane 0. Annotation-channel budget 3 of 7 — <span class="m" style="font-size: 10.5px;">entity, relation, claim, recall</span> available, not painted.</span>
+      </div>
+
+      <div style="flex-grow: 1; overflow: hidden; padding: 12px 0 0;">
+
+          <div class="row" data-main-sentence="s01" data-feature-unit="s01" data-feature-eligible="14" data-feature-observed="13" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: transparent; border-left: 3px solid rgb(34, 29, 25);">
+            <span class="gut m" style="font-size: 11px; color: rgb(105, 98, 92); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 400;" aria-label="sentence s01, code units 0 to 72">s01</span>
+            <span style="width: 10px; flex: none; margin: 0 6px 0 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s01" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">At first light two boats were drawn up on the shingle below the village.</span>
+          </div>
+
+          <div class="row" data-main-sentence="s02" data-feature-unit="s02" data-feature-eligible="13" data-feature-observed="12" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: transparent; border-left: 3px solid transparent;">
+            <span class="gut m" style="font-size: 11px; color: rgb(105, 98, 92); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 400;" aria-label="sentence s02, code units 73 to 142">s02</span>
+            <span style="width: 10px; flex: none; align-self: stretch; border-left: 1px dashed #221D19; margin: 2px 6px 2px 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s02" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">Erran had been told, the winter before, that the far shore was empty.</span>
+          </div>
+
+          <div class="row" data-main-sentence="s03" data-feature-unit="s03" data-feature-eligible="5" data-feature-observed="5" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: transparent; border-left: 3px solid transparent;">
+            <span class="gut m" style="font-size: 11px; color: rgb(105, 98, 92); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 400;" aria-label="sentence s03, code units 143 to 165">s03</span>
+            <span style="width: 10px; flex: none; margin: 0 6px 0 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s03" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">He did not believe it.</span>
+          </div>
+
+          <div class="row" data-main-sentence="s04" data-feature-unit="s04" data-feature-eligible="18" data-feature-observed="16" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: transparent; border-left: 3px solid transparent;">
+            <span class="gut m" style="font-size: 11px; color: rgb(105, 98, 92); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 400;" aria-label="sentence s04, code units 166 to 250">s04</span>
+            <span style="width: 10px; flex: none; margin: 0 6px 0 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s04" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">The older of the two boats belonged to his uncle, who had not yet come to the water.</span>
+          </div>
+
+          <div class="row" data-main-sentence="s05" data-feature-unit="s05" data-feature-eligible="7" data-feature-observed="6" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: rgb(240, 237, 233); outline: rgb(34, 29, 25) dashed 2px; outline-offset: -2px; border-left: 3px solid rgb(34, 29, 25);">
+            <span class="gut m" style="font-size: 11px; color: rgb(47, 70, 147); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 600;" aria-label="sentence s05, code units 251 to 291, selected">s05</span>
+            <span style="width: 10px; flex: none; margin: 0 6px 0 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s05" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">Erran pushed the smaller boat out alone.</span>
+          </div>
+
+          <div class="row" data-main-sentence="s06" data-feature-unit="s06" data-feature-eligible="12" data-feature-observed="11" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: transparent; border-left: 3px solid rgb(34, 29, 25);">
+            <span class="gut m" style="font-size: 11px; color: rgb(105, 98, 92); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 400;" aria-label="sentence s06, code units 292 to 351">s06</span>
+            <span style="width: 10px; flex: none; margin: 0 6px 0 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s06" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">Fog stood on the channel and the far shore was not visible.</span>
+          </div>
+
+          <div class="row" data-main-sentence="s07" data-feature-unit="s07" data-feature-eligible="13" data-feature-observed="0" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: transparent; border-left: 3px solid transparent;">
+            <span class="gut m" style="font-size: 11px; color: rgb(105, 98, 92); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 400;" aria-label="sentence s07, code units 352 to 421">s07</span>
+            <span style="width: 10px; flex: none; margin: 0 6px 0 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s07" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">Someone on the shingle called after him, but the words did not carry.</span>
+          </div>
+
+          <div class="row" data-main-sentence="s08" data-feature-unit="s08" data-feature-eligible="14" data-feature-observed="12" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: transparent; border-left: 3px solid transparent;">
+            <span class="gut m" style="font-size: 11px; color: rgb(105, 98, 92); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 400;" aria-label="sentence s08, code units 422 to 487">s08</span>
+            <span style="width: 10px; flex: none; margin: 0 6px 0 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s08" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">By the time the fog lifted he was past the middle of the channel.</span>
+          </div>
+
+          <div class="row" data-main-sentence="s09" data-feature-unit="s09" data-feature-eligible="6" data-feature-observed="5" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: transparent; border-left: 3px solid rgb(34, 29, 25);">
+            <span class="gut m" style="font-size: 11px; color: rgb(105, 98, 92); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 400;" aria-label="sentence s09, code units 488 to 516">s09</span>
+            <span style="width: 10px; flex: none; margin: 0 6px 0 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s09" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">The far shore was not empty.</span>
+          </div>
+
+          <div class="row" data-main-sentence="s10" data-feature-unit="s10" data-feature-eligible="15" data-feature-observed="12" style="display: flex; align-items: flex-start; gap: 0px; padding: 1px 12px 1px 9px; background: transparent; border-left: 3px solid transparent;">
+            <span class="gut m" style="font-size: 11px; color: rgb(105, 98, 92); min-width: 30px; height: 24.8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; flex: 0 0 auto; font-weight: 400;" aria-label="sentence s10, code units 517 to 584">s10</span>
+            <span style="width: 10px; flex: none; margin: 0 6px 0 2px;"></span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="s10" style="font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;">He turned the boat and went back, and did not say what he had seen.</span>
+          </div>
+
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-top: 1px solid #817B74; background: #F0EBE3; flex: none;">
+        <span class="lbl m" style="font-size: 10.5px;">10 of 10 units · synthetic design fixture · sha256 40c889d9…a43cc</span>
+        <span class="lbl" style="margin-left: auto;">gutter: ▌scene edge · ▪ situation · ⌇ reported context · ▨ feature missing</span>
+      </div>
+    </div>
+
+    <!-- ---------- primary projection ---------- -->
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; border: 1px solid #817B74; background: #F9F5EF; min-height: 0;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
+        <span class="h2">Narrative Atlas</span>
+        <div style="margin-left: auto; display: flex; border: 1px solid #817B74;">
+          <span class="seg seg-on">Discourse Atlas</span>
+          <span class="seg">Chronology Loom</span>
+          <span class="seg">Feature scale-space</span>
+        </div>
+      </div>
+
+      <!-- declared contract: printed, never authored by the renderer -->
+      <div style="padding: 7px 12px; border-bottom: 1px solid #D7D2CB; background: #F9F5EF; display: flex; flex-direction: column; gap: 3px; flex: none;">
+        <div class="m" style="font-size: 11px; color: #221D19;">x: DiscourseOffset; y: ContextLane; distance: NoMeaning; area: none</div>
+        <div class="lbl" style="line-height: 1.45;">X is the exact discourse offset in UTF-16 code units. Y is the context lane, narrated world = 0; vertical distance has no meaning. A region is the hull of its visible children.</div>
+        <div class="lbl" style="color: #653E00; line-height: 1.45;">not encoded: story-world time · duration · causal strength · lane distance</div>
+      </div>
+
+      <div style="flex-grow: 1; overflow: hidden; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px;">
+
+
+          <svg viewBox="0 0 468 252" style="width: 100%; height: auto;" role="img" aria-label="Discourse Atlas. Horizontal position is exact discourse offset. Vertical position is context lane; lane distance has no metric. Two episode regions, four scene regions, nine situations in the narrated-world lane and one in the reported lane, one entity thread, one reference portal.">
+            <g font-family="system-ui, -apple-system, sans-serif" font-size="9.5" fill="#544D47">
+              <text x="0" y="24">Episode</text><text x="0" y="54">Scene</text>
+              <text x="0" y="106">lane 0</text><text x="0" y="118" font-size="8.5">narrated world</text>
+              <text x="0" y="176">lane 1</text><text x="0" y="188" font-size="8.5">reported</text>
+            </g>
+            <!-- episode regions -->
+            <rect x="60" y="10" width="199.3" height="20" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8"></rect>
+            <rect x="260" y="10" width="200" height="20" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8"></rect>
+            <text x="64" y="24" font-size="9" font-family="system-ui, sans-serif" fill="#221D19">Ep 1 · shingle</text>
+            <text x="264" y="24" font-size="9" font-family="system-ui, sans-serif" fill="#221D19">Ep 2 · channel</text>
+            <!-- scene regions -->
+            <rect x="60" y="40" width="171.2" height="16" fill="none" stroke="#817B74" stroke-width="0.8"></rect>
+            <rect x="231.9" y="40" width="27.4" height="16" fill="none" stroke="#817B74" stroke-width="0.8"></rect>
+            <rect x="260" y="40" width="133.5" height="16" fill="none" stroke="#817B74" stroke-width="0.8"></rect>
+            <rect x="394.2" y="40" width="65.8" height="16" fill="none" stroke="#817B74" stroke-width="0.8"></rect>
+            <!-- lane guides -->
+            <line x1="60" y1="110" x2="460" y2="110" stroke="#D7D2CB"></line>
+            <line x1="60" y1="180" x2="460" y2="180" stroke="#D7D2CB"></line>
+            <!-- entity thread: Erran's participations, discourse order -->
+            <polyline points="158,110 232,110 349,110 414,110" fill="none" stroke="#221D19" stroke-width="1.5"></polyline>
+            <!-- opposite-polarity semantic recurrence across different contexts and times -->
+            <path d="M110 180 C 110 145, 394 148, 394 110" fill="none" stroke="#221D19" stroke-width="1" stroke-dasharray="6 4"></path>
+            <text x="250" y="152" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">portal · recurrence; persistence unestablished</text>
+            <!-- landmarks, lane 0 -->
+
+              <rect x="56" y="106" width="8" height="8" fill="#221D19" stroke="#221D19" stroke-width="1"></rect>
+
+              <rect x="153.94520547945206" y="106" width="8" height="8" fill="#221D19" stroke="#221D19" stroke-width="1"></rect>
+
+              <rect x="169.6986301369863" y="106" width="8" height="8" fill="#221D19" stroke="#221D19" stroke-width="1"></rect>
+
+              <rect x="227.91780821917808" y="106" width="8" height="8" fill="#2F4693" stroke="#221D19" stroke-width="2"></rect>
+
+              <rect x="256" y="106" width="8" height="8" fill="#221D19" stroke="#221D19" stroke-width="1"></rect>
+
+              <rect x="297.0958904109589" y="106" width="8" height="8" fill="#221D19" stroke="#221D19" stroke-width="1"></rect>
+
+              <rect x="345.04109589041093" y="106" width="8" height="8" fill="#221D19" stroke="#221D19" stroke-width="1"></rect>
+
+              <rect x="390.24657534246575" y="106" width="8" height="8" fill="#221D19" stroke="#221D19" stroke-width="1"></rect>
+
+              <rect x="410.1095890410959" y="106" width="8" height="8" fill="#221D19" stroke="#221D19" stroke-width="1"></rect>
+
+            <!-- landmark, lane 1 (reported context) -->
+            <rect x="106" y="176" width="8" height="8" fill="#F9F5EF" stroke="#221D19" stroke-width="1" stroke-dasharray="2 1.5"></rect>
+            <text x="120" y="183" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">embedded proposition — not asserted of the world</text>
+            <!-- selection ring -->
+            <rect x="226.91780821917808" y="98" width="37.39726027397256" height="24" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+            <!-- axis -->
+            <line x1="60" y1="214" x2="460" y2="214" stroke="#817B74"></line>
+            <g font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#544D47">
+              <line x1="60" y1="214" x2="60" y2="218" stroke="#817B74"></line><text x="60" y="230" text-anchor="middle">0</text>
+              <line x1="160" y1="214" x2="160" y2="218" stroke="#817B74"></line><text x="160" y="230" text-anchor="middle">146</text>
+              <line x1="260" y1="214" x2="260" y2="218" stroke="#817B74"></line><text x="260" y="230" text-anchor="middle">292</text>
+              <line x1="360" y1="214" x2="360" y2="218" stroke="#817B74"></line><text x="360" y="230" text-anchor="middle">438</text>
+              <line x1="460" y1="214" x2="460" y2="218" stroke="#817B74"></line><text x="460" y="230" text-anchor="middle">584</text>
+            </g>
+            <text x="60" y="246" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">discourse offset · UTF-16 code units of the canonical text</text>
+          </svg>
+          <div class="lbl" style="line-height: 1.45;">10 mark(s). x = DiscourseOffset; y = ContextLane. Click a mark (shift-click extends) or focus it and press Enter to select its address. Region ▭ · situation ▪ · thread ── · portal ┈</div>
+
+
+
+
+
+
+        <!-- docked single feature track, when the primary projection is not the feature space -->
+
+          <div style="border-top: 1px solid #817B74; padding-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span class="h2" style="font-size: 12px;">Imageability</span>
+              <span class="lbl">the one active quantitative feature</span>
+              <span class="m" style="font-size: 10.5px; color: #653E00; margin-left: auto;">raw score, uncalibrated — not a probability</span>
+            </div>
+            <svg data-feature-track="sensory.imageability.synthetic@v1" data-feature-eligible="117" data-feature-observed="92" viewBox="0 0 468 96" style="width: 100%; height: auto;" role="img" aria-label="Docked imageability track. Horizontal position is discourse offset, shared with the projection above. Vertical position is raw score 0 to 1. One hatched region carries no value.">
+              <defs><pattern id="dk-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#69625C" stroke-width="1.2"></line></pattern></defs>
+              <line x1="60" y1="8" x2="60" y2="62" stroke="#817B74"></line>
+              <line x1="60" y1="62" x2="460" y2="62" stroke="#817B74"></line>
+              <g font-family="ui-monospace, Menlo, monospace" font-size="8.5" fill="#544D47"><text x="54" y="12" text-anchor="end">1</text><text x="54" y="65" text-anchor="end">0</text></g>
+              <polyline points="60,44 100,38 140,40 180,35 220,32 259,28" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
+              <rect x="302.3" y="8" width="47.5" height="54" fill="url(#dk-hatch)" stroke="#69625C" stroke-width="0.8"></rect>
+              <polyline points="260,30 302,33" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
+              <polyline points="350,34 394,26 460,31" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
+              <rect x="226.91780821917808" y="8" width="37.39726027397256" height="54" fill="#2F4693" fill-opacity="0.08" stroke="#2F4693" stroke-width="2"></rect>
+              <text x="60" y="80" data-feature-window="s05-centered-25" data-feature-eligible="25" data-feature-observed="21" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">25 lexical tokens · step 1 · KeepPartial · selected 21/25 = .840 · track 92/117 · missing 25</text>
+              <text x="60" y="92" font-size="9" font-family="system-ui, sans-serif" fill="#653E00">▨ missing — the provider returned no value here; it is not a low score</text>
+            </svg>
+          </div>
+
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-top: 1px solid #817B74; background: #F0EBE3; flex: none;">
+        <span class="lbl">▸ Atlas twin (text)</span><span class="lbl">▸ Feature twin (table)</span>
+        <span class="lbl" style="margin-left: auto;">Every projection has a deterministic textual counterpart.</span>
+      </div>
+    </div>
+
+    <!-- ---------- inspector ---------- -->
+
+      <div style="width: 296px; flex: none; display: flex; flex-direction: column; border: 1px solid #817B74; background: #F9F5EF; min-height: 0;">
+        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
+          <span class="h2">Selection</span>
+          <span style="margin-left: auto; font-size: 11.5px; border: 1px solid rgb(129, 123, 116); background: rgb(249, 245, 239); padding: 3px 8px; min-height: 24px; display: flex; align-items: center;" aria-label="Collapse the inspector">Collapse ›</span>
+        </div>
+        <div data-dc-scroll-region="main-claim-inspector" style="flex-grow: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 11px 12px; display: flex; flex-direction: column; gap: 11px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 13.5px; line-height: 1.35;">Erran pushes the smaller boat out</span>
+            <span class="lbl">model label — an assertion about the text, not the text</span>
+          </div>
+          <div style="display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 5px 12px; font-size: 12px;">
+            <span style="font-weight: 600;">Address</span><span class="m" style="font-size: 11px; overflow-wrap: anywhere;">story/situation/syn:sit:launch-boat</span>
+            <span style="font-weight: 600;">Level</span><span>Scene · surface Hidden</span>
+            <span style="font-weight: 600;">Support</span><span class="m" style="font-size: 11px;">UTF-16 [251,291)</span>
+            <span style="font-weight: 600;">Context</span><span>narrated world (lane 0)</span>
+            <span style="font-weight: 600;">Polarity</span><span>positive</span>
+            <span style="font-weight: 600;">Modality</span><span>none — asserted of the world</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <span class="lbl" style="font-weight: 600;">Selection summary · not a ClaimMeta status</span>
+            <span style="font-size: 11.5px; padding: 3px 8px; align-self: flex-start; background: #F9F5EF; border: 1px dashed #544D47; border-left-width: 3px;">Composite field view</span>
+            <span class="lbl" style="line-height: 1.4;">The push action is SurfaceExplicit. “Alone” is not folded into it; unaccompanied and unaided remain separate Hypothesized claims.</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #D7D2CB; padding-top: 6px;">
+            <span class="lbl" style="font-weight: 600;">Field-level claims</span>
+
+              <div data-claim-id="c-s05-action" data-claim-value="push(Erran, smaller boat)" data-claim-status="SurfaceExplicit" data-claim-support="251:284" data-claim-support-text="Erran pushed the smaller boat out" data-claim-upstream="" data-claim-receipt="syn-claims@v2" data-claim-alternative-group="" aria-label="Claim c-s05-action: push(Erran, smaller boat). SurfaceExplicit." style="display: grid; grid-template-columns: 62px minmax(0px, 1fr); gap: 1px 6px; font-size: 10px; line-height: 1.3;">
+                <span class="m">c-s05-action</span><span>push(Erran, smaller boat)</span>
+                <span class="lbl">status</span><span>SurfaceExplicit</span>
+                <span class="lbl">evidence</span><span class="m">source@40c889d9 [251,284)</span>
+                <span class="lbl">receipt</span><span class="m">syn-claims@v2</span>
+              </div>
+
+              <div data-claim-id="c-s05-alone-unaccompanied" data-claim-value="alone = unaccompanied" data-claim-status="Hypothesized" data-claim-support="285:290" data-claim-support-text="alone" data-claim-upstream="c-s05-action" data-claim-receipt="syn-interpret@v2" data-claim-alternative-group="alt-s05-alone" aria-label="Claim c-s05-alone-unaccompanied: alone = unaccompanied. Hypothesized." style="display: grid; grid-template-columns: 62px minmax(0px, 1fr); gap: 1px 6px; font-size: 10px; line-height: 1.3;">
+                <span class="m">c-s05-alone-unaccompanied</span><span>alone = unaccompanied</span>
+                <span class="lbl">status</span><span>Hypothesized</span>
+                <span class="lbl">evidence</span><span class="m">source@40c889d9 [285,290); upstream c-s05-action</span>
+                <span class="lbl">receipt</span><span class="m">syn-interpret@v2</span>
+              </div>
+
+              <div data-claim-id="c-s05-alone-unaided" data-claim-value="alone = unaided" data-claim-status="Hypothesized" data-claim-support="285:290" data-claim-support-text="alone" data-claim-upstream="c-s05-action" data-claim-receipt="syn-interpret@v2" data-claim-alternative-group="alt-s05-alone" aria-label="Claim c-s05-alone-unaided: alone = unaided. Hypothesized." style="display: grid; grid-template-columns: 62px minmax(0px, 1fr); gap: 1px 6px; font-size: 10px; line-height: 1.3;">
+                <span class="m">c-s05-alone-unaided</span><span>alone = unaided</span>
+                <span class="lbl">status</span><span>Hypothesized</span>
+                <span class="lbl">evidence</span><span class="m">source@40c889d9 [285,290); upstream c-s05-action</span>
+                <span class="lbl">receipt</span><span class="m">syn-interpret@v2</span>
+              </div>
+
+          </div>
+          <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl" style="font-weight: 600;">Quantities</span>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 12px;">imageability</span><span class="m" style="font-size: 14px;">0.412</span>
+            </div>
+            <span class="lbl" style="line-height: 1.4;">sentence-local lexical-token support · provider syn-imag@v3 · coverage 6/7 = .857; selected 25-token window 21/25 = .840</span>
+            <div style="display: flex; align-items: center; gap: 5px; border-top: 1px solid #D7D2CB; padding-top: 5px;">
+              <svg width="9" height="9" aria-hidden="true"><rect x="0.5" y="0.5" width="8" height="8" fill="none" stroke="#653E00" stroke-width="1.4"></rect><path d="M0.5 0.5 L8.5 8.5" stroke="#653E00"></path></svg>
+              <span style="font-size: 11px; color: #653E00;">no calibration model — not a probability</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl" style="font-weight: 600;">Alternatives</span>
+            <span style="font-size: 12px; line-height: 1.4;">“Alone” has two unresolved interpretation claims: unaccompanied, or unaided. Neither is accepted.</span>
+            <span class="lbl">both retained; neither is suppressed by the layout</span>
+          </div>
+          <div style="margin-top: auto; display: flex; flex-direction: column; gap: 3px; border-top: 1px solid #817B74; padding-top: 8px;">
+            <span class="lbl" style="font-weight: 600;">Receipts</span>
+            <span class="m" style="font-size: 10.5px; color: #544D47; line-height: 1.5; overflow-wrap: anywhere;">sourceTextSha256 40c889d9…a43cc · synthetic claimCompiler syn-claims@v2 · no calibration model · not human adjudicated</span>
+          </div>
+        </div>
+      </div>
+
+
+  </div>
+
+  <!-- ===================== bottom control bar ===================== -->
+  <div style="display: flex; align-items: center; gap: 20px; padding: 0 24px; height: 70px; border-top: 1px solid #817B74; background: #F0EBE3; flex: none;">
+
+    <div style="display: flex; flex-direction: column; gap: 3px;">
+      <span class="lbl" style="font-weight: 600;">Narrative level</span>
+      <div style="display: flex; border: 1px solid #817B74;">
+        <span class="seg">Story</span>
+        <span class="seg">Episode</span>
+        <span class="seg seg-on">Scene</span>
+        <span class="seg">Event</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 3px;">
+      <span class="lbl" style="font-weight: 600;">Surface detail</span>
+      <div style="display: flex; border: 1px solid #B5B0A9;">
+        <span class="seg seg-off">Hidden</span><span class="seg seg-off">Sentences</span><span class="seg seg-off">Tokens</span>
+      </div>
+    </div>
+    <span class="lbl" style="max-width: 150px; line-height: 1.35; color: #653E00;">Disabled: the provider does not yet compile surface marks. Receipted, not representable.</span>
+
+    <span style="width: 1px; height: 34px; background: #D7D2CB;"></span>
+
+    <div style="display: flex; flex-direction: column; gap: 3px;">
+      <span class="lbl" style="font-weight: 600;">Feature window <span style="font-weight: 400;">— a separate measurement basis</span></span>
+      <div style="display: flex; border: 1px solid #817B74;">
+        <span class="seg" style="">9w</span><span class="seg seg-on" style="">25w</span><span class="seg" style="">61w</span><span class="seg" style="">by scene</span>
+      </div>
+    </div>
+
+    <span style="width: 1px; height: 34px; background: #D7D2CB;"></span>
+
+    <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1;">
+      <span class="lbl" style="font-weight: 600;">Epistemic playhead (reader horizon)</span>
+      <div style="display: flex; align-items: center; gap: 9px;">
+        <span style="font-size: 11.5px; min-height: 24px; display: flex; align-items: center; padding: 0px 9px; border: 1px solid rgb(129, 123, 116); background: rgb(34, 29, 25); color: rgb(249, 245, 239); font-weight: 600;">Omniscient (no horizon)</span>
+        <div style="position: relative; width: 210px; height: 24px; display: flex; align-items: center;">
+          <div style="position: absolute; left: 0; right: 0; height: 3px; background: #D7D2CB;"></div>
+          <div style="position: absolute; left: 0; height: 3px; background: #221D19; width: 210px;"></div>
+          <div style="position: absolute; left: 198px; width: 12px; height: 20px; background: #F9F5EF; border: 1px solid #221D19;"></div>
+        </div>
+        <span class="m" style="font-size: 11px; color: #221D19;">omniscient (no horizon; 584 code units)</span>
+      </div>
+    </div>
+
+    <span class="m" style="font-size: 10.5px; color: #653E00; text-align: right; line-height: 1.4;">SYNTHETIC<br>NOT MODEL OUTPUT</span>
+  </div>
+<div data-frozen-notice="true" style="position: absolute; z-index: 9999; right: 0px; top: 0px; max-width: 520px; padding: 7px 14px; border: 3px double rgb(34, 29, 25); background: rgb(247, 230, 195); color: rgb(34, 29, 25); font: 700 11.5px / 1.35 system-ui, sans-serif; letter-spacing: 0.045em; text-align: center;">FROZEN DESIGN SPECIFICATION — CONTROLS ARE INERT</div></div>
+</x-dc>
+
+
+
+
+</body></html>

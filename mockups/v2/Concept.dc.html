@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; background: #F9F5EF; color: #221D19;
+      font: 13px/1.6 system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif; }
+    a { color: #24356F; } a:hover { color: #2F4693; }
+    .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, "DejaVu Sans Mono", monospace;
+         font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; letter-spacing: 0.03em; color: #544D47; }
+    h2 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+    h3 { font-size: 12.5px; font-weight: 600; margin: 0; }
+    p { margin: 0; }
+    td, th { vertical-align: top; }
+  </style>
+</helmet>
+
+<div data-dc-artboard data-dc-layout="flowing" style="width: 1180px; min-height: 1780px; background: #F9F5EF; display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 8px 30px;">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
+  </div>
+
+  <div style="padding: 30px 30px 20px; display: flex; flex-direction: column; gap: 14px;">
+    <div class="lbl">StoryAtlas mockup v2 · deliverables 1 and 13</div>
+    <div style="font-size: 28px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.2;">Concept statement and annotation notes</div>
+    <p style="font-size: 16px; line-height: 1.55; max-width: 820px; border-left: 3px solid #2F4693; padding-left: 16px;">
+      One reading surface, one question at a time, one inspector you can close. The exact words never leave the screen,
+      so the expensive step in an evidence check — getting back to the text — costs nothing.</p>
+  </div>
+
+  <!-- 1. hierarchy -->
+  <div style="border-top: 1px solid #817B74; padding: 22px 30px; display: flex; flex-direction: column; gap: 14px;">
+    <h2>1 · The information hierarchy, and what each tier is allowed to cost</h2>
+    <p style="max-width: 900px; color: #544D47;">The reference sketch put six instruments at equal volume. Reviewers split on it: the composition captured the product,
+      but nothing in it told you where to look. The resolution is not fewer capabilities — it is a declared rank, with a budget attached to each tier.</p>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+      <div style="border: 1px solid #817B74; border-top: 3px solid #221D19; background: #F9F5EF; padding: 13px 14px; display: flex; flex-direction: column; gap: 7px;">
+        <div class="lbl">tier 1 · permanent</div>
+        <h3>The exact text</h3>
+        <p style="font-size: 12px; line-height: 1.5;">Real DOM text, selectable and searchable, in the largest type on the screen. It is never summarised, never restyled to carry a claim, and never scrolled away to make room.</p>
+        <p class="lbl" style="line-height: 1.45;"><strong style="font-weight: 600;">Budget:</strong> 648px, about 44% of the working width, at every viewport above the reflow breakpoint.</p>
+      </div>
+      <div style="border: 1px solid #817B74; border-top: 3px solid #544D47; background: #F9F5EF; padding: 13px 14px; display: flex; flex-direction: column; gap: 7px;">
+        <div class="lbl">tier 2 · one at a time</div>
+        <h3>The current question</h3>
+        <p style="font-size: 12px; line-height: 1.5;">Exactly one primary projection, replaceable in one click, plus at most one docked quantitative feature. Changing it changes the question, not the object under inspection.</p>
+        <p class="lbl" style="line-height: 1.45;"><strong style="font-weight: 600;">Budget:</strong> the remaining width, and one feature track. A second projection is a replacement, never an addition.</p>
+      </div>
+      <div style="border: 1px solid #817B74; border-top: 3px solid #69625C; background: #F9F5EF; padding: 13px 14px; display: flex; flex-direction: column; gap: 7px;">
+        <div class="lbl">tier 3 · collapsible</div>
+        <h3>The evidence check</h3>
+        <p style="font-size: 12px; line-height: 1.5;">The inspector. Field-addressable, never a summary. It is not a permanently equal third panel — it collapses to a 40px rail and the projection takes the space.</p>
+        <p class="lbl" style="line-height: 1.45;"><strong style="font-weight: 600;">Budget:</strong> 296px open, 40px closed. Its content survives the collapse.</p>
+      </div>
+      <div style="border: 1px solid #817B74; border-top: 3px solid #B5B0A9; background: #F9F5EF; padding: 13px 14px; display: flex; flex-direction: column; gap: 7px;">
+        <div class="lbl">tier 4 · quiet edges</div>
+        <h3>Controls and contracts</h3>
+        <p style="font-size: 12px; line-height: 1.5;">Scale, feature, horizon, export, and the printed projection contract. Present, legible, never competing for attention with the text or the figure.</p>
+        <p class="lbl" style="line-height: 1.45;"><strong style="font-weight: 600;">Budget:</strong> the top and bottom edges. Nothing in tier 4 uses saturated colour or type above 13px.</p>
+      </div>
+    </div>
+    <div style="border: 1px solid #653E00; border-left-width: 3px; background: #F7E6C3; padding: 12px 15px; max-width: 900px;">
+      <p style="font-size: 12.5px; line-height: 1.55;"><strong style="font-weight: 600;">The annotation budget is part of the hierarchy.</strong>
+        Seven annotation channels exist — <span class="m" style="font-size: 11.5px;">feature, hierarchy, entity, relation, context, claim, recall</span>. Three are painted by default:
+        one hierarchy layer, one context layer, one feature. The other four are one click away and are named in the Codex header so their absence is visible rather than silent.
+        Dimming is never used to say “unimportant”; it means one thing only, and it is labelled.</p>
+    </div>
+  </div>
+
+  <!-- 2. interaction model -->
+  <div style="border-top: 1px solid #817B74; padding: 22px 30px; display: flex; flex-direction: column; gap: 14px;">
+    <h2>2 · The interaction model: one loop, five steps, no dead ends</h2>
+    <p style="max-width: 900px; color: #544D47;">The loop is the one the vision names. What the design contributes is the cost of each step — and the guarantee that step 5 never undoes steps 1 to 4.</p>
+    <div style="display: flex; gap: 0; align-items: stretch;">
+      <div style="flex-grow: 1; border: 1px solid #817B74; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><span class="m" style="font-size: 15px; color: #2F4693;">1</span><h3>Notice</h3></div>
+        <p style="font-size: 11.5px; line-height: 1.5;">A 62px overview strip carries structure, viewport and selection — and nothing else.</p>
+        <span class="lbl" style="margin-top: auto;">cost: no click</span>
+      </div>
+      <div style="width: 18px; flex: none; display: flex; align-items: center; justify-content: center; color: #B5B0A9;">›</div>
+      <div style="flex-grow: 1; border: 1px solid #817B74; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><span class="m" style="font-size: 15px; color: #2F4693;">2</span><h3>Select</h3></div>
+        <p style="font-size: 11.5px; line-height: 1.5;">From any face. One typed <span class="m" style="font-size: 11px;">Set[Address]</span> shared by every visible view.</p>
+        <span class="lbl" style="margin-top: auto;">cost: 1 click or Enter</span>
+      </div>
+      <div style="width: 18px; flex: none; display: flex; align-items: center; justify-content: center; color: #B5B0A9;">›</div>
+      <div style="flex-grow: 1; border: 1px solid #221D19; border-width: 2px; background: #F0EDE9; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><span class="m" style="font-size: 15px; color: #2F4693;">3</span><h3>Reach the words</h3></div>
+        <p style="font-size: 11.5px; line-height: 1.5;">The Codex never left. The supporting span is already on screen, already highlighted.</p>
+        <span class="lbl" style="margin-top: auto; font-weight: 600;">cost: zero — this is the point</span>
+      </div>
+      <div style="width: 18px; flex: none; display: flex; align-items: center; justify-content: center; color: #B5B0A9;">›</div>
+      <div style="flex-grow: 1; border: 1px solid #817B74; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><span class="m" style="font-size: 15px; color: #2F4693;">4</span><h3>Inspect</h3></div>
+        <p style="font-size: 11.5px; line-height: 1.5;">Provenance, alternatives, reducer, coverage, receipt — each its own field, none bundled.</p>
+        <span class="lbl" style="margin-top: auto;">cost: 1 action, or 0 if open</span>
+      </div>
+      <div style="width: 18px; flex: none; display: flex; align-items: center; justify-content: center; color: #B5B0A9;">›</div>
+      <div style="flex-grow: 1; border: 1px solid #817B74; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><span class="m" style="font-size: 15px; color: #2F4693;">5</span><h3>Change scale or view</h3></div>
+        <p style="font-size: 11.5px; line-height: 1.5;">Focus survives. Placement becomes <span class="m" style="font-size: 10.5px;">on-mark</span>, <span class="m" style="font-size: 10.5px;">via-ancestor</span> or <span class="m" style="font-size: 10.5px;">off-projection</span> — declared, never dropped.</p>
+        <span class="lbl" style="margin-top: auto;">cost: 1 click · loop returns to 1</span>
+      </div>
+    </div>
+    <p style="max-width: 900px; font-size: 12.5px; line-height: 1.55;">Three semantic axes are kept apart because conflating them is the most common way an instrument like this lies:
+      <strong style="font-weight: 600;">narrative level</strong> (Story · Episode · Scene · Event),
+      <strong style="font-weight: 600;">surface detail</strong> (Hidden · Sentences · Tokens) and
+      <strong style="font-weight: 600;">feature window</strong> (9w · 25w · 61w · by scene). They sit in three separately labelled control groups, divided by rules,
+      and paging through text is never labelled as a change of level.</p>
+  </div>
+
+  <!-- 3. what changed -->
+  <div style="border-top: 1px solid #817B74; padding: 22px 30px; display: flex; flex-direction: column; gap: 14px;">
+    <h2>3 · What changed from the reference sketch, and why</h2>
+    <table style="border-collapse: collapse; width: 100%; font-size: 12px;">
+      <thead><tr>
+        <th style="text-align: left; padding: 0 16px 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; width: 30%;">In the sketch</th>
+        <th style="text-align: left; padding: 0 16px 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; width: 34%;">In v2</th>
+        <th style="text-align: left; padding: 0 0 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47;">Because</th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{ changes }}" as="c" hint-placeholder-count="9">
+          <tr>
+            <td style="padding: 8px 16px 8px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.45;">{{ c.was }}</td>
+            <td style="padding: 8px 16px 8px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.45; color: #221D19;">{{ c.now }}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.45; color: #544D47;">{{ c.why }}</td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. annotation notes -->
+  <div style="border-top: 1px solid #817B74; padding: 22px 30px 28px; display: flex; flex-direction: column; gap: 14px;">
+    <h2>4 · Annotation notes — every non-obvious encoding</h2>
+    <p style="max-width: 900px; color: #544D47;">Deliverable 13. If an element is not in this table, it carries no meaning and may be restyled freely.
+      The right-hand column is the load-bearing one: a channel that does not declare what it excludes will be over-read.</p>
+    <table style="border-collapse: collapse; width: 100%; font-size: 12px;">
+      <thead><tr>
+        <th style="text-align: left; padding: 0 14px 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; width: 17%;">Element</th>
+        <th style="text-align: left; padding: 0 14px 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; width: 13%;">Channel</th>
+        <th style="text-align: left; padding: 0 14px 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; width: 35%;">Means exactly</th>
+        <th style="text-align: left; padding: 0 0 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47;">Does not mean</th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{ notes }}" as="n" hint-placeholder-count="20">
+          <tr>
+            <td style="padding: 7px 14px 7px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4; font-weight: 600;">{{ n.el }}</td>
+            <td style="padding: 7px 14px 7px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4; color: #544D47;">{{ n.ch }}</td>
+            <td style="padding: 7px 14px 7px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">{{ n.means }}</td>
+            <td style="padding: 7px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4; color: #653E00;">{{ n.not }}</td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+    <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 13px 16px; max-width: 900px; display: flex; flex-direction: column; gap: 6px;">
+      <h3>One rule covers the whole table</h3>
+      <p style="font-size: 12.5px; line-height: 1.55;">Position and area are measured; texture and border style are categorical; hue is redundant. That ordering is deliberate, and it is why
+        the greyscale plate is not a degraded version of this design — it is the same design with a decorative layer removed.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1180,"height":1780}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      changes: [
+        { was:'Six panels at equal weight, each with its own legend and controls.',
+          now:'One Codex, one primary projection, one collapsible inspector, quiet edges.',
+          why:'The chief reviewer was right that the composition captured the product, and the UX reviewers were right that it could not be the default. The broad view survives as an analyst overview; the workspace is task-centred.' },
+        { was:'Prose, sentence numbers and word offsets presented as The War of the Ghosts.',
+          now:'A named synthetic fixture with its own address namespace, watermarked on every artboard.',
+          why:'None of it could round-trip to the admitted source. The source text is not in this repository by design, and inventing a stand-in for it is the one thing a design about evidence must not do.' },
+        { was:'“Confidence: 0.89” over a bundle of unrelated claims.',
+          now:'Per-field quantities, each with estimand, reducer, window, coverage, provider, receipt — and “no calibration model”.',
+          why:'The number looked like a calibrated probability and was neither calibrated nor about one claim. Two separate defects, so two separate fixes.' },
+        { was:'A force-directed graph with “Layout: Chronological” and no declared axis.',
+          now:'A printed contract strip on every projection, including a “not encoded” line.',
+          why:'Position, distance and layout carried no stated meaning, so readers would supply one. The Atlas twin already emits this contract; the header now shows it.' },
+        { was:'Node colour as the primary type encoding.',
+          now:'Row position, fill texture, border style and a written label. Hue is redundant.',
+          why:'ADR 0002 V-U5. The categorical space is open-ended and the textual twin cannot represent a hue, so the twin would stop being a faithful oracle.' },
+        { was:'A single “External / Irrelevant” alignment bin.',
+          now:'Association, commentary, unsupported intrusion, source-consistent inference and uninterpretable — five scored columns — with unranked held apart from all of them.',
+          why:'A licensed inference and an unsupported intrusion have opposite scientific meanings. Collapsing them discards the distinction the study exists to measure.' },
+        { was:'“[skipped]” inserted into the participant recall rail.',
+          now:'A source-side column gauge with a declared denominator.',
+          why:'Omission is missing mass on the source axis. Writing it into the recall transcript fabricates participant speech.' },
+        { was:'Misordering drawn as a per-cell alignment class.',
+          now:'A transition overlay over consecutive source-addressed units, with its denominator printed.',
+          why:'One cell cannot be out of order. Order is a property of the edge between two cells, and its denominator excludes off-source and abstained units.' },
+        { was:'Recall shown only as nearest-neighbour arrows between two rails.',
+          now:'A posterior matrix first; rails and route are secondary, on demand.',
+          why:'Arrows can only show a winner. The matrix retains hierarchy, multimodality, abstention and every off-source destination, and each row visibly sums to one.' }
+      ],
+      notes: [
+        { el:'Codex line', ch:'type', means:'Exact source text, monospace 16/24.8, real selectable DOM text.', not:'Not a rendering of the text — it is the text, and it hashes to the source receipt.' },
+        { el:'Gutter rule, solid', ch:'position', means:'A scene boundary begins on this line.', not:'Not an event boundary; events are marks, not rules.' },
+        { el:'Gutter rule, dashed', ch:'line style', means:'This line sits in a reported or embedded context (lane 1).', not:'Not doubt about the text. The frame is explicit; only its content is unasserted.' },
+        { el:'Atlas x position', ch:'position', means:'Exact discourse offset in UTF-16 code units, linear and to scale.', not:'Not story-world time, not reading time, not duration.' },
+        { el:'Atlas y lane', ch:'position', means:'Context lane. Narrated world is lane 0.', not:'Vertical distance has no metric. Lane 3 is not “further” than lane 1.' },
+        { el:'Atlas region', ch:'area', means:'The hull of the exact support of a segment’s visible children.', not:'Not importance, not duration, not confidence.' },
+        { el:'Thread, solid 1.5px', ch:'line style', means:'One entity’s participations, connected in discourse order.', not:'Asserts nothing about the interval between two participations.' },
+        { el:'Portal, dashed 6/4', ch:'line style', means:'A stored reference edge whose endpoints are not discourse-adjacent.', not:'Not causation, and not a temporal ordering.' },
+        { el:'Loom left column', ch:'position', means:'Exact discourse order, total.', not:'Not a time axis; the spacing is uniform by construction.' },
+        { el:'Loom right column', ch:'position', means:'Rank in the compiled story-world partial order.', not:'Not a clock. Equal spacing implies no equal intervals.' },
+        { el:'Loom shared band', ch:'shape', means:'Situations the model does not order relative to each other.', not:'Not simultaneity. Incomparable is not the same as concurrent.' },
+        { el:'Loom slope', ch:'line', means:'The same situation in both orders. A crossing is a temporal discontinuity.', not:'Slope angle has no magnitude; a steeper line is not a bigger jump.' },
+        { el:'Feature line weight', ch:'weight', means:'One declared rolling window: 9w thin dashed, 25w medium solid, 61w broad.', not:'Not a confidence band, and not a smoothing the view invented.' },
+        { el:'Feature hatch', ch:'texture', means:'The provider returned no value over this extent.', not:'Not zero, not low, and never interpolated across.' },
+        { el:'Matrix cell area', ch:'area', means:'Posterior mass on that destination. Row totals are exactly 1.00.', not:'Not a rank, not a similarity score, not a p-value.' },
+        { el:'Matrix vertical texture', ch:'texture', means:'An off-source destination, one of five named kinds.', not:'Not an error and not “irrelevant”.' },
+        { el:'Matrix dashed median', ch:'line style', means:'Unranked or abstained mass, held rather than redistributed.', not:'Not zero and not missing.' },
+        { el:'Dashed panel border', ch:'border style', means:'Hypothesized or StructurallyDerived — no independent observation exists.', not:'Not low confidence. It is a different kind of object, not a weaker one.' },
+        { el:'2px alarm border', ch:'weight', means:'A build, receipt or authorisation problem that blocks reading the value.', not:'Not a warning about the science; it is a warning about the artefact.' },
+        { el:'Blue focus ring', ch:'colour + outline', means:'Current keyboard focus. The only saturated colour in the interface.', not:'Not selection. Selection is the dashed outline and persists without focus.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

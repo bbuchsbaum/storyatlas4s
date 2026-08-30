@@ -1,0 +1,130 @@
+{
+  "schema": "storyatlas4s.mockup-fixtures.v1",
+  "basis": "synthetic design fixtures; not admitted source, model output, or human adjudication",
+  "fixtures": [
+    {
+      "id": "synthetic/two-boats-source@v1",
+      "kind": "canonical-source",
+      "storage": { "path": "fixtures.json", "pointer": "/fixtures/0/canonicalText" },
+      "canonicalText": "At first light two boats were drawn up on the shingle below the village. Erran had been told, the winter before, that the far shore was empty. He did not believe it. The older of the two boats belonged to his uncle, who had not yet come to the water. Erran pushed the smaller boat out alone. Fog stood on the channel and the far shore was not visible. Someone on the shingle called after him, but the words did not carry. By the time the fog lifted he was past the middle of the channel. The far shore was not empty. He turned the boat and went back, and did not say what he had seen.",
+      "joinPolicy": "one U+0020 between sentence units; no leading or trailing whitespace",
+      "byteLength": 584,
+      "utf16CodeUnits": 584,
+      "coordinateBasis": "half-open UTF-16 code-unit offsets into canonicalText",
+      "textSha256": "40c889d9eab7b6b42189602730ef7bc402afac1007709230dcfff8924c2a43cc",
+      "recordFields": ["id", "text"],
+      "packetCanonicalization": "UTF-8 records joined by TAB in recordFields order and LF between records; no trailing LF",
+      "packetSha256": "86034684a281fb907956c8590464e413a9f8a9b38b559695e64edf85c4239fee",
+      "featureProbe": {
+        "id": "sensory.imageability.synthetic@v1",
+        "rawTarget": "Token",
+        "derivedTarget": "Window(TokenRange)",
+        "missingLexicalOrdinals": [13, 26, 44, 48, 54, 60, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 85, 92, 99, 105, 110, 115],
+        "trackCoverage": { "eligible": 117, "observed": 92, "missing": 25 },
+        "sentenceCoverage": [
+          { "unit": "s01", "eligible": 14, "observed": 13 },
+          { "unit": "s02", "eligible": 13, "observed": 12 },
+          { "unit": "s03", "eligible": 5, "observed": 5 },
+          { "unit": "s04", "eligible": 18, "observed": 16 },
+          { "unit": "s05", "eligible": 7, "observed": 6 },
+          { "unit": "s06", "eligible": 12, "observed": 11 },
+          { "unit": "s07", "eligible": 13, "observed": 0 },
+          { "unit": "s08", "eligible": 14, "observed": 12 },
+          { "unit": "s09", "eligible": 6, "observed": 5 },
+          { "unit": "s10", "eligible": 15, "observed": 12 }
+        ],
+        "selectedWindow": {
+          "id": "s05-centered-25",
+          "lexicalRange": [41, 66],
+          "eligible": 25,
+          "observed": 21,
+          "missing": 4
+        },
+        "windowPlan": {
+          "width": 25,
+          "step": 1,
+          "basis": "LexicalTokens",
+          "edgePolicy": "KeepPartial"
+        },
+        "reducer": "ScalarReducer.Mean",
+        "missingValuePolicy": "IgnoreMissing",
+        "aggregateMissingReason": "MissingReason.AllMissing",
+        "providerOutcome": "MissingReason.ProviderAbstained",
+        "provider": "syn-imag@v3",
+        "derivation": "syn-feature/imageability@v1",
+        "useLedger": "display-only"
+      },
+      "units": [
+        { "id": "s01", "span": [0, 72], "text": "At first light two boats were drawn up on the shingle below the village." },
+        { "id": "s02", "span": [73, 142], "text": "Erran had been told, the winter before, that the far shore was empty." },
+        { "id": "s03", "span": [143, 165], "text": "He did not believe it." },
+        { "id": "s04", "span": [166, 250], "text": "The older of the two boats belonged to his uncle, who had not yet come to the water." },
+        { "id": "s05", "span": [251, 291], "text": "Erran pushed the smaller boat out alone." },
+        { "id": "s06", "span": [292, 351], "text": "Fog stood on the channel and the far shore was not visible." },
+        { "id": "s07", "span": [352, 421], "text": "Someone on the shingle called after him, but the words did not carry." },
+        { "id": "s08", "span": [422, 487], "text": "By the time the fog lifted he was past the middle of the channel." },
+        { "id": "s09", "span": [488, 516], "text": "The far shore was not empty." },
+        { "id": "s10", "span": [517, 584], "text": "He turned the boat and went back, and did not say what he had seen." }
+      ]
+    },
+    {
+      "id": "synthetic/two-boats-recall-p01@v1",
+      "kind": "recall-transcript",
+      "sourceRef": {
+        "id": "synthetic/two-boats-source@v1",
+        "textSha256": "40c889d9eab7b6b42189602730ef7bc402afac1007709230dcfff8924c2a43cc"
+      },
+      "storage": { "path": "fixtures.json", "pointer": "/fixtures/1/canonicalText" },
+      "canonicalText": "there were two boats on the beach\nthe guy took the bigger one\nhis uncle told him the other side was empty\nthere was a lot of fog, you couldn't see anything\nsomebody was shouting at him from the shore\nthis is like that story you did last week\nit reminded me of a ferry I took once\nand then, I don't know, something about a bird?\nhe went back but he never said what happened\nthere was something else at the end but I can't get it\nthe— with the— you know",
+      "joinPolicy": "one LF between recall units; no leading or trailing whitespace",
+      "byteLength": 455,
+      "utf16CodeUnits": 451,
+      "coordinateBasis": "half-open UTF-16 code-unit offsets into canonicalText",
+      "textSha256": "9612ddc1d09738008851ef6dfde8691f49c68878e4960cd4417c6a01e352052b",
+      "recordFields": ["id", "text"],
+      "packetCanonicalization": "UTF-8 records joined by TAB in recordFields order and LF between records; no trailing LF",
+      "packetSha256": "e99de31c95dfdbdf1479ea9f21a1c2b218725f39091fcdb2b07717ec19ae4f85",
+      "units": [
+        { "id": "r01", "span": [0, 33], "text": "there were two boats on the beach" },
+        { "id": "r02", "span": [34, 61], "text": "the guy took the bigger one" },
+        { "id": "r03", "span": [62, 105], "text": "his uncle told him the other side was empty" },
+        { "id": "r04", "span": [106, 155], "text": "there was a lot of fog, you couldn't see anything" },
+        { "id": "r05", "span": [156, 199], "text": "somebody was shouting at him from the shore" },
+        { "id": "r06", "span": [200, 241], "text": "this is like that story you did last week" },
+        { "id": "r07", "span": [242, 279], "text": "it reminded me of a ferry I took once" },
+        { "id": "r08", "span": [280, 327], "text": "and then, I don't know, something about a bird?" },
+        { "id": "r09", "span": [328, 372], "text": "he went back but he never said what happened" },
+        { "id": "r10", "span": [373, 427], "text": "there was something else at the end but I can't get it" },
+        { "id": "r11", "span": [428, 451], "text": "the— with the— you know" }
+      ]
+    },
+    {
+      "id": "synthetic/two-boats-interview-p07@v1",
+      "kind": "interview-transcript",
+      "sourceState": "Unestablished",
+      "sourceStateContract": "proposed-storyatlas-view-state@v1",
+      "storage": { "path": "fixtures.json", "pointer": "/fixtures/2/canonicalText" },
+      "canonicalText": "Tell me about a time you got lost. Take as long as you need.\nOkay. Um. There was a market — this was maybe two years ago — and I went in through one entrance and I could not find the way back out.\nCan you tell me anything more about that?\nIt was hot. There were stalls with fabric hanging down so you couldn't see over them.\nDo you remember what time of day it was?\nAfternoon, I think. I usually go in the afternoon. Markets in that region are always laid out in rings.\nWas anyone with you?\nMy sister was with me — no, wait, that was a different trip. I remember my chest going tight.\nRoughly how long were you looking for the way out?\nI don't know how long it took. Honestly I couldn't tell you.",
+      "joinPolicy": "one LF between speaker turns; no leading or trailing whitespace",
+      "byteLength": 702,
+      "utf16CodeUnits": 696,
+      "coordinateBasis": "half-open UTF-16 code-unit offsets into canonicalText",
+      "textSha256": "c04885273ab43eb5978ba5b14d468319186576d4dc12f17ca208b9eeb79b3c86",
+      "recordFields": ["id", "speaker", "phase", "text"],
+      "packetCanonicalization": "UTF-8 records joined by TAB in recordFields order and LF between records; no trailing LF",
+      "packetSha256": "72d5eb63fdf5f0bf97b9beb057de512666bd96908584d7d14d5718c2af44685c",
+      "units": [
+        { "id": "t01", "span": [0, 60], "speaker": "I", "phase": "FR", "text": "Tell me about a time you got lost. Take as long as you need." },
+        { "id": "t02", "span": [61, 196], "speaker": "P", "phase": "FR", "text": "Okay. Um. There was a market — this was maybe two years ago — and I went in through one entrance and I could not find the way back out." },
+        { "id": "t03", "span": [197, 238], "speaker": "I", "phase": "GP", "text": "Can you tell me anything more about that?" },
+        { "id": "t04", "span": [239, 324], "speaker": "P", "phase": "GP", "text": "It was hot. There were stalls with fabric hanging down so you couldn't see over them." },
+        { "id": "t05", "span": [325, 365], "speaker": "I", "phase": "SP", "text": "Do you remember what time of day it was?" },
+        { "id": "t06", "span": [366, 469], "speaker": "P", "phase": "SP", "text": "Afternoon, I think. I usually go in the afternoon. Markets in that region are always laid out in rings." },
+        { "id": "t07", "span": [470, 490], "speaker": "I", "phase": "GP", "text": "Was anyone with you?" },
+        { "id": "t08", "span": [491, 584], "speaker": "P", "phase": "GP", "text": "My sister was with me — no, wait, that was a different trip. I remember my chest going tight." },
+        { "id": "t09", "span": [585, 635], "speaker": "I", "phase": "SP", "text": "Roughly how long were you looking for the way out?" },
+        { "id": "t10", "span": [636, 696], "speaker": "P", "phase": "SP", "text": "I don't know how long it took. Honestly I couldn't tell you." }
+      ]
+    }
+  ]
+}

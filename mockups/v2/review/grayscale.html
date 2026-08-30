@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en" data-storyatlas-frozen="true"><head>
+  <meta charset="utf-8">
+
+<style data-dc-resolved-style="true">
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: #F9F5EF; color: #221D19;
+      font: 13px/1.55 system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif; }
+    a { color: #24356F; } a:hover { color: #2F4693; }
+    .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, "DejaVu Sans Mono", monospace;
+         font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; letter-spacing: 0.03em; color: #544D47; }
+    h2 { font-size: 15px; font-weight: 600; margin: 0; }
+    p { margin: 0; }
+  </style><title>StoryAtlas mockup v2 — Grayscale — frozen design specification</title><meta name="viewport" content="width=device-width, initial-scale=1"><style data-frozen-inert-style="true">*{cursor:default!important}</style><meta name="storyatlas-frozen-source" content="Grayscale.dc.html"></head>
+<body>
+<x-dc style="display: block;">
+
+
+<div data-dc-artboard="" data-dc-layout="flowing" style="width: 1440px; min-height: 1000px; background: rgb(249, 245, 239); display: flex; flex-direction: column; position: relative;">
+  <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 8px 28px;">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
+  </div>
+
+  <div style="padding: 24px 28px 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <div class="lbl">StoryAtlas mockup v2 · deliverable 10</div>
+      <div style="font-size: 25px; font-weight: 600; letter-spacing: -0.02em;">Greyscale and colour-vision check</div>
+      <p style="max-width: 700px; color: #544D47;">The same component specimen under four transforms. Simulations are computed with the Viénot–Brettel–Mollon
+        dichromat projection in linear sRGB, and greyscale is relative luminance re-encoded — not a CSS filter, so the hex values here are the ones a reader actually sees.</p>
+    </div>
+    <div style="border: 1px solid #653E00; border-left-width: 3px; background: #F7E6C3; padding: 11px 14px; max-width: 400px; display: flex; flex-direction: column; gap: 5px;">
+      <span style="font-size: 12px; font-weight: 600;">The result, stated plainly</span>
+      <p style="font-size: 11.5px; line-height: 1.5;">The two packet inks are <strong style="font-weight: 600;">equiluminant by construction</strong> — 1.03:1 apart as authored,
+        and never more than 1.40:1 apart under any dichromat simulation. That is not a defect: they are not meant to be told apart by hue. Role is carried by the 3px edge and the written label.</p>
+      <p style="font-size: 11.5px; line-height: 1.5; margin-top: 7px;">New under the relaxed rule: the column-mass ramp <strong style="font-weight: 600;">stays ordered</strong> without hue —
+        <span class="m">#E6E6E6 → #CFCFCF → #B3B3B3 → #919191 → #4B4B4B</span>. It reinforces bar height rather than replacing it — and zero stays categorically distinct because it is hatched, not pale. That is exactly what
+        “never colour <em>alone</em>” permits and “colour never carries meaning” forbade.</p>
+    </div>
+  </div>
+
+  <div style="padding: 0 28px 20px; display: flex; gap: 16px;">
+
+      <div style="width: 256px; flex: none; border: 1px solid #817B74; background: #F9F5EF; padding: 12px 13px; display: flex; flex-direction: column; gap: 11px; min-height: 430px;">
+        <div style="display: flex; flex-direction: column; gap: 1px; padding-bottom: 9px; border-bottom: 1px solid #D7D2CB;">
+          <span style="font-size: 12.5px; font-weight: 600;">As authored</span>
+          <span class="lbl" style="font-size: 10px;">normal trichromatic vision</span>
+        </div>
+
+        <!-- focus breadcrumb + placement -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #F0EBE3; border: 1px solid #817B74; padding: 6px 8px;">
+          <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+            <span style="font-size: 11px; color: #69625C;">Scene</span><span style="font-size: 11px; color: #69625C;">›</span>
+            <span style="font-size: 11px; font-weight: 600; color: #221D19; border-bottom: 2px solid #2F4693;">Event</span>
+          </div>
+          <div style="border: 1px solid #221D19; background: #F9F5EF; padding: 1px 5px; color: #221D19;"><span class="m" style="font-size: 10px; font-weight: 600;">on-mark</span></div>
+        </div>
+
+        <!-- focus ring on a control -->
+        <div style="padding: 5px 9px; background: #F0EDE9; outline: 2px solid #2F4693; outline-offset: -2px; color: #221D19;"><span style="font-size: 11px;">keyboard focus</span></div>
+
+        <!-- epistemic chips: border style, not hue -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F9F5EF; color: #221D19; border: 1px solid #221D19; border-left-width: 3px; align-self: flex-start;">SurfaceExplicit</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F9F5EF; color: #221D19; border: 1px dashed #221D19; border-left-width: 3px; align-self: flex-start;">StructurallyDerived</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F9F5EF; color: #221D19; border: 1px dotted #221D19; border-left-width: 3px; align-self: flex-start;">Hypothesized</span>
+        </div>
+
+        <!-- a matrix row: three destination classes -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #69625C;">one matrix row</span>
+          <svg width="240" height="34" viewBox="0 0 240 34" aria-hidden="true">
+            <rect x="0" y="4" width="26" height="26" fill="#221D19"></rect>
+            <rect x="30" y="9" width="16" height="16" fill="#221D19"></rect>
+            <rect x="62" y="7" width="20" height="20" fill="none" stroke="#69625C"></rect>
+            <line x1="65" y1="7" x2="65" y2="27" stroke="#69625C" stroke-width="1.3"></line>
+            <line x1="70" y1="7" x2="70" y2="27" stroke="#69625C" stroke-width="1.3"></line>
+            <line x1="75" y1="7" x2="75" y2="27" stroke="#69625C" stroke-width="1.3"></line>
+            <line x1="80" y1="7" x2="80" y2="27" stroke="#69625C" stroke-width="1.3"></line>
+            <rect x="94" y="4" width="26" height="26" fill="none" stroke="#221D19"></rect>
+            <line x1="99" y1="17" x2="115" y2="17" stroke="#221D19" stroke-width="1.4" stroke-dasharray="4 3"></line>
+            <rect x="130" y="4" width="26" height="26" fill="none" stroke="#69625C" stroke-width="1"></rect>
+            <path d="M130 4 L156 30 M130 10 L150 30 M136 4 L156 24" stroke="#69625C" stroke-width="1.1"></path>
+            <rect x="166" y="4" width="26" height="26" fill="none" stroke="#653E00" stroke-width="2"></rect>
+            <path d="M166 4 L192 30 M192 4 L166 30" stroke="#653E00" stroke-width="1.2"></path>
+            <g font-family="system-ui, sans-serif" font-size="7.5" fill="#69625C">
+              <text x="0" y="34">src</text><text x="62" y="34">off</text><text x="94" y="34">unrkd</text><text x="130" y="34">miss</text><text x="166" y="34">stale</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- three role tints, the thing that is meant to collapse -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #69625C;">role tints — redundant only</span>
+          <div style="display: flex; gap: 4px;">
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #221D19; background: #F0EDE9; border-left: 3px solid #2F4693;">Source</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #221D19; background: #F4EAE4; border-left: 3px solid #852A12;">Recall</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #221D19; background: #F0EBE3; border-left: 3px solid #544D47;">Hypoth.</span>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #D7D2CB;">
+          <span class="m" style="font-size: 9.5px; color: #69625C; line-height: 1.5;">ink/paper 15.37:1
+accent/paper 8.00:1</span>
+        </div>
+      </div>
+
+      <div style="width: 256px; flex: none; border: 1px solid #817B74; background: #F5F5F5; padding: 12px 13px; display: flex; flex-direction: column; gap: 11px; min-height: 430px;">
+        <div style="display: flex; flex-direction: column; gap: 1px; padding-bottom: 9px; border-bottom: 1px solid #D7D2CB;">
+          <span style="font-size: 12.5px; font-weight: 600;">Greyscale</span>
+          <span class="lbl" style="font-size: 10px;">relative luminance, re-encoded</span>
+        </div>
+
+        <!-- focus breadcrumb + placement -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #ECECEC; border: 1px solid #817B74; padding: 6px 8px;">
+          <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+            <span style="font-size: 11px; color: #636363;">Scene</span><span style="font-size: 11px; color: #636363;">›</span>
+            <span style="font-size: 11px; font-weight: 600; color: #1E1E1E; border-bottom: 2px solid #4B4B4B;">Event</span>
+          </div>
+          <div style="border: 1px solid #1E1E1E; background: #F5F5F5; padding: 1px 5px; color: #1E1E1E;"><span class="m" style="font-size: 10px; font-weight: 600;">on-mark</span></div>
+        </div>
+
+        <!-- focus ring on a control -->
+        <div style="padding: 5px 9px; background: #EDEDED; outline: 2px solid #4B4B4B; outline-offset: -2px; color: #1E1E1E;"><span style="font-size: 11px;">keyboard focus</span></div>
+
+        <!-- epistemic chips: border style, not hue -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F5F5F5; color: #1E1E1E; border: 1px solid #1E1E1E; border-left-width: 3px; align-self: flex-start;">SurfaceExplicit</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F5F5F5; color: #1E1E1E; border: 1px dashed #1E1E1E; border-left-width: 3px; align-self: flex-start;">StructurallyDerived</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F5F5F5; color: #1E1E1E; border: 1px dotted #1E1E1E; border-left-width: 3px; align-self: flex-start;">Hypothesized</span>
+        </div>
+
+        <!-- a matrix row: three destination classes -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #636363;">one matrix row</span>
+          <svg width="240" height="34" viewBox="0 0 240 34" aria-hidden="true">
+            <rect x="0" y="4" width="26" height="26" fill="#1E1E1E"></rect>
+            <rect x="30" y="9" width="16" height="16" fill="#1E1E1E"></rect>
+            <rect x="62" y="7" width="20" height="20" fill="none" stroke="#636363"></rect>
+            <line x1="65" y1="7" x2="65" y2="27" stroke="#636363" stroke-width="1.3"></line>
+            <line x1="70" y1="7" x2="70" y2="27" stroke="#636363" stroke-width="1.3"></line>
+            <line x1="75" y1="7" x2="75" y2="27" stroke="#636363" stroke-width="1.3"></line>
+            <line x1="80" y1="7" x2="80" y2="27" stroke="#636363" stroke-width="1.3"></line>
+            <rect x="94" y="4" width="26" height="26" fill="none" stroke="#1E1E1E"></rect>
+            <line x1="99" y1="17" x2="115" y2="17" stroke="#1E1E1E" stroke-width="1.4" stroke-dasharray="4 3"></line>
+            <rect x="130" y="4" width="26" height="26" fill="none" stroke="#636363" stroke-width="1"></rect>
+            <path d="M130 4 L156 30 M130 10 L150 30 M136 4 L156 24" stroke="#636363" stroke-width="1.1"></path>
+            <rect x="166" y="4" width="26" height="26" fill="none" stroke="#464646" stroke-width="2"></rect>
+            <path d="M166 4 L192 30 M192 4 L166 30" stroke="#464646" stroke-width="1.2"></path>
+            <g font-family="system-ui, sans-serif" font-size="7.5" fill="#636363">
+              <text x="0" y="34">src</text><text x="62" y="34">off</text><text x="94" y="34">unrkd</text><text x="130" y="34">miss</text><text x="166" y="34">stale</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- three role tints, the thing that is meant to collapse -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #636363;">role tints — redundant only</span>
+          <div style="display: flex; gap: 4px;">
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #1E1E1E; background: #EDEDED; border-left: 3px solid #4B4B4B;">Source</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #1E1E1E; background: #EDEDED; border-left: 3px solid #494949;">Recall</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #1E1E1E; background: #ECECEC; border-left: 3px solid #4E4E4E;">Hypoth.</span>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #D7D2CB;">
+          <span class="m" style="font-size: 9.5px; color: #636363; line-height: 1.5;">ink/paper 15.29:1
+accent/paper 8.00:1</span>
+        </div>
+      </div>
+
+      <div style="width: 256px; flex: none; border: 1px solid #817B74; background: #F6F6EF; padding: 12px 13px; display: flex; flex-direction: column; gap: 11px; min-height: 430px;">
+        <div style="display: flex; flex-direction: column; gap: 1px; padding-bottom: 9px; border-bottom: 1px solid #D7D2CB;">
+          <span style="font-size: 12.5px; font-weight: 600;">Deuteranopia</span>
+          <span class="lbl" style="font-size: 10px;">no functioning M cone</span>
+        </div>
+
+        <!-- focus breadcrumb + placement -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #ECECE3; border: 1px solid #817B74; padding: 6px 8px;">
+          <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+            <span style="font-size: 11px; color: #64645C;">Scene</span><span style="font-size: 11px; color: #64645C;">›</span>
+            <span style="font-size: 11px; font-weight: 600; color: #1F1F19; border-bottom: 2px solid #404093;">Event</span>
+          </div>
+          <div style="border: 1px solid #1F1F19; background: #F6F6EF; padding: 1px 5px; color: #1F1F19;"><span class="m" style="font-size: 10px; font-weight: 600;">on-mark</span></div>
+        </div>
+
+        <!-- focus ring on a control -->
+        <div style="padding: 5px 9px; background: #EEEEE9; outline: 2px solid #404093; outline-offset: -2px; color: #1F1F19;"><span style="font-size: 11px;">keyboard focus</span></div>
+
+        <!-- epistemic chips: border style, not hue -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F6F6EF; color: #1F1F19; border: 1px solid #1F1F19; border-left-width: 3px; align-self: flex-start;">SurfaceExplicit</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F6F6EF; color: #1F1F19; border: 1px dashed #1F1F19; border-left-width: 3px; align-self: flex-start;">StructurallyDerived</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F6F6EF; color: #1F1F19; border: 1px dotted #1F1F19; border-left-width: 3px; align-self: flex-start;">Hypothesized</span>
+        </div>
+
+        <!-- a matrix row: three destination classes -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #64645C;">one matrix row</span>
+          <svg width="240" height="34" viewBox="0 0 240 34" aria-hidden="true">
+            <rect x="0" y="4" width="26" height="26" fill="#1F1F19"></rect>
+            <rect x="30" y="9" width="16" height="16" fill="#1F1F19"></rect>
+            <rect x="62" y="7" width="20" height="20" fill="none" stroke="#64645C"></rect>
+            <line x1="65" y1="7" x2="65" y2="27" stroke="#64645C" stroke-width="1.3"></line>
+            <line x1="70" y1="7" x2="70" y2="27" stroke="#64645C" stroke-width="1.3"></line>
+            <line x1="75" y1="7" x2="75" y2="27" stroke="#64645C" stroke-width="1.3"></line>
+            <line x1="80" y1="7" x2="80" y2="27" stroke="#64645C" stroke-width="1.3"></line>
+            <rect x="94" y="4" width="26" height="26" fill="none" stroke="#1F1F19"></rect>
+            <line x1="99" y1="17" x2="115" y2="17" stroke="#1F1F19" stroke-width="1.4" stroke-dasharray="4 3"></line>
+            <rect x="130" y="4" width="26" height="26" fill="none" stroke="#64645C" stroke-width="1"></rect>
+            <path d="M130 4 L156 30 M130 10 L150 30 M136 4 L156 24" stroke="#64645C" stroke-width="1.1"></path>
+            <rect x="166" y="4" width="26" height="26" fill="none" stroke="#4C4C00" stroke-width="2"></rect>
+            <path d="M166 4 L192 30 M192 4 L166 30" stroke="#4C4C00" stroke-width="1.2"></path>
+            <g font-family="system-ui, sans-serif" font-size="7.5" fill="#64645C">
+              <text x="0" y="34">src</text><text x="62" y="34">off</text><text x="94" y="34">unrkd</text><text x="130" y="34">miss</text><text x="166" y="34">stale</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- three role tints, the thing that is meant to collapse -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #64645C;">role tints — redundant only</span>
+          <div style="display: flex; gap: 4px;">
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #1F1F19; background: #EEEEE9; border-left: 3px solid #404093;">Source</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #1F1F19; background: #EFEFE4; border-left: 3px solid #525204;">Recall</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #1F1F19; background: #ECECE3; border-left: 3px solid #4F4F47;">Hypoth.</span>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #D7D2CB;">
+          <span class="m" style="font-size: 9.5px; color: #64645C; line-height: 1.5;">ink/paper 15.25:1
+accent/paper 8.15:1</span>
+        </div>
+      </div>
+
+      <div style="width: 256px; flex: none; border: 1px solid #817B74; background: #F5F5EF; padding: 12px 13px; display: flex; flex-direction: column; gap: 11px; min-height: 430px;">
+        <div style="display: flex; flex-direction: column; gap: 1px; padding-bottom: 9px; border-bottom: 1px solid #D7D2CB;">
+          <span style="font-size: 12.5px; font-weight: 600;">Protanopia</span>
+          <span class="lbl" style="font-size: 10px;">no functioning L cone</span>
+        </div>
+
+        <!-- focus breadcrumb + placement -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #ECECE3; border: 1px solid #817B74; padding: 6px 8px;">
+          <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+            <span style="font-size: 11px; color: #63635C;">Scene</span><span style="font-size: 11px; color: #63635C;">›</span>
+            <span style="font-size: 11px; font-weight: 600; color: #1E1E19; border-bottom: 2px solid #444493;">Event</span>
+          </div>
+          <div style="border: 1px solid #1E1E19; background: #F5F5EF; padding: 1px 5px; color: #1E1E19;"><span class="m" style="font-size: 10px; font-weight: 600;">on-mark</span></div>
+        </div>
+
+        <!-- focus ring on a control -->
+        <div style="padding: 5px 9px; background: #EDEDE9; outline: 2px solid #444493; outline-offset: -2px; color: #1E1E19;"><span style="font-size: 11px;">keyboard focus</span></div>
+
+        <!-- epistemic chips: border style, not hue -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F5F5EF; color: #1E1E19; border: 1px solid #1E1E19; border-left-width: 3px; align-self: flex-start;">SurfaceExplicit</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F5F5EF; color: #1E1E19; border: 1px dashed #1E1E19; border-left-width: 3px; align-self: flex-start;">StructurallyDerived</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F5F5EF; color: #1E1E19; border: 1px dotted #1E1E19; border-left-width: 3px; align-self: flex-start;">Hypothesized</span>
+        </div>
+
+        <!-- a matrix row: three destination classes -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #63635C;">one matrix row</span>
+          <svg width="240" height="34" viewBox="0 0 240 34" aria-hidden="true">
+            <rect x="0" y="4" width="26" height="26" fill="#1E1E19"></rect>
+            <rect x="30" y="9" width="16" height="16" fill="#1E1E19"></rect>
+            <rect x="62" y="7" width="20" height="20" fill="none" stroke="#63635C"></rect>
+            <line x1="65" y1="7" x2="65" y2="27" stroke="#63635C" stroke-width="1.3"></line>
+            <line x1="70" y1="7" x2="70" y2="27" stroke="#63635C" stroke-width="1.3"></line>
+            <line x1="75" y1="7" x2="75" y2="27" stroke="#63635C" stroke-width="1.3"></line>
+            <line x1="80" y1="7" x2="80" y2="27" stroke="#63635C" stroke-width="1.3"></line>
+            <rect x="94" y="4" width="26" height="26" fill="none" stroke="#1E1E19"></rect>
+            <line x1="99" y1="17" x2="115" y2="17" stroke="#1E1E19" stroke-width="1.4" stroke-dasharray="4 3"></line>
+            <rect x="130" y="4" width="26" height="26" fill="none" stroke="#63635C" stroke-width="1"></rect>
+            <path d="M130 4 L156 30 M130 10 L150 30 M136 4 L156 24" stroke="#63635C" stroke-width="1.1"></path>
+            <rect x="166" y="4" width="26" height="26" fill="none" stroke="#444401" stroke-width="2"></rect>
+            <path d="M166 4 L192 30 M192 4 L166 30" stroke="#444401" stroke-width="1.2"></path>
+            <g font-family="system-ui, sans-serif" font-size="7.5" fill="#63635C">
+              <text x="0" y="34">src</text><text x="62" y="34">off</text><text x="94" y="34">unrkd</text><text x="130" y="34">miss</text><text x="166" y="34">stale</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- three role tints, the thing that is meant to collapse -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #63635C;">role tints — redundant only</span>
+          <div style="display: flex; gap: 4px;">
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #1E1E19; background: #EDEDE9; border-left: 3px solid #444493;">Source</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #1E1E19; background: #EBEBE4; border-left: 3px solid #3D3D14;">Recall</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #1E1E19; background: #ECECE3; border-left: 3px solid #4E4E47;">Hypoth.</span>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #D7D2CB;">
+          <span class="m" style="font-size: 9.5px; color: #63635C; line-height: 1.5;">ink/paper 15.29:1
+accent/paper 7.69:1</span>
+        </div>
+      </div>
+
+      <div style="width: 256px; flex: none; border: 1px solid #817B74; background: #F7F7E2; padding: 12px 13px; display: flex; flex-direction: column; gap: 11px; min-height: 430px;">
+        <div style="display: flex; flex-direction: column; gap: 1px; padding-bottom: 9px; border-bottom: 1px solid #D7D2CB;">
+          <span style="font-size: 12.5px; font-weight: 600;">Tritanopia</span>
+          <span class="lbl" style="font-size: 10px;">no functioning S cone</span>
+        </div>
+
+        <!-- focus breadcrumb + placement -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #EDEDD2; border: 1px solid #817B74; padding: 6px 8px;">
+          <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+            <span style="font-size: 11px; color: #66663F;">Scene</span><span style="font-size: 11px; color: #66663F;">›</span>
+            <span style="font-size: 11px; font-weight: 600; color: #202000; border-bottom: 2px solid #3C3CA8;">Event</span>
+          </div>
+          <div style="border: 1px solid #202000; background: #F7F7E2; padding: 1px 5px; color: #202000;"><span class="m" style="font-size: 10px; font-weight: 600;">on-mark</span></div>
+        </div>
+
+        <!-- focus ring on a control -->
+        <div style="padding: 5px 9px; background: #EEEEDF; outline: 2px solid #3C3CA8; outline-offset: -2px; color: #202000;"><span style="font-size: 11px;">keyboard focus</span></div>
+
+        <!-- epistemic chips: border style, not hue -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F7F7E2; color: #202000; border: 1px solid #202000; border-left-width: 3px; align-self: flex-start;">SurfaceExplicit</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F7F7E2; color: #202000; border: 1px dashed #202000; border-left-width: 3px; align-self: flex-start;">StructurallyDerived</span>
+          <span style="font-size: 10.5px; padding: 2px 7px; background: #F7F7E2; color: #202000; border: 1px dotted #202000; border-left-width: 3px; align-self: flex-start;">Hypothesized</span>
+        </div>
+
+        <!-- a matrix row: three destination classes -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #66663F;">one matrix row</span>
+          <svg width="240" height="34" viewBox="0 0 240 34" aria-hidden="true">
+            <rect x="0" y="4" width="26" height="26" fill="#202000"></rect>
+            <rect x="30" y="9" width="16" height="16" fill="#202000"></rect>
+            <rect x="62" y="7" width="20" height="20" fill="none" stroke="#66663F"></rect>
+            <line x1="65" y1="7" x2="65" y2="27" stroke="#66663F" stroke-width="1.3"></line>
+            <line x1="70" y1="7" x2="70" y2="27" stroke="#66663F" stroke-width="1.3"></line>
+            <line x1="75" y1="7" x2="75" y2="27" stroke="#66663F" stroke-width="1.3"></line>
+            <line x1="80" y1="7" x2="80" y2="27" stroke="#66663F" stroke-width="1.3"></line>
+            <rect x="94" y="4" width="26" height="26" fill="none" stroke="#202000"></rect>
+            <line x1="99" y1="17" x2="115" y2="17" stroke="#202000" stroke-width="1.4" stroke-dasharray="4 3"></line>
+            <rect x="130" y="4" width="26" height="26" fill="none" stroke="#66663F" stroke-width="1"></rect>
+            <path d="M130 4 L156 30 M130 10 L150 30 M136 4 L156 24" stroke="#66663F" stroke-width="1.1"></path>
+            <rect x="166" y="4" width="26" height="26" fill="none" stroke="#545400" stroke-width="2"></rect>
+            <path d="M166 4 L192 30 M192 4 L166 30" stroke="#545400" stroke-width="1.2"></path>
+            <g font-family="system-ui, sans-serif" font-size="7.5" fill="#66663F">
+              <text x="0" y="34">src</text><text x="62" y="34">off</text><text x="94" y="34">unrkd</text><text x="130" y="34">miss</text><text x="166" y="34">stale</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- three role tints, the thing that is meant to collapse -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: #66663F;">role tints — redundant only</span>
+          <div style="display: flex; gap: 4px;">
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #202000; background: #EEEEDF; border-left: 3px solid #3C3CA8;">Source</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #202000; background: #F0F0D6; border-left: 3px solid #646400;">Recall</span>
+            <span style="font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: #202000; background: #EDEDD2; border-left: 3px solid #515126;">Hypoth.</span>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #D7D2CB;">
+          <span class="m" style="font-size: 9.5px; color: #66663F; line-height: 1.5;">ink/paper 15.27:1
+accent/paper 8.05:1</span>
+        </div>
+      </div>
+
+  </div>
+
+  <div style="border-top: 1px solid #817B74; padding: 18px 28px 22px; display: flex; flex-direction: column; gap: 12px;">
+    <h2>Computed simulation table</h2>
+    <table style="border-collapse: collapse; font-size: 11.5px;">
+      <thead><tr>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Token</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">As authored</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Deuteranopia</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Protanopia</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Tritanopia</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Greyscale</th>
+        <th style="text-align: left; padding: 0 0 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Verdict</th>
+      </tr></thead>
+      <tbody>
+
+          <tr>
+            <td style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;">ink</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #221D19; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#221D19</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #1F1F19; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#1F1F19</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #1E1E19; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#1E1E19</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #202000; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#202000</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #1E1E1E; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#1E1E1E</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #221D19;">holds — the whole instrument rests on this</td>
+          </tr>
+
+          <tr>
+            <td style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;">focus ring</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #2F4693; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#2F4693</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #404093; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#404093</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #444493; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#444493</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #3C3CA8; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#3C3CA8</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #4B4B4B; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#4B4B4B</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #221D19;">holds — 7.69:1 at worst</td>
+          </tr>
+
+          <tr>
+            <td style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;">alarm</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #653E00; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#653E00</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #4C4C00; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#4C4C00</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #444401; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#444401</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #545400; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#545400</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #464646; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#464646</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #221D19;">holds — plus a 2px edge and a label</td>
+          </tr>
+
+          <tr>
+            <td style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;">ink-muted</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #69625C; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#69625C</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #64645C; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#64645C</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #63635C; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#63635C</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #66663F; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#66663F</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #636363; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#636363</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #221D19;">holds at 5.52:1 — was 4.29:1 and failing on tinted grounds</td>
+          </tr>
+
+          <tr>
+            <td style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;">source ink</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #2F4693; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#2F4693</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #404093; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#404093</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #444493; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#444493</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #3C3CA8; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#3C3CA8</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #4B4B4B; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#4B4B4B</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #544D47;">equiluminant by design — edge and label carry it</td>
+          </tr>
+
+          <tr>
+            <td style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;">recall ink</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #852A12; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#852A12</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #525204; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#525204</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #3D3D14; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#3D3D14</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #646400; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#646400</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #494949; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#494949</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #544D47;">equiluminant by design — edge and label carry it</td>
+          </tr>
+
+          <tr>
+            <td style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;">ramp · col .55</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #B1B2C4; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#B1B2C4</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #B6B6C4; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#B6B6C4</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #B8B8C4; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#B8B8C4</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #B2B2CA; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#B2B2CA</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #B3B3B3; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#B3B3B3</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #221D19;">stays ordered — reinforces area, never replaces it</td>
+          </tr>
+
+          <tr>
+            <td style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;">paper</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #F9F5EF; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#F9F5EF</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #F6F6EF; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#F6F6EF</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #F5F5EF; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#F5F5EF</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #F7F7E2; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#F7F7E2</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="display: inline-block; width: 11px; height: 11px; background: #F5F5F5; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;"></span>#F5F5F5</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #221D19;">holds</td>
+          </tr>
+
+      </tbody>
+    </table>
+    <div style="display: flex; gap: 28px; flex-wrap: wrap;">
+      <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 11px 14px; max-width: 620px; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 600;">Contrast that must survive, and does</span>
+        <span class="m" style="font-size: 11px; line-height: 1.6;">ink on paper       15.37 → 15.25 deutan · 15.29 protan · 15.27 tritan · 15.29 grey<br>accent on paper     8.00 →  8.15 deutan ·  7.69 protan ·  8.05 tritan ·  8.00 grey<br>ink-muted on paper  5.52 →  5.50 deutan ·  5.53 protan ·  5.47 tritan ·  5.51 grey<br>alarm on its wash   7.61 →  7.35 deutan ·  8.09 protan ·  6.50 tritan</span>
+        <span class="lbl" style="line-height: 1.45;">Nothing load-bearing drops below AA under any transform; the worst case is alarm-on-wash under tritanopia at 6.50:1. The previous palette's metadata grey failed at 4.29:1 on tinted grounds and is now 5.52:1.</span>
+      </div>
+      <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 11px 14px; max-width: 500px; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 600;">How to re-run this</span>
+        <span class="lbl" style="line-height: 1.5;">Take every token pair the design relies on; project through the dichromat planes; recompute WCAG relative-luminance contrast on the projected pair.
+          A pair that only passes as authored has a colour dependency hiding in it. This check belongs in CI beside the existing static-edition laws, not in a designer's eyeball.</span>
+      </div>
+    </div>
+  </div>
+<div data-frozen-notice="true" style="position: absolute; z-index: 9999; right: 0px; top: 0px; max-width: 520px; padding: 7px 14px; border: 3px double rgb(34, 29, 25); background: rgb(247, 230, 195); color: rgb(34, 29, 25); font: 700 11.5px / 1.35 system-ui, sans-serif; letter-spacing: 0.045em; text-align: center;">FROZEN DESIGN SPECIFICATION — CONTROLS ARE INERT</div></div>
+</x-dc>
+
+
+
+
+</body></html>

@@ -1,0 +1,220 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; background: #F9F5EF; color: #221D19;
+      font: 13px/1.55 system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif; }
+    a { color: #24356F; } a:hover { color: #2F4693; }
+    .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, "DejaVu Sans Mono", monospace;
+         font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; letter-spacing: 0.03em; color: #544D47; }
+    h2 { font-size: 15px; font-weight: 600; margin: 0; }
+    h3 { font-size: 12px; font-weight: 600; margin: 0; }
+    p { margin: 0; }
+    td, th { vertical-align: top; }
+  </style>
+</helmet>
+
+<div data-dc-artboard data-dc-layout="flowing" style="width: 1440px; min-height: 1560px; background: #F9F5EF; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 8px 28px;">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
+    <span class="m" style="font-size: 11px; color: #D7D2CB;">the design is synthetic; renderer findings bind pinned source 596b398 and renderer-gap-benchmark.json</span>
+  </div>
+
+  <div style="padding: 26px 28px 18px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <div class="lbl">StoryAtlas mockup v2 · renderer gap analysis</div>
+      <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em;">What this design asks of Intaglio</div>
+      <p style="max-width: 800px; color: #544D47;">Colour is forbidden from carrying meaning, so <strong style="font-weight: 600; color: #221D19;">texture is the load-bearing channel</strong> —
+        it is how missing, unauthorised, low-coverage and off-source are told apart. That makes one renderer capability critical rather than nice to have.</p>
+    </div>
+    <div style="border: 2px solid #653E00; background: #F7E6C3; padding: 13px 16px; max-width: 430px; display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-size: 12.5px; font-weight: 600;">The finding</span>
+      <p style="font-size: 12px; line-height: 1.5;">Intaglio can express hatching <strong style="font-weight: 600;">geometrically</strong> with clipped line grobs, so this design is implementable today.
+        What it lacks is a compact, shared paint or pattern vocabulary: <span class="m" style="font-size: 11px;">GraphicParams.fill</span> is <span class="m" style="font-size: 11px;">Option[Rgba]</span>.</p>
+      <p style="font-size: 12px; line-height: 1.5;">At 2,300 textured marks, the measured geometric route misses both structural gates: <strong style="font-weight: 600;">32,202 elements · 2,497,582 bytes</strong>. A shared-pattern control uses 2,305 · 296,925.</p>
+    </div>
+  </div>
+
+  <!-- what the design needs -->
+  <div style="border-top: 1px solid #817B74; padding: 20px 28px; display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: baseline; gap: 14px;">
+      <h2>1 · Capability, against what the design actually uses</h2>
+      <p style="font-size: 12px; color: #544D47;">Everything below was checked against the pinned source, not the docs.</p>
+    </div>
+    <table style="border-collapse: collapse; width: 100%; font-size: 12px;">
+      <thead><tr>
+        <th style="text-align: left; padding: 0 14px 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; width: 22%;">The design needs</th>
+        <th style="text-align: left; padding: 0 14px 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; width: 11%;">Today</th>
+        <th style="text-align: left; padding: 0 14px 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; width: 34%;">Evidence</th>
+        <th style="text-align: left; padding: 0 0 7px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47;">Cost</th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{ caps }}" as="c" hint-placeholder-count="10">
+          <tr>
+            <td style="padding: 7px 14px 7px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4; font-weight: 600;">{{ c.need }}</td>
+            <td style="padding: 7px 14px 7px 0; border-bottom: 1px solid #D7D2CB;"><span style="{{ c.pill }}">{{ c.state }}</span></td>
+            <td class="m" style="padding: 7px 14px 7px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.45; font-size: 11px; color: #544D47;">{{ c.where }}</td>
+            <td style="padding: 7px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4; color: {{ c.costCol }};">{{ c.cost }}</td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- two changes -->
+  <div style="border-top: 1px solid #817B74; padding: 20px 28px; display: flex; flex-direction: column; gap: 14px;">
+    <h2>2 · Two separable proposals. Neither is automatically upstream.</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px;">
+
+      <div style="border: 1px solid #817B74; border-left: 3px solid #2F4693; background: #F9F5EF; padding: 15px 17px; display: flex; flex-direction: column; gap: 9px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+          <h3 style="font-size: 13.5px;">A · Per-render theming</h3>
+          <span style="font-size: 11px; border: 1px solid #2F4693; color: #2F4693; padding: 1px 7px;">storyatlas4s only · no upstream change</span>
+        </div>
+        <p style="font-size: 12px; line-height: 1.5;">This one is <strong style="font-weight: 600;">not an Intaglio problem at all.</strong> Intaglio's <span class="m" style="font-size: 11px;">GraphicParams</span> is
+          already a per-grob value and <span class="m" style="font-size: 11px;">Theme</span> is already an injectable case class. The constants are ours:</p>
+        <div class="m" style="font-size: 11px; line-height: 1.7; background: #F0EBE3; border: 1px solid #D7D2CB; padding: 9px 11px; color: #221D19;">private[intaglio] object Style<br>&nbsp;&nbsp;val params: Either[GraphicsError, Params]<br>&nbsp;&nbsp;&nbsp;&nbsp;rgba(120,120,120,1.0) · rgba(160,160,160,0.30)<br>&nbsp;&nbsp;&nbsp;&nbsp;rgba(60,60,60,0.25) · Rgba.Black</div>
+        <p class="lbl" style="line-height: 1.5;">A parameterless <span class="m" style="font-size: 10.5px;">val</span> in a package-private object, read internally by the lowerings. Drop the visibility modifier,
+          make the literals fields, and thread <span class="m" style="font-size: 10.5px;">style: Style.Params</span> through the five public lowering entry points — the private helpers already take it.</p>
+        <p style="font-size: 12px; line-height: 1.5; border-top: 1px solid #D7D2CB; padding-top: 8px;"><strong style="font-weight: 600;">Keep this separate from the pattern decision.</strong>
+          Prototype it in StoryAtlas when runtime theming is actually required; move it upstream only if the consumer court shows a generally useful API boundary.</p>
+      </div>
+
+      <div style="border: 1px solid #817B74; border-left: 3px solid #852A12; background: #F9F5EF; padding: 15px 17px; display: flex; flex-direction: column; gap: 9px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+          <h3 style="font-size: 13.5px;">B · Pattern fills</h3>
+          <span style="font-size: 11px; border: 1px solid #852A12; color: #852A12; padding: 1px 7px;">conditional upstream candidate</span>
+        </div>
+        <p style="font-size: 12px; line-height: 1.5;">A genuinely new concept — but unusually cheap for one, because three things already hold:</p>
+        <div style="display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 5px 12px; font-size: 11.5px; line-height: 1.45;">
+          <span style="font-weight: 600;">defs</span><span>Already emitted and already forward-referenced. Six atlas SVGs carry <span class="m" style="font-size: 10.5px;">&lt;defs&gt;</span> with a <span class="m" style="font-size: 10.5px;">&lt;clipPath&gt;</span>, and <span class="m" style="font-size: 10.5px;">clip-path="url(#clip-0)"</span> appears before the def that resolves it. Browsers and the XML suite accept it.</span>
+          <span style="font-weight: 600;">device</span><span><span class="m" style="font-size: 10.5px;">GraphicParams</span> flows verbatim into <span class="m" style="font-size: 10.5px;">DevicePrimitive</span> — the device layer never destructures <span class="m" style="font-size: 10.5px;">fill</span>, so a new field needs <strong style="font-weight: 600;">zero</strong> changes there.</span>
+          <span style="font-weight: 600;">compatibility</span><span>The private primary constructor is not the whole boundary: case-class <span class="m" style="font-size: 10.5px;">fromProduct</span> and <span class="m" style="font-size: 10.5px;">Mirror.ProductOf</span> construction remain public. An arity change needs source and binary consumer courts; it is not presumed compatible.</span>
+        </div>
+        <p style="font-size: 12px; line-height: 1.5;">Model it as a finite enum of parameterised recipes, not a free-form SVG string — that keeps illegal states unrepresentable and lets the raster backends synthesise the same texture:</p>
+        <div class="m" style="font-size: 11px; line-height: 1.7; background: #F0EBE3; border: 1px solid #D7D2CB; padding: 9px 11px; color: #221D19;">enum FillPattern:<br>&nbsp;&nbsp;case Hatch(angleDeg, spacing, lineWidth)<br>&nbsp;&nbsp;case CrossHatch(angleDeg, spacing, lineWidth)<br>&nbsp;&nbsp;case Rules(spacing, lineWidth)<br>&nbsp;&nbsp;case Stipple(spacing, radius)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- constraints -->
+  <div style="border-top: 1px solid #817B74; padding: 20px 28px; display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: baseline; gap: 14px;">
+      <h2>3 · Four constraints that shape the change</h2>
+      <p style="font-size: 12px; color: #544D47;">Three are enforced by existing laws; one is a silent-failure trap.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+      <sc-for list="{{ constraints }}" as="k" hint-placeholder-count="4">
+        <div style="{{ k.box }}">
+          <h3>{{ k.name }}</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">{{ k.body }}</p>
+          <span class="m lbl" style="font-size: 10.5px; margin-top: auto;">{{ k.ref }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- blast radius + workaround -->
+  <div style="border-top: 1px solid #817B74; padding: 20px 28px 26px; display: flex; gap: 26px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px;">
+      <h2>4 · Blast radius</h2>
+      <p style="font-size: 12px; line-height: 1.55; color: #544D47;">Intaglio is a source pin you own, at <span class="m" style="font-size: 11px;">596b398</span>, checked out clean locally.
+        It is <span class="m" style="font-size: 11px;">0.1.0-SNAPSHOT</span>, unpublished, with the compatibility baseline explicitly <em>not established</em>. Two other repos pin the same revision.</p>
+      <table style="border-collapse: collapse; font-size: 12px;">
+        <tbody>
+          <tr><td style="padding: 6px 20px 6px 0; border-bottom: 1px solid #D7D2CB;" class="m">image4s</td>
+              <td style="padding: 6px 20px 6px 0; border-bottom: 1px solid #D7D2CB;"><strong style="font-weight: 600;">0</strong> references to GraphicParams</td>
+              <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #544D47;">re-pin plus clean consumer court</td></tr>
+          <tr><td style="padding: 6px 20px 6px 0; border-bottom: 1px solid #D7D2CB;" class="m">scalafim</td>
+              <td style="padding: 6px 20px 6px 0; border-bottom: 1px solid #D7D2CB;"><strong style="font-weight: 600;">6</strong> references across 3 files</td>
+              <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #544D47;">source and binary court required; arity is not presumed safe</td></tr>
+          <tr><td style="padding: 6px 20px 6px 0; border-bottom: 1px solid #D7D2CB;" class="m">storyatlas4s</td>
+              <td style="padding: 6px 20px 6px 0; border-bottom: 1px solid #D7D2CB;"><strong style="font-weight: 600;">23</strong> references</td>
+              <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: #544D47;">the consumer that wants the feature</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size: 12px; line-height: 1.55; color: #544D47;">The one real friction is toolchain skew — Intaglio is on Scala <span class="m" style="font-size: 11px;">3.4.2</span> and storyatlas4s is ahead of it,
+        and that migration is already an open blocker on Intaglio's own release lane. Touching the renderer now entangles you with it.</p>
+    </div>
+    <div style="width: 460px; flex: none; display: flex; flex-direction: column; gap: 10px;">
+      <h2>5 · The workaround, and why it is prototype-only</h2>
+      <p style="font-size: 12px; line-height: 1.55;">Intaglio can already draw hatching <em>geometrically</em> today: hatch lines inside a group whose viewport sets
+        <span class="m" style="font-size: 11px;">Clip.On</span>, which lowers to a real <span class="m" style="font-size: 11px;">&lt;clipPath&gt;</span>. The marks here are overwhelmingly
+        axis-aligned rectangles, so a rect clip is enough.</p>
+      <div style="border: 1px solid #653E00; border-left-width: 3px; background: #F7E6C3; padding: 11px 13px;">
+        <p style="font-size: 11.5px; line-height: 1.5;"><strong style="font-weight: 600;">Measured court:</strong> 2,300 marks × 10 segments yields 32,202 SVG elements and 2,497,582 serialised bytes, beyond the declared 10,000-element and 2 MiB gates. The shared-pattern control yields 2,305 and 296,925. Browser timings are machine diagnostics only.</p>
+      </div>
+      <p style="font-size: 12px; line-height: 1.55;">Keep the geometric route as the working implementation and small-view fallback. Do not accept it as the default for a viewport at this measured scale.</p>
+      <p style="font-size: 11.5px; line-height: 1.5; color: #653E00;">The raster route — a texture bitmap through <span class="m" style="font-size: 10.5px;">Grob.image</span> — is a trap:
+        the PNG encoder deliberately uses uncompressed stored DEFLATE blocks for JVM/JS byte-identity, so every payload is huge, there is no tiling, and it is resolution-dependent.</p>
+    </div>
+  </div>
+
+  <div style="border-top: 2px solid #221D19; background: #F0EBE3; padding: 16px 28px 20px; display: flex; gap: 30px;">
+    <div style="flex-grow: 1;">
+      <h2>Recommendation</h2>
+      <p style="font-size: 12.5px; line-height: 1.55; margin-top: 6px;">Use existing Intaglio geometry for the StoryAtlas prototype. For the admitted 2,300-mark production target, open a separate Intaglio design slice for a <strong style="font-weight: 600;">generic paint/pattern abstraction</strong>, with no story semantics.
+        Land it only after backend laws plus source and binary consumer courts. Treat per-render theming as an independent consumer need. This plate is a design decision record, not production runtime proof.</p>
+    </div>
+    <div style="width: 430px; flex: none; border-left: 1px solid #817B74; padding-left: 22px;">
+      <h3>The honest counter-argument</h3>
+      <p style="font-size: 11.5px; line-height: 1.5; margin-top: 5px; color: #544D47;">A pattern fill is the first vocabulary item that is a <em>deferred, referenced resource</em> rather than a self-contained
+        numeric primitive. That sits slightly against Intaglio's stated commitment that backends are dumb interpreters resolved at a single point. If that commitment is load-bearing for you,
+        the alternative is to accept a documented degradation to solid fill on the three raster backends — which is cheap, but should be a decision rather than an accident.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var yes = 'font-size: 11px; padding: 1px 7px; border: 1px solid #2F4693; color: #2F4693; white-space: nowrap;';
+    var no  = 'font-size: 11px; padding: 1px 7px; border: 2px solid #653E00; color: #653E00; background: #F7E6C3; white-space: nowrap;';
+    var part= 'font-size: 11px; padding: 1px 7px; border: 1px dashed #544D47; color: #544D47; white-space: nowrap;';
+    function row(need, state, where, cost, kind, warn) {
+      return { need: need, state: state, where: where, cost: cost,
+        pill: kind === 'y' ? yes : (kind === 'n' ? no : part),
+        costCol: warn ? '#653E00' : '#221D19' };
+    }
+    return {
+      caps: [
+        row('Pattern fills — hatch, rules, cross-hatch, stipple', 'geometric only', 'solid fill is Option[Rgba]; Clip.On plus line grobs can synthesize texture', 'Compact shared vocabulary absent; 2,300-mark court misses both structural gates.', 'p', true),
+        row('<defs> and referenced elements', 'present', 'SvgRenderer ClipRegistry · 6 atlas SVGs emit <defs>', 'Zero — the machinery is proven in shipped output.', 'y'),
+        row('fill-opacity, stroke-opacity, element opacity', 'present', 'gp.alpha and Rgba.alpha · 2,291 live fill-opacity attrs', 'Zero.', 'y'),
+        row('Arbitrary stroke-dasharray', 'partial', 'LineType is Solid / Dashed / Dotted, emitted as literals', 'Small — a Custom(Vector[Double]) case, 4 backends.', 'p'),
+        row('Rotated text, anchor, baseline', 'present', 'Anchor + rotationDegrees → transform="rotate(…)"', 'Zero. The matrix column headers depend on this.', 'y'),
+        row('font-weight, letter-spacing, multi-line text', 'absent', 'Grob.Text.label is one String; no <tspan>', 'Two fields are cheap; multi-line needs a primitive.', 'n'),
+        row('Clipping', 'partial', 'Clip.On/Off → axis-aligned rect from the viewport', 'Arbitrary clip paths would be a new concept.', 'p'),
+        row('Identity attributes for picking and focus', 'present', 'data-name from Intaglio; tabindex/role/aria set in the DOM', 'Zero — and it keeps Intaglio renderer-neutral.', 'y'),
+        row('Gradients, markers, arrowheads, masks', 'absent', 'none emitted anywhere in the library', 'Same shape as pattern; not needed by this design.', 'p'),
+        row('Per-render theming', 'absent', 'style.scala:30 · a parameterless val in a private object', 'Ours, not Intaglio’s. Half a day. See §2A.', 'n', true)
+      ],
+      constraints: [
+        { name: 'No percentages', box: 'border: 1px solid #817B74; background: #F9F5EF; padding: 12px 13px; display: flex; flex-direction: column; gap: 6px; min-height: 128px;',
+          body: 'The conformance suite fails any document containing a % character. Patterns must therefore use patternUnits="userSpaceOnUse" with absolute numbers — which is how every texture in this mockup is already authored.',
+          ref: 'SvgConformanceSuite' },
+        { name: 'Pattern defs need id, never data-name', box: 'border: 1px solid #817B74; background: #F9F5EF; padding: 12px 13px; display: flex; flex-direction: column; gap: 6px; min-height: 128px;',
+          body: 'Two laws assert that every SVG’s data-name count equals the receipt’s name count and that all values are distinct. A def carrying data-name breaks both, in the JVM suite and in the browser.',
+          ref: 'EditionSuite:96 · static.cjs:216' },
+        { name: 'The silent-drop trap', box: 'border: 2px solid #653E00; background: #F7E6C3; padding: 12px 13px; display: flex; flex-direction: column; gap: 6px; min-height: 128px;',
+          body: 'One phase rebuilds GraphicParams field by field. Omit the new field there and compiled plots lose it with no error and no test failure. This is the one place a mistake would be invisible.',
+          ref: 'CompilerPhases.scala:709–731' },
+        { name: 'Degrade to the solid fill', box: 'border: 1px solid #817B74; background: #F9F5EF; padding: 12px 13px; display: flex; flex-direction: column; gap: 6px; min-height: 128px;',
+          body: 'Keep the solid fill as the pattern’s own background so a backend that cannot honour the texture still renders a legible mark. Canvas, Java2D and JavaFX all have a native equivalent, but the fall-through can ship first.',
+          ref: 'CanvasPaint · TexturePaint · ImagePattern' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

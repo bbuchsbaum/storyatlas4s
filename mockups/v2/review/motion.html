@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en" data-storyatlas-frozen="true"><head>
+  <meta charset="utf-8">
+
+<style data-dc-resolved-style="true">
+    body { margin: 0; background: #F9F5EF; color: #221D19;
+      font: 13px/1.55 system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif; }
+    a { color: #24356F; } a:hover { color: #2F4693; }
+    .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, "DejaVu Sans Mono", monospace;
+         font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; letter-spacing: 0.03em; color: #544D47; }
+    h2 { font-size: 15px; font-weight: 600; margin: 0; }
+    h3 { font-size: 12px; font-weight: 600; margin: 0; }
+    p { margin: 0; }
+    .frame { border: 1px solid #817B74; background: #F9F5EF; padding: 10px 11px; display: flex; flex-direction: column; gap: 7px; flex-grow: 1; }
+  </style><title>StoryAtlas mockup v2 — Motion — frozen design specification</title><meta name="viewport" content="width=device-width, initial-scale=1"><style data-frozen-inert-style="true">*{cursor:default!important}</style><meta name="storyatlas-frozen-source" content="Motion.dc.html"></head>
+<body>
+<x-dc style="display: block;">
+
+
+<div data-dc-artboard="" data-dc-layout="flowing" style="width: 1440px; min-height: 760px; background: rgb(249, 245, 239); display: flex; flex-direction: column; position: relative;">
+  <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 8px 28px;">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
+  </div>
+
+  <div style="padding: 24px 28px 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <div class="lbl">StoryAtlas mockup v2 · deliverable 9</div>
+      <div style="font-size: 25px; font-weight: 600; letter-spacing: -0.02em;">Semantic transition, with and without motion</div>
+      <p style="max-width: 760px; color: #544D47;">The transition shown is Scene → Event on the Atlas, with sentence 5 selected throughout.
+        Both treatments must leave the reader knowing the same three things: the selection survived, the representation changed, and what it changed <em>to</em>.</p>
+    </div>
+    <div style="border: 1px solid #653E00; border-left-width: 3px; background: #F7E6C3; padding: 12px 15px; max-width: 380px;">
+      <p style="font-size: 11.5px; line-height: 1.5;"><strong style="font-weight: 600;">Morphing is only honest when the correspondence is real.</strong>
+        A scene region does not become an event landmark — one contains the other. So the marks crossfade and a tether is drawn, rather than one shape sliding into another.</p>
+    </div>
+  </div>
+
+  <div style="padding: 0 28px 20px; display: flex; flex-direction: column; gap: 18px;">
+
+    <!-- full motion -->
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <div style="display: flex; align-items: baseline; gap: 12px;">
+        <h2>Default · 180 ms</h2>
+        <span class="lbl">three phases, no overlap between them</span>
+      </div>
+      <div style="display: flex; gap: 12px;">
+
+          <div class="frame">
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span class="m" style="font-size: 11px; color: #2F4693;">0 ms</span>
+              <h3>Scene level</h3>
+            </div>
+            <svg width="100%" height="118" viewBox="0 0 300 118" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Scene level, one region selected.">
+              <line x1="10" y1="100" x2="290" y2="100" stroke="#817B74"></line>
+              <rect x="20" y="24" width="120" height="26" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8" stroke-opacity="1"></rect>
+              <g opacity="0">
+                <rect x="34" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="92" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="150" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="208" y="66" width="9" height="9" fill="#221D19"></rect>
+              </g>
+              <rect x="17" y="21" width="126" height="32" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+              <path d="M0 0" stroke="#2F4693" stroke-width="1.4" stroke-dasharray="3 2" fill="none"></path>
+              <text x="10" y="114" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">selection on the Scene 1.2 region</text>
+            </svg>
+            <p class="lbl" style="line-height: 1.45;">Starting state. One region carries the selection.</p>
+          </div>
+
+          <div class="frame">
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span class="m" style="font-size: 11px; color: #2F4693;">0–90 ms</span>
+              <h3>Crossfade out</h3>
+            </div>
+            <svg width="100%" height="118" viewBox="0 0 300 118" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Regions fading out while event landmarks fade in and a tether appears.">
+              <line x1="10" y1="100" x2="290" y2="100" stroke="#817B74"></line>
+              <rect x="20" y="24" width="120" height="26" fill="#9C958C" fill-opacity="0.12" stroke="#817B74" stroke-width="0.8" stroke-opacity="0.4"></rect>
+              <g opacity="0.35">
+                <rect x="34" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="92" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="150" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="208" y="66" width="9" height="9" fill="#221D19"></rect>
+              </g>
+              <rect x="17" y="21" width="126" height="32" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+              <path d="M80 50 L96 62" stroke="#2F4693" stroke-width="1.4" stroke-dasharray="3 2" fill="none"></path>
+              <text x="10" y="114" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">regions fade, landmarks fade in, tether appears</text>
+            </svg>
+            <p class="lbl" style="line-height: 1.45;">Opacity only. No mark travels, because no region moves to become a landmark.</p>
+          </div>
+
+          <div class="frame">
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span class="m" style="font-size: 11px; color: #2F4693;">90–180 ms</span>
+              <h3>Crossfade in</h3>
+            </div>
+            <svg width="100%" height="118" viewBox="0 0 300 118" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The selection ring has moved to the descendant event mark; the tether remains.">
+              <line x1="10" y1="100" x2="290" y2="100" stroke="#817B74"></line>
+              <rect x="20" y="24" width="120" height="26" fill="#9C958C" fill-opacity="0.04" stroke="#817B74" stroke-width="0.8" stroke-opacity="0.15"></rect>
+              <g opacity="0.85">
+                <rect x="34" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="92" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="150" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="208" y="66" width="9" height="9" fill="#221D19"></rect>
+              </g>
+              <rect x="88" y="62" width="17" height="17" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+              <path d="M80 50 L96 62" stroke="#2F4693" stroke-width="1.4" stroke-dasharray="3 2" fill="none"></path>
+              <text x="10" y="114" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">selection ring settles on the descendant mark</text>
+            </svg>
+            <p class="lbl" style="line-height: 1.45;">The ring is redrawn on the descendant, not slid to it. The tether explains the jump.</p>
+          </div>
+
+          <div class="frame">
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span class="m" style="font-size: 11px; color: #2F4693;">180 ms</span>
+              <h3>Event level</h3>
+            </div>
+            <svg width="100%" height="118" viewBox="0 0 300 118" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Event level. The tether and a ghost outline of the former region remain.">
+              <line x1="10" y1="100" x2="290" y2="100" stroke="#817B74"></line>
+              <rect x="20" y="24" width="120" height="26" fill="#9C958C" fill-opacity="0" stroke="#817B74" stroke-width="0.8" stroke-opacity="0.15"></rect>
+              <g opacity="1">
+                <rect x="34" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="92" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="150" y="66" width="9" height="9" fill="#221D19"></rect>
+                <rect x="208" y="66" width="9" height="9" fill="#221D19"></rect>
+              </g>
+              <rect x="88" y="62" width="17" height="17" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+              <path d="M80 50 L96 62" stroke="#2F4693" stroke-width="1.4" stroke-dasharray="3 2" fill="none"></path>
+              <text x="10" y="114" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">tether and ghost outline persist while focus holds</text>
+            </svg>
+            <p class="lbl" style="line-height: 1.45;">Rest state. The tether does not fade away — the correspondence stays inspectable.</p>
+          </div>
+
+      </div>
+    </div>
+
+    <!-- reduced motion -->
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <div style="display: flex; align-items: baseline; gap: 12px;">
+        <h2>prefers-reduced-motion: reduce · 0 ms</h2>
+        <span class="lbl">not a shortened animation — a different, complete treatment</span>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <div class="frame" style="max-width: 352px;">
+          <div style="display: flex; align-items: baseline; gap: 8px;"><span class="m" style="font-size: 11px; color: #2F4693;">before</span><h3>Scene level</h3></div>
+          <svg width="100%" height="118" viewBox="0 0 300 118" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Scene level with one region selected.">
+            <line x1="10" y1="100" x2="290" y2="100" stroke="#817B74"></line>
+            <rect x="20" y="24" width="120" height="26" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8"></rect>
+            <rect x="17" y="21" width="126" height="32" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+            <text x="10" y="114" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">selection on the Scene 1.2 region</text>
+          </svg>
+          <p class="lbl" style="line-height: 1.45;">Identical starting state.</p>
+        </div>
+        <div class="frame" style="max-width: 352px;">
+          <div style="display: flex; align-items: baseline; gap: 8px;"><span class="m" style="font-size: 11px; color: #2F4693;">after</span><h3>Event level — instant swap</h3></div>
+          <svg width="100%" height="118" viewBox="0 0 300 118" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Event level. Marks replaced instantly. A persistent tether links the previous region position to the new selected mark.">
+            <line x1="10" y1="100" x2="290" y2="100" stroke="#817B74"></line>
+            <rect x="20" y="24" width="120" height="26" fill="none" stroke="#B5B0A9" stroke-width="0.8" stroke-dasharray="3 3"></rect>
+            <g><rect x="34" y="66" width="9" height="9" fill="#221D19"></rect><rect x="92" y="66" width="9" height="9" fill="#221D19"></rect>
+               <rect x="150" y="66" width="9" height="9" fill="#221D19"></rect><rect x="208" y="66" width="9" height="9" fill="#221D19"></rect></g>
+            <rect x="88" y="62" width="17" height="17" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+            <path d="M80 50 L96 62" stroke="#2F4693" stroke-width="1.4" stroke-dasharray="3 2" fill="none"></path>
+            <text x="10" y="114" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">tether persists · ghost outline names where it came from</text>
+          </svg>
+          <p class="lbl" style="line-height: 1.45;">No fade, no travel. The tether and the ghost outline stay drawn for as long as focus remains, so the correspondence is readable at rest.</p>
+        </div>
+        <div class="frame" style="display: flex; flex-direction: column; gap: 9px;">
+          <h3>What replaces the animation</h3>
+          <div style="display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 11.5px;">
+            <span style="font-weight: 600;">Tether</span><span>Persistent, not transient. A dashed blue line from the previous mark's position to the new one.</span>
+            <span style="font-weight: 600;">Ghost</span><span>The old mark stays as a dotted outline until focus moves, naming what the new mark descended from.</span>
+            <span style="font-weight: 600;">Breadcrumb</span><span>The focus bar level chip changes and briefly carries a 2px underline. A state change, not a motion.</span>
+            <span style="font-weight: 600;">Announcement</span><span class="m" style="font-size: 11px;">“Event level. Selection retained, on-mark.”</span>
+            <span style="font-weight: 600;">Receipt</span><span>The layout receipt records both zoom states, so the transition is reproducible from a saved view.</span>
+          </div>
+          <p class="lbl" style="line-height: 1.45; border-top: 1px solid #D7D2CB; padding-top: 7px;">The default treatment carries all five of these too. Motion is the only thing removed —
+            which is the test: if disabling animation loses information, the animation was carrying meaning it should not have been.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 13px 16px; display: flex; gap: 30px;">
+      <div style="flex-grow: 1;">
+        <h3>Gesture settles on a declared state</h3>
+        <p style="font-size: 11.5px; line-height: 1.5; margin-top: 5px;">A wheel or pinch may feel continuous, but it commits to one of the four narrative levels with hysteresis — it never rests between two.
+          Asynchronous compilation is last-intent-wins, and a superseded result is discarded rather than drawn.</p>
+      </div>
+      <div style="flex-grow: 1;">
+        <h3>Page navigation is not zoom</h3>
+        <p style="font-size: 11.5px; line-height: 1.5; margin-top: 5px;">Paging the Codex moves the viewport rectangle in the overview and changes nothing else.
+          It is never animated as a level change and never labelled as one. Surface detail and narrative level remain separate controls with separate labels.</p>
+      </div>
+      <div style="flex-grow: 1;">
+        <h3>Nothing animates on load</h3>
+        <p style="font-size: 11.5px; line-height: 1.5; margin-top: 5px;">There is no entrance choreography anywhere in this design. Motion occurs only as a direct
+          response to a user action, so <span class="m" style="font-size: 10.5px;">Animation from Interactions</span> has nothing to suppress that the interface needed.</p>
+      </div>
+    </div>
+  </div>
+<div data-frozen-notice="true" style="position: absolute; z-index: 9999; right: 0px; top: 0px; max-width: 520px; padding: 7px 14px; border: 3px double rgb(34, 29, 25); background: rgb(247, 230, 195); color: rgb(34, 29, 25); font: 700 11.5px / 1.35 system-ui, sans-serif; letter-spacing: 0.045em; text-align: center;">FROZEN DESIGN SPECIFICATION — CONTROLS ARE INERT</div></div>
+</x-dc>
+
+
+
+
+</body></html>

@@ -1,0 +1,76 @@
+{
+  "schema": "storyatlas4s.renderer-gap-court.v2",
+  "structuralDigestRule": "sha256(storyatlas4s-canonical-json-v1(structural)); timings and environment excluded",
+  "structuralDigest": "75719b4118ca3d558704c2645c9eaa2a32d025fa7983eae8f5bc07058b3a068e",
+  "structural": {
+    "schema": "storyatlas4s.renderer-gap-structural.v1",
+    "workload": {
+      "marks": 2300,
+      "columns": 100,
+      "geometricSegmentsPerMark": 10
+    },
+    "gates": {
+      "maxSvgElements": 10000,
+      "maxSerializedSvgBytes": 2097152
+    },
+    "results": {
+      "geometric": {
+        "label": "geometric",
+        "marks": 2300,
+        "hatchSegmentsPerMark": 10,
+        "elementCount": 32202,
+        "serializedBytes": 2497582,
+        "gates": {
+          "elementBudget": false,
+          "byteBudget": false
+        }
+      },
+      "sharedPattern": {
+        "label": "shared-pattern",
+        "marks": 2300,
+        "hatchSegmentsPerMark": 0,
+        "elementCount": 2305,
+        "serializedBytes": 296925,
+        "gates": {
+          "elementBudget": true,
+          "byteBudget": true
+        }
+      }
+    },
+    "source": {
+      "path": "renderer-gap-benchmark.html",
+      "sha256": "b569405e2e1d59705bc2e3ce8f10224fefee6de0c126f41c97506349d7b1d03d"
+    }
+  },
+  "diagnostics": {
+    "interactionGateMs": 16.7,
+    "results": {
+      "geometric": {
+        "constructionMs": 110.79999995231628,
+        "selectionP95Ms": 0,
+        "transformP95Ms": 0.10000002384185791,
+        "selectionGate": true,
+        "transformGate": true
+      },
+      "sharedPattern": {
+        "constructionMs": 9.700000047683716,
+        "selectionP95Ms": 0.19999992847442627,
+        "transformP95Ms": 0.10000002384185791,
+        "selectionGate": true,
+        "transformGate": true
+      }
+    },
+    "environment": {
+      "browser": {
+        "engine": "Chromium",
+        "version": "140.0.7339.186"
+      },
+      "platform": {
+        "os": "darwin",
+        "arch": "arm64"
+      },
+      "devicePixelRatio": 1
+    }
+  },
+  "interpretation": "Structural counts and bytes form the reproducible court. Timings and environment are diagnostics only."
+}

@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en" data-storyatlas-frozen="true"><head>
+  <meta charset="utf-8">
+
+<style data-dc-resolved-style="true">
+    body { margin: 0; background: #F9F5EF; color: #221D19;
+      font: 13px/1.55 system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif; }
+    a { color: #24356F; } a:hover { color: #2F4693; }
+    .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, "DejaVu Sans Mono", monospace;
+         font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; letter-spacing: 0.03em; color: #544D47; }
+    h2 { font-size: 15px; font-weight: 600; margin: 0; }
+    h3 { font-size: 12px; font-weight: 600; margin: 0; }
+    p { margin: 0; }
+    .card { border: 1px solid #817B74; background: #F9F5EF; padding: 11px 12px; display: flex; flex-direction: column; gap: 7px; }
+    .not { font-size: 10.5px; line-height: 1.45; color: #653E00; }
+  </style><title>StoryAtlas mockup v2 — StateBoard — frozen design specification</title><meta name="viewport" content="width=device-width, initial-scale=1"><style data-frozen-inert-style="true">*{cursor:default!important}</style><meta name="storyatlas-frozen-source" content="StateBoard.dc.html"></head>
+<body>
+<x-dc style="display: block;">
+
+
+<div data-dc-artboard="" data-dc-layout="flowing" style="width: 1440px; min-height: 1500px; background: rgb(249, 245, 239); display: flex; flex-direction: column; position: relative;">
+  <svg width="0" height="0" style="position: absolute;" aria-hidden="true"><defs>
+    <pattern id="sb-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#69625C" stroke-width="1.3"></line></pattern>
+    <pattern id="sb-vert" width="6" height="6" patternUnits="userSpaceOnUse"><line x1="1" y1="0" x2="1" y2="6" stroke="#69625C" stroke-width="1.3"></line></pattern>
+    <pattern id="sb-cross" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 0 L6 6 M6 0 L0 6" stroke="#69625C" stroke-width="1" fill="none"></path></pattern>
+    <pattern id="sb-stipple" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1.6" cy="1.6" r="0.9" fill="#69625C"></circle></pattern>
+  </defs></svg>
+    <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 8px 28px;">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
+  </div>
+
+  <div style="padding: 24px 28px 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <div class="lbl">StoryAtlas mockup v2 · deliverable 11</div>
+      <div style="font-size: 25px; font-weight: 600; letter-spacing: -0.02em;">State board</div>
+      <p style="max-width: 720px; color: #544D47;">Every state the brief requires, with the mark that means it and — the part that matters — the state it must never be confused with.
+        Each card's third line is the confusion this encoding exists to prevent.</p>
+    </div>
+    <div style="border-left: 1px solid #D7D2CB; padding-left: 18px; max-width: 330px;">
+      <p style="font-size: 11.5px; line-height: 1.5; color: #544D47;">Thirty-one cards across four sections. Ten of them would collapse into one “grey box” in an ordinary dashboard.
+        The single rule behind all of them: <strong style="font-weight: 600; color: #221D19;">an absent mark and a zero mark are different scientific claims,</strong> and so are the eight ways of being absent.</p>
+    </div>
+  </div>
+
+  <!-- A: value states -->
+  <div style="border-top: 1px solid #817B74; padding: 18px 28px; display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: baseline; gap: 14px;">
+      <h2>A · Value states</h2>
+      <p style="font-size: 12px; color: #544D47;">Anywhere a quantity could appear: a feature track, a matrix cell, a coverage gauge, an inspector field.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px;">
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="#221D19" stroke="#221D19" stroke-width="1" stroke-dasharray="none"></rect>
+            <line x1="0" y1="0" x2="0" y2="0" stroke="none" stroke-width="0" stroke-dasharray="none"></line>
+            <path d="M0 0" stroke="#221D19" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="0" text-anchor="middle" font-size="14" font-weight="600" fill="#221D19" font-family="system-ui, sans-serif"></text>
+          </svg>
+          <h3>Present</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">A compiled value. Magnitude is carried by area or height, never by tint alone.</p>
+          <p class="not">Not “good”. A present value can still be low, uncertain, or thinly supported.</p>
+        </div>
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="none" stroke="#817B74" stroke-width="1" stroke-dasharray="none"></rect>
+            <line x1="0" y1="36" x2="56" y2="36" stroke="#221D19" stroke-width="3" stroke-dasharray="none"></line>
+            <path d="M0 0" stroke="#817B74" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="0" text-anchor="middle" font-size="14" font-weight="600" fill="#221D19" font-family="system-ui, sans-serif"></text>
+          </svg>
+          <h3>Zero</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">A measured zero. The baseline rule is drawn at the axis so the reader sees a value, not an absence.</p>
+          <p class="not">Not missing. Something was measured and it came out zero.</p>
+        </div>
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="url(#sb-hatch)" stroke="#69625C" stroke-width="1" stroke-dasharray="none"></rect>
+            <line x1="0" y1="0" x2="0" y2="0" stroke="none" stroke-width="0" stroke-dasharray="none"></line>
+            <path d="M0 0" stroke="#69625C" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="0" text-anchor="middle" font-size="14" font-weight="600" fill="#221D19" font-family="system-ui, sans-serif"></text>
+          </svg>
+          <h3>Missing</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">The provider was asked and returned nothing over this extent. Hatched; the declared reducer decides how it affects coverage.</p>
+          <p class="not">Not zero, and never silently interpolated across. Bridging the gap would invent data.</p>
+        </div>
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="none" stroke="#817B74" stroke-width="1" stroke-dasharray="2 3"></rect>
+            <line x1="0" y1="0" x2="0" y2="0" stroke="none" stroke-width="0" stroke-dasharray="none"></line>
+            <path d="M0 0" stroke="#817B74" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="26" text-anchor="middle" font-size="18" font-weight="600" fill="#69625C" font-family="system-ui, sans-serif">·</text>
+          </svg>
+          <h3>Not requested</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">This quantity was never asked for in the current view specification. One click requests it.</p>
+          <p class="not">Not unavailable. Nothing has failed; nothing has been tried.</p>
+        </div>
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="url(#sb-cross)" stroke="#653E00" stroke-width="1.6" stroke-dasharray="none"></rect>
+            <line x1="0" y1="0" x2="0" y2="0" stroke="none" stroke-width="0" stroke-dasharray="none"></line>
+            <path d="M0 0" stroke="#653E00" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="0" text-anchor="middle" font-size="14" font-weight="600" fill="#221D19" font-family="system-ui, sans-serif"></text>
+          </svg>
+          <h3>Unauthorised</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">The value exists and this viewer may not resolve it. Structure and receipts stay visible.</p>
+          <p class="not">Not missing. Withholding is a policy decision and is labelled as one.</p>
+        </div>
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="url(#sb-stipple)" stroke="#69625C" stroke-width="1" stroke-dasharray="none"></rect>
+            <line x1="0" y1="0" x2="0" y2="0" stroke="none" stroke-width="0" stroke-dasharray="none"></line>
+            <path d="M0 0" stroke="#69625C" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="0" text-anchor="middle" font-size="14" font-weight="600" fill="#221D19" font-family="system-ui, sans-serif"></text>
+          </svg>
+          <h3>Low coverage</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">A real value over thin support. The stipple density is the coverage fraction, and the number travels with it.</p>
+          <p class="not">Not a low value. Coverage and magnitude are different axes.</p>
+        </div>
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="none" stroke="#221D19" stroke-width="1.4" stroke-dasharray="5 3"></rect>
+            <line x1="0" y1="0" x2="0" y2="0" stroke="none" stroke-width="0" stroke-dasharray="none"></line>
+            <path d="M0 0" stroke="#221D19" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="26" text-anchor="middle" font-size="16" font-weight="600" fill="#221D19" font-family="system-ui, sans-serif">?</text>
+          </svg>
+          <h3>Unresolved</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">The compiler reached no decision and is saying so. Candidates remain listed in the inspector.</p>
+          <p class="not">Not an average of the candidates. Splitting the difference manufactures a claim.</p>
+        </div>
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="url(#sb-vert)" stroke="#69625C" stroke-width="1" stroke-dasharray="none"></rect>
+            <line x1="0" y1="0" x2="0" y2="0" stroke="none" stroke-width="0" stroke-dasharray="none"></line>
+            <path d="M0 0" stroke="#69625C" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="0" text-anchor="middle" font-size="14" font-weight="600" fill="#221D19" font-family="system-ui, sans-serif"></text>
+          </svg>
+          <h3>Off-source</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">Mass that reaches a destination outside the source. Five named kinds, never one bin.</p>
+          <p class="not">Not an error, and not “irrelevant”. Some off-source mass is the finding.</p>
+        </div>
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="none" stroke="#221D19" stroke-width="1" stroke-dasharray="none"></rect>
+            <line x1="8" y1="19" x2="48" y2="19" stroke="#221D19" stroke-width="1.6" stroke-dasharray="4 3"></line>
+            <path d="M0 0" stroke="#221D19" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="0" text-anchor="middle" font-size="14" font-weight="600" fill="#221D19" font-family="system-ui, sans-serif"></text>
+          </svg>
+          <h3>Unranked</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">Held mass. Nothing was ranked, the total still reaches one, and the abstention is auditable.</p>
+          <p class="not">Not empty. An unranked unit and an unassessed unit are different records.</p>
+        </div>
+
+        <div class="card">
+          <svg width="60" height="40" viewBox="0 0 60 40" aria-hidden="true">
+            <rect x="0" y="2" width="56" height="34" fill="#F7E6C3" stroke="#653E00" stroke-width="2" stroke-dasharray="none"></rect>
+            <line x1="0" y1="0" x2="0" y2="0" stroke="none" stroke-width="0" stroke-dasharray="none"></line>
+            <path d="M0 2 L56 36 M56 2 L0 36" stroke="#653E00" stroke-width="1.2" fill="none"></path>
+            <text x="28" y="0" text-anchor="middle" font-size="14" font-weight="600" fill="#221D19" font-family="system-ui, sans-serif"></text>
+          </svg>
+          <h3>Stale build</h3>
+          <p style="font-size: 11.5px; line-height: 1.45;">The receipt on this value no longer matches the compiled model. Struck through until reconciled.</p>
+          <p class="not">Not merely old. A stale value may be wrong, so it is not offered as a reading.</p>
+        </div>
+
+    </div>
+  </div>
+
+  <!-- B: selection + horizon -->
+  <div style="border-top: 1px solid #817B74; padding: 18px 28px; display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: baseline; gap: 14px;">
+      <h2>B · Selection placement and evidence horizon</h2>
+      <p style="font-size: 12px; color: #544D47;">Selection is never dropped. When it cannot be drawn, that fact is itself drawn.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px;">
+      <div class="card">
+        <div style="display: flex; align-items: center; gap: 7px; height: 40px;">
+          <svg width="56" height="26" aria-hidden="true"><rect x="1.5" y="1.5" width="53" height="23" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect></svg>
+          <span class="m" style="font-size: 11px; border: 1px solid #221D19; padding: 2px 6px;">on-mark</span>
+        </div>
+        <h3>On mark</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">The selected address has a direct visual mark in this projection. The 3px 6/3 dash is the Atlas selection stroke already shipping.</p>
+        <p class="not">Not “visible”. A mark can be occluded and still be on-mark; it stays keyboard-reachable.</p>
+      </div>
+      <div class="card">
+        <div style="display: flex; align-items: center; gap: 7px; height: 40px;">
+          <svg width="56" height="26" aria-hidden="true"><rect x="1" y="1" width="54" height="24" fill="none" stroke="#817B74" stroke-width="0.8"></rect><rect x="8" y="6" width="14" height="14" fill="none" stroke="#544D47" stroke-width="1.4" stroke-dasharray="2 1.5"></rect></svg>
+          <span class="m" style="font-size: 11px; border: 1px dashed #544D47; padding: 2px 6px;">via-ancestor</span>
+        </div>
+        <h3>Via ancestor</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">The object has no mark at this level; its containing scene or episode stands in, and names what it is standing in for.</p>
+        <p class="not">Not a coarser selection. The semantic address is unchanged; only the drawing is.</p>
+      </div>
+      <div class="card">
+        <div style="display: flex; align-items: center; gap: 7px; height: 40px;">
+          <svg width="56" height="26" aria-hidden="true"><rect x="1" y="1" width="54" height="24" fill="none" stroke="#D7D2CB"></rect><circle cx="28" cy="13" r="7" fill="none" stroke="#221D19" stroke-width="1.4" stroke-dasharray="1.5 1.5"></circle></svg>
+          <span class="m" style="font-size: 11px; border: 1px dotted #221D19; padding: 2px 6px;">off-projection</span>
+        </div>
+        <h3>Off projection</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">Still selected, outside what this projection or filter can show. The chip persists in the focus bar with a route back.</p>
+        <p class="not">Not deselected, and not an error. Changing projection must never clear focus.</p>
+      </div>
+      <div class="card">
+        <div style="display: flex; align-items: center; height: 40px; position: relative; width: 100%;">
+          <div style="position: absolute; left: 0; right: 0; height: 3px; background: #D7D2CB;"></div>
+          <div style="position: absolute; left: 0; width: 100%; height: 3px; background: #221D19;"></div>
+          <div style="position: absolute; right: 0; width: 10px; height: 18px; background: #F9F5EF; border: 1px solid #221D19;"></div>
+        </div>
+        <h3>Omniscient</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">No horizon. Every compiled claim is admissible. The readout says so in words: <span class="m" style="font-size: 10.5px;">omniscient (no horizon; 584 code units)</span>.</p>
+        <p class="not">Not “the reader has finished”. The slider sits at the end, but the two states are distinct and the receipt records which.</p>
+      </div>
+      <div class="card">
+        <div style="display: flex; align-items: center; height: 40px; position: relative; width: 100%;">
+          <div style="position: absolute; left: 0; right: 0; height: 3px; background: #D7D2CB;"></div>
+          <div style="position: absolute; left: 0; width: 52%; height: 3px; background: #221D19;"></div>
+          <div style="position: absolute; left: 50%; width: 10px; height: 18px; background: #F9F5EF; border: 1px solid #221D19;"></div>
+          <div style="position: absolute; right: 0; width: 44%; height: 18px; border-left: 1px dashed #653E00;"></div>
+        </div>
+        <h3>Reader at a point</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">Material after the horizon is struck through, not merely faded, and the identity capacity of both compilers drops with it.</p>
+        <p class="not">Not dimming for emphasis. Fade alone would be ambiguous with missing, external, and unimportant.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- C: recall states -->
+  <div style="border-top: 1px solid #817B74; padding: 18px 28px; display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: baseline; gap: 14px;">
+      <h2>C · Recall and alignment states</h2>
+      <p style="font-size: 12px; color: #544D47;">The five off-source destinations are scored separately, and abstention is held apart from all of them, so no card here says “external”.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;">
+      <div class="card">
+        <svg width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+          <rect x="0" y="6" width="28" height="28" fill="#E7E1D8"></rect><rect x="4" y="10" width="20" height="20" fill="#221D19"></rect>
+          <rect x="32" y="6" width="28" height="28" fill="#E7E1D8"></rect><rect x="36" y="10" width="20" height="20" fill="#221D19"></rect>
+          <rect x="64" y="6" width="28" height="28" fill="#E7E1D8"></rect>
+          <text x="98" y="24" font-size="10" class="m" font-family="ui-monospace, monospace" fill="#544D47">.44/.41</text>
+        </svg>
+        <h3>Multimodal alignment</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">Mass genuinely divided between two source targets. Both squares are drawn at their true area; neither is promoted.</p>
+        <p class="not">Not a tie to be broken. Forcing a winner would delete the finding.</p>
+      </div>
+      <div class="card">
+        <svg width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+          <rect x="0" y="6" width="28" height="28" fill="#E7E1D8"></rect><rect x="3" y="9" width="22" height="22" fill="#221D19"></rect>
+          <rect x="40" y="8" width="11" height="11" fill="#F7E6C3" stroke="#653E00" stroke-width="1.6"></rect>
+          <text x="57" y="17" font-size="9.5" font-family="system-ui, sans-serif" fill="#221D19">Attribute</text>
+          <rect x="40" y="24" width="11" height="11" fill="none" stroke="#B5B0A9"></rect>
+          <text x="57" y="33" font-size="9.5" font-family="system-ui, sans-serif" fill="#69625C">Role, polarity…</text>
+        </svg>
+        <h3>Source and Distorted at one anchor</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;"><span class="m">Source(s05)=.30</span> and <span class="m">Distorted(s05,{Attribute})=.41</span> share an anchor but remain separate AlignStates. The facet set is part of state identity and travels with its mass.</p>
+        <p class="not">Never one .71 “source” mark. Adding first would erase the fidelity finding.</p>
+      </div>
+      <div class="card">
+        <svg width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+          <g stroke="#69625C"><rect x="0" y="8" width="24" height="24" fill="none" stroke-width="1"></rect>
+            <line x1="4" y1="8" x2="4" y2="32" stroke-width="1.3"></line><line x1="9" y1="8" x2="9" y2="32" stroke-width="1.3"></line>
+            <line x1="14" y1="8" x2="14" y2="32" stroke-width="1.3"></line><line x1="19" y1="8" x2="19" y2="32" stroke-width="1.3"></line></g>
+          <g font-size="9.5" font-family="system-ui, sans-serif" fill="#221D19">
+            <text x="32" y="14">Association</text><text x="32" y="26">Commentary</text><text x="32" y="38">Intrusion</text></g>
+        </svg>
+        <h3>Off-source, named · 1 of 2</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">An association reaches outside the source; commentary is talk about the task; an intrusion asserts content the source does not license.</p>
+        <p class="not">Not one bin. These three have different scientific consequences and different follow-up actions.</p>
+      </div>
+      <div class="card">
+        <svg width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+          <g stroke="#69625C"><rect x="0" y="8" width="24" height="24" fill="none" stroke-width="1"></rect>
+            <line x1="4" y1="8" x2="4" y2="32" stroke-width="1.3"></line><line x1="9" y1="8" x2="9" y2="32" stroke-width="1.3"></line>
+            <line x1="14" y1="8" x2="14" y2="32" stroke-width="1.3"></line><line x1="19" y1="8" x2="19" y2="32" stroke-width="1.3"></line></g>
+          <g font-size="9.5" font-family="system-ui, sans-serif" fill="#221D19">
+            <text x="32" y="14">Source-consistent</text><text x="32" y="26">inference</text><text x="32" y="38">Uninterpretable</text></g>
+        </svg>
+        <h3>Off-source, named · 2 of 2</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">An inference the source supports but never states, and material no coder could resolve. Both are off-source; only one is an error.</p>
+        <p class="not">Not the same as intrusion. An inference is licensed; an intrusion is not.</p>
+      </div>
+      <div class="card">
+        <svg width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+          <rect x="0" y="6" width="28" height="28" fill="none" stroke="#221D19"></rect>
+          <line x1="5" y1="20" x2="23" y2="20" stroke="#221D19" stroke-width="1.5" stroke-dasharray="4 3"></line>
+          <rect x="40" y="14" width="70" height="8" fill="#F9F5EF" stroke="#221D19" stroke-width="0.8"></rect>
+          <text x="40" y="36" font-size="9" class="m" font-family="ui-monospace, monospace" fill="#544D47">row total 1.00</text>
+        </svg>
+        <h3>Unranked / abstained</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">The unit was not ranked against any destination. Its mass is held in its own column and counted in the row total.</p>
+        <p class="not">Not zero, and not an empty row. Abstention is a measurement, and it keeps the row summing to one.</p>
+      </div>
+      <div class="card">
+        <svg width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+          <defs><pattern id="sb-om" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#69625C" stroke-width="1.2"></line></pattern></defs>
+          <line x1="0" y1="8" x2="110" y2="8" stroke="#817B74"></line>
+          <rect x="10" y="10" width="20" height="18" fill="#221D19"></rect>
+          <rect x="38" y="10" width="20" height="18" fill="url(#sb-om)" stroke="#653E00" stroke-width="1.6"></rect>
+          <rect x="66" y="10" width="20" height="18" fill="#221D19"></rect>
+          <text x="34" y="38" font-size="9" font-weight="600" font-family="system-ui, sans-serif" fill="#653E00">omitted</text>
+        </svg>
+        <h3>Source omission</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">A source target received no aggregate mass. It is a <strong style="font-weight: 600;">column</strong> property, drawn on the source axis with its denominator declared.</p>
+        <p class="not">Never a <span class="m" style="font-size: 10.5px;">[skipped]</span> token in the recall rail. Nothing is inserted into participant speech.</p>
+      </div>
+      <div class="card">
+        <svg width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+          <polyline points="0,12 24,20 48,28 72,16 96,24" fill="none" stroke="#2F4693" stroke-width="1.2" stroke-dasharray="3 2"></polyline>
+          <path d="M24 20 L48 28" stroke="#2F4693" stroke-width="2.6" fill="none"></path>
+          <circle cx="48" cy="28" r="4.5" fill="none" stroke="#2F4693" stroke-width="2"></circle>
+          <path d="M56 23 L48 28 L56 33" fill="none" stroke="#2F4693" stroke-width="2"></path>
+          <text x="0" y="38" font-size="9" class="m" font-family="ui-monospace, monospace" fill="#544D47">1 inversion / 5 transitions</text>
+        </svg>
+        <h3>Misordering</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">An inversion between two consecutive source-addressed units. It lives on the edge between cells, with a stated denominator.</p>
+        <p class="not">Never a cell class. A single cell cannot be out of order; only a transition can.</p>
+      </div>
+      <div class="card">
+        <svg width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+          <rect x="0" y="6" width="110" height="28" fill="#E7E1D8" stroke="#817B74"></rect>
+          <path d="M18 20 V16.5 a4.5 4.5 0 0 1 9 0 V20" fill="none" stroke="#544D47" stroke-width="1.4"></path>
+          <rect x="15" y="20" width="15" height="10" fill="none" stroke="#544D47" stroke-width="1.4"></rect>
+          <text x="38" y="24" font-size="9.5" font-family="system-ui, sans-serif" fill="#544D47">text withheld</text>
+        </svg>
+        <h3>Privacy-blocked</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">Identity matched, resolution not authorised. Structure, mass and receipts remain inspectable; the words do not appear.</p>
+        <p class="not">Not missing data. The value exists and is being withheld — a separate gate from identity.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- D: packet, build and layout stress -->
+  <div style="border-top: 1px solid #817B74; padding: 18px 28px 26px; display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: baseline; gap: 14px;">
+      <h2>D · Packet, build and layout stress</h2>
+      <p style="font-size: 12px; color: #544D47;">The states that decide whether the workspace can be trusted at all.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;">
+      <div class="card">
+        <div style="height: 40px; display: flex; flex-direction: column; gap: 4px; justify-content: center;">
+          <div style="height: 8px; background: #E7E1D8; width: 100%;"></div>
+          <div style="height: 8px; background: #E7E1D8; width: 72%;"></div>
+          <div class="lbl" style="font-size: 10px;">compiling · no partial claims shown</div>
+        </div>
+        <h3>Loading and compilation</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">Structure is reserved; no value, mark or label is drawn until its packet compiles. Asynchronous results are last-intent-wins.</p>
+        <p class="not">Never a placeholder number that later changes. A shown value is a compiled value.</p>
+      </div>
+      <div class="card" style="border: 3px double #653E00; background: #F7E6C3;">
+        <div style="height: 40px; display: flex; align-items: center; gap: 8px;">
+          <span style="width: 25px; height: 25px; border: 2px solid #653E00; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #653E00;">!</span>
+          <span style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em;">FAILED · NO VALUE EMITTED</span>
+        </div>
+        <h3>Provider or compiler failed</h3>
+        <div class="m" style="display: grid; grid-template-columns: max-content 1fr; gap: 2px 8px; font-size: 10px; line-height: 1.4;">
+          <span>stage</span><span>FeatureCompile</span><span>provider</span><span>syn-imag@v3</span>
+          <span>error</span><span>E_PROVIDER_TIMEOUT</span><span>attempt</span><span>3</span>
+          <span>retry</span><span>manual</span><span>lastValid</span><span>retain + stale badge</span>
+        </div>
+        <p class="not">Not Missing, No data, or Unresolved. An operation ran and failed; the error receipt survives HTML-lowering failure.</p>
+      </div>
+      <div class="card">
+        <div style="height: 40px; display: flex; align-items: center;">
+          <span style="border: 1px solid #817B74; background: #F0EBE3; padding: 6px 10px; font-size: 11.5px; color: #544D47;">— no data —</span>
+        </div>
+        <h3>No data</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">The packet compiled and contains nothing for this view. An explicit statement, in words, in the place the content would have been.</p>
+        <p class="not">Not an empty panel. Silence is indistinguishable from a rendering failure.</p>
+      </div>
+      <div class="card" style="border: 2px dashed #544D47;">
+        <div style="height: 40px; display: flex; align-items: center;">
+          <span class="m" style="border: 2px dashed #544D47; padding: 5px 9px; font-size: 11px; font-weight: 600;">Proposed view state · Unestablished</span>
+        </div>
+        <h3>Source universe unestablished</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">The transcript exists, but no observed source episode defines a coverage universe. Addresses and phenomenology remain usable; source coverage has no denominator.</p>
+        <p class="not">Not zero coverage and not 0/0. Proposed StoryAtlas compiler rule: do not compute or display a coverage rate. The pinned provider has no such type yet.</p>
+      </div>
+      <div class="card">
+        <div style="height: 40px; display: flex; align-items: center;">
+          <span style="border: 1px solid #653E00; border-left-width: 3px; background: #F7E6C3; padding: 5px 9px; font-size: 11px; color: #221D19;">No coherent episode model accepted</span>
+        </div>
+        <h3>No accepted episode model</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">An autobiographical interview whose details do not support any episode structure. Details, addresses and phenomenology all remain fully usable.</p>
+        <p class="not">Not a failure. It is a finding, and it stays selectable beside the alternatives.</p>
+      </div>
+      <div class="card">
+        <div style="height: 40px; display: flex; align-items: center;">
+          <div style="border: 2px solid #653E00; background: #F7E6C3; padding: 5px 9px; display: flex; flex-direction: column; gap: 1px;">
+            <span style="font-size: 11px; font-weight: 600; color: #221D19;">Build receipt does not match</span>
+            <span class="m" style="font-size: 9.5px; color: #653E00;">view 8492e43 · model a91c04e</span>
+          </div>
+        </div>
+        <h3>Stale or incompatible receipt</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">The saved view and the compiled model disagree. Both fingerprints are printed; the view is struck through until it is recompiled or explicitly accepted.</p>
+        <p class="not">Not a silent re-render against the new build. That would fabricate a result nobody computed.</p>
+      </div>
+      <div class="card" style="grid-column: span 2;">
+        <div style="height: 44px; position: relative;">
+          <svg width="100%" height="44" viewBox="0 0 460 44" preserveAspectRatio="none" aria-hidden="true">
+            <rect x="20" y="4" width="120" height="14" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8"></rect>
+            <rect x="60" y="22" width="150" height="14" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8"></rect>
+            <text x="24" y="15" font-size="9.5" font-family="system-ui, sans-serif" fill="#221D19">the young man who had been…</text>
+            <text x="64" y="33" font-size="9.5" font-family="system-ui, sans-serif" fill="#221D19">an overlapping label, bundled</text>
+            <rect x="215" y="22" width="26" height="14" fill="#F9F5EF" stroke="#221D19" stroke-width="1"></rect>
+            <text x="228" y="33" font-size="9" text-anchor="middle" class="m" font-family="ui-monospace, monospace" fill="#221D19">+4</text>
+            <rect x="300" y="4" width="150" height="32" fill="none" stroke="#2F4693" stroke-width="1" stroke-dasharray="3 2"></rect>
+            <text x="306" y="17" font-size="9" font-family="system-ui, sans-serif" fill="#2F4693">bundle expands on focus;</text>
+            <text x="306" y="30" font-size="9" font-family="system-ui, sans-serif" fill="#2F4693">every member keeps its id</text>
+          </svg>
+        </div>
+        <h3>Long labels and overlapping annotations</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">Labels truncate by a stable priority; colliding marks bundle into a counted chip. The bundle is a layout-only aggregation — it retains every member id and a deterministic descent path to each.</p>
+        <p class="not">Never a dropped mark. A mark removed to make the picture tidy is a deleted observation.</p>
+      </div>
+      <div class="card" style="grid-column: span 2;">
+        <div style="height: 44px; display: flex; align-items: center;">
+          <svg width="100%" height="30" viewBox="0 0 460 30" preserveAspectRatio="none" aria-hidden="true">
+            <rect x="0" y="2" width="460" height="10" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.6"></rect>
+            <g stroke="#221D19" stroke-width="0.5">
+              <line x1="6" y1="16" x2="6" y2="26"></line><line x1="19" y1="18" x2="19" y2="26"></line><line x1="32" y1="15" x2="32" y2="26"></line>
+              <line x1="45" y1="20" x2="45" y2="26"></line><line x1="58" y1="17" x2="58" y2="26"></line><line x1="71" y1="19" x2="71" y2="26"></line>
+              <line x1="84" y1="14" x2="84" y2="26"></line><line x1="97" y1="21" x2="97" y2="26"></line><line x1="110" y1="16" x2="110" y2="26"></line>
+              <line x1="123" y1="18" x2="123" y2="26"></line><line x1="136" y1="20" x2="136" y2="26"></line><line x1="149" y1="15" x2="149" y2="26"></line>
+              <line x1="162" y1="19" x2="162" y2="26"></line><line x1="175" y1="17" x2="175" y2="26"></line><line x1="188" y1="22" x2="188" y2="26"></line>
+              <line x1="201" y1="16" x2="201" y2="26"></line><line x1="214" y1="18" x2="214" y2="26"></line><line x1="227" y1="20" x2="227" y2="26"></line>
+              <line x1="240" y1="14" x2="240" y2="26"></line><line x1="253" y1="19" x2="253" y2="26"></line><line x1="266" y1="17" x2="266" y2="26"></line>
+              <line x1="279" y1="21" x2="279" y2="26"></line><line x1="292" y1="15" x2="292" y2="26"></line><line x1="305" y1="18" x2="305" y2="26"></line>
+              <line x1="318" y1="20" x2="318" y2="26"></line><line x1="331" y1="16" x2="331" y2="26"></line><line x1="344" y1="19" x2="344" y2="26"></line>
+              <line x1="357" y1="17" x2="357" y2="26"></line><line x1="370" y1="22" x2="370" y2="26"></line><line x1="383" y1="15" x2="383" y2="26"></line>
+              <line x1="396" y1="18" x2="396" y2="26"></line><line x1="409" y1="20" x2="409" y2="26"></line><line x1="422" y1="16" x2="422" y2="26"></line>
+              <line x1="435" y1="19" x2="435" y2="26"></line><line x1="448" y1="17" x2="448" y2="26"></line>
+            </g>
+            <rect x="182" y="0" width="34" height="28" fill="none" stroke="#2F4693" stroke-width="2"></rect>
+          </svg>
+        </div>
+        <h3>Very long work, dense overview</h3>
+        <p style="font-size: 11.5px; line-height: 1.45;">Beyond the mark budget the overview shows density and boundaries only — never a hairball of individual marks. The viewport rectangle and the selection stay legible because nothing competes with them.</p>
+        <p class="not">Not a zoomed-out version of the detail view. It answers “where am I”, not “what is here”.</p>
+      </div>
+    </div>
+  </div>
+<div data-frozen-notice="true" style="position: absolute; z-index: 9999; right: 0px; top: 0px; max-width: 520px; padding: 7px 14px; border: 3px double rgb(34, 29, 25); background: rgb(247, 230, 195); color: rgb(34, 29, 25); font: 700 11.5px / 1.35 system-ui, sans-serif; letter-spacing: 0.045em; text-align: center;">FROZEN DESIGN SPECIFICATION — CONTROLS ARE INERT</div></div>
+</x-dc>
+
+
+
+
+</body></html>

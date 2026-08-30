@@ -1,0 +1,239 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: #F9F5EF; color: #221D19;
+      font: 13px/1.55 system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif; }
+    a { color: #24356F; } a:hover { color: #2F4693; }
+    .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, "DejaVu Sans Mono", monospace;
+         font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; letter-spacing: 0.03em; color: #544D47; }
+    h2 { font-size: 15px; font-weight: 600; margin: 0; }
+    p { margin: 0; }
+  </style>
+</helmet>
+
+<div data-dc-artboard data-dc-layout="flowing" style="width: 1440px; min-height: 1000px; background: #F9F5EF; display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 8px 28px;">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
+  </div>
+
+  <div style="padding: 24px 28px 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <div class="lbl">StoryAtlas mockup v2 · deliverable 10</div>
+      <div style="font-size: 25px; font-weight: 600; letter-spacing: -0.02em;">Greyscale and colour-vision check</div>
+      <p style="max-width: 700px; color: #544D47;">The same component specimen under four transforms. Simulations are computed with the Viénot–Brettel–Mollon
+        dichromat projection in linear sRGB, and greyscale is relative luminance re-encoded — not a CSS filter, so the hex values here are the ones a reader actually sees.</p>
+    </div>
+    <div style="border: 1px solid #653E00; border-left-width: 3px; background: #F7E6C3; padding: 11px 14px; max-width: 400px; display: flex; flex-direction: column; gap: 5px;">
+      <span style="font-size: 12px; font-weight: 600;">The result, stated plainly</span>
+      <p style="font-size: 11.5px; line-height: 1.5;">The two packet inks are <strong style="font-weight: 600;">equiluminant by construction</strong> — 1.03:1 apart as authored,
+        and never more than 1.40:1 apart under any dichromat simulation. That is not a defect: they are not meant to be told apart by hue. Role is carried by the 3px edge and the written label.</p>
+      <p style="font-size: 11.5px; line-height: 1.5; margin-top: 7px;">New under the relaxed rule: the column-mass ramp <strong style="font-weight: 600;">stays ordered</strong> without hue —
+        <span class="m">#E6E6E6 → #CFCFCF → #B3B3B3 → #919191 → #4B4B4B</span>. It reinforces bar height rather than replacing it — and zero stays categorically distinct because it is hatched, not pale. That is exactly what
+        “never colour <em>alone</em>” permits and “colour never carries meaning” forbade.</p>
+    </div>
+  </div>
+
+  <div style="padding: 0 28px 20px; display: flex; gap: 16px;">
+    <sc-for list="{{ variants }}" as="v" hint-placeholder-count="5">
+      <div style="{{ v.frame }}">
+        <div style="display: flex; flex-direction: column; gap: 1px; padding-bottom: 9px; border-bottom: 1px solid #D7D2CB;">
+          <span style="font-size: 12.5px; font-weight: 600;">{{ v.name }}</span>
+          <span class="lbl" style="font-size: 10px;">{{ v.note }}</span>
+        </div>
+
+        <!-- focus breadcrumb + placement -->
+        <div style="{{ v.crumbBox }}">
+          <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+            <span style="{{ v.dim }}">Scene</span><span style="{{ v.dim }}">›</span>
+            <span style="{{ v.strong }}">Event</span>
+          </div>
+          <div style="{{ v.chipOn }}"><span class="m" style="font-size: 10px; font-weight: 600;">on-mark</span></div>
+        </div>
+
+        <!-- focus ring on a control -->
+        <div style="{{ v.ring }}"><span style="font-size: 11px;">keyboard focus</span></div>
+
+        <!-- epistemic chips: border style, not hue -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="{{ v.chipSolid }}">SurfaceExplicit</span>
+          <span style="{{ v.chipDash }}">StructurallyDerived</span>
+          <span style="{{ v.chipDot }}">Hypothesized</span>
+        </div>
+
+        <!-- a matrix row: three destination classes -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: {{ v.muted }};">one matrix row</span>
+          <svg width="240" height="34" viewBox="0 0 240 34" aria-hidden="true">
+            <rect x="0" y="4" width="26" height="26" fill="{{ v.ink }}"></rect>
+            <rect x="30" y="9" width="16" height="16" fill="{{ v.ink }}"></rect>
+            <rect x="62" y="7" width="20" height="20" fill="none" stroke="{{ v.muted }}"></rect>
+            <line x1="65" y1="7" x2="65" y2="27" stroke="{{ v.muted }}" stroke-width="1.3"></line>
+            <line x1="70" y1="7" x2="70" y2="27" stroke="{{ v.muted }}" stroke-width="1.3"></line>
+            <line x1="75" y1="7" x2="75" y2="27" stroke="{{ v.muted }}" stroke-width="1.3"></line>
+            <line x1="80" y1="7" x2="80" y2="27" stroke="{{ v.muted }}" stroke-width="1.3"></line>
+            <rect x="94" y="4" width="26" height="26" fill="none" stroke="{{ v.ink }}"></rect>
+            <line x1="99" y1="17" x2="115" y2="17" stroke="{{ v.ink }}" stroke-width="1.4" stroke-dasharray="4 3"></line>
+            <rect x="130" y="4" width="26" height="26" fill="none" stroke="{{ v.muted }}" stroke-width="1"></rect>
+            <path d="M130 4 L156 30 M130 10 L150 30 M136 4 L156 24" stroke="{{ v.muted }}" stroke-width="1.1"></path>
+            <rect x="166" y="4" width="26" height="26" fill="none" stroke="{{ v.alarm }}" stroke-width="2"></rect>
+            <path d="M166 4 L192 30 M192 4 L166 30" stroke="{{ v.alarm }}" stroke-width="1.2"></path>
+            <g font-family="system-ui, sans-serif" font-size="7.5" fill="{{ v.muted }}">
+              <text x="0" y="34">src</text><text x="62" y="34">off</text><text x="94" y="34">unrkd</text><text x="130" y="34">miss</text><text x="166" y="34">stale</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- three role tints, the thing that is meant to collapse -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="lbl" style="font-size: 10px; color: {{ v.muted }};">role tints — redundant only</span>
+          <div style="display: flex; gap: 4px;">
+            <span style="{{ v.roleSrc }}">Source</span>
+            <span style="{{ v.roleRec }}">Recall</span>
+            <span style="{{ v.roleHyp }}">Hypoth.</span>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #D7D2CB;">
+          <span class="m" style="font-size: 9.5px; color: {{ v.muted }}; line-height: 1.5;">{{ v.ratios }}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="border-top: 1px solid #817B74; padding: 18px 28px 22px; display: flex; flex-direction: column; gap: 12px;">
+    <h2>Computed simulation table</h2>
+    <table style="border-collapse: collapse; font-size: 11.5px;">
+      <thead><tr>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Token</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">As authored</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Deuteranopia</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Protanopia</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Tritanopia</th>
+        <th style="text-align: left; padding: 0 18px 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Greyscale</th>
+        <th style="text-align: left; padding: 0 0 6px 0; border-bottom: 1px solid #817B74; font-size: 11px; color: #544D47; font-weight: 600;">Verdict</th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{ table }}" as="t" hint-placeholder-count="8">
+          <tr>
+            <td style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;">{{ t.name }}</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="{{ t.s0 }}"></span>{{ t.c0 }}</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="{{ t.s1 }}"></span>{{ t.c1 }}</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="{{ t.s2 }}"></span>{{ t.c2 }}</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="{{ t.s3 }}"></span>{{ t.c3 }}</td>
+            <td class="m" style="padding: 6px 18px 6px 0; border-bottom: 1px solid #D7D2CB;"><span style="{{ t.s4 }}"></span>{{ t.c4 }}</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #D7D2CB; color: {{ t.vcol }};">{{ t.verdict }}</td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+    <div style="display: flex; gap: 28px; flex-wrap: wrap;">
+      <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 11px 14px; max-width: 620px; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 600;">Contrast that must survive, and does</span>
+        <span class="m" style="font-size: 11px; line-height: 1.6;">ink on paper       15.37 → 15.25 deutan · 15.29 protan · 15.27 tritan · 15.29 grey<br>accent on paper     8.00 →  8.15 deutan ·  7.69 protan ·  8.05 tritan ·  8.00 grey<br>ink-muted on paper  5.52 →  5.50 deutan ·  5.53 protan ·  5.47 tritan ·  5.51 grey<br>alarm on its wash   7.61 →  7.35 deutan ·  8.09 protan ·  6.50 tritan</span>
+        <span class="lbl" style="line-height: 1.45;">Nothing load-bearing drops below AA under any transform; the worst case is alarm-on-wash under tritanopia at 6.50:1. The previous palette&#39;s metadata grey failed at 4.29:1 on tinted grounds and is now 5.52:1.</span>
+      </div>
+      <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 11px 14px; max-width: 500px; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 600;">How to re-run this</span>
+        <span class="lbl" style="line-height: 1.5;">Take every token pair the design relies on; project through the dichromat planes; recompute WCAG relative-luminance contrast on the projected pair.
+          A pair that only passes as authored has a colour dependency hiding in it. This check belongs in CI beside the existing static-edition laws, not in a designer's eyeball.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    // Values computed offline with the Vienot-Brettel-Mollon projection; see the table footnote.
+    var V = [
+      { name:'As authored', note:'normal trichromatic vision',
+        ink:'#221D19', muted:'#69625C', focus:'#2F4693', alarm:'#653E00', paper:'#F9F5EF', sunk:'#F0EBE3',
+        src:'#2F4693', rec:'#852A12', hyp:'#544D47', srcW:'#F0EDE9', recW:'#F4EAE4', hypW:'#F0EBE3',
+        ramp:['#E8E5E4','#CFCED5','#B1B2C4','#8B8FB0','#2F4693'],
+        ratios:'ink/paper 15.37:1\naccent/paper 8.00:1' },
+      { name:'Greyscale', note:'relative luminance, re-encoded',
+        ink:'#1E1E1E', muted:'#636363', focus:'#4B4B4B', alarm:'#464646', paper:'#F5F5F5', sunk:'#ECECEC',
+        src:'#4B4B4B', rec:'#494949', hyp:'#4E4E4E', srcW:'#EDEDED', recW:'#EDEDED', hypW:'#ECECEC',
+        ramp:['#E6E6E6','#CFCFCF','#B3B3B3','#919191','#4B4B4B'],
+        ratios:'ink/paper 15.29:1\naccent/paper 8.00:1' },
+      { name:'Deuteranopia', note:'no functioning M cone',
+        ink:'#1F1F19', muted:'#64645C', focus:'#404093', alarm:'#4C4C00', paper:'#F6F6EF', sunk:'#ECECE3',
+        src:'#404093', rec:'#525204', hyp:'#4F4F47', srcW:'#EEEEE9', recW:'#EFEFE4', hypW:'#ECECE3',
+        ramp:['#E6E6E4','#D2D2D5','#B6B6C4','#9292B0','#404093'],
+        ratios:'ink/paper 15.25:1\naccent/paper 8.15:1' },
+      { name:'Protanopia', note:'no functioning L cone',
+        ink:'#1E1E19', muted:'#63635C', focus:'#444493', alarm:'#444401', paper:'#F5F5EF', sunk:'#ECECE3',
+        src:'#444493', rec:'#3D3D14', hyp:'#4E4E47', srcW:'#EDEDE9', recW:'#EBEBE4', hypW:'#ECECE3',
+        ramp:['#E5E5E4','#D3D3D5','#B8B8C4','#9595B0','#444493'],
+        ratios:'ink/paper 15.29:1\naccent/paper 7.69:1' },
+      { name:'Tritanopia', note:'no functioning S cone',
+        ink:'#202000', muted:'#66663F', focus:'#3C3CA8', alarm:'#545400', paper:'#F7F7E2', sunk:'#EDEDD2',
+        src:'#3C3CA8', rec:'#646400', hyp:'#515126', srcW:'#EEEEDF', recW:'#F0F0D6', hypW:'#EDEDD2',
+        ramp:['#E7E7DB','#D0D0D8','#B2B2CA','#8C8CB8','#3C3CA8'],
+        ratios:'ink/paper 15.27:1\naccent/paper 8.05:1' }
+    ];
+
+    var variants = V.map(function (v) {
+      var chip = function (border) {
+        return 'font-size: 10.5px; padding: 2px 7px; background: ' + v.paper + '; color: ' + v.ink +
+          '; border: 1px ' + border + ' ' + v.ink + '; border-left-width: 3px; align-self: flex-start;';
+      };
+      var role = function (edge, wash) {
+        return 'font-size: 10px; padding: 2px 6px; flex-grow: 1; text-align: center; color: ' + v.ink +
+          '; background: ' + wash + '; border-left: 3px solid ' + edge + ';';
+      };
+      return {
+        name: v.name, note: v.note, ink: v.ink, muted: v.muted, alarm: v.alarm,
+        ratios: v.ratios,
+        frame: 'width: 256px; flex: none; border: 1px solid #817B74; background: ' + v.paper +
+          '; padding: 12px 13px; display: flex; flex-direction: column; gap: 11px; min-height: 430px;',
+        crumbBox: 'display: flex; align-items: center; justify-content: space-between; gap: 8px; background: ' + v.sunk +
+          '; border: 1px solid #817B74; padding: 6px 8px;',
+        dim: 'font-size: 11px; color: ' + v.muted + ';',
+        strong: 'font-size: 11px; font-weight: 600; color: ' + v.ink + '; border-bottom: 2px solid ' + v.focus + ';',
+        chipOn: 'border: 1px solid ' + v.ink + '; background: ' + v.paper + '; padding: 1px 5px; color: ' + v.ink + ';',
+        ring: 'padding: 5px 9px; background: ' + v.srcW + '; outline: 2px solid ' + v.focus + '; outline-offset: -2px; color: ' + v.ink + ';',
+        chipSolid: chip('solid'), chipDash: chip('dashed'), chipDot: chip('dotted'),
+        roleSrc: role(v.src, v.srcW), roleRec: role(v.rec, v.recW), roleHyp: role(v.hyp, v.hypW)
+      };
+    });
+
+    var rowsSpec = [
+      { name:'ink',            c:['#221D19','#1F1F19','#1E1E19','#202000','#1E1E1E'], v:'holds — the whole instrument rests on this' },
+      { name:'focus ring',     c:['#2F4693','#404093','#444493','#3C3CA8','#4B4B4B'], v:'holds — 7.69:1 at worst' },
+      { name:'alarm',          c:['#653E00','#4C4C00','#444401','#545400','#464646'], v:'holds — plus a 2px edge and a label' },
+      { name:'ink-muted',      c:['#69625C','#64645C','#63635C','#66663F','#636363'], v:'holds at 5.52:1 — was 4.29:1 and failing on tinted grounds' },
+      { name:'source ink',     c:['#2F4693','#404093','#444493','#3C3CA8','#4B4B4B'], v:'equiluminant by design — edge and label carry it' },
+      { name:'recall ink',     c:['#852A12','#525204','#3D3D14','#646400','#494949'], v:'equiluminant by design — edge and label carry it' },
+      { name:'ramp · col .55',c:['#B1B2C4','#B6B6C4','#B8B8C4','#B2B2CA','#B3B3B3'], v:'stays ordered — reinforces area, never replaces it' },
+      { name:'paper',          c:['#F9F5EF','#F6F6EF','#F5F5EF','#F7F7E2','#F5F5F5'], v:'holds' }
+    ];
+    var sw = function (hex) {
+      return 'display: inline-block; width: 11px; height: 11px; background: ' + hex +
+        '; border: 1px solid #B5B0A9; margin-right: 6px; vertical-align: -1px;';
+    };
+    var table = rowsSpec.map(function (r) {
+      var collapses = r.v.indexOf('equiluminant') === 0;
+      return {
+        name: r.name, verdict: r.v, vcol: collapses ? '#544D47' : '#221D19',
+        c0: r.c[0], c1: r.c[1], c2: r.c[2], c3: r.c[3], c4: r.c[4],
+        s0: sw(r.c[0]), s1: sw(r.c[1]), s2: sw(r.c[2]), s3: sw(r.c[3]), s4: sw(r.c[4])
+      };
+    });
+
+    return { variants: variants, table: table };
+  }
+}
+</script>
+</body>
+</html>
