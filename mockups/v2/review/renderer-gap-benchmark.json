@@ -46,15 +46,15 @@
     "interactionGateMs": 16.7,
     "results": {
       "geometric": {
-        "constructionMs": 110.79999995231628,
-        "selectionP95Ms": 0,
+        "constructionMs": 143.89999997615814,
+        "selectionP95Ms": 0.10000002384185791,
         "transformP95Ms": 0.10000002384185791,
         "selectionGate": true,
         "transformGate": true
       },
       "sharedPattern": {
-        "constructionMs": 9.700000047683716,
-        "selectionP95Ms": 0.19999992847442627,
+        "constructionMs": 12.599999904632568,
+        "selectionP95Ms": 0.20000004768371582,
         "transformP95Ms": 0.10000002384185791,
         "selectionGate": true,
         "transformGate": true
@@ -69,7 +69,7 @@
         "os": "darwin",
         "arch": "arm64"
       },
-      "devicePixelRatio": 1
+      "devicePixelRatio": 2
     }
   },
   "interpretation": "Structural counts and bytes form the reproducible court. Timings and environment are diagnostics only."

@@ -143,7 +143,7 @@
     <!-- ---------- primary projection ---------- -->
     <div style="{{ projPaneStyle }}">
       <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
-        <span class="h2">Narrative Atlas</span>
+        <span class="h2">{{ projTitle }}</span>
         <div style="margin-left: auto; display: flex; border: 1px solid #817B74;">
           <span class="{{ segAtlas }}" onClick="{{ pickAtlas }}" tabindex="0" role="button">Discourse Atlas</span>
           <span class="{{ segChron }}" onClick="{{ pickChron }}" tabindex="0" role="button">Chronology Loom</span>
@@ -164,7 +164,7 @@
           <svg viewBox="0 0 468 252" style="width: 100%; height: auto;" role="img" aria-label="Discourse Atlas. Horizontal position is exact discourse offset. Vertical position is context lane; lane distance has no metric. Two episode regions, four scene regions, nine situations in the narrated-world lane and one in the reported lane, one entity thread, one reference portal.">
             <g font-family="system-ui, -apple-system, sans-serif" font-size="9.5" fill="#544D47">
               <text x="0" y="24">Episode</text><text x="0" y="54">Scene</text>
-              <text x="0" y="106">lane 0</text><text x="0" y="118" font-size="8.5">narrated world</text>
+              <text x="0" y="92">lane 0</text><text data-clear-label="atlas-lane0" x="0" y="102" font-size="8.5">narrated world</text>
               <text x="0" y="176">lane 1</text><text x="0" y="188" font-size="8.5">reported</text>
             </g>
             <!-- episode regions -->
@@ -183,11 +183,11 @@
             <!-- entity thread: Erran's participations, discourse order -->
             <polyline points="158,110 232,110 349,110 414,110" fill="none" stroke="#221D19" stroke-width="1.5"></polyline>
             <!-- opposite-polarity semantic recurrence across different contexts and times -->
-            <path d="M110 180 C 110 145, 394 148, 394 110" fill="none" stroke="#221D19" stroke-width="1" stroke-dasharray="6 4"></path>
-            <text x="250" y="152" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">portal · recurrence; persistence unestablished</text>
+            <path data-clear-mark="atlas-portal" d="M110 180 C 110 145, 394 148, 394 110" fill="none" stroke="#221D19" stroke-width="1" stroke-dasharray="6 4"></path>
+            <text data-clear-label="atlas-portal" x="250" y="202" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">portal · recurrence; persistence unestablished</text>
             <!-- landmarks, lane 0 -->
             <sc-for list="{{ marks0 }}" as="k" hint-placeholder-count="9">
-              <rect x="{{ k.x }}" y="{{ k.y }}" width="{{ k.w }}" height="{{ k.w }}" fill="{{ k.fill }}" stroke="#221D19" stroke-width="{{ k.sw }}"></rect>
+              <rect data-clear-mark="atlas-lane0" x="{{ k.x }}" y="{{ k.y }}" width="{{ k.w }}" height="{{ k.w }}" fill="{{ k.fill }}" stroke="#221D19" stroke-width="{{ k.sw }}"></rect>
             </sc-for>
             <!-- landmark, lane 1 (reported context) -->
             <rect x="106" y="176" width="8" height="8" fill="#F9F5EF" stroke="#221D19" stroke-width="1" stroke-dasharray="2 1.5"></rect>
@@ -209,60 +209,61 @@
         </sc-if>
 
         <sc-if value="{{ isChron }}" hint-placeholder-val="{{ true }}">
-          <svg viewBox="0 0 468 330" style="width: 100%; height: auto;" role="img" aria-label="Chronology Loom. Left column is discourse order, exact and total. Right column is story-world partial-order constraint rank, not a clock. Sentence 2 places a prior reporting context in the winter before. Sentences 1, 3, and 4 occupy an incomparable band with no asserted internal order. A separate semantic portal links the reported content at sentence 2 to an opposite-polarity recurrence at sentence 9; it asserts neither identity nor persistence.">
-            <g font-family="system-ui, -apple-system, sans-serif" font-size="9.5" fill="#544D47">
-              <text x="6" y="14" font-weight="600" fill="#221D19">discourse order</text>
-              <text x="6" y="26">exact · total</text>
-              <text x="330" y="14" font-weight="600" fill="#221D19">story-world order</text>
-              <text x="330" y="26">partial · rank, not a clock</text>
+          <svg data-chronology-loom viewBox="0 0 468 356" style="width: 100%; height: auto;" role="img" aria-label="Chronology Loom with three separately declared clocks: exact discourse order, story-world partial-order rank, and exact synthetic recall-production order. The s01 and s02 links cross because sentence 2 reports an earlier winter; the crossing is the visible flashback. Off-source and unranked recall units remain on the recall clock without invented source positions.">
+            <defs><pattern id="ch-off" width="4" height="4" patternUnits="userSpaceOnUse"><line x1="1" y1="0" x2="1" y2="4" stroke="#69625C" stroke-width="1.1"></line></pattern></defs>
+            <g font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#544D47" text-anchor="middle">
+              <text x="75" y="13" font-weight="600" fill="#221D19">discourse clock</text><text x="75" y="25">exact · total</text>
+              <text x="235" y="13" font-weight="600" fill="#221D19">story-world order</text><text x="235" y="25">partial rank · not elapsed time</text>
+              <text x="395" y="13" font-weight="600" fill="#221D19">recall clock · p01</text><text x="395" y="25">exact production order</text>
             </g>
-            <line x1="150" y1="34" x2="150" y2="300" stroke="#817B74"></line>
-            <line x1="322" y1="34" x2="322" y2="300" stroke="#817B74"></line>
-            <!-- incomparable band on the story-world side -->
-            <rect x="314" y="76" width="16" height="42" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8" stroke-dasharray="3 2"></rect>
-            <text x="336" y="94" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">s01 · s03 · s04 incomparable —</text>
-            <text x="336" y="105" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">no internal order is asserted</text>
-            <g font-family="ui-monospace, Menlo, monospace" font-size="9.5" fill="#221D19">
-              <text x="138" y="49" text-anchor="end">s01</text><text x="138" y="75" text-anchor="end">s02</text>
-              <text x="138" y="101" text-anchor="end">s03</text><text x="138" y="127" text-anchor="end">s04</text>
-              <text x="138" y="153" text-anchor="end">s05</text><text x="138" y="179" text-anchor="end">s06</text>
-              <text x="138" y="205" text-anchor="end">s07</text><text x="138" y="231" text-anchor="end">s08</text>
-              <text x="138" y="257" text-anchor="end">s09</text><text x="138" y="283" text-anchor="end">s10</text>
+
+            <g data-clock="discourse" font-family="ui-monospace, Menlo, monospace" font-size="8.5" fill="#221D19">
+              <line x1="75" y1="46" x2="75" y2="282" stroke="#817B74"></line>
+              <g text-anchor="end"><text x="66" y="61">s01</text><text x="66" y="85">s02</text><text x="66" y="109">s03</text><text x="66" y="133">s04</text><text x="66" y="157">s05</text><text x="66" y="181">s06</text><text x="66" y="205">s07</text><text x="66" y="229">s08</text><text x="66" y="253">s09</text><text x="66" y="277">s10</text></g>
+              <g fill="#221D19"><circle cx="75" cy="58" r="2.5"></circle><circle cx="75" cy="82" r="2.5"></circle><circle cx="75" cy="106" r="2.5"></circle><circle cx="75" cy="130" r="2.5"></circle><circle cx="75" cy="154" r="2.5"></circle><circle cx="75" cy="178" r="2.5"></circle><circle cx="75" cy="202" r="2.5"></circle><circle cx="75" cy="226" r="2.5"></circle><circle cx="75" cy="250" r="2.5"></circle><circle cx="75" cy="274" r="2.5"></circle></g>
             </g>
-            <!-- slopes -->
-            <g stroke="#221D19" fill="none" stroke-width="1">
-              <line x1="150" y1="46" x2="322" y2="88"></line>
-              <line x1="150" y1="98" x2="322" y2="106"></line>
-              <line x1="150" y1="124" x2="322" y2="106"></line>
-              <line x1="150" y1="150" x2="322" y2="166"></line>
-              <line x1="150" y1="176" x2="322" y2="192"></line>
-              <line x1="150" y1="202" x2="322" y2="218"></line>
-              <line x1="150" y1="228" x2="322" y2="244"></line>
-              <line x1="150" y1="254" x2="322" y2="270"></line>
-              <line x1="150" y1="280" x2="322" y2="296"></line>
+
+            <g stroke="#817B74" stroke-width="0.9" fill="none">
+              <line data-chron-link="s01" x1="78" y1="58" x2="231" y2="94"></line>
+              <line data-chron-link="s02" x1="78" y1="82" x2="231" y2="56" stroke="#221D19" stroke-width="2.2"></line>
+              <line x1="78" y1="106" x2="231" y2="94"></line><line x1="78" y1="130" x2="231" y2="94"></line>
+              <line x1="78" y1="154" x2="231" y2="150"></line><line x1="78" y1="178" x2="231" y2="174"></line>
+              <line x1="78" y1="202" x2="231" y2="198"></line><line x1="78" y1="226" x2="231" y2="222"></line>
+              <line x1="78" y1="250" x2="231" y2="246"></line><line x1="78" y1="274" x2="231" y2="270"></line>
             </g>
-            <!-- the prior report time, drawn earlier than its discourse position -->
-            <line x1="150" y1="72" x2="322" y2="52" stroke="#221D19" stroke-width="2.5"></line>
-            <circle cx="322" cy="52" r="3.5" fill="#221D19"></circle>
-            <text x="336" y="49" font-size="9" font-family="system-ui, sans-serif" fill="#221D19" font-weight="600">s02 · prior report time</text>
-            <text x="336" y="61" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">winter before · reported context, not root fact</text>
-            <text x="336" y="120" font-size="9" font-family="system-ui, sans-serif" fill="#221D19" font-weight="600">s03 + s04 · convergent placement</text>
-            <text x="336" y="132" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">shared band means unresolved order,</text>
-            <text x="336" y="143" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">not simultaneity or an accepted edge</text>
-            <!-- semantic recurrence portal; not a chronology edge -->
-            <path d="M150 72 C 96 130, 96 200, 150 254" fill="none" stroke="#221D19" stroke-width="1" stroke-dasharray="6 4"></path>
-            <text x="6" y="166" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">reported content at s02;</text>
-            <text x="6" y="177" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">opposite-polarity recurrence at s09</text>
-            <text x="6" y="191" font-size="8.5" font-family="system-ui, sans-serif" fill="#653E00">identity + persistence unestablished</text>
-            <!-- selection tether -->
-            <rect x="{{ chSelY0 }}" y="{{ chSelY }}" width="24" height="18" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
-            <line x1="6" y1="312" x2="460" y2="312" stroke="#D7D2CB"></line>
-            <text x="6" y="325" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">No horizontal axis. Slope carries direction only; its angle has no magnitude.</text>
+            <text x="96" y="294" font-size="8.5" font-family="system-ui, sans-serif" fill="#653E00" font-weight="600">crossing = prior report / flashback</text>
+
+            <g data-clock="story-world" font-family="ui-monospace, Menlo, monospace" font-size="8.5" fill="#221D19">
+              <line x1="235" y1="46" x2="235" y2="282" stroke="#817B74"></line>
+              <circle cx="235" cy="56" r="3.2" fill="#221D19"></circle><text x="245" y="59">s02 · winter before</text>
+              <rect x="229" y="86" width="12" height="17" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-dasharray="3 2"></rect>
+              <text x="245" y="96">s01/s03/s04 · incomparable</text>
+              <circle cx="235" cy="150" r="2.5" fill="#221D19"></circle><circle cx="235" cy="174" r="2.5" fill="#221D19"></circle><circle cx="235" cy="198" r="2.5" fill="#221D19"></circle><circle cx="235" cy="222" r="2.5" fill="#221D19"></circle><circle cx="235" cy="246" r="2.5" fill="#221D19"></circle><circle cx="235" cy="270" r="2.5" fill="#221D19"></circle>
+              <text x="245" y="153">s05</text><text x="245" y="177">s06</text><text x="245" y="201">s07</text><text x="245" y="225">s08</text><text x="245" y="249">s09</text><text x="245" y="273">s10</text>
+              <rect x="223" y="140" width="24" height="20" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+            </g>
+
+            <g data-clock="recall" font-family="ui-monospace, Menlo, monospace" font-size="8" fill="#221D19">
+              <line x1="395" y1="46" x2="395" y2="270" stroke="#817B74"></line>
+              <g fill="#221D19"><rect x="391" y="54" width="8" height="8"></rect><rect x="391" y="74" width="8" height="8"></rect><rect x="391" y="94" width="8" height="8"></rect><rect x="391" y="114" width="8" height="8"></rect><rect x="391" y="134" width="8" height="8"></rect><rect x="391" y="214" width="8" height="8"></rect></g>
+              <g fill="url(#ch-off)" stroke="#69625C"><rect x="391" y="154" width="8" height="8"></rect><rect x="391" y="174" width="8" height="8"></rect><rect x="391" y="194" width="8" height="8"></rect><rect x="391" y="254" width="8" height="8"></rect></g>
+              <rect x="391" y="234" width="8" height="8" fill="#F9F5EF" stroke="#221D19" stroke-dasharray="3 2"></rect>
+              <text x="403" y="61">r01 · s01</text><text x="403" y="81">r02 · s05</text><text x="403" y="101">r03 · s02</text><text x="403" y="121">r04 · s06/s08</text><text x="403" y="141">r05 · s07</text>
+              <text x="403" y="161">r06 · off-src</text><text x="403" y="181">r07 · off-src</text><text x="403" y="201">r08 · off-src</text><text x="403" y="221">r09 · s10</text><text x="403" y="241">r10 · unrkd</text><text x="403" y="261">r11 · off-src</text>
+            </g>
+
+            <line x1="6" y1="300" x2="462" y2="300" stroke="#D7D2CB"></line>
+            <g font-family="system-ui, sans-serif" font-size="8.5" fill="#544D47">
+              <text x="6" y="315">Clock positions are ordinal declarations. Vertical gaps and connector angles carry no duration or magnitude.</text>
+              <text x="6" y="328">■ source-addressed recall · ▥ named off-source · □ dashed unranked.</text>
+              <text x="6" y="340">Off-source and unranked units receive no invented story position.</text>
+              <text data-chronology-receipt data-fixture-receipts="synthetic/two-boats-source@v1|synthetic/two-boats-recall-p01@v1" x="6" y="353" fill="#653E00">receipts · source 40c889d9…a43cc · recall p01 9612ddc1…052b · proposed StoryAtlas design state</text>
+            </g>
           </svg>
         </sc-if>
 
         <sc-if value="{{ isFeature }}" hint-placeholder-val="{{ true }}">
-          <svg viewBox="0 0 468 356" style="width: 100%; height: auto;" role="img" aria-label="Feature scale-space for imageability. Horizontal position is exact discourse offset; vertical position is the provider's raw score from 0 to 1. Three declared windows are overlaid on the raw token observations. One region carries no value and is hatched.">
+          <svg data-feature-scale-space viewBox="0 0 468 356" style="width: 100%; height: auto;" role="img" aria-label="Feature scale-space for imageability. Horizontal position is exact discourse offset; vertical position is the provider's raw score from 0 to 1. Three declared windows are overlaid on the raw token observations. One region carries no value and is hatched.">
             <defs><pattern id="fs-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#69625C" stroke-width="1.2"></line></pattern></defs>
             <g font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#544D47">
               <text x="52" y="38" text-anchor="end">1.0</text><text x="52" y="118" text-anchor="end">0.5</text><text x="52" y="198" text-anchor="end">0.0</text>
@@ -270,16 +271,16 @@
             <line x1="58" y1="34" x2="58" y2="194" stroke="#817B74"></line>
             <line x1="58" y1="194" x2="460" y2="194" stroke="#817B74"></line>
             <line x1="58" y1="114" x2="460" y2="114" stroke="#D7D2CB"></line>
-            <g stroke="#69625C" stroke-width="1"><line x1="66" y1="150" x2="66" y2="194"></line><line x1="80" y1="128" x2="80" y2="194"></line><line x1="94" y1="162" x2="94" y2="194"></line><line x1="108" y1="118" x2="108" y2="194"></line><line x1="122" y1="140" x2="122" y2="194"></line><line x1="136" y1="171" x2="136" y2="194"></line><line x1="150" y1="133" x2="150" y2="194"></line><line x1="164" y1="155" x2="164" y2="194"></line><line x1="178" y1="110" x2="178" y2="194"></line><line x1="192" y1="146" x2="192" y2="194"></line><line x1="206" y1="167" x2="206" y2="194"></line><line x1="220" y1="124" x2="220" y2="194"></line><line x1="234" y1="139" x2="234" y2="194"></line><line x1="248" y1="101" x2="248" y2="194"></line><line x1="262" y1="126" x2="262" y2="194"></line><line x1="276" y1="88" x2="276" y2="194"></line><line x1="290" y1="112" x2="290" y2="194"></line><line x1="356" y1="120" x2="356" y2="194"></line><line x1="370" y1="94" x2="370" y2="194"></line><line x1="384" y1="131" x2="384" y2="194"></line><line x1="398" y1="107" x2="398" y2="194"></line><line x1="412" y1="143" x2="412" y2="194"></line><line x1="426" y1="119" x2="426" y2="194"></line><line x1="440" y1="136" x2="440" y2="194"></line><line x1="454" y1="104" x2="454" y2="194"></line></g>
-            <rect x="300.3" y="34" width="47.5" height="160" fill="url(#fs-hatch)" stroke="#69625C" stroke-width="1"></rect>
+            <g data-feature-raw-marks stroke="#69625C" stroke-width="1"><line x1="66" y1="150" x2="66" y2="194"></line><line x1="80" y1="128" x2="80" y2="194"></line><line x1="94" y1="162" x2="94" y2="194"></line><line x1="108" y1="118" x2="108" y2="194"></line><line x1="122" y1="140" x2="122" y2="194"></line><line x1="136" y1="171" x2="136" y2="194"></line><line x1="150" y1="133" x2="150" y2="194"></line><line x1="164" y1="155" x2="164" y2="194"></line><line x1="178" y1="110" x2="178" y2="194"></line><line x1="192" y1="146" x2="192" y2="194"></line><line x1="206" y1="167" x2="206" y2="194"></line><line x1="220" y1="124" x2="220" y2="194"></line><line x1="234" y1="139" x2="234" y2="194"></line><line x1="248" y1="101" x2="248" y2="194"></line><line x1="262" y1="126" x2="262" y2="194"></line><line x1="276" y1="88" x2="276" y2="194"></line><line x1="290" y1="112" x2="290" y2="194"></line><line x1="356" y1="120" x2="356" y2="194"></line><line x1="370" y1="94" x2="370" y2="194"></line><line x1="384" y1="131" x2="384" y2="194"></line><line x1="398" y1="107" x2="398" y2="194"></line><line x1="412" y1="143" x2="412" y2="194"></line><line x1="426" y1="119" x2="426" y2="194"></line><line x1="440" y1="136" x2="440" y2="194"></line><line x1="454" y1="104" x2="454" y2="194"></line></g>
+            <rect data-feature-missing-region x="300.3" y="34" width="47.5" height="160" fill="url(#fs-hatch)" stroke="#69625C" stroke-width="1"></rect>
             <text x="324" y="70" text-anchor="middle" font-size="9" font-family="system-ui, sans-serif" fill="#653E00" font-weight="600">missing</text>
             <text x="324" y="82" text-anchor="middle" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">provider returned</text>
             <text x="324" y="93" text-anchor="middle" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">no value — not 0</text>
-            <polyline points="66,152 108,134 150,140 192,131 234,126 276,108 300,112" fill="none" stroke="#221D19" stroke-width="0.9" stroke-dasharray="2 2"></polyline>
+            <polyline data-feature-window-style="9" points="66,152 108,134 150,140 192,131 234,126 276,108 300,112" fill="none" stroke="#221D19" stroke-width="0.9" stroke-dasharray="2 2"></polyline>
             <polyline points="348,122 396,110 432,126 460,118" fill="none" stroke="#221D19" stroke-width="0.9" stroke-dasharray="2 2"></polyline>
-            <polyline points="66,146 108,138 150,136 192,133 234,128 276,116 300,118" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
+            <polyline data-feature-window-style="25" points="66,146 108,138 150,136 192,133 234,128 276,116 300,118" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
             <polyline points="348,126 396,116 432,128 460,122" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
-            <polyline points="66,141 108,140 150,138 192,136 234,132 276,126 300,126" fill="none" stroke="#221D19" stroke-width="2.6" stroke-opacity="0.45"></polyline>
+            <polyline data-feature-window-style="61" points="66,141 108,140 150,138 192,136 234,132 276,126 300,126" fill="none" stroke="#221D19" stroke-width="2.6" stroke-opacity="0.45"></polyline>
             <polyline points="348,130 396,124 432,130 460,127" fill="none" stroke="#221D19" stroke-width="2.6" stroke-opacity="0.45"></polyline>
             <rect x="{{ featSelX }}" y="34" width="{{ featSelW }}" height="160" fill="#2F4693" fill-opacity="0.08" stroke="#2F4693" stroke-width="2"></rect>
             <g font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#544D47">
@@ -308,7 +309,7 @@
               <text x="58" y="320" data-feature-window="s05-centered-25" data-feature-eligible="25" data-feature-observed="21">plan      25 lexical tokens · step 1 · centred context · KeepPartial</text>
               <text x="58" y="333" data-feature-track="sensory.imageability.synthetic@v1" data-feature-eligible="117" data-feature-observed="92">track     coverage 92/117 = .7863 · missing 25 · Mean + IgnoreMissing</text>
             </g>
-            <text x="58" y="350" font-size="8.5" font-family="system-ui, sans-serif" fill="#653E00">receipt syn-feature/imageability@v1 · display-only ledger · no calibration model</text>
+            <text data-feature-receipt data-fixture-receipts="synthetic/two-boats-source@v1" x="58" y="350" font-size="8.5" font-family="system-ui, sans-serif" fill="#653E00">receipt syn-feature/imageability@v1 · source 40c…a43cc · display-only · uncalibrated</text>
           </svg>
         </sc-if>
 
@@ -338,7 +339,7 @@
       </div>
 
       <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-top: 1px solid #817B74; background: #F0EBE3; flex: none;">
-        <span class="lbl">▸ Atlas twin (text)</span><span class="lbl">▸ Feature twin (table)</span>
+        <span class="lbl">▸ {{ projTitle }} twin (text)</span><span class="lbl">▸ Feature twin (table)</span>
         <span class="lbl" style="margin-left: auto;">Every projection has a deterministic textual counterpart.</span>
       </div>
     </div>
@@ -597,7 +598,7 @@ class Component extends DCLogic {
       marks0.push({ x: x(s.a) - 4, y: 106, w: 8, fill: isSel ? '#2F4693' : '#221D19', sw: isSel ? 2 : 1 });
     }
 
-    var chY = { s01:46, s02:72, s03:98, s04:124, s05:150, s06:176, s07:202, s08:228, s09:254, s10:280 };
+    var chY = { s01:94, s02:56, s03:94, s04:94, s05:150, s06:174, s07:198, s08:222, s09:246, s10:270 };
     var selSent = sentences[0];
     for (var k = 0; k < sentences.length; k++) { if (sentences[k].id === selId) selSent = sentences[k]; }
 
@@ -710,10 +711,11 @@ class Component extends DCLogic {
       featSelW: Math.max(6, (selSent.b - selSent.a) * (402 / TOTAL)),
       ovSelX: ox(selSent.a), ovSelW: Math.max(3, ox(selSent.b) - ox(selSent.a)),
       atSelX: x(selSent.a) - 5, atSelW: Math.max(10, x(selSent.b) - x(selSent.a) + 10),
-      chSelY0: 138, chSelY: (chY[selId] || 150) - 13,
+      chSelY0: 223, chSelY: (chY[selId] || 150) - 10,
 
       isAtlas: proj === 'atlas', isChron: proj === 'chronology', isFeature: proj === 'feature',
-      showDock: proj !== 'feature',
+      showDock: proj === 'atlas',
+      projTitle: proj === 'atlas' ? 'Narrative Atlas' : (proj === 'chronology' ? 'Chronology Loom' : 'Feature scale-space'),
       segAtlas: segBase + (proj === 'atlas' ? ' seg-on' : ''),
       segChron: segBase + (proj === 'chronology' ? ' seg-on' : ''),
       segFeat: segBase + (proj === 'feature' ? ' seg-on' : ''),
@@ -724,17 +726,17 @@ class Component extends DCLogic {
       contractLine: proj === 'atlas'
         ? 'x: DiscourseOffset; y: ContextLane; distance: NoMeaning; area: none'
         : (proj === 'chronology'
-          ? 'left: DiscourseOrder; right: WorldPartialOrder; distance: NoMeaning; area: none'
+          ? 'clocks: DiscourseOrder × WorldPartialOrder × RecallOrder; distance: NoMeaning; area: none'
           : 'x: DiscourseOffset; y: RawScore[0,1]; distance: NoMeaning; area: none'),
       contractProse: proj === 'atlas'
         ? 'X is the exact discourse offset in UTF-16 code units. Y is the context lane, narrated world = 0; vertical distance has no meaning. A region is the hull of its visible children.'
         : (proj === 'chronology'
-          ? 'The left column is exact discourse order. The right column is a rank in the compiled partial order — not a clock. Situations the model does not order share one band.'
+          ? 'Discourse and synthetic recall order are exact and total. Story-world placement is a partial-order rank, not an elapsed-time clock. The s01/s02 crossing exposes the earlier reported winter without promoting its proposition to narrated-world fact.'
           : 'X is the exact discourse offset. Y is the provider’s raw score. Each line is one declared rolling window; none is a smoothing the view invented.'),
       contractNot: proj === 'atlas'
         ? 'story-world time · duration · causal strength · lane distance'
         : (proj === 'chronology'
-          ? 'elapsed time · duration · gap size · slope magnitude'
+          ? 'elapsed time · duration · gap size · slope magnitude · a source position for off-source recall'
           : 'calibrated probability · significance · imputed values across the missing span'),
       atlasLegend: '10 mark(s). x = DiscourseOffset; y = ContextLane. Click a mark (shift-click extends) or focus it and press Enter to select its address. Region ▭ · situation ▪ · thread ── · portal ┈',
 

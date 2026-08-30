@@ -514,6 +514,10 @@ Please provide:
 12. An interactive prototype for selection, projection switching, semantic zoom, inspector disclosure, and basic text traversal.
 13. Annotation notes defining every non-obvious axis, mark, color, line, and numerical encoding.
 14. Exportable PNG or PDF review plates plus the editable design source.
+15. A populated Chronology Loom plate that separates discourse, story-world,
+    and recall clocks and makes at least one reversal legible as a crossing.
+16. A populated Feature scale-space plate that shows raw observations,
+    missingness, multiple declared aggregation windows, and the source receipt.
 
 The prototype does not need to implement scientific computation. It does need to show where real data, receipts, uncertainty, and alternatives would appear.
 
@@ -589,6 +593,14 @@ repair candidate.
   semantics, portable replay, feature conservation, claim span/upstream integrity, fixture
   mutations, and manifest mutations. The verifier checks reproducible source/output bytes and
   derives that receipt from the authenticated artifact rather than trusting parallel arrays.
+- Pixel review is a DPR-2 gate, not a convenience export. Natural PNG dimensions
+  must be twice the declared CSS viewport. The plate court additionally rejects
+  SVG text clipping and text-on-text collisions, checks explicitly paired
+  mark/label clearances and declared blank bands, and carries killing mutations
+  for the reviewed semantic failures.
+- Chronology Loom and Feature scale-space are populated exported states of the
+  main editable source. Their presence is acceptance-bearing: a tab label without
+  the corresponding marks, receipts, and textual contract is a failed plate.
 
 ### Graph-over-text spike
 

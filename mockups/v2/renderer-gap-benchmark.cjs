@@ -30,7 +30,7 @@ async function main() {
   try {
     browser = await chromium.launch({ headless: true });
     version = browser.version();
-    context = await browser.newContext({ viewport: { width: 1400, height: 1000 }, deviceScaleFactor: 1, reducedMotion: "reduce" });
+    context = await browser.newContext({ viewport: { width: 1400, height: 1000 }, deviceScaleFactor: 2, reducedMotion: "reduce" });
     const page = await context.newPage();
     page.on("pageerror", (error) => errors.push(String(error)));
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
@@ -93,7 +93,7 @@ async function main() {
     environment: {
       browser: { engine: "Chromium", version },
       platform: { os: os.platform(), arch: os.arch() },
-      devicePixelRatio: 1
+      devicePixelRatio: 2
     }
   };
   const receipt = {

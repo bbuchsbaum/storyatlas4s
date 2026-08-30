@@ -16,6 +16,13 @@ and no network dependency. It opens directly from the filesystem. The exporter
 also adds a dominant `FROZEN DESIGN SPECIFICATION — CONTROLS ARE INERT` notice and
 removes active semantics. Drawn controls specify a live design; they do not act.
 
+The 15 exported review plates are captured at device-pixel ratio 2. A capture is
+accepted only when its natural pixel dimensions are exactly twice its declared
+CSS viewport in both axes. DPR 1 is not an admissible review surface for the
+6px labels, sub-pixel rules, or hatch patterns exercised here; the exporter
+fails before writing a receipt if that condition is not met. The separate
+renderer-gap benchmark image is also captured at DPR 2.
+
 ## What the frozen artifact proves
 
 The review generator proves only that, for the exact files and environment in
@@ -25,9 +32,12 @@ The review generator proves only that, for the exact files and environment in
   unknown or partial directives fail closed under mutation;
 - each frozen HTML plate has no script or network dependency;
 - each PNG is captured from its frozen HTML twin at the declared viewport and
-  device-pixel ratio;
+  at device-pixel ratio 2, with an exact CSS-to-natural-pixel dimension check;
 - the three primary workspaces and the accessibility/specification plates are
   populated and reviewable outside the design editor;
+- the Chronology Loom and Feature scale-space states are exported as populated
+  plates from the same editable `Main.dc.html` source, rather than represented
+  by inert tab labels alone;
 - each plate has exactly one declared visual artboard and no undeclared sibling;
 - fixed and flowing artboards obey their separate extent contracts;
 - fixture hashes, packet hashes, exact observation bytes, declared text
@@ -37,6 +47,16 @@ The review generator proves only that, for the exact files and environment in
   silently clipped by its scroll viewport or any outer clipping ancestor;
 - no rendered descendant crosses the declared artboard bounds in that frozen
   default state;
+- SVG text remains inside its own viewport, SVG text labels do not overlap one
+  another, explicitly paired labels and data marks retain their required
+  clearance, and declared no-blank-band regions contain visible ink;
+- the Chronology Loom has three separately labelled clocks, a visible crossing
+  for the `s01`/`s02` reversal, and both source and recall receipts; the Feature
+  scale-space has its raw marks, missing region, three distinct window scales,
+  and source receipt; the recall matrix has a separate rule for every named
+  off-source destination; the motion plate preserves identical rest geometry;
+  and the State Board's “never confuse with” line has a non-colour structural
+  treatment. Each of these checks has a killing mutation;
 - the manifest binds every source and output byte with SHA-256, authenticates its own digest
   rules, and verifies that the reproducible receipt is the declared projection of the verified
   artifact rather than an independently trusted array. Machine-dependent timings, browser
@@ -56,6 +76,23 @@ produces 2,305 elements and 296,925 bytes and passes both gates. The evidence is
 paint/pattern vocabulary in Intaglio. It does not establish a production
 interaction-performance claim or authorize an upstream API change.
 
+### Renderer vocabulary disposition
+
+The pinned Intaglio revision already gives this repository a viable vocabulary
+for solid fills, strokes, dashes, text, primitive geometry, and clipping. It
+does not provide a compact reusable pattern/paint abstraction or a generic text
+halo or collision resolver. The plates therefore treat their SVG/CSS hatches
+and manually resolved label geometry as a visual specification, not as proof
+that the production renderer can express them directly.
+
+The benchmark rejects duplicating clipped hatch geometry per mark at the stated
+2,300-mark workload. If production requires those textures, the viable upstream
+direction is one generic, shared paint/pattern abstraction whose meaning remains
+outside Intaglio; it is not a StoryAtlas-specific semantic enum and it is not an
+authorization to change Intaglio in this repair. Label halos may improve local
+legibility, but they cannot substitute for collision-free placement or repair a
+wrong, clipped, or missing quantitative label.
+
 ## What remains a design specification
 
 These plates specify desired product behaviour but do not prove that the live
@@ -67,6 +104,8 @@ Scala/Scala.js application implements it:
 | Reflow and Compact | Browser behaviour at 200% text zoom and a 320 CSS-pixel equivalent, with an accessible counterpart for every two-dimensional figure |
 | Grayscale | Computed styles and non-colour discrimination for every scientific state, not merely the proposed palette |
 | Motion | `prefers-reduced-motion`, last-intent-wins compilation, and preserved semantic selection during real projection transitions |
+| Chronology Loom | A provider-compiled chronology projection and contract. The pinned StoryModel revision exposes only `ProjectionKind.DiscourseAtlas`; the plate's three clocks and crossing are proposed application behaviour, not provider output. |
+| Feature scale-space | Wiring real compiled feature layers for each selected `FeatureScale`; the frozen plate specifies the comparison and receipt presentation but does not execute the provider. |
 | Export controls | Actual plate, hybrid-page, and saved-state serialization with checksum/refusal courts |
 | Saved-state labels | Reopening against exact model, compiler, renderer, source, and layout identities; mismatches must refuse |
 | Hidden-mark descent | Deterministic navigation through provider-compiled `SelectionPlacement`; the UI may not infer a nearest mark |
@@ -91,6 +130,9 @@ not truth or admissibility.
   for editability; it is not the portable review surface.
 - `review/*.html`: frozen, script-free review plates.
 - `review/*.png`: pixel review plates captured from the frozen HTML.
+- `PIXEL-REVIEW-BASELINE.md`: the 29 pre-repair artifact hashes and the
+  independent review findings they preserve. It is provenance for the repair,
+  not a passing receipt.
 - `fixtures.json`: exact synthetic observation registry; its hashes establish
   identity only.
 - `fixture-court.cjs`: registry, span, reference, and mutation court.

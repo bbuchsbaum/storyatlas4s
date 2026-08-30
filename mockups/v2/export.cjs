@@ -20,25 +20,34 @@ const { loadAndVerifyFixtures, mutationCourt: fixtureMutationCourt } = require("
 const root = path.resolve(__dirname, "../..");
 const sourceDir = __dirname;
 const reviewDir = path.join(sourceDir, "review");
+const DEVICE_SCALE_FACTOR = 2;
 
-const plates = [
-  "Main",
-  "RecallMatrix",
-  "InterviewMode",
-  "Compact",
-  "Reflow",
-  "FocusOrder",
-  "Grayscale",
-  "Motion",
-  "StateBoard",
-  "Tokens",
-  "Concept",
-  "Directions",
-  "RendererGap"
+const plateSpecs = [
+  { name: "Main", source: "Main" },
+  { name: "ChronologyLoom", source: "Main", state: { projection: "chronology" } },
+  { name: "FeatureScaleSpace", source: "Main", state: { projection: "feature" } },
+  { name: "RecallMatrix", source: "RecallMatrix" },
+  { name: "InterviewMode", source: "InterviewMode" },
+  { name: "Compact", source: "Compact" },
+  { name: "Reflow", source: "Reflow" },
+  { name: "FocusOrder", source: "FocusOrder" },
+  { name: "Grayscale", source: "Grayscale" },
+  { name: "Motion", source: "Motion" },
+  { name: "StateBoard", source: "StateBoard" },
+  { name: "Tokens", source: "Tokens" },
+  { name: "Concept", source: "Concept" },
+  { name: "Directions", source: "Directions" },
+  { name: "RendererGap", source: "RendererGap" }
 ];
+const sourcePlates = [...new Set(plateSpecs.map((plate) => plate.source))];
 
 const plateObservations = {
   Main: ["synthetic/two-boats-source@v1"],
+  ChronologyLoom: [
+    "synthetic/two-boats-source@v1",
+    "synthetic/two-boats-recall-p01@v1"
+  ],
+  FeatureScaleSpace: ["synthetic/two-boats-source@v1"],
   RecallMatrix: [
     "synthetic/two-boats-source@v1",
     "synthetic/two-boats-recall-p01@v1"
@@ -60,6 +69,12 @@ const requiredObservationRefs = {
   Main: {
     "synthetic/two-boats-source@v1": ["s01", "s02", "s03", "s04", "s05", "s06", "s07", "s08", "s09", "s10"]
   },
+  ChronologyLoom: {
+    "synthetic/two-boats-source@v1": ["s01", "s02", "s03", "s04", "s05", "s06", "s07", "s08", "s09", "s10"]
+  },
+  FeatureScaleSpace: {
+    "synthetic/two-boats-source@v1": ["s01", "s02", "s03", "s04", "s05", "s06", "s07", "s08", "s09", "s10"]
+  },
   RecallMatrix: {
     "synthetic/two-boats-source@v1": ["s01", "s02", "s03", "s04", "s05", "s06", "s07", "s08", "s09", "s10"],
     "synthetic/two-boats-recall-p01@v1": ["r01", "r02", "r03", "r04", "r05", "r06", "r07", "r08", "r09", "r10", "r11"]
@@ -73,6 +88,14 @@ const requiredObservationRefs = {
   Reflow: {
     "synthetic/two-boats-source@v1": ["s04", "s05", "s06"]
   }
+};
+
+const requiredFixtureReceipts = {
+  ChronologyLoom: [
+    "synthetic/two-boats-source@v1",
+    "synthetic/two-boats-recall-p01@v1"
+  ],
+  FeatureScaleSpace: ["synthetic/two-boats-source@v1"]
 };
 
 function playwright() {
@@ -104,7 +127,7 @@ function syncCanvasPackage() {
   const match = wrapper.match(pattern);
   if (!match) throw new Error("Published design package has no appifact-doc record");
   const document = JSON.parse(match[2]);
-  for (const plate of plates) {
+  for (const plate of sourcePlates) {
     const name = `${plate}.dc.html`;
     document.content.files[name] = fs.readFileSync(path.join(sourceDir, name), "utf8");
   }
@@ -121,7 +144,8 @@ function indexHtml(entries) {
   const rows = entries
     .map(
       (entry) => `<li><a href="${entry.html}">${entry.name}</a> · ` +
-        `<a href="${entry.png}">PNG plate</a> · ${entry.viewport.width}×${entry.viewport.height}</li>`
+        `<a href="${entry.png}">PNG plate</a> · CSS ${entry.viewport.width}×${entry.viewport.height} · ` +
+        `DPR ${entry.deviceScaleFactor} · pixels ${entry.screenshot.width}×${entry.screenshot.height}</li>`
     )
     .join("\n");
   return `<!doctype html>
@@ -205,17 +229,25 @@ async function frozenHtml(page, sourceName, plateName) {
     const notice = document.createElement("div");
     notice.setAttribute("data-frozen-notice", "true");
     notice.style.cssText =
-      "position:absolute;z-index:9999;right:0;top:0;max-width:520px;padding:7px 14px;" +
-      "border:3px double #221D19;background:#F7E6C3;color:#221D19;" +
-      "font:700 11.5px/1.35 system-ui,sans-serif;letter-spacing:.045em;text-align:center";
+      "margin-left:auto;flex:none;padding:2px 7px;border:1px solid currentColor;" +
+      "background:transparent;color:inherit;font:700 9.5px/1.25 system-ui,sans-serif;" +
+      "letter-spacing:.045em;text-align:center;white-space:nowrap";
     notice.textContent = "FROZEN DESIGN SPECIFICATION — CONTROLS ARE INERT";
-    if (liveArtboardWidth < 700) {
+    const bannerLeaf = Array.from(artboard.querySelectorAll("span,div")).find((element) =>
+      element.children.length === 0 &&
+      (element.textContent || "").trim().startsWith("SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT")
+    );
+    const banner = bannerLeaf && bannerLeaf.parentElement;
+    if (banner && banner !== artboard) {
+      banner.appendChild(notice);
+    } else if (liveArtboardWidth < 700) {
       notice.style.cssText =
         "position:static;z-index:9999;box-sizing:border-box;width:100%;padding:7px 12px;" +
         "border:3px double #221D19;background:#F7E6C3;color:#221D19;" +
         "font:700 11.5px/1.35 system-ui,sans-serif;letter-spacing:.045em;text-align:center;flex:none";
       artboard.insertBefore(notice, artboard.children[1] || null);
     } else {
+      notice.style.cssText += ";position:absolute;right:0;top:0;background:#F7E6C3;color:#221D19";
       artboard.appendChild(notice);
     }
     return `<!doctype html>\n${clone.outerHTML}\n`;
@@ -223,7 +255,7 @@ async function frozenHtml(page, sourceName, plateName) {
 }
 
 async function plateCourt(page, expected, plateName, fixtureRegistry) {
-  return page.evaluate(async ({ size, plate, fixtures, required }) => {
+  return page.evaluate(async ({ size, plate, fixtures, required, requiredReceipts }) => {
     const xdcRoots = Array.from(document.querySelectorAll("x-dc"));
     const artboards = Array.from(document.querySelectorAll("[data-dc-artboard]"));
     if (xdcRoots.length !== 1) return { error: `expected-one-x-dc:${xdcRoots.length}` };
@@ -268,10 +300,115 @@ async function plateCourt(page, expected, plateName, fixtureRegistry) {
       lang: document.documentElement.lang,
       title: document.title,
       viewport: Boolean(document.querySelector('meta[name="viewport"]')),
-      frozenNotice: Boolean(document.querySelector("[data-frozen-notice]"))
+      frozenNotice: Boolean(document.querySelector("[data-frozen-notice]")),
+      syntheticBanner: Array.from(artboard.querySelectorAll("*")).some((element) =>
+        element.children.length === 0 &&
+        (element.textContent || "").trim().startsWith(
+          "SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT"
+        )
+      ),
+      devicePixelRatio: window.devicePixelRatio
     };
 
+    function visible(element) {
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return (
+        style.display !== "none" &&
+        style.visibility !== "hidden" &&
+        Number.parseFloat(style.opacity || "1") > 0 &&
+        rect.width > 0 &&
+        rect.height > 0
+      );
+    }
+
+    function overlap(a, b) {
+      return {
+        width: Math.min(a.right, b.right) - Math.max(a.left, b.left),
+        height: Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)
+      };
+    }
+
+    const svgTextClipping = [];
+    const svgTextOverlaps = [];
+    for (const svg of artboard.querySelectorAll("svg")) {
+      if (!visible(svg)) continue;
+      const sr = svg.getBoundingClientRect();
+      const texts = Array.from(svg.querySelectorAll("text")).filter(visible);
+      for (const node of texts) {
+        const tr = node.getBoundingClientRect();
+        if (
+          tr.left < sr.left - 0.75 ||
+          tr.right > sr.right + 0.75 ||
+          tr.top < sr.top - 0.75 ||
+          tr.bottom > sr.bottom + 0.75
+        ) {
+          svgTextClipping.push({
+            text: (node.textContent || "").trim(),
+            textRect: { left: tr.left, top: tr.top, right: tr.right, bottom: tr.bottom },
+            svgRect: { left: sr.left, top: sr.top, right: sr.right, bottom: sr.bottom }
+          });
+        }
+      }
+      for (let left = 0; left < texts.length; left += 1) {
+        const lr = texts[left].getBoundingClientRect();
+        for (let right = left + 1; right < texts.length; right += 1) {
+          const rr = texts[right].getBoundingClientRect();
+          const intersection = overlap(lr, rr);
+          if (intersection.width > 0.75 && intersection.height > 0.75) {
+            svgTextOverlaps.push({
+              left: (texts[left].textContent || "").trim(),
+              right: (texts[right].textContent || "").trim(),
+              width: intersection.width,
+              height: intersection.height
+            });
+          }
+        }
+      }
+    }
+
+    const labelMarkOverlaps = [];
+    for (const label of artboard.querySelectorAll("[data-clear-label]")) {
+      if (!visible(label)) continue;
+      const group = label.dataset.clearLabel;
+      const lr = label.getBoundingClientRect();
+      for (const mark of artboard.querySelectorAll(`[data-clear-mark="${group}"]`)) {
+        if (!visible(mark)) continue;
+        const intersection = overlap(lr, mark.getBoundingClientRect());
+        if (intersection.width > 0.75 && intersection.height > 0.75) {
+          labelMarkOverlaps.push({ group, width: intersection.width, height: intersection.height });
+        }
+      }
+    }
+
+    const blankBands = [];
+    if (plate === "Tokens") {
+      const boundary = artboard.querySelector("[data-no-blank-band]");
+      const previous = boundary && boundary.previousElementSibling;
+      if (boundary && previous) {
+        const gap = boundary.getBoundingClientRect().top - previous.getBoundingClientRect().bottom;
+        if (gap > 32) blankBands.push({ location: "before-footer", pixels: gap });
+      }
+    }
+    if (plate === "FocusOrder") {
+      const visibleChildren = Array.from(artboard.children).filter(visible);
+      const lastBottom = Math.max(...visibleChildren.map((element) => element.getBoundingClientRect().bottom));
+      const gap = box.bottom - lastBottom;
+      if (gap > 32) blankBands.push({ location: "artboard-tail", pixels: gap });
+    }
+
     const fixtureById = Object.fromEntries(fixtures.map((fixture) => [fixture.id, fixture]));
+    const renderedReceiptIds = new Set(
+      Array.from(document.querySelectorAll("[data-fixture-receipts]"))
+        .flatMap((element) => (element.dataset.fixtureReceipts || "").split("|"))
+        .filter(Boolean)
+    );
+    const fixtureReceiptChecks = [];
+    for (const fixtureId of requiredReceipts || []) {
+      if (!fixtureById[fixtureId]) return { error: `unknown-receipt-fixture:${fixtureId}` };
+      if (!renderedReceiptIds.has(fixtureId)) return { error: `missing-fixture-receipt:${fixtureId}` };
+      fixtureReceiptChecks.push(fixtureId);
+    }
     const observationGroups = new Map();
     for (const element of document.querySelectorAll("[data-observation-fixture][data-observation-ref]")) {
       const key = `${element.dataset.observationFixture}|${element.dataset.observationRef}`;
@@ -296,7 +433,7 @@ async function plateCourt(page, expected, plateName, fixtureRegistry) {
     }
 
     const featureLedgerChecks = [];
-    if (plate === "Main") {
+    if (plate === "Main" || plate === "FeatureScaleSpace") {
       const sourceFixture = fixtureById["synthetic/two-boats-source@v1"];
       const probe = sourceFixture && sourceFixture.featureProbe;
       if (!probe) return { error: "missing-feature-probe" };
@@ -481,17 +618,23 @@ async function plateCourt(page, expected, plateName, fixtureRegistry) {
       metadata,
       activeSemantics: active.length,
       observationChecks,
+      fixtureReceiptChecks,
       featureLedgerChecks,
       exactTypography,
       clippedEvidence,
       reachability,
+      svgTextClipping,
+      svgTextOverlaps,
+      labelMarkOverlaps,
+      blankBands,
       offenders
     };
   }, {
     size: expected,
     plate: plateName,
     fixtures: fixtureRegistry.fixtures,
-    required: requiredObservationRefs[plateName] || {}
+    required: requiredObservationRefs[plateName] || {},
+    requiredReceipts: requiredFixtureReceipts[plateName] || []
   });
 }
 
@@ -751,6 +894,41 @@ async function recallSemanticCourt(page) {
     }));
   }
 
+  async function matrixGeometrySnapshot() {
+    return page.evaluate(() => ({
+      labels: Array.from(document.querySelectorAll("[data-off-source-column]"), (node) =>
+        node.dataset.offSourceColumn || ""
+      ),
+      rules: Array.from(document.querySelectorAll("[data-off-source-rule]"), (node) =>
+        node.dataset.offSourceRule || ""
+      )
+    }));
+  }
+
+  function validateMatrixGeometry(geometry) {
+    const expectedLabels = [
+      "Association",
+      "Commentary",
+      "Intrusion",
+      "Inference*",
+      "Uninterpretable",
+      "Unranked"
+    ];
+    const expectedRules = [
+      "Association",
+      "Commentary",
+      "Intrusion",
+      "Inference",
+      "Uninterpretable"
+    ];
+    if (geometry.labels.join("|") !== expectedLabels.join("|")) {
+      throw new Error(`off-source label geometry drifted: ${geometry.labels.join("|")}`);
+    }
+    if (geometry.rules.join("|") !== expectedRules.join("|")) {
+      throw new Error(`off-source column rules drifted: ${geometry.rules.join("|")}`);
+    }
+  }
+
   const r02 = await snapshot("r02");
   validate(r02);
   if (r02.alignState !== "Distorted(s05,{Object})") {
@@ -781,6 +959,23 @@ async function recallSemanticCourt(page) {
   }
   if (!mutationKilled) throw new Error("noncanonical recall Facet mutation survived");
 
+  const matrixGeometry = await matrixGeometrySnapshot();
+  validateMatrixGeometry(matrixGeometry);
+  await page.evaluate(() => {
+    document.querySelector("[data-off-source-rule]").dataset.offSourceRule = "mutated";
+  });
+  let columnRuleMutationKilled = false;
+  try {
+    validateMatrixGeometry(await matrixGeometrySnapshot());
+  } catch (error) {
+    columnRuleMutationKilled = /column rules drifted/.test(String(error.message));
+  }
+  if (!columnRuleMutationKilled) throw new Error("off-source column-rule mutation survived");
+  await page.evaluate(() => {
+    document.querySelector('[data-off-source-rule="mutated"]').dataset.offSourceRule =
+      "Association";
+  });
+
   await snapshot("r02");
   return {
     r02: { alignState: r02.alignState, facets: r02.facets },
@@ -789,8 +984,211 @@ async function recallSemanticCourt(page) {
       recallText: r03.recallText,
       compatibility: r03.compatibility
     },
-    mutation: { name: "noncanonical-facet-attribute", killed: true }
+    matrixGeometry,
+    mutation: { name: "noncanonical-facet-attribute", killed: true },
+    columnRuleMutation: { name: "missing-named-off-source-rule", killed: true }
   };
+}
+
+async function chronologyCourt(page) {
+  async function snapshot() {
+    return page.evaluate(() => {
+      const lines = Object.fromEntries(
+        Array.from(document.querySelectorAll("[data-chron-link]"), (line) => [
+          line.dataset.chronLink,
+          ["x1", "y1", "x2", "y2"].map((name) => Number(line.getAttribute(name)))
+        ])
+      );
+      const receipt = document.querySelector("[data-chronology-receipt]");
+      return {
+        clocks: Array.from(document.querySelectorAll("[data-clock]"), (node) =>
+          node.dataset.clock || ""
+        ),
+        lines,
+        receipts: (receipt?.dataset.fixtureReceipts || "").split("|").filter(Boolean),
+        visibleReceipt: (receipt?.textContent || "").trim()
+      };
+    });
+  }
+
+  function validate(value) {
+    if (value.clocks.join("|") !== "discourse|story-world|recall") {
+      throw new Error(`chronology clocks drifted: ${value.clocks.join("|")}`);
+    }
+    const first = value.lines.s01;
+    const flashback = value.lines.s02;
+    if (!first || !flashback) throw new Error("chronology crossing links missing");
+    const leftOrder = Math.sign(first[1] - flashback[1]);
+    const rightOrder = Math.sign(first[3] - flashback[3]);
+    if (leftOrder === 0 || rightOrder === 0 || leftOrder === rightOrder) {
+      throw new Error("chronology flashback crossing missing");
+    }
+    const expectedReceipts = [
+      "synthetic/two-boats-source@v1",
+      "synthetic/two-boats-recall-p01@v1"
+    ];
+    if (value.receipts.join("|") !== expectedReceipts.join("|")) {
+      throw new Error("chronology fixture receipt drifted");
+    }
+    if (!value.visibleReceipt.includes("source") || !value.visibleReceipt.includes("recall p01")) {
+      throw new Error("chronology receipt is not visibly printed");
+    }
+  }
+
+  const checked = await snapshot();
+  validate(checked);
+  await page.evaluate(() => {
+    document.querySelector('[data-chron-link="s02"]').setAttribute("y2", "120");
+  });
+  let mutationKilled = false;
+  try {
+    validate(await snapshot());
+  } catch (error) {
+    mutationKilled = /flashback crossing missing/.test(String(error.message));
+  }
+  if (!mutationKilled) throw new Error("chronology crossing mutation survived");
+  await page.evaluate(() => {
+    document.querySelector('[data-chron-link="s02"]').setAttribute("y2", "56");
+  });
+  return {
+    clocks: checked.clocks,
+    receipts: checked.receipts,
+    flashbackCrossing: "s01 x s02",
+    mutation: { name: "remove-flashback-crossing", killed: true }
+  };
+}
+
+async function featureScaleCourt(page) {
+  const checked = await page.evaluate(() => {
+    const receipt = document.querySelector("[data-feature-receipt]");
+    return {
+      view: document.querySelectorAll("[data-feature-scale-space]").length,
+      rawMarks: document.querySelectorAll("[data-feature-raw-marks] line").length,
+      missingRegions: document.querySelectorAll("[data-feature-missing-region]").length,
+      windowStyles: Array.from(document.querySelectorAll("[data-feature-window-style]"), (node) =>
+        node.dataset.featureWindowStyle || ""
+      ),
+      receipts: (receipt?.dataset.fixtureReceipts || "").split("|").filter(Boolean),
+      visibleReceipt: (receipt?.textContent || "").trim()
+    };
+  });
+  if (
+    checked.view !== 1 ||
+    checked.rawMarks !== 25 ||
+    checked.missingRegions !== 1 ||
+    checked.windowStyles.join("|") !== "9|25|61" ||
+    checked.receipts.join("|") !== "synthetic/two-boats-source@v1" ||
+    !checked.visibleReceipt.includes("source")
+  ) {
+    throw new Error(`feature scale-space court failed ${JSON.stringify(checked)}`);
+  }
+  return checked;
+}
+
+async function motionGeometryCourt(page) {
+  async function snapshot() {
+    return page.evaluate(() => {
+      function geometry(phase, selector) {
+        const svg = document.querySelector(`[data-motion-frame="${phase}"]`);
+        const node = svg && svg.querySelector(selector);
+        if (!svg || !node) return null;
+        const sr = svg.getBoundingClientRect();
+        const nr = node.getBoundingClientRect();
+        return {
+          x: nr.left - sr.left,
+          y: nr.top - sr.top,
+          width: nr.width,
+          height: nr.height
+        };
+      }
+      return {
+        fadeLandmarks: geometry("fade-in", "[data-motion-landmarks]"),
+        restLandmarks: geometry("event-rest", "[data-motion-landmarks]"),
+        fadeSelection: geometry("fade-in", "[data-motion-selection]"),
+        restSelection: geometry("event-rest", "[data-motion-selection]")
+      };
+    });
+  }
+
+  function validate(value) {
+    for (const pair of [
+      [value.fadeLandmarks, value.restLandmarks, "landmarks"],
+      [value.fadeSelection, value.restSelection, "selection"]
+    ]) {
+      if (!pair[0] || !pair[1]) throw new Error(`motion ${pair[2]} geometry missing`);
+      for (const field of ["x", "y", "width", "height"]) {
+        if (Math.abs(pair[0][field] - pair[1][field]) > 0.25) {
+          throw new Error(`motion ${pair[2]} translated at rest: ${field}`);
+        }
+      }
+    }
+  }
+
+  const checked = await snapshot();
+  validate(checked);
+  await page.evaluate(() => {
+    document.querySelector('[data-motion-frame="event-rest"] [data-motion-landmarks]').style.transform =
+      "translateX(3px)";
+  });
+  let mutationKilled = false;
+  try {
+    validate(await snapshot());
+  } catch (error) {
+    mutationKilled = /translated at rest/.test(String(error.message));
+  }
+  if (!mutationKilled) throw new Error("motion 3px translation mutation survived");
+  await page.evaluate(() => {
+    document.querySelector('[data-motion-frame="event-rest"] [data-motion-landmarks]').style.removeProperty(
+      "transform"
+    );
+  });
+  return { ...checked, mutation: { name: "three-pixel-rest-translation", killed: true } };
+}
+
+async function stateBoardSemanticCourt(page) {
+  async function snapshot() {
+    return page.evaluate(() => {
+      const nodes = Array.from(document.querySelectorAll(".not"));
+      return {
+        cards: nodes.length,
+        labelled: nodes.filter((node) =>
+          getComputedStyle(node, "::before").content.includes("Never confuse with")
+        ).length,
+        ruled: nodes.filter((node) => getComputedStyle(node).borderTopStyle !== "none").length
+      };
+    });
+  }
+  function validate(value, expectedCards) {
+    if (
+      value.cards === 0 ||
+      value.cards !== expectedCards ||
+      value.labelled !== value.cards ||
+      value.ruled !== value.cards
+    ) {
+      throw new Error(`state-board non-colour distinction drifted ${JSON.stringify(value)}`);
+    }
+  }
+  const checked = await snapshot();
+  validate(checked, checked.cards);
+  await page.evaluate(() => {
+    const node = document.querySelector(".not");
+    node.dataset.mutatedNot = "true";
+    node.classList.remove("not");
+  });
+  let mutationKilled = false;
+  try {
+    validate(await snapshot(), checked.cards);
+  } catch (error) {
+    mutationKilled = /non-colour distinction drifted/.test(String(error.message));
+  }
+  if (!mutationKilled) throw new Error("state-board hue-only mutation survived");
+  await page.evaluate(() => {
+    const node = document.querySelector('[data-mutated-not="true"]');
+    if (!node) throw new Error("state-board mutation restore target missing");
+    delete node.dataset.mutatedNot;
+    node.classList.add("not");
+  });
+  return { ...checked, mutation: { name: "remove-never-confuse-structure", killed: true } };
 }
 
 async function main() {
@@ -809,13 +1207,21 @@ async function main() {
   let clipSelfMutation;
   let claimChecks;
   let recallChecks;
+  let chronologyChecks;
+  let featureScaleChecks;
+  let motionGeometryChecks;
+  let stateBoardChecks;
+  let svgClipMutation;
   const entries = [];
   try {
     temporarySourceDir = fs.mkdtempSync(path.join(os.tmpdir(), "storyatlas-v2-export-"));
     fs.copyFileSync(path.join(sourceDir, "support.js"), path.join(temporarySourceDir, "support.js"));
     browser = await chromium.launch({ headless: true });
     browserVersion = browser.version();
-    context = await browser.newContext({ deviceScaleFactor: 1, reducedMotion: "reduce" });
+    context = await browser.newContext({
+      deviceScaleFactor: DEVICE_SCALE_FACTOR,
+      reducedMotion: "reduce"
+    });
     directiveChecks = await directiveCourt(context, temporarySourceDir);
     const page = await context.newPage();
     const pageErrors = [];
@@ -826,13 +1232,14 @@ async function main() {
     });
     page.on("request", (request) => requests.push(request.url()));
 
-    for (const name of plates) {
+    for (const spec of plateSpecs) {
+      const name = spec.name;
       pageErrors.length = 0;
-      const sourceName = `${name}.dc.html`;
+      const sourceName = `${spec.source}.dc.html`;
       const sourcePath = path.join(sourceDir, sourceName);
       const source = fs.readFileSync(sourcePath, "utf8");
       const viewport = previewOf(source, sourceName);
-      const runtimeSourcePath = path.join(temporarySourceDir, sourceName);
+      const runtimeSourcePath = path.join(temporarySourceDir, `${name}.runtime.html`);
       fs.writeFileSync(runtimeSourcePath, browserAdaptedSource(source));
       await page.setViewportSize(viewport);
       await page.goto(pathToFileURL(runtimeSourcePath).href, { waitUntil: "load" });
@@ -845,8 +1252,18 @@ async function main() {
       });
       const resolutionError = await page.getAttribute("html", "data-dc-error");
       if (resolutionError) throw new Error(`${sourceName}: ${resolutionError}`);
+      if (spec.state) {
+        await page.evaluate((state) => window.__dcComponent.setState(state), spec.state);
+        await page.evaluate(
+          () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+        );
+      }
       if (name === "Main") claimChecks = await mainClaimCourt(page, fixtureRegistry);
       if (name === "RecallMatrix") recallChecks = await recallSemanticCourt(page);
+      if (name === "ChronologyLoom") chronologyChecks = await chronologyCourt(page);
+      if (name === "FeatureScaleSpace") featureScaleChecks = await featureScaleCourt(page);
+      if (name === "Motion") motionGeometryChecks = await motionGeometryCourt(page);
+      if (name === "StateBoard") stateBoardChecks = await stateBoardSemanticCourt(page);
       const resolved = (await frozenHtml(page, sourceName, name)).replace(/[ \t]+$/gm, "");
       if (
         resolved.includes("{{") ||
@@ -892,10 +1309,16 @@ async function main() {
         court.offenders.length > 0 ||
         court.activeSemantics !== 0 ||
         court.clippedEvidence.length > 0 ||
+        court.svgTextClipping.length > 0 ||
+        court.svgTextOverlaps.length > 0 ||
+        court.labelMarkOverlaps.length > 0 ||
+        court.blankBands.length > 0 ||
         court.metadata.lang !== "en" ||
         !court.metadata.title ||
         !court.metadata.viewport ||
-        !court.metadata.frozenNotice
+        !court.metadata.frozenNotice ||
+        !court.metadata.syntheticBanner ||
+        court.metadata.devicePixelRatio !== DEVICE_SCALE_FACTOR
       ) {
         throw new Error(`${sourceName}: plate court failed ${JSON.stringify(court)}`);
       }
@@ -976,12 +1399,49 @@ async function main() {
         }, selfClipState);
       }
 
+      if (name === "Compact") {
+        const clippedTickState = await page.evaluate(() => {
+          const tick = Array.from(document.querySelectorAll("svg text")).find(
+            (node) => (node.textContent || "").trim() === "584" &&
+              node.closest("svg")?.getAttribute("width") === "596"
+          );
+          if (!tick) throw new Error("compact terminal tick mutation target missing");
+          const x = tick.getAttribute("x");
+          tick.setAttribute("x", "640");
+          return { x };
+        });
+        const clippedTickMutation = await plateCourt(page, viewport, name, fixtureRegistry);
+        if ((clippedTickMutation.svgTextClipping || []).length === 0) {
+          throw new Error(`${sourceName}: clipped terminal-tick mutation survived`);
+        }
+        svgClipMutation = {
+          name: "terminal-axis-label-outside-svg",
+          killed: true,
+          diagnostic: "svgTextClipping"
+        };
+        mutations.push(svgClipMutation);
+        await page.evaluate(({ x }) => {
+          const tick = Array.from(document.querySelectorAll("svg text")).find(
+            (node) => (node.textContent || "").trim() === "584" &&
+              node.closest("svg")?.getAttribute("width") === "596"
+          );
+          tick.setAttribute("x", x);
+        }, clippedTickState);
+      }
+
       await page.screenshot({ path: pngPath, fullPage: true, animations: "disabled" });
       const dimensions = pngDimensions(fs.readFileSync(pngPath));
       const expectedHeight = court.layout === "fixed" ? viewport.height : Math.round(court.artboard.height);
-      if (dimensions.width !== viewport.width || Math.abs(dimensions.height - expectedHeight) > 1) {
+      const expectedPixels = {
+        width: viewport.width * DEVICE_SCALE_FACTOR,
+        height: expectedHeight * DEVICE_SCALE_FACTOR
+      };
+      if (
+        dimensions.width !== expectedPixels.width ||
+        Math.abs(dimensions.height - expectedPixels.height) > DEVICE_SCALE_FACTOR
+      ) {
         throw new Error(
-          `${sourceName}: screenshot dimensions ${JSON.stringify(dimensions)} do not match ${viewport.width}x${expectedHeight}`
+          `${sourceName}: screenshot dimensions ${JSON.stringify(dimensions)} do not match ${expectedPixels.width}x${expectedPixels.height}`
         );
       }
       entries.push({
@@ -994,6 +1454,7 @@ async function main() {
         portable,
         court,
         screenshot: dimensions,
+        deviceScaleFactor: DEVICE_SCALE_FACTOR,
         mutations
       });
     }
@@ -1008,6 +1469,7 @@ async function main() {
 
   const sourceNames = [
     "FIXTURE-NOTES.md",
+    "PIXEL-REVIEW-BASELINE.md",
     "PROOF-BOUNDARY.md",
     "canvas.json",
     "export.cjs",
@@ -1019,7 +1481,7 @@ async function main() {
     "support.js",
     "storyatlas-mockup-v2.html",
     "verify-manifest.cjs",
-    ...plates.map((name) => `${name}.dc.html`)
+    ...sourcePlates.map((name) => `${name}.dc.html`)
   ];
   const sources = sourceNames.sort().map((name) => {
     const bytes = fs.readFileSync(path.join(sourceDir, name));
@@ -1049,15 +1511,20 @@ async function main() {
     typography:
       "exact evidence uses ui-monospace platform fallbacks at 16px/24.8px; chrome uses system-ui",
     renderer:
-      "storyatlas4s mockup DC resolver v2 to frozen inert DOM; Chromium PNG at DPR 1",
+      "storyatlas4s mockup DC resolver v2 to frozen inert DOM; Chromium PNG at DPR 2",
     courts: {
       directives: directiveChecks,
       fixtureMutation,
       claimChecks,
       recallChecks,
+      chronologyChecks,
+      featureScaleChecks,
+      motionGeometryChecks,
+      stateBoardChecks,
       visibleSiblingMutation: "killed independently on every plate",
       clipAncestorMutation,
       clipSelfMutation,
+      svgClipMutation,
       rendererStructuralDigest: benchmark.structuralDigest
     },
     views: entries,

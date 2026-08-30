@@ -17,7 +17,7 @@
     h2 { font-size: 15px; font-weight: 600; margin: 0; }
     h3 { font-size: 12px; font-weight: 600; margin: 0; }
     p { margin: 0; }
-    .frame { border: 1px solid #817B74; background: #F9F5EF; padding: 10px 11px; display: flex; flex-direction: column; gap: 7px; flex-grow: 1; }
+    .frame { border: 1px solid #817B74; background: #F9F5EF; padding: 10px 11px; display: flex; flex-direction: column; gap: 7px; flex: 1 1 0; min-width: 0; }
   </style>
 </helmet>
 
@@ -54,16 +54,16 @@
               <span class="m" style="font-size: 11px; color: #2F4693;">{{ f.t }}</span>
               <h3>{{ f.name }}</h3>
             </div>
-            <svg width="100%" height="118" viewBox="0 0 300 118" preserveAspectRatio="xMidYMid meet" role="img" aria-label="{{ f.alt }}">
+            <svg data-motion-frame="{{ f.phase }}" width="100%" height="118" viewBox="0 0 300 118" preserveAspectRatio="xMidYMid meet" role="img" aria-label="{{ f.alt }}">
               <line x1="10" y1="100" x2="290" y2="100" stroke="#817B74"></line>
               <rect x="20" y="24" width="{{ f.regionW }}" height="26" fill="#9C958C" fill-opacity="{{ f.regionO }}" stroke="#817B74" stroke-width="0.8" stroke-opacity="{{ f.regionO2 }}"></rect>
-              <g opacity="{{ f.markO }}">
+              <g data-motion-landmarks opacity="{{ f.markO }}">
                 <rect x="34" y="66" width="9" height="9" fill="#221D19"></rect>
                 <rect x="92" y="66" width="9" height="9" fill="#221D19"></rect>
                 <rect x="150" y="66" width="9" height="9" fill="#221D19"></rect>
                 <rect x="208" y="66" width="9" height="9" fill="#221D19"></rect>
               </g>
-              <rect x="{{ f.selX }}" y="{{ f.selY }}" width="{{ f.selW }}" height="{{ f.selH }}" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+              <rect data-motion-selection x="{{ f.selX }}" y="{{ f.selY }}" width="{{ f.selW }}" height="{{ f.selH }}" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
               <path d="{{ f.tether }}" stroke="#2F4693" stroke-width="1.4" stroke-dasharray="3 2" fill="none"></path>
               <text x="10" y="114" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">{{ f.caption }}</text>
             </svg>
@@ -143,19 +143,19 @@
 class Component extends DCLogic {
   renderVals() {
     return { motion: [
-      { t:'0 ms', name:'Scene level', regionW:120, regionO:0.3, regionO2:1, markO:0,
+      { phase:'scene', t:'0 ms', name:'Scene level', regionW:120, regionO:0.3, regionO2:1, markO:0,
         selX:17, selY:21, selW:126, selH:32, tether:'M0 0',
         caption:'selection on the Scene 1.2 region', alt:'Scene level, one region selected.',
         note:'Starting state. One region carries the selection.' },
-      { t:'0–90 ms', name:'Crossfade out', regionW:120, regionO:0.12, regionO2:0.4, markO:0.35,
+      { phase:'fade-out', t:'0–90 ms', name:'Crossfade out', regionW:120, regionO:0.12, regionO2:0.4, markO:0.35,
         selX:17, selY:21, selW:126, selH:32, tether:'M80 50 L96 62',
         caption:'regions fade, landmarks fade in, tether appears', alt:'Regions fading out while event landmarks fade in and a tether appears.',
         note:'Opacity only. No mark travels, because no region moves to become a landmark.' },
-      { t:'90–180 ms', name:'Crossfade in', regionW:120, regionO:0.04, regionO2:0.15, markO:0.85,
+      { phase:'fade-in', t:'90–180 ms', name:'Crossfade in', regionW:120, regionO:0.04, regionO2:0.15, markO:0.85,
         selX:88, selY:62, selW:17, selH:17, tether:'M80 50 L96 62',
         caption:'selection ring settles on the descendant mark', alt:'The selection ring has moved to the descendant event mark; the tether remains.',
         note:'The ring is redrawn on the descendant, not slid to it. The tether explains the jump.' },
-      { t:'180 ms', name:'Event level', regionW:120, regionO:0, regionO2:0.15, markO:1,
+      { phase:'event-rest', t:'180 ms', name:'Event level', regionW:120, regionO:0, regionO2:0.15, markO:1,
         selX:88, selY:62, selW:17, selH:17, tether:'M80 50 L96 62',
         caption:'tether and ghost outline persist while focus holds', alt:'Event level. The tether and a ghost outline of the former region remain.',
         note:'Rest state. The tether does not fade away — the correspondence stays inspectable.' }
