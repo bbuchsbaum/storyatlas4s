@@ -29,7 +29,7 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
 // `view` and `fixtures` modules. Its own build pins grakern by ProjectRef and, until grakern has a
 // remote, REQUIRES `-Dstorymodel4s.grakern.build=/path/to/grakern` on every command line that
 // loads it. The local override below points at a checkout for coordinated development.
-lazy val storymodel4sRevision = "3cf704a743d251b0ca09a3238b059e41883370af"
+lazy val storymodel4sRevision = "5ca2f7993817aab7576eba21aafa1af61bdc55b8"
 lazy val storymodel4sBuild =
   sys.props
     .get("storyatlas4s.storymodel4s.build")
