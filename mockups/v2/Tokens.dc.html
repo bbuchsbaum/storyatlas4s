@@ -21,12 +21,12 @@
   </style>
 </helmet>
 
-<div style="width: 1440px; min-height: 2040px; background: #F9F5EF; display: flex; flex-direction: column;">
+<div data-dc-artboard data-dc-layout="flowing" style="width: 1440px; min-height: 1280px; background: #F9F5EF; display: flex; flex-direction: column;">
 
   <!-- ===== synthetic banner: persistent on every artboard ===== -->
   <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 8px 28px;">
     <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
-    <span class="m" style="font-size: 11px; color: #F9F5EF;">fixture synthetic/two-boats@v0 · every value on this sheet is invented</span>
+    <span class="m" style="font-size: 11px; color: #F9F5EF;">fixture synthetic/two-boats-source@v1 · 40c889d9…a43cc · every value on this sheet is invented</span>
   </div>
 
   <!-- ===== title ===== -->
@@ -246,7 +246,7 @@
               <td style="padding: 9px 12px 9px 0; border-bottom: 1px solid #D7D2CB;"><span style="font-size: 12px; font-weight: 600;">Epistemic status</span></td>
               <td class="m" style="padding: 9px 0; border-bottom: 1px solid #D7D2CB; font-size: 11px; color: #544D47;">sans 12 / 600</td></tr>
           <tr><td style="padding: 9px 12px 9px 0; border-bottom: 1px solid #D7D2CB; vertical-align: middle;">Metadata</td>
-              <td style="padding: 9px 12px 9px 0; border-bottom: 1px solid #D7D2CB;"><span class="lbl">coverage 0.83 · window 25w · provider imag-v3</span></td>
+              <td style="padding: 9px 12px 9px 0; border-bottom: 1px solid #D7D2CB;"><span class="lbl">selected 21/25=.840 · track 92/117=.7863 · 25 lexical tokens</span></td>
               <td class="m" style="padding: 9px 0; border-bottom: 1px solid #D7D2CB; font-size: 11px; color: #544D47;">sans 11, +0.04em</td></tr>
           <tr><td style="padding: 9px 12px 9px 0; vertical-align: middle;">Receipt block</td>
               <td style="padding: 9px 12px 9px 0;"><span class="m" style="font-size: 11px; color: #544D47;">measurerInUse monospace-table/1</span></td>
@@ -260,6 +260,8 @@
           <p class="lbl" style="line-height: 1.5; margin-top: 2px;">A subsetted woff2 as a <span class="m">data:</span> URI satisfies “no external resource” — nothing is fetched — while keeping
             <span class="m">TextStyle.family</span> a single named face rather than the fallback list the type deliberately forbids. ~30–60&nbsp;KB per weight.</p>
           <p class="lbl" style="line-height: 1.5;">UI chrome keeps the system stack, because no receipt depends on its metrics.</p></div>
+        <div style="border: 1px solid #817B74; background: #F9F5EF; padding: 11px 13px; display: flex; flex-direction: column; gap: 6px;">
+          <h3>Portable fallback stack — screen only</h3>
           <div class="m" style="font-size: 11px; line-height: 1.6; color: #221D19;">ui-monospace, SFMono-Regular,<br>Menlo, "DejaVu Sans Mono", monospace</div>
           <p class="lbl" style="line-height: 1.5; margin-top: 2px;">No webfont, so nothing to block, and export shows the same faces the
             screen does. Today <span class="m">TextStyle.cssFamily</span> emits one bare family and forbids a fallback list; shipping
@@ -344,7 +346,7 @@
           <span style="font-size: 12.5px; color: #69625C;">Episode 1</span><span style="color: #B5B0A9;">›</span>
           <span style="font-size: 12.5px; color: #69625C;">Scene 1.2</span><span style="color: #B5B0A9;">›</span>
           <span style="font-size: 12.5px; color: #221D19; font-weight: 600; border-bottom: 2px solid #2F4693;">Event</span><span style="color: #B5B0A9;">›</span>
-          <span class="m" style="font-size: 11.5px; color: #544D47;">tok 118–126</span>
+          <span class="m" style="font-size: 11.5px; color: #544D47;">UTF-16 [251,291)</span>
           <span style="display: inline-flex; align-items: center; gap: 5px; border: 1px solid #221D19; padding: 2px 7px; margin-left: auto;">
             <svg width="9" height="9" aria-hidden="true"><rect width="9" height="9" fill="#221D19"></rect></svg>
             <span class="m" style="font-size: 11px; font-weight: 600;">on-mark</span></span>
@@ -364,11 +366,11 @@
       <div style="display: flex; flex-direction: column; gap: 7px;">
         <h3>Epistemic status</h3>
         <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-          <span style="font-size: 11px; border: 1px solid #221D19; border-left-width: 3px; padding: 2px 7px; background: #F9F5EF;">Source explicit</span>
-          <span style="font-size: 11px; border: 1px solid #544D47; border-left-width: 3px; padding: 2px 7px; background: #F9F5EF;">Linguistically entailed</span>
-          <span style="font-size: 11px; border: 1px dashed #544D47; border-left: 3px dashed #544D47; padding: 2px 7px; background: #F9F5EF;">Structurally derived</span>
+          <span style="font-size: 11px; border: 1px solid #221D19; border-left-width: 3px; padding: 2px 7px; background: #F9F5EF;">SurfaceExplicit</span>
+          <span style="font-size: 11px; border: 1px solid #544D47; border-left-width: 3px; padding: 2px 7px; background: #F9F5EF;">LinguisticallyEntailed</span>
+          <span style="font-size: 11px; border: 1px dashed #544D47; border-left: 3px dashed #544D47; padding: 2px 7px; background: #F9F5EF;">StructurallyDerived</span>
           <span style="font-size: 11px; border: 1px dashed #69625C; border-left: 3px dashed #69625C; padding: 2px 7px; background: #F9F5EF;">World-knowledge inference</span>
-          <span style="font-size: 11px; border: 1px dotted #544D47; border-left: 3px dotted #544D47; padding: 2px 7px; background: #F0EBE3;">Hypothesised</span>
+          <span style="font-size: 11px; border: 1px dotted #544D47; border-left: 3px dotted #544D47; padding: 2px 7px; background: #F0EBE3;">Hypothesized</span>
           <span style="font-size: 11px; border: 1px solid #2F4693; border-left-width: 3px; padding: 2px 7px; background: #F0EDE9;">Human adjudicated</span>
         </div>
         <span class="lbl" style="line-height: 1.5;">Border style walks solid → dashed → dotted as evidence weakens. Legible with colour removed.</span>
@@ -382,7 +384,7 @@
             <span style="font-size: 12px; font-weight: 600;">Imageability</span>
             <span class="m" style="font-size: 15px; color: #221D19;">0.412</span>
           </div>
-          <span class="lbl" style="line-height: 1.45;">raw provider score, uncalibrated · 0–1 · target token<br>reducer mean · window 25w · coverage 0.83</span>
+          <span class="lbl" style="line-height: 1.45;">raw target Token; derived Window(TokenRange) · score 0–1, uncalibrated<br>25 lexical tokens · step 1 · centred context · EdgePolicy.KeepPartial · ScalarReducer.Mean · IgnoreMissing · selected 21/25=.840 · track 92/117=.7863</span>
           <div style="display: flex; align-items: center; gap: 5px; margin-top: 2px;">
             <svg width="9" height="9" aria-hidden="true"><rect x="0.5" y="0.5" width="8" height="8" fill="none" stroke="#653E00" stroke-width="1.4"></rect><path d="M0.5 0.5 L8.5 8.5" stroke="#653E00"></path></svg>
             <span style="font-size: 11px; color: #653E00;">No calibration model — not a probability</span>
@@ -411,11 +413,11 @@
         <h3>Inspector field row · extends <span class="m" style="font-size: 11px; font-weight: 400;">.panel dl</span></h3>
         <div style="border: 1px solid #817B74; background: #F9F5EF; padding: 10px 12px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 5px 16px; font-size: 12px;">
           <span style="font-weight: 600;">Semantic address</span><span class="m" style="font-size: 11.5px; color: #221D19;">story/situation/syn:sit:launch-boat</span>
-          <span style="font-weight: 600;">Supporting span</span><span class="m" style="font-size: 11.5px; color: #221D19;">s05 · tok 251–291 <span style="color: #69625C;">(exact, resolvable)</span></span>
-          <span style="font-weight: 600;">Epistemic status</span><span><span style="font-size: 11px; border: 1px solid #221D19; border-left-width: 3px; padding: 1px 6px;">Source explicit</span></span>
-          <span style="font-weight: 600;">Alternatives</span><span style="color: #221D19;">2 competing readings <span style="color: #69625C;">· both retained</span></span>
+          <span style="font-weight: 600;">Supporting span</span><span class="m" style="font-size: 11.5px; color: #221D19;">s05 action · UTF-16 [251,284) <span style="color: #69625C;">(exact, resolvable)</span></span>
+          <span style="font-weight: 600;">Epistemic status</span><span><span style="font-size: 11px; border: 1px solid #221D19; border-left-width: 3px; padding: 1px 6px;">SurfaceExplicit</span></span>
+          <span style="font-weight: 600;">Alternatives</span><span style="color: #221D19;">not bundled here · <span class="m">c-s05-alone-unaccompanied</span> and <span class="m">c-s05-alone-unaided</span> are separate Hypothesized claims over [285,290)</span>
           <span style="font-weight: 600;">Adjudication</span><span style="color: #69625C;">none recorded</span>
-          <span style="font-weight: 600;">Build receipt</span><span class="m" style="font-size: 11.5px; color: #544D47;">sourceChecksum 4f1c…a03e · storymodel4sRevision 8492e43</span>
+          <span style="font-weight: 600;">Build receipt</span><span class="m" style="font-size: 11.5px; color: #544D47;">sourceTextSha256 40c889d9…a43cc · syn-claims@v2 · synthetic/unadmitted</span>
         </div>
         <span class="lbl">Each field is separately addressable. Nothing is bundled behind one summary number.</span>
       </div>
@@ -444,13 +446,13 @@
     </div>
   </div>
 
-  <div style="margin-top: auto; border-top: 1px solid #817B74; background: #F0EBE3; padding: 11px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+  <div data-no-blank-band style="margin-top: auto; border-top: 1px solid #817B74; background: #F0EBE3; padding: 11px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
     <span class="lbl">Contrast ratios computed against #F9F5EF by the WCAG 2.x relative-luminance formula. Greyscale values are sRGB relative luminance re-encoded.</span>
     <span class="m" style="font-size: 11px; color: #653E00;">SYNTHETIC — NOT MODEL OUTPUT</span>
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"$preview":{"width":1440,"height":2040}}'>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1280}}'>
 class Component extends DCLogic {
   renderVals() { return {}; }
 }

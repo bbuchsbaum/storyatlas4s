@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head>
+<html lang="en" data-storyatlas-frozen="true"><head>
   <meta charset="utf-8">
 
 <style data-dc-resolved-style="true">
@@ -16,31 +16,31 @@
     .stop { width: 20px; height: 20px; flex: none; background: #2F4693; color: #F9F5EF; font-size: 11px;
             display: flex; align-items: center; justify-content: center; font-weight: 600; }
     .m2 { font-size: 11.5px; }
-  </style><meta name="storyatlas-frozen-source" content="FocusOrder.dc.html"></head>
+  </style><title>StoryAtlas mockup v2 — FocusOrder — frozen design specification</title><meta name="viewport" content="width=device-width, initial-scale=1"><style data-frozen-inert-style="true">*{cursor:default!important}</style><meta name="storyatlas-frozen-source" content="FocusOrder.dc.html"></head>
 <body>
 <x-dc style="display: block;">
 
 
-<div style="width: 1440px; min-height: 980px; background: #F9F5EF; display: flex; flex-direction: column;">
+<div data-dc-artboard="" data-dc-layout="fixed" style="width: 1440px; height: 1050px; background: rgb(249, 245, 239); display: flex; flex-direction: column; overflow: hidden; position: relative;">
   <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 8px 28px;">
     <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
-  </div>
+  <div data-frozen-notice="true" style="margin-left: auto; flex: 0 0 auto; padding: 2px 7px; border: 1px solid currentcolor; background: transparent; color: inherit; font: 700 9.5px / 1.25 system-ui, sans-serif; letter-spacing: 0.045em; text-align: center; white-space: nowrap;">FROZEN DESIGN SPECIFICATION — CONTROLS ARE INERT</div></div>
 
   <div style="padding: 24px 28px 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
     <div style="display: flex; flex-direction: column; gap: 6px;">
       <div class="lbl">StoryAtlas mockup v2 · deliverable 8</div>
       <div style="font-size: 25px; font-weight: 600; letter-spacing: -0.02em;">Keyboard focus order</div>
-      <p style="max-width: 720px; color: #544D47;">Twelve tab stops reach the whole instrument. The order follows the task, not the DOM:
-        orient, read, question, inspect. Every figure is entered as a single stop and traversed inside with arrow keys, so a dense projection never floods the tab ring.</p>
+      <p style="max-width: 720px; color: #544D47;">Proposed runtime contract: twelve tab stops reach the whole instrument. DOM and visual order both follow the task:
+        orient, read, question, inspect. A dense projection has one focusable DOM composite, so it never floods the tab ring.</p>
     </div>
     <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 12px 15px; max-width: 400px; display: flex; flex-direction: column; gap: 5px;">
-      <h3>The rule that makes this tractable</h3>
-      <p style="font-size: 11.5px; line-height: 1.5;">A projection is <strong style="font-weight: 600;">one</strong> tab stop. Marks inside it form a roving-tabindex group ordered by
-        discourse position — the same order the twin prints. Hidden and bundled members stay reachable by a deterministic descent path, so nothing is unreachable merely because it is occluded.</p>
+      <h3>Specification plate — controls are inert</h3>
+      <p style="font-size: 11.5px; line-height: 1.5;">The painted SVG is <span class="m">aria-hidden="true" focusable="false"</span>. One visible DOM twin is the composite tab stop and owns
+        <span class="m">aria-activedescendant</span>; descendants never receive <span class="m">tabindex</span>. Hidden and bundled members remain rows in that twin.</p>
     </div>
   </div>
 
-  <div style="padding: 0 28px 18px; display: flex; gap: 22px;">
+  <div style="padding: 0 28px 18px; display: flex; align-items: flex-start; gap: 22px;">
     <!-- wireframe -->
     <div style="width: 830px; flex: none; border: 1px solid #817B74; background: #F9F5EF; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
       <div style="display: flex; align-items: center; gap: 8px;">
@@ -60,7 +60,7 @@
             <span class="stop">6</span>
             <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1;">
               <span class="m2" style="font-weight: 600;">Codex text region</span>
-              <span class="lbl" style="line-height: 1.5;">One stop. Inside: ↑/↓ by line, J/K by sentence, N/P by unit at the active level, / to search, Enter selects the unit, Shift+Enter extends.</span>
+              <span class="lbl" style="line-height: 1.5;">One stop. Inside: ↑/↓ by line; the scoped, remappable Mod+Alt+J/K and Mod+Alt+N/P commands move by sentence or active-level unit; Mod+F searches; Enter selects; Shift+Enter extends.</span>
               <span class="lbl" style="line-height: 1.5; color: #653E00;">The gutter number is the focusable button; clicking anywhere in the row is a pointer convenience. Text stays selectable, because a click that ends a non-empty text selection is ignored rather than treated as a semantic selection.</span>
             </div>
           </div>
@@ -70,9 +70,9 @@
           <div style="display: flex; align-items: flex-start; gap: 8px; padding: 9px 10px; flex-grow: 1;">
             <span class="stop">8</span>
             <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1;">
-              <span class="m2" style="font-weight: 600;">Projection figure</span>
-              <span class="lbl" style="line-height: 1.5;">One stop, roving tabindex inside. ←/→ by discourse position, ↑/↓ across lanes, Enter selects, Escape returns to the figure as a whole.</span>
-              <span class="lbl" style="line-height: 1.5;">A bundled mark expands with → and its members join the ring in order.</span>
+              <span class="m2" style="font-weight: 600;">Visible DOM twin + inert SVG paint</span>
+              <span class="lbl" style="line-height: 1.5;">Focus stays on the composite while <span class="m">aria-activedescendant</span> changes. ←/→ moves by discourse position, ↑/↓ across lanes, Enter selects, Escape collapses the current bundle.</span>
+              <span class="lbl" style="line-height: 1.5;">A bundled mark expands in the twin; its members become deterministic rows, not extra tab stops.</span>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid #B5B0A9;"><span class="stop">9</span><span class="m2">Docked feature track</span><span class="lbl" style="margin-left: auto;">←/→ reads values aloud</span></div>
@@ -116,18 +116,28 @@
               </tr>
 
               <tr>
-                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">J / K</td>
-                <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Next / previous sentence</td>
+                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">Mod+Alt+J / K</td>
+                <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Next / previous sentence; scoped and remappable</td>
               </tr>
 
               <tr>
-                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">N / P</td>
+                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">Mod+Alt+N / P</td>
                 <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Next / previous unit at the active narrative level</td>
               </tr>
 
               <tr>
                 <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">← →</td>
                 <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Discourse position within a figure; option within a control group</td>
+              </tr>
+
+              <tr>
+                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">Home / End</td>
+                <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">First / last cell in a matrix row</td>
+              </tr>
+
+              <tr>
+                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">Ctrl+Home / End</td>
+                <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">First / last cell in the full matrix</td>
               </tr>
 
               <tr>
@@ -142,44 +152,39 @@
 
               <tr>
                 <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">Escape</td>
-                <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Leave a figure’s interior; never clears selection</td>
+                <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Collapse the current bundle; never clears selection</td>
               </tr>
 
               <tr>
-                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">/</td>
+                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">Mod+F</td>
                 <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Search the exact text</td>
               </tr>
 
               <tr>
-                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">[ / ]</td>
+                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">Mod+Alt+[ / ]</td>
                 <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Previous / next projection</td>
               </tr>
 
               <tr>
-                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">I</td>
+                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">Mod+Alt+I</td>
                 <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Toggle the inspector</td>
-              </tr>
-
-              <tr>
-                <td class="m" style="padding: 5px 14px 5px 0; border-bottom: 1px solid #D7D2CB; white-space: nowrap; font-size: 11px;">G then O</td>
-                <td style="padding: 5px 0; border-bottom: 1px solid #D7D2CB; line-height: 1.4;">Jump to the overview strip</td>
               </tr>
 
           </tbody>
         </table>
-        <p class="lbl" style="line-height: 1.45;">Every one has a pointer equivalent, and no function anywhere requires hover or drag. The overview's range selection is a drag <em>and</em> Home/End/arrow keys on stop 4.</p>
+        <p class="lbl" style="line-height: 1.45;">Every command has a pointer equivalent. Printable-character shortcuts require a modifier, are scoped to the focused instrument, are remappable, and can be disabled. All shortcuts are suspended in input, textarea, select, and contenteditable contexts.</p>
       </div>
 
       <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 13px 15px; display: flex; flex-direction: column; gap: 8px;">
         <h2>Announced on selection change</h2>
         <p class="lbl" style="line-height: 1.45;">A single polite live region, one sentence, in this order. It is the spoken form of the focus bar — same facts, same words.</p>
         <div style="border-left: 3px solid #2F4693; padding: 8px 0 8px 11px; display: flex; flex-direction: column; gap: 6px;">
-          <span style="font-size: 12px; line-height: 1.5;">“Selected: Erran launches the smaller boat, unaccompanied. Scene 1.2, event level. Source explicit. Codex on-mark, Atlas on-mark. Code units 251 to 291.”</span>
+          <span style="font-size: 12px; line-height: 1.5;">“Selected: Erran pushes the smaller boat out. Scene 1.2, event level. SurfaceExplicit action. ‘Alone’ has separate Hypothesized unaccompanied and unaided alternatives. Codex on-mark, Atlas on-mark. UTF-16 251 to 291.”</span>
           <span style="font-size: 12px; line-height: 1.5; color: #544D47;">“Selection retained. Atlas via-ancestor: Scene 1.1. Codex on-mark.”</span>
           <span class="lbl" style="line-height: 1.45;">— the second form fires when a projection or level change moves the placement. The selection is never announced as lost, because it never is.</span>
         </div>
-        <p class="lbl" style="line-height: 1.45;">Every SVG figure carries a concise <span class="m" style="font-size: 10.5px;">role="img"</span> summary naming its contract, its mark counts and its current selection, and links to the
-          textual twin already emitted by <span class="m" style="font-size: 10.5px;">AtlasTextualTwin</span> — the accessible counterpart is a build artefact, not a hand-written alt string.</p>
+        <p class="lbl" style="line-height: 1.45;">Matrix twin contract: a visible 11 × 16 DOM grid exposes all cells, including zero, off-source, and Unranked states. Arrow keys move one cell; Home/End move to row edges;
+          Ctrl+Home/Ctrl+End move to grid corners. The active cell announces row and column headers, full AlignState identity, mass, and status. The SVG is paint only; this frozen plate does not claim runtime accessibility proof.</p>
       </div>
     </div>
   </div>

@@ -1,677 +1,4055 @@
 {
-  "artifactDigest": "2cff910ec709065a38feb64d8e1f5f9c575eb4ec9286b0ad3557437ad8141005",
-  "digestRule": "sha256(canonical-json(payload-without-artifactDigest))",
-  "schema": "storyatlas4s.mockup-review-artifact.v1",
-  "fixture": "synthetic/two-boats@v0",
-  "sourcePolicy": "SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT",
-  "typography": "system-ui with platform fallbacks; ui-monospace with platform fallbacks",
-  "renderer": "storyatlas4s mockup DC resolver v1 to frozen DOM; Chromium PNG at DPR 1",
-  "generatorBaseRevision": "003f12b21e1b9793fea479e104c2e2eff3e55fe5",
-  "browser": {
-    "engine": "Chromium",
-    "version": "140.0.7339.186"
-  },
-  "platform": {
-    "os": "darwin",
-    "arch": "arm64"
-  },
-  "views": [
-    {
-      "name": "Main",
-      "sourceName": "Main.dc.html",
-      "html": "main.html",
-      "png": "main.png",
-      "viewport": {
-        "width": 1536,
-        "height": 1024
+  "schema": "storyatlas4s.mockup-review-manifest.v2",
+  "digestRule": "storyatlas4s-canonical-json-sha256-v2:target=schema+digestRule+artifact",
+  "artifact": {
+    "schema": "storyatlas4s.mockup-review-artifact.v2",
+    "sourcePolicy": "SYNTHETIC DESIGN FIXTURES — NOT ADMITTED SOURCE, MODEL OUTPUT, OR HUMAN ADJUDICATION",
+    "observations": {
+      "schema": "storyatlas4s.mockup-fixtures.v1",
+      "fixtures": [
+        {
+          "id": "synthetic/two-boats-source@v1",
+          "kind": "canonical-source",
+          "storage": {
+            "path": "fixtures.json",
+            "pointer": "/fixtures/0/canonicalText"
+          },
+          "byteLength": 584,
+          "utf16CodeUnits": 584,
+          "coordinateBasis": "half-open UTF-16 code-unit offsets into canonicalText",
+          "textSha256": "40c889d9eab7b6b42189602730ef7bc402afac1007709230dcfff8924c2a43cc",
+          "packetSha256": "86034684a281fb907956c8590464e413a9f8a9b38b559695e64edf85c4239fee",
+          "sourceRef": null,
+          "sourceState": null,
+          "sourceStateContract": null
+        },
+        {
+          "id": "synthetic/two-boats-recall-p01@v1",
+          "kind": "recall-transcript",
+          "storage": {
+            "path": "fixtures.json",
+            "pointer": "/fixtures/1/canonicalText"
+          },
+          "byteLength": 455,
+          "utf16CodeUnits": 451,
+          "coordinateBasis": "half-open UTF-16 code-unit offsets into canonicalText",
+          "textSha256": "9612ddc1d09738008851ef6dfde8691f49c68878e4960cd4417c6a01e352052b",
+          "packetSha256": "e99de31c95dfdbdf1479ea9f21a1c2b218725f39091fcdb2b07717ec19ae4f85",
+          "sourceRef": {
+            "id": "synthetic/two-boats-source@v1",
+            "textSha256": "40c889d9eab7b6b42189602730ef7bc402afac1007709230dcfff8924c2a43cc"
+          },
+          "sourceState": null,
+          "sourceStateContract": null
+        },
+        {
+          "id": "synthetic/two-boats-interview-p07@v1",
+          "kind": "interview-transcript",
+          "storage": {
+            "path": "fixtures.json",
+            "pointer": "/fixtures/2/canonicalText"
+          },
+          "byteLength": 702,
+          "utf16CodeUnits": 696,
+          "coordinateBasis": "half-open UTF-16 code-unit offsets into canonicalText",
+          "textSha256": "c04885273ab43eb5978ba5b14d468319186576d4dc12f17ca208b9eeb79b3c86",
+          "packetSha256": "72d5eb63fdf5f0bf97b9beb057de512666bd96908584d7d14d5718c2af44685c",
+          "sourceRef": null,
+          "sourceState": "Unestablished",
+          "sourceStateContract": "proposed-storyatlas-view-state@v1"
+        }
+      ],
+      "lexicalTokenCourt": {
+        "basis": "Unicode letter runs with optional internal apostrophe",
+        "eligible": 117
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 7110
+      "featureLedgerCourt": {
+        "id": "sensory.imageability.synthetic@v1",
+        "lexicalLedgerEntries": 117,
+        "missingOrdinals": 25,
+        "trackCoverage": {
+          "eligible": 117,
+          "observed": 92,
+          "missing": 25
+        },
+        "selectedWindow": {
+          "id": "s05-centered-25",
+          "lexicalRange": [
+            41,
+            66
+          ],
+          "eligible": 25,
+          "observed": 21,
+          "missing": 4
+        },
+        "windowPlan": {
+          "width": 25,
+          "step": 1,
+          "basis": "LexicalTokens",
+          "edgePolicy": "KeepPartial"
+        },
+        "reducer": "ScalarReducer.Mean",
+        "missingValuePolicy": "IgnoreMissing",
+        "aggregateMissingReason": "MissingReason.AllMissing",
+        "providerOutcome": "MissingReason.ProviderAbstained"
+      }
+    },
+    "typography": "exact evidence uses ui-monospace platform fallbacks at 16px/24.8px; chrome uses system-ui",
+    "renderer": "storyatlas4s mockup DC resolver v2 to frozen inert DOM; Chromium PNG at DPR 2",
+    "courts": {
+      "directives": [
+        {
+          "name": "valid-nested-for-if",
+          "pass": true,
+          "rendered": [
+            "alpha",
+            "gamma"
+          ]
+        },
+        {
+          "name": "unknown-template-kind",
+          "killed": true,
+          "diagnostic": "Unsupported design-canvas directive: mystery"
+        },
+        {
+          "name": "unknown-sc-tag",
+          "killed": true,
+          "diagnostic": "Unsupported design-canvas directive: sc-unless"
+        },
+        {
+          "name": "partial-list-expression",
+          "killed": true,
+          "diagnostic": "for list must be one exact design-canvas expression"
+        }
+      ],
+      "fixtureMutation": {
+        "name": "fixture-mutation-court",
+        "mutations": [
+          {
+            "name": "fixture-character",
+            "killed": true
+          },
+          {
+            "name": "feature-ledger-conservation",
+            "killed": true
+          }
+        ]
       },
-      "overflow": {
+      "claimChecks": {
+        "claims": 37,
+        "ids": [
+          "c-s01-boats-drawn",
+          "c-s01-location",
+          "c-s01-time",
+          "c-s02-embedded",
+          "c-s02-report",
+          "c-s02-report-time",
+          "c-s02-s09-identity",
+          "c-s02-s09-link",
+          "c-s02-s09-persistence",
+          "c-s03-agent-erran",
+          "c-s03-object-report",
+          "c-s03-object-telling",
+          "c-s03-surface",
+          "c-s04-boat",
+          "c-s04-nonarrival",
+          "c-s04-ownership",
+          "c-s04-uncle-ref",
+          "c-s05-action",
+          "c-s05-alone-unaccompanied",
+          "c-s05-alone-unaided",
+          "c-s06-fog",
+          "c-s06-vantage-general",
+          "c-s06-vantage-participant",
+          "c-s06-visibility",
+          "c-s07-call",
+          "c-s07-not-carried",
+          "c-s08-agent-erran",
+          "c-s08-fog-lift",
+          "c-s08-local-order",
+          "c-s08-position",
+          "c-s09-state",
+          "c-s10-agent-erran",
+          "c-s10-intentional-withholding",
+          "c-s10-nontell",
+          "c-s10-return-complete",
+          "c-s10-seeing",
+          "c-s10-turn-back"
+        ],
+        "alternativeGroups": {
+          "alt-s03-object": [
+            "c-s03-object-report",
+            "c-s03-object-telling"
+          ],
+          "alt-s05-alone": [
+            "c-s05-alone-unaccompanied",
+            "c-s05-alone-unaided"
+          ],
+          "alt-s06-vantage": [
+            "c-s06-vantage-participant",
+            "c-s06-vantage-general"
+          ]
+        },
+        "mutation": {
+          "name": "claim-support-span",
+          "killed": true
+        },
+        "summaryMutation": {
+          "name": "claim-summary-status",
+          "killed": true
+        }
+      },
+      "recallChecks": {
+        "r02": {
+          "alignState": "Distorted(s05,{Object})",
+          "facets": [
+            "Object",
+            "RoleReversal",
+            "Polarity",
+            "Location",
+            "Context"
+          ]
+        },
+        "r03": {
+          "alignState": "Source(s02)",
+          "recallText": "his uncle told him the other side was empty",
+          "compatibility": "Faithful to the reporting frame: the unit retains “told him” rather than asserting the shore state as narrated-world fact. The supplied uncle-as-teller identity is represented separately as External(SourceConsistentInference), not as a Distorted(Context) state."
+        },
+        "matrixGeometry": {
+          "labels": [
+            "Association",
+            "Commentary",
+            "Intrusion",
+            "Inference*",
+            "Uninterpretable",
+            "Unranked"
+          ],
+          "rules": [
+            "Association",
+            "Commentary",
+            "Intrusion",
+            "Inference",
+            "Uninterpretable"
+          ]
+        },
+        "mutation": {
+          "name": "noncanonical-facet-attribute",
+          "killed": true
+        },
+        "columnRuleMutation": {
+          "name": "missing-named-off-source-rule",
+          "killed": true
+        }
+      },
+      "chronologyChecks": {
+        "clocks": [
+          "discourse",
+          "story-world",
+          "recall"
+        ],
+        "receipts": [
+          "synthetic/two-boats-source@v1",
+          "synthetic/two-boats-recall-p01@v1"
+        ],
+        "flashbackCrossing": "s01 x s02",
+        "mutation": {
+          "name": "remove-flashback-crossing",
+          "killed": true
+        }
+      },
+      "featureScaleChecks": {
+        "view": 1,
+        "rawMarks": 25,
+        "missingRegions": 1,
+        "windowStyles": [
+          "9",
+          "25",
+          "61"
+        ],
+        "receipts": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "visibleReceipt": "receipt syn-feature/imageability@v1 · source 40c…a43cc · display-only · uncalibrated"
+      },
+      "motionGeometryChecks": {
+        "fadeLandmarks": {
+          "x": 40.5,
+          "y": 66,
+          "width": 183,
+          "height": 9
+        },
+        "restLandmarks": {
+          "x": 40.5,
+          "y": 66,
+          "width": 183,
+          "height": 9
+        },
+        "fadeSelection": {
+          "x": 94.5,
+          "y": 62,
+          "width": 17,
+          "height": 17
+        },
+        "restSelection": {
+          "x": 94.5,
+          "y": 62,
+          "width": 17,
+          "height": 17
+        },
+        "mutation": {
+          "name": "three-pixel-rest-translation",
+          "killed": true
+        }
+      },
+      "stateBoardChecks": {
+        "cards": 31,
+        "labelled": 31,
+        "ruled": 31,
+        "mutation": {
+          "name": "remove-never-confuse-structure",
+          "killed": true
+        }
+      },
+      "visibleSiblingMutation": "killed independently on every plate",
+      "clipAncestorMutation": {
+        "name": "one-pixel-outer-clipping-ancestor",
+        "killed": true,
+        "diagnostic": "observation-clipped-by-ancestor"
+      },
+      "clipSelfMutation": {
+        "name": "one-pixel-self-clipping-evidence",
+        "killed": true,
+        "diagnostic": "observation-clipped-by-ancestor"
+      },
+      "svgClipMutation": {
+        "name": "terminal-axis-label-outside-svg",
+        "killed": true,
+        "diagnostic": "svgTextClipping"
+      },
+      "rendererStructuralDigest": "75719b4118ca3d558704c2645c9eaa2a32d025fa7983eae8f5bc07058b3a068e"
+    },
+    "views": [
+      {
+        "name": "Main",
+        "sourceName": "Main.dc.html",
+        "html": "main.html",
+        "png": "main.png",
         "viewport": {
           "width": 1536,
           "height": 1024
         },
-        "artboard": {
-          "width": 1536,
-          "height": 1024
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 8128,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1536,
-          "height": 1024
+        "court": {
+          "plate": "Main",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Main — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [
+            {
+              "id": "sensory.imageability.synthetic@v1",
+              "units": 10,
+              "trackCoverage": {
+                "eligible": 117,
+                "observed": 92,
+                "missing": 25
+              },
+              "selectedWindow": {
+                "id": "s05-centered-25",
+                "lexicalRange": [
+                  41,
+                  66
+                ],
+                "eligible": 25,
+                "observed": 21,
+                "missing": 4
+              }
+            }
+          ],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "main-claim-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "RecallMatrix",
-      "sourceName": "RecallMatrix.dc.html",
-      "html": "recall-matrix.html",
-      "png": "recall-matrix.png",
-      "viewport": {
-        "width": 1536,
-        "height": 1024
+        "screenshot": {
+          "width": 3072,
+          "height": 2048
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 9685
-      },
-      "overflow": {
+      {
+        "name": "ChronologyLoom",
+        "sourceName": "Main.dc.html",
+        "html": "chronology-loom.html",
+        "png": "chronology-loom.png",
         "viewport": {
           "width": 1536,
           "height": 1024
         },
-        "artboard": {
-          "width": 1536,
-          "height": 1024
+        "observations": [
+          "synthetic/two-boats-source@v1",
+          "synthetic/two-boats-recall-p01@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 7949,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1536,
-          "height": 1024
+        "court": {
+          "plate": "ChronologyLoom",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — ChronologyLoom — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10"
+          ],
+          "fixtureReceiptChecks": [
+            "synthetic/two-boats-source@v1",
+            "synthetic/two-boats-recall-p01@v1"
+          ],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "main-claim-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "InterviewMode",
-      "sourceName": "InterviewMode.dc.html",
-      "html": "interview-mode.html",
-      "png": "interview-mode.png",
-      "viewport": {
-        "width": 1536,
-        "height": 1024
+        "screenshot": {
+          "width": 3072,
+          "height": 2048
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 8920
-      },
-      "overflow": {
+      {
+        "name": "FeatureScaleSpace",
+        "sourceName": "Main.dc.html",
+        "html": "feature-scale-space.html",
+        "png": "feature-scale-space.png",
         "viewport": {
           "width": 1536,
           "height": 1024
         },
-        "artboard": {
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 7613,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "FeatureScaleSpace",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — FeatureScaleSpace — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10"
+          ],
+          "fixtureReceiptChecks": [
+            "synthetic/two-boats-source@v1"
+          ],
+          "featureLedgerChecks": [
+            {
+              "id": "sensory.imageability.synthetic@v1",
+              "units": 10,
+              "trackCoverage": {
+                "eligible": 117,
+                "observed": 92,
+                "missing": 25
+              },
+              "selectedWindow": {
+                "id": "s05-centered-25",
+                "lexicalRange": [
+                  41,
+                  66
+                ],
+                "eligible": 25,
+                "observed": 21,
+                "missing": 4
+              }
+            }
+          ],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "main-claim-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        },
+        "screenshot": {
+          "width": 3072,
+          "height": 2048
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
+      },
+      {
+        "name": "RecallMatrix",
+        "sourceName": "RecallMatrix.dc.html",
+        "html": "recall-matrix.html",
+        "png": "recall-matrix.png",
+        "viewport": {
           "width": 1536,
           "height": 1024
         },
-        "scroll": {
+        "observations": [
+          "synthetic/two-boats-source@v1",
+          "synthetic/two-boats-recall-p01@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 11502,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "RecallMatrix",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — RecallMatrix — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10",
+            "synthetic/two-boats-recall-p01@v1/r01",
+            "synthetic/two-boats-recall-p01@v1/r02",
+            "synthetic/two-boats-recall-p01@v1/r03",
+            "synthetic/two-boats-recall-p01@v1/r04",
+            "synthetic/two-boats-recall-p01@v1/r05",
+            "synthetic/two-boats-recall-p01@v1/r06",
+            "synthetic/two-boats-recall-p01@v1/r07",
+            "synthetic/two-boats-recall-p01@v1/r08",
+            "synthetic/two-boats-recall-p01@v1/r09",
+            "synthetic/two-boats-recall-p01@v1/r10",
+            "synthetic/two-boats-recall-p01@v1/r11"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r10",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r11",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": null,
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": null,
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "recall-source-codex",
+            "recall-transcript-codex",
+            "recall-selection-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        },
+        "screenshot": {
+          "width": 3072,
+          "height": 2048
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
+      },
+      {
+        "name": "InterviewMode",
+        "sourceName": "InterviewMode.dc.html",
+        "html": "interview-mode.html",
+        "png": "interview-mode.png",
+        "viewport": {
           "width": 1536,
           "height": 1024
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "Compact",
-      "sourceName": "Compact.dc.html",
-      "html": "compact.html",
-      "png": "compact.png",
-      "viewport": {
-        "width": 1280,
-        "height": 800
+        "observations": [
+          "synthetic/two-boats-interview-p07@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 9310,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "InterviewMode",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — InterviewMode — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-interview-p07@v1/t01",
+            "synthetic/two-boats-interview-p07@v1/t02",
+            "synthetic/two-boats-interview-p07@v1/t03",
+            "synthetic/two-boats-interview-p07@v1/t04",
+            "synthetic/two-boats-interview-p07@v1/t05",
+            "synthetic/two-boats-interview-p07@v1/t06",
+            "synthetic/two-boats-interview-p07@v1/t07",
+            "synthetic/two-boats-interview-p07@v1/t08",
+            "synthetic/two-boats-interview-p07@v1/t09",
+            "synthetic/two-boats-interview-p07@v1/t10"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "t01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t10",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": null,
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "interview-transcript",
+            "interview-selection-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        },
+        "screenshot": {
+          "width": 3072,
+          "height": 2048
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 3513
-      },
-      "overflow": {
+      {
+        "name": "Compact",
+        "sourceName": "Compact.dc.html",
+        "html": "compact.html",
+        "png": "compact.png",
         "viewport": {
           "width": 1280,
           "height": 800
         },
-        "artboard": {
-          "width": 1280,
-          "height": 800
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 4109,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1280,
-          "height": 800
+        "court": {
+          "plate": "Compact",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1280,
+            "height": 800
+          },
+          "scroll": {
+            "width": 1280,
+            "height": 800
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Compact — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "compact-codex"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "Reflow",
-      "sourceName": "Reflow.dc.html",
-      "html": "reflow.html",
-      "png": "reflow.png",
-      "viewport": {
-        "width": 520,
-        "height": 1760
+        "screenshot": {
+          "width": 2560,
+          "height": 1600
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          },
+          {
+            "name": "one-pixel-outer-clipping-ancestor",
+            "killed": true,
+            "diagnostic": "observation-clipped-by-ancestor"
+          },
+          {
+            "name": "one-pixel-self-clipping-evidence",
+            "killed": true,
+            "diagnostic": "observation-clipped-by-ancestor"
+          },
+          {
+            "name": "terminal-axis-label-outside-svg",
+            "killed": true,
+            "diagnostic": "svgTextClipping"
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 2566
-      },
-      "overflow": {
+      {
+        "name": "Reflow",
+        "sourceName": "Reflow.dc.html",
+        "html": "reflow.html",
+        "png": "reflow.png",
         "viewport": {
           "width": 520,
           "height": 1760
         },
-        "artboard": {
-          "width": 520,
-          "height": 2841.34375
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 2614,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 520,
-          "height": 2841
+        "court": {
+          "plate": "Reflow",
+          "viewport": {
+            "width": 520,
+            "height": 1760
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 520,
+            "height": 2859.21875
+          },
+          "scroll": {
+            "width": 520,
+            "height": 2859
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Reflow — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "s04",
+              "sizePx": 32,
+              "linePx": 48
+            },
+            {
+              "ref": "s05",
+              "sizePx": 32,
+              "linePx": 48
+            },
+            {
+              "ref": "s06",
+              "sizePx": 32,
+              "linePx": 48
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "FocusOrder",
-      "sourceName": "FocusOrder.dc.html",
-      "html": "focus-order.html",
-      "png": "focus-order.png",
-      "viewport": {
-        "width": 1440,
-        "height": 980
+        "screenshot": {
+          "width": 1040,
+          "height": 5718
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 4985
-      },
-      "overflow": {
+      {
+        "name": "FocusOrder",
+        "sourceName": "FocusOrder.dc.html",
+        "html": "focus-order.html",
+        "png": "focus-order.png",
         "viewport": {
           "width": 1440,
-          "height": 980
+          "height": 1050
         },
-        "artboard": {
-          "width": 1440,
-          "height": 980
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 5565,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1440,
-          "height": 980
+        "court": {
+          "plate": "FocusOrder",
+          "viewport": {
+            "width": 1440,
+            "height": 1050
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1440,
+            "height": 1050
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 1050
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — FocusOrder — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "Grayscale",
-      "sourceName": "Grayscale.dc.html",
-      "html": "grayscale.html",
-      "png": "grayscale.png",
-      "viewport": {
-        "width": 1440,
-        "height": 1000
+        "screenshot": {
+          "width": 2880,
+          "height": 2100
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 8142
-      },
-      "overflow": {
+      {
+        "name": "Grayscale",
+        "sourceName": "Grayscale.dc.html",
+        "html": "grayscale.html",
+        "png": "grayscale.png",
         "viewport": {
           "width": 1440,
           "height": 1000
         },
-        "artboard": {
-          "width": 1440,
-          "height": 1307.515625
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 8185,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1440,
-          "height": 1308
+        "court": {
+          "plate": "Grayscale",
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 1307.515625
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 1308
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Grayscale — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "Motion",
-      "sourceName": "Motion.dc.html",
-      "html": "motion.html",
-      "png": "motion.png",
-      "viewport": {
-        "width": 1440,
-        "height": 760
+        "screenshot": {
+          "width": 2880,
+          "height": 2616
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 4932
-      },
-      "overflow": {
+      {
+        "name": "Motion",
+        "sourceName": "Motion.dc.html",
+        "html": "motion.html",
+        "png": "motion.png",
         "viewport": {
           "width": 1440,
           "height": 760
         },
-        "artboard": {
-          "width": 1440,
-          "height": 834.390625
+        "observations": [],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 4980,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1440,
-          "height": 834
+        "court": {
+          "plate": "Motion",
+          "viewport": {
+            "width": 1440,
+            "height": 760
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 896.765625
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 897
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Motion — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "StateBoard",
-      "sourceName": "StateBoard.dc.html",
-      "html": "state-board.html",
-      "png": "state-board.png",
-      "viewport": {
-        "width": 1440,
-        "height": 1500
+        "screenshot": {
+          "width": 2880,
+          "height": 1794
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 11469
-      },
-      "overflow": {
+      {
+        "name": "StateBoard",
+        "sourceName": "StateBoard.dc.html",
+        "html": "state-board.html",
+        "png": "state-board.png",
         "viewport": {
           "width": 1440,
           "height": 1500
         },
-        "artboard": {
-          "width": 1440,
-          "height": 1820
+        "observations": [],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 12426,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1440,
-          "height": 1820
+        "court": {
+          "plate": "StateBoard",
+          "viewport": {
+            "width": 1440,
+            "height": 1500
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 2250.015625
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 2250
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — StateBoard — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "Tokens",
-      "sourceName": "Tokens.dc.html",
-      "html": "tokens.html",
-      "png": "tokens.png",
-      "viewport": {
-        "width": 1440,
-        "height": 2040
+        "screenshot": {
+          "width": 2880,
+          "height": 4500
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 11986
-      },
-      "overflow": {
+      {
+        "name": "Tokens",
+        "sourceName": "Tokens.dc.html",
+        "html": "tokens.html",
+        "png": "tokens.png",
         "viewport": {
           "width": 1440,
-          "height": 2040
+          "height": 1280
         },
-        "artboard": {
-          "width": 1440,
-          "height": 2040
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 12365,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1440,
-          "height": 3117
+        "court": {
+          "plate": "Tokens",
+          "viewport": {
+            "width": 1440,
+            "height": 1280
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 2572.390625
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 2572
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Tokens — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "Concept",
-      "sourceName": "Concept.dc.html",
-      "html": "concept.html",
-      "png": "concept.png",
-      "viewport": {
-        "width": 1180,
-        "height": 1780
+        "screenshot": {
+          "width": 2880,
+          "height": 5144
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 12539
-      },
-      "overflow": {
+      {
+        "name": "Concept",
+        "sourceName": "Concept.dc.html",
+        "html": "concept.html",
+        "png": "concept.png",
         "viewport": {
           "width": 1180,
           "height": 1780
         },
-        "artboard": {
-          "width": 1180,
-          "height": 2808.796875
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 12586,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1180,
-          "height": 2809
+        "court": {
+          "plate": "Concept",
+          "viewport": {
+            "width": 1180,
+            "height": 1780
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1180,
+            "height": 2808.796875
+          },
+          "scroll": {
+            "width": 1180,
+            "height": 2809
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Concept — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "Directions",
-      "sourceName": "Directions.dc.html",
-      "html": "directions.html",
-      "png": "directions.png",
-      "viewport": {
-        "width": 1920,
-        "height": 1500
+        "screenshot": {
+          "width": 2360,
+          "height": 5618
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 11675
-      },
-      "overflow": {
+      {
+        "name": "Directions",
+        "sourceName": "Directions.dc.html",
+        "html": "directions.html",
+        "png": "directions.png",
         "viewport": {
           "width": 1920,
-          "height": 1500
+          "height": 1540
         },
-        "artboard": {
-          "width": 1920,
-          "height": 1500
+        "observations": [],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 11883,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1920,
-          "height": 1500
+        "court": {
+          "plate": "Directions",
+          "viewport": {
+            "width": 1920,
+            "height": 1540
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1920,
+            "height": 1540
+          },
+          "scroll": {
+            "width": 1920,
+            "height": 1540
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Directions — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
-      }
-    },
-    {
-      "name": "RendererGap",
-      "sourceName": "RendererGap.dc.html",
-      "html": "renderer-gap.html",
-      "png": "renderer-gap.png",
-      "viewport": {
-        "width": 1440,
-        "height": 1560
+        "screenshot": {
+          "width": 3840,
+          "height": 3080
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       },
-      "portable": {
-        "scripts": 0,
-        "directives": 0,
-        "unresolved": false,
-        "textLength": 9835
-      },
-      "overflow": {
+      {
+        "name": "RendererGap",
+        "sourceName": "RendererGap.dc.html",
+        "html": "renderer-gap.html",
+        "png": "renderer-gap.png",
         "viewport": {
           "width": 1440,
           "height": 1560
         },
-        "artboard": {
-          "width": 1440,
-          "height": 1928.84375
+        "observations": [],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 9883,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
         },
-        "scroll": {
-          "width": 1440,
-          "height": 1929
+        "court": {
+          "plate": "RendererGap",
+          "viewport": {
+            "width": 1440,
+            "height": 1560
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 1947.4375
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 1947
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — RendererGap — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
         },
-        "offenders": []
+        "screenshot": {
+          "width": 2880,
+          "height": 3894
+        },
+        "deviceScaleFactor": 2,
+        "mutations": [
+          {
+            "name": "visible-artboard-sibling",
+            "killed": true
+          }
+        ]
       }
+    ],
+    "sources": [
+      {
+        "path": "Compact.dc.html",
+        "bytes": 26933,
+        "sha256": "0778ee35780d929e1a72e853bc4420b4d88923cdbd7b73511a3c82e88d5d20cc"
+      },
+      {
+        "path": "Concept.dc.html",
+        "bytes": 21598,
+        "sha256": "f0fa60c191e76d8869e3799e95fe5a1d0e10348ffdc9260a9151ab961023160d"
+      },
+      {
+        "path": "Directions.dc.html",
+        "bytes": 25480,
+        "sha256": "69df20613de6bb31e8c6760113c76bab84166375aed1403d8617d09c1f439ce8"
+      },
+      {
+        "path": "FIXTURE-NOTES.md",
+        "bytes": 5807,
+        "sha256": "58f8ea6976a56647b6e381f9194463bb68210ca92f8f8c00c49f35f63b501785"
+      },
+      {
+        "path": "FocusOrder.dc.html",
+        "bytes": 12508,
+        "sha256": "558f9575519affbf6b88bb27a698c309ad631a0bea22f8d69ed2432455910bac"
+      },
+      {
+        "path": "Grayscale.dc.html",
+        "bytes": 16982,
+        "sha256": "5fe2c2b71a6af6293edfcaf4035de7d3f16d82644177c932a48ef2370cdb9da1"
+      },
+      {
+        "path": "InterviewMode.dc.html",
+        "bytes": 30984,
+        "sha256": "2387605dd756dfc4d49e4bcf7f32b0c67c5db5dac240d9db6c361ca11ab2dde4"
+      },
+      {
+        "path": "Main.dc.html",
+        "bytes": 68595,
+        "sha256": "d6bcecf0f03fa77c6ab946e5e576d06971afdc13f05e472c3a791be0415753a6"
+      },
+      {
+        "path": "Motion.dc.html",
+        "bytes": 12355,
+        "sha256": "27727e664e68541cd537d76aa450169afdd367b98c77154ee6308586994daf2a"
+      },
+      {
+        "path": "PIXEL-REVIEW-BASELINE.md",
+        "bytes": 4666,
+        "sha256": "3f337681980d530a49c3824847ffa2fecc3de45848605a90be3316505fc2af87"
+      },
+      {
+        "path": "PROOF-BOUNDARY.md",
+        "bytes": 9671,
+        "sha256": "f61af129a27910e4a9b5aba65c26f7d2fd9b30a7cda9374f8fc4401000e54c72"
+      },
+      {
+        "path": "RecallMatrix.dc.html",
+        "bytes": 43553,
+        "sha256": "b43147f1d1cf091fc4978ee8966466dad5221c49609edebb61571d5e063423d7"
+      },
+      {
+        "path": "Reflow.dc.html",
+        "bytes": 12823,
+        "sha256": "ad767ee4d96049abd1fc57a34abbdc68bf300f69fb1dacd9bf9931a50b7314cb"
+      },
+      {
+        "path": "RendererGap.dc.html",
+        "bytes": 20736,
+        "sha256": "824f7ffb0e2ccf02ba402cfd8d16afeb1397a241a6fd928cd2f5a268e521c93d"
+      },
+      {
+        "path": "StateBoard.dc.html",
+        "bytes": 32229,
+        "sha256": "150e71fe1923546594ade626337a5735a69b648b535d4a01a81ed3de40d4f126"
+      },
+      {
+        "path": "Tokens.dc.html",
+        "bytes": 41514,
+        "sha256": "d6fec1935f34a6e8d6e544ef874e62749ed8fba22c51989bfbd33295638f9f9b"
+      },
+      {
+        "path": "canvas.json",
+        "bytes": 8070,
+        "sha256": "f64c6cd5930abfe28ddd183c2a908c8ecb16474666b3b94d6a4bff5f06a066f1"
+      },
+      {
+        "path": "export.cjs",
+        "bytes": 67941,
+        "sha256": "68eb9e85e005e3abb89473f55a3f5e39042d6553ad1000b63d183be00e0caeed"
+      },
+      {
+        "path": "fixture-court.cjs",
+        "bytes": 9022,
+        "sha256": "3bca8c7e98454d5e1fc6eab22b2f9badcd72977408352c147245ac9da9aef725"
+      },
+      {
+        "path": "fixtures.json",
+        "bytes": 10084,
+        "sha256": "9142955ac658caffe66b36cdb973fcf0101c53e6f5139a3e722920e89abdd32e"
+      },
+      {
+        "path": "manifest-digest.cjs",
+        "bytes": 5326,
+        "sha256": "10ba5aa5a2aab80537622b1176c81cab2bcfd2002c9061b6d170e1b40752a2bc"
+      },
+      {
+        "path": "renderer-gap-benchmark.cjs",
+        "bytes": 4525,
+        "sha256": "782d94e1292d90f452baa7c563f75a91faae028120852b7eb0df11f9f5d53c84"
+      },
+      {
+        "path": "renderer-gap-benchmark.html",
+        "bytes": 8347,
+        "sha256": "b569405e2e1d59705bc2e3ce8f10224fefee6de0c126f41c97506349d7b1d03d"
+      },
+      {
+        "path": "storyatlas-mockup-v2.html",
+        "bytes": 2894387,
+        "sha256": "94bf06a2be6a850b234f83ab6c6c1eb89880f4f8600a935be0b6b3dd3d74e1f9"
+      },
+      {
+        "path": "support.js",
+        "bytes": 9338,
+        "sha256": "3d7ea4ea08db311c41bd2cdf1768ac5eae1398207ffe84175a7ed5d23e1723b1"
+      },
+      {
+        "path": "verify-manifest.cjs",
+        "bytes": 519,
+        "sha256": "67cee852c6e75985f220da472332ff97183e35b82803fb4f499677138d79d61b"
+      }
+    ],
+    "outputs": [
+      {
+        "path": "chronology-loom.html",
+        "bytes": 40137,
+        "sha256": "b636b1848adf803a318cdeef7d26df32a2c2a7da39541f9232ccdb6b04a3bafe"
+      },
+      {
+        "path": "chronology-loom.png",
+        "bytes": 848522,
+        "sha256": "b80a6b9da604404623b61a924bb32e2d16e8fad60c7c69fd2e0db65a3523a0a1"
+      },
+      {
+        "path": "compact.html",
+        "bytes": 27466,
+        "sha256": "a686eb4b2e0fd0b82d620b626f7857070e3134db38a9137b4085fe8f2ec18ba4"
+      },
+      {
+        "path": "compact.png",
+        "bytes": 410615,
+        "sha256": "712b11a1b51b911c172d8b8382a78d313c77d527355d0e862d064c8ee76b89a4"
+      },
+      {
+        "path": "concept.html",
+        "bytes": 32987,
+        "sha256": "3d73542578247601484b93bb1dec1b146b149a44ba087ed810436c5339829e5a"
+      },
+      {
+        "path": "concept.png",
+        "bytes": 1521521,
+        "sha256": "fecbd8c7f20130c721efaaec1aa445cc852e5a8564ee249367fca6c9a456d86d"
+      },
+      {
+        "path": "directions.html",
+        "bytes": 49184,
+        "sha256": "4d93c7fe1958f5a03589f77c23a08e08186cdfa810f93ed0f651ee8493c3e6b9"
+      },
+      {
+        "path": "directions.png",
+        "bytes": 1271790,
+        "sha256": "f922de59c6ad00bdd976f4b5875395545dd7f2015267be4fa9c1ffc87de9d3e3"
+      },
+      {
+        "path": "feature-scale-space.html",
+        "bytes": 40786,
+        "sha256": "fd8fd1b1294ebaa5d74a3f252249c0eb99c5b5cc444288de53dbe5ca258ac316"
+      },
+      {
+        "path": "feature-scale-space.png",
+        "bytes": 812752,
+        "sha256": "6b7f39e56adfc60b58bec4f9adfcb07606dedb5ff0cdc39fb63a826e02e6e95b"
+      },
+      {
+        "path": "focus-order.html",
+        "bytes": 15954,
+        "sha256": "bfb834867dc509c8afe72d67ca89eca044924e3d2661358ee8bbc7718dff1d8e"
+      },
+      {
+        "path": "focus-order.png",
+        "bytes": 664697,
+        "sha256": "2dbae1e67ece7bbb46d79a381efa5b5158e1e9ecd88f43e6e6892b34cb03e2b0"
+      },
+      {
+        "path": "grayscale.html",
+        "bytes": 45700,
+        "sha256": "6ccaa96c6b29093366f45ee52737e078d3b04dafebe86c03ad1fcd3c7757864d"
+      },
+      {
+        "path": "grayscale.png",
+        "bytes": 671776,
+        "sha256": "ee445d0388b8b8ccde76b983e1499f60f20b829d20527737cacc36e61c3a7e9e"
+      },
+      {
+        "path": "index.html",
+        "bytes": 3206,
+        "sha256": "6531dd12ec72684260abfd90eedb45973dae41432498544829ce02d5283469bf"
+      },
+      {
+        "path": "interview-mode.html",
+        "bytes": 46905,
+        "sha256": "b40163a27d7064c71b2e78be88cbd44678bbc96aa56e9062339f0c7982760f48"
+      },
+      {
+        "path": "interview-mode.png",
+        "bytes": 839193,
+        "sha256": "6ec54077ec3d62b0710355109bf861635081252f87e9181652f2dbf321fe628d"
+      },
+      {
+        "path": "main.html",
+        "bytes": 41991,
+        "sha256": "b67c2cc76854e33827f39959d88faf67d5701a55691adb077145f340410d6e55"
+      },
+      {
+        "path": "main.png",
+        "bytes": 813764,
+        "sha256": "0c550b9bf3cde0aac49de2553ca06a47af574dd64e60d6196d13775a4fe8860c"
+      },
+      {
+        "path": "motion.html",
+        "bytes": 16303,
+        "sha256": "4c20b17344aff277ccde3d553ccde78713dfab39a146c89a1fb0466009645aa7"
+      },
+      {
+        "path": "motion.png",
+        "bytes": 442355,
+        "sha256": "727fa36c5c8fdcbe1f3edcc949521d8c128c2007ba5477996014c4d5c5118388"
+      },
+      {
+        "path": "recall-matrix.html",
+        "bytes": 61093,
+        "sha256": "78ff48217115c732d707a3f0ee24b1a47d856474623f01e48cdfc140e96b1b82"
+      },
+      {
+        "path": "recall-matrix.png",
+        "bytes": 829549,
+        "sha256": "f26642fb9339349acc58f94d81a6af9a775816fd9ed392af40593640570661a4"
+      },
+      {
+        "path": "reflow.html",
+        "bytes": 13354,
+        "sha256": "f4fc821cacf36905539ea4dbe720d38ab0498c99727985bffdc397bfe0e2c50e"
+      },
+      {
+        "path": "reflow.png",
+        "bytes": 655418,
+        "sha256": "249c97bef3a4cb1d94cad11bee4042c05b5bfedd0a567ccc21bb0f98e3679024"
+      },
+      {
+        "path": "renderer-gap-benchmark.json",
+        "bytes": 2165,
+        "sha256": "e6c9c70d3f2e19750d21cc6842254a68f7630a930d529586ca0c5a7718e22e9a"
+      },
+      {
+        "path": "renderer-gap-benchmark.png",
+        "bytes": 860124,
+        "sha256": "7d3a8fded5164feade71adbf914f83cfaa7f670a44d7b77b50d0dd173fe7f997"
+      },
+      {
+        "path": "renderer-gap.html",
+        "bytes": 26140,
+        "sha256": "0829fcafd6f3aec676cd48aa90856e78d6ade552503ba8bfec074dc75b33deaf"
+      },
+      {
+        "path": "renderer-gap.png",
+        "bytes": 1355175,
+        "sha256": "c919d8f6c77bd8ca14cf6877dabd6cac2651e00f5ef6f6ba4069b861a7bed876"
+      },
+      {
+        "path": "state-board.html",
+        "bytes": 37524,
+        "sha256": "c51f2ec4bbbb838aec1aeab04589952dd68a058234e04a2dbf8832ed8b18ec48"
+      },
+      {
+        "path": "state-board.png",
+        "bytes": 1346586,
+        "sha256": "7e2a48d4b777549b5dec4afc4e4707a3bbcff506caa5f89d33e37c7b2b97af53"
+      },
+      {
+        "path": "tokens.html",
+        "bytes": 42039,
+        "sha256": "675d8f9d6026092aabb87c64da3a2020d601f79050ed71b28b56f46b562a7792"
+      },
+      {
+        "path": "tokens.png",
+        "bytes": 1500966,
+        "sha256": "dd714c4ffdab3d033f09b826be2be4e7811ba47048a33e86a1eca3c729757989"
+      }
+    ]
+  },
+  "artifactDigest": "42f8d04aa75691fa718b969b3c2148df4cb1034cf598e832ff07924eedf97367",
+  "reproducibleRule": "storyatlas4s-canonical-json-sha256-v1:target=schema+reproducibleRule+reproducible",
+  "reproducible": {
+    "schema": "storyatlas4s.mockup-reproducible-build.v1",
+    "sourcePolicy": "SYNTHETIC DESIGN FIXTURES — NOT ADMITTED SOURCE, MODEL OUTPUT, OR HUMAN ADJUDICATION",
+    "observations": {
+      "schema": "storyatlas4s.mockup-fixtures.v1",
+      "fixtures": [
+        {
+          "id": "synthetic/two-boats-source@v1",
+          "kind": "canonical-source",
+          "storage": {
+            "path": "fixtures.json",
+            "pointer": "/fixtures/0/canonicalText"
+          },
+          "byteLength": 584,
+          "utf16CodeUnits": 584,
+          "coordinateBasis": "half-open UTF-16 code-unit offsets into canonicalText",
+          "textSha256": "40c889d9eab7b6b42189602730ef7bc402afac1007709230dcfff8924c2a43cc",
+          "packetSha256": "86034684a281fb907956c8590464e413a9f8a9b38b559695e64edf85c4239fee",
+          "sourceRef": null,
+          "sourceState": null,
+          "sourceStateContract": null
+        },
+        {
+          "id": "synthetic/two-boats-recall-p01@v1",
+          "kind": "recall-transcript",
+          "storage": {
+            "path": "fixtures.json",
+            "pointer": "/fixtures/1/canonicalText"
+          },
+          "byteLength": 455,
+          "utf16CodeUnits": 451,
+          "coordinateBasis": "half-open UTF-16 code-unit offsets into canonicalText",
+          "textSha256": "9612ddc1d09738008851ef6dfde8691f49c68878e4960cd4417c6a01e352052b",
+          "packetSha256": "e99de31c95dfdbdf1479ea9f21a1c2b218725f39091fcdb2b07717ec19ae4f85",
+          "sourceRef": {
+            "id": "synthetic/two-boats-source@v1",
+            "textSha256": "40c889d9eab7b6b42189602730ef7bc402afac1007709230dcfff8924c2a43cc"
+          },
+          "sourceState": null,
+          "sourceStateContract": null
+        },
+        {
+          "id": "synthetic/two-boats-interview-p07@v1",
+          "kind": "interview-transcript",
+          "storage": {
+            "path": "fixtures.json",
+            "pointer": "/fixtures/2/canonicalText"
+          },
+          "byteLength": 702,
+          "utf16CodeUnits": 696,
+          "coordinateBasis": "half-open UTF-16 code-unit offsets into canonicalText",
+          "textSha256": "c04885273ab43eb5978ba5b14d468319186576d4dc12f17ca208b9eeb79b3c86",
+          "packetSha256": "72d5eb63fdf5f0bf97b9beb057de512666bd96908584d7d14d5718c2af44685c",
+          "sourceRef": null,
+          "sourceState": "Unestablished",
+          "sourceStateContract": "proposed-storyatlas-view-state@v1"
+        }
+      ],
+      "lexicalTokenCourt": {
+        "basis": "Unicode letter runs with optional internal apostrophe",
+        "eligible": 117
+      },
+      "featureLedgerCourt": {
+        "id": "sensory.imageability.synthetic@v1",
+        "lexicalLedgerEntries": 117,
+        "missingOrdinals": 25,
+        "trackCoverage": {
+          "eligible": 117,
+          "observed": 92,
+          "missing": 25
+        },
+        "selectedWindow": {
+          "id": "s05-centered-25",
+          "lexicalRange": [
+            41,
+            66
+          ],
+          "eligible": 25,
+          "observed": 21,
+          "missing": 4
+        },
+        "windowPlan": {
+          "width": 25,
+          "step": 1,
+          "basis": "LexicalTokens",
+          "edgePolicy": "KeepPartial"
+        },
+        "reducer": "ScalarReducer.Mean",
+        "missingValuePolicy": "IgnoreMissing",
+        "aggregateMissingReason": "MissingReason.AllMissing",
+        "providerOutcome": "MissingReason.ProviderAbstained"
+      }
+    },
+    "sourceSetDigest": "420a523f83a9c271d60dbc0cd98990f7a9fcb54bbb3ae3c99544d24a1041bcae",
+    "rendererStructuralDigest": "75719b4118ca3d558704c2645c9eaa2a32d025fa7983eae8f5bc07058b3a068e",
+    "views": [
+      {
+        "name": "Main",
+        "sourceName": "Main.dc.html",
+        "html": "main.html",
+        "viewport": {
+          "width": 1536,
+          "height": 1024
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 8128,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "Main",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Main — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [
+            {
+              "id": "sensory.imageability.synthetic@v1",
+              "units": 10,
+              "trackCoverage": {
+                "eligible": 117,
+                "observed": 92,
+                "missing": 25
+              },
+              "selectedWindow": {
+                "id": "s05-centered-25",
+                "lexicalRange": [
+                  41,
+                  66
+                ],
+                "eligible": 25,
+                "observed": 21,
+                "missing": 4
+              }
+            }
+          ],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "main-claim-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "ChronologyLoom",
+        "sourceName": "Main.dc.html",
+        "html": "chronology-loom.html",
+        "viewport": {
+          "width": 1536,
+          "height": 1024
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1",
+          "synthetic/two-boats-recall-p01@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 7949,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "ChronologyLoom",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — ChronologyLoom — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10"
+          ],
+          "fixtureReceiptChecks": [
+            "synthetic/two-boats-source@v1",
+            "synthetic/two-boats-recall-p01@v1"
+          ],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "main-claim-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "FeatureScaleSpace",
+        "sourceName": "Main.dc.html",
+        "html": "feature-scale-space.html",
+        "viewport": {
+          "width": 1536,
+          "height": 1024
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 7613,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "FeatureScaleSpace",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — FeatureScaleSpace — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10"
+          ],
+          "fixtureReceiptChecks": [
+            "synthetic/two-boats-source@v1"
+          ],
+          "featureLedgerChecks": [
+            {
+              "id": "sensory.imageability.synthetic@v1",
+              "units": 10,
+              "trackCoverage": {
+                "eligible": 117,
+                "observed": 92,
+                "missing": 25
+              },
+              "selectedWindow": {
+                "id": "s05-centered-25",
+                "lexicalRange": [
+                  41,
+                  66
+                ],
+                "eligible": 25,
+                "observed": 21,
+                "missing": 4
+              }
+            }
+          ],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "main-claim-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "RecallMatrix",
+        "sourceName": "RecallMatrix.dc.html",
+        "html": "recall-matrix.html",
+        "viewport": {
+          "width": 1536,
+          "height": 1024
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1",
+          "synthetic/two-boats-recall-p01@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 11502,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "RecallMatrix",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — RecallMatrix — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10",
+            "synthetic/two-boats-recall-p01@v1/r01",
+            "synthetic/two-boats-recall-p01@v1/r02",
+            "synthetic/two-boats-recall-p01@v1/r03",
+            "synthetic/two-boats-recall-p01@v1/r04",
+            "synthetic/two-boats-recall-p01@v1/r05",
+            "synthetic/two-boats-recall-p01@v1/r06",
+            "synthetic/two-boats-recall-p01@v1/r07",
+            "synthetic/two-boats-recall-p01@v1/r08",
+            "synthetic/two-boats-recall-p01@v1/r09",
+            "synthetic/two-boats-recall-p01@v1/r10",
+            "synthetic/two-boats-recall-p01@v1/r11"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r10",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "r11",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": null,
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": null,
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "recall-source-codex",
+            "recall-transcript-codex",
+            "recall-selection-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "InterviewMode",
+        "sourceName": "InterviewMode.dc.html",
+        "html": "interview-mode.html",
+        "viewport": {
+          "width": 1536,
+          "height": 1024
+        },
+        "observations": [
+          "synthetic/two-boats-interview-p07@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 9310,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "InterviewMode",
+          "viewport": {
+            "width": 1536,
+            "height": 1024
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1536,
+            "height": 1024
+          },
+          "scroll": {
+            "width": 1536,
+            "height": 1024
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — InterviewMode — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-interview-p07@v1/t01",
+            "synthetic/two-boats-interview-p07@v1/t02",
+            "synthetic/two-boats-interview-p07@v1/t03",
+            "synthetic/two-boats-interview-p07@v1/t04",
+            "synthetic/two-boats-interview-p07@v1/t05",
+            "synthetic/two-boats-interview-p07@v1/t06",
+            "synthetic/two-boats-interview-p07@v1/t07",
+            "synthetic/two-boats-interview-p07@v1/t08",
+            "synthetic/two-boats-interview-p07@v1/t09",
+            "synthetic/two-boats-interview-p07@v1/t10"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "t01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "t10",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": null,
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "interview-transcript",
+            "interview-selection-inspector"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "Compact",
+        "sourceName": "Compact.dc.html",
+        "html": "compact.html",
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 4109,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "Compact",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1280,
+            "height": 800
+          },
+          "scroll": {
+            "width": 1280,
+            "height": 800
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Compact — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s01",
+            "synthetic/two-boats-source@v1/s02",
+            "synthetic/two-boats-source@v1/s03",
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06",
+            "synthetic/two-boats-source@v1/s07",
+            "synthetic/two-boats-source@v1/s08",
+            "synthetic/two-boats-source@v1/s09",
+            "synthetic/two-boats-source@v1/s10"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s01",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s02",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s03",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s04",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s05",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s06",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s07",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s08",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s09",
+              "sizePx": 16,
+              "linePx": 24.8
+            },
+            {
+              "ref": "s10",
+              "sizePx": 16,
+              "linePx": 24.8
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [
+            "compact-codex"
+          ],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "Reflow",
+        "sourceName": "Reflow.dc.html",
+        "html": "reflow.html",
+        "viewport": {
+          "width": 520,
+          "height": 1760
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 2614,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "Reflow",
+          "viewport": {
+            "width": 520,
+            "height": 1760
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 520,
+            "height": 2859.21875
+          },
+          "scroll": {
+            "width": 520,
+            "height": 2859
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Reflow — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [
+            "synthetic/two-boats-source@v1/s04",
+            "synthetic/two-boats-source@v1/s05",
+            "synthetic/two-boats-source@v1/s06"
+          ],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [
+            {
+              "ref": "s04",
+              "sizePx": 32,
+              "linePx": 48
+            },
+            {
+              "ref": "s05",
+              "sizePx": 32,
+              "linePx": 48
+            },
+            {
+              "ref": "s06",
+              "sizePx": 32,
+              "linePx": 48
+            }
+          ],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "FocusOrder",
+        "sourceName": "FocusOrder.dc.html",
+        "html": "focus-order.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1050
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 5565,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "FocusOrder",
+          "viewport": {
+            "width": 1440,
+            "height": 1050
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1440,
+            "height": 1050
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 1050
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — FocusOrder — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "Grayscale",
+        "sourceName": "Grayscale.dc.html",
+        "html": "grayscale.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 8185,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "Grayscale",
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 1307.515625
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 1308
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Grayscale — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "Motion",
+        "sourceName": "Motion.dc.html",
+        "html": "motion.html",
+        "viewport": {
+          "width": 1440,
+          "height": 760
+        },
+        "observations": [],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 4980,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "Motion",
+          "viewport": {
+            "width": 1440,
+            "height": 760
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 896.765625
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 897
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Motion — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "StateBoard",
+        "sourceName": "StateBoard.dc.html",
+        "html": "state-board.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1500
+        },
+        "observations": [],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 12426,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "StateBoard",
+          "viewport": {
+            "width": 1440,
+            "height": 1500
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 2250.015625
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 2250
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — StateBoard — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "Tokens",
+        "sourceName": "Tokens.dc.html",
+        "html": "tokens.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1280
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 12365,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "Tokens",
+          "viewport": {
+            "width": 1440,
+            "height": 1280
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 2572.390625
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 2572
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Tokens — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "Concept",
+        "sourceName": "Concept.dc.html",
+        "html": "concept.html",
+        "viewport": {
+          "width": 1180,
+          "height": 1780
+        },
+        "observations": [
+          "synthetic/two-boats-source@v1"
+        ],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 12586,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "Concept",
+          "viewport": {
+            "width": 1180,
+            "height": 1780
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1180,
+            "height": 2808.796875
+          },
+          "scroll": {
+            "width": 1180,
+            "height": 2809
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Concept — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "Directions",
+        "sourceName": "Directions.dc.html",
+        "html": "directions.html",
+        "viewport": {
+          "width": 1920,
+          "height": 1540
+        },
+        "observations": [],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 11883,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "Directions",
+          "viewport": {
+            "width": 1920,
+            "height": 1540
+          },
+          "layout": "fixed",
+          "artboard": {
+            "width": 1920,
+            "height": 1540
+          },
+          "scroll": {
+            "width": 1920,
+            "height": 1540
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — Directions — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      },
+      {
+        "name": "RendererGap",
+        "sourceName": "RendererGap.dc.html",
+        "html": "renderer-gap.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1560
+        },
+        "observations": [],
+        "portable": {
+          "scripts": 0,
+          "directives": 0,
+          "unresolved": false,
+          "textLength": 9883,
+          "externalResourceAttributes": 0,
+          "cssImports": 0
+        },
+        "court": {
+          "plate": "RendererGap",
+          "viewport": {
+            "width": 1440,
+            "height": 1560
+          },
+          "layout": "flowing",
+          "artboard": {
+            "width": 1440,
+            "height": 1947.4375
+          },
+          "scroll": {
+            "width": 1440,
+            "height": 1947
+          },
+          "directVisualRoots": 1,
+          "metadata": {
+            "lang": "en",
+            "title": "StoryAtlas mockup v2 — RendererGap — frozen design specification",
+            "viewport": true,
+            "frozenNotice": true,
+            "syntheticBanner": true,
+            "devicePixelRatio": 2
+          },
+          "activeSemantics": 0,
+          "observationChecks": [],
+          "fixtureReceiptChecks": [],
+          "featureLedgerChecks": [],
+          "exactTypography": [],
+          "clippedEvidence": [],
+          "reachability": [],
+          "svgTextClipping": [],
+          "svgTextOverlaps": [],
+          "labelMarkOverlaps": [],
+          "blankBands": [],
+          "offenders": []
+        }
+      }
+    ],
+    "sources": [
+      {
+        "path": "Compact.dc.html",
+        "bytes": 26933,
+        "sha256": "0778ee35780d929e1a72e853bc4420b4d88923cdbd7b73511a3c82e88d5d20cc"
+      },
+      {
+        "path": "Concept.dc.html",
+        "bytes": 21598,
+        "sha256": "f0fa60c191e76d8869e3799e95fe5a1d0e10348ffdc9260a9151ab961023160d"
+      },
+      {
+        "path": "Directions.dc.html",
+        "bytes": 25480,
+        "sha256": "69df20613de6bb31e8c6760113c76bab84166375aed1403d8617d09c1f439ce8"
+      },
+      {
+        "path": "FIXTURE-NOTES.md",
+        "bytes": 5807,
+        "sha256": "58f8ea6976a56647b6e381f9194463bb68210ca92f8f8c00c49f35f63b501785"
+      },
+      {
+        "path": "FocusOrder.dc.html",
+        "bytes": 12508,
+        "sha256": "558f9575519affbf6b88bb27a698c309ad631a0bea22f8d69ed2432455910bac"
+      },
+      {
+        "path": "Grayscale.dc.html",
+        "bytes": 16982,
+        "sha256": "5fe2c2b71a6af6293edfcaf4035de7d3f16d82644177c932a48ef2370cdb9da1"
+      },
+      {
+        "path": "InterviewMode.dc.html",
+        "bytes": 30984,
+        "sha256": "2387605dd756dfc4d49e4bcf7f32b0c67c5db5dac240d9db6c361ca11ab2dde4"
+      },
+      {
+        "path": "Main.dc.html",
+        "bytes": 68595,
+        "sha256": "d6bcecf0f03fa77c6ab946e5e576d06971afdc13f05e472c3a791be0415753a6"
+      },
+      {
+        "path": "Motion.dc.html",
+        "bytes": 12355,
+        "sha256": "27727e664e68541cd537d76aa450169afdd367b98c77154ee6308586994daf2a"
+      },
+      {
+        "path": "PIXEL-REVIEW-BASELINE.md",
+        "bytes": 4666,
+        "sha256": "3f337681980d530a49c3824847ffa2fecc3de45848605a90be3316505fc2af87"
+      },
+      {
+        "path": "PROOF-BOUNDARY.md",
+        "bytes": 9671,
+        "sha256": "f61af129a27910e4a9b5aba65c26f7d2fd9b30a7cda9374f8fc4401000e54c72"
+      },
+      {
+        "path": "RecallMatrix.dc.html",
+        "bytes": 43553,
+        "sha256": "b43147f1d1cf091fc4978ee8966466dad5221c49609edebb61571d5e063423d7"
+      },
+      {
+        "path": "Reflow.dc.html",
+        "bytes": 12823,
+        "sha256": "ad767ee4d96049abd1fc57a34abbdc68bf300f69fb1dacd9bf9931a50b7314cb"
+      },
+      {
+        "path": "RendererGap.dc.html",
+        "bytes": 20736,
+        "sha256": "824f7ffb0e2ccf02ba402cfd8d16afeb1397a241a6fd928cd2f5a268e521c93d"
+      },
+      {
+        "path": "StateBoard.dc.html",
+        "bytes": 32229,
+        "sha256": "150e71fe1923546594ade626337a5735a69b648b535d4a01a81ed3de40d4f126"
+      },
+      {
+        "path": "Tokens.dc.html",
+        "bytes": 41514,
+        "sha256": "d6fec1935f34a6e8d6e544ef874e62749ed8fba22c51989bfbd33295638f9f9b"
+      },
+      {
+        "path": "canvas.json",
+        "bytes": 8070,
+        "sha256": "f64c6cd5930abfe28ddd183c2a908c8ecb16474666b3b94d6a4bff5f06a066f1"
+      },
+      {
+        "path": "export.cjs",
+        "bytes": 67941,
+        "sha256": "68eb9e85e005e3abb89473f55a3f5e39042d6553ad1000b63d183be00e0caeed"
+      },
+      {
+        "path": "fixture-court.cjs",
+        "bytes": 9022,
+        "sha256": "3bca8c7e98454d5e1fc6eab22b2f9badcd72977408352c147245ac9da9aef725"
+      },
+      {
+        "path": "fixtures.json",
+        "bytes": 10084,
+        "sha256": "9142955ac658caffe66b36cdb973fcf0101c53e6f5139a3e722920e89abdd32e"
+      },
+      {
+        "path": "manifest-digest.cjs",
+        "bytes": 5326,
+        "sha256": "10ba5aa5a2aab80537622b1176c81cab2bcfd2002c9061b6d170e1b40752a2bc"
+      },
+      {
+        "path": "renderer-gap-benchmark.cjs",
+        "bytes": 4525,
+        "sha256": "782d94e1292d90f452baa7c563f75a91faae028120852b7eb0df11f9f5d53c84"
+      },
+      {
+        "path": "renderer-gap-benchmark.html",
+        "bytes": 8347,
+        "sha256": "b569405e2e1d59705bc2e3ce8f10224fefee6de0c126f41c97506349d7b1d03d"
+      },
+      {
+        "path": "storyatlas-mockup-v2.html",
+        "bytes": 2894387,
+        "sha256": "94bf06a2be6a850b234f83ab6c6c1eb89880f4f8600a935be0b6b3dd3d74e1f9"
+      },
+      {
+        "path": "support.js",
+        "bytes": 9338,
+        "sha256": "3d7ea4ea08db311c41bd2cdf1768ac5eae1398207ffe84175a7ed5d23e1723b1"
+      },
+      {
+        "path": "verify-manifest.cjs",
+        "bytes": 519,
+        "sha256": "67cee852c6e75985f220da472332ff97183e35b82803fb4f499677138d79d61b"
+      }
+    ],
+    "outputs": [
+      {
+        "path": "chronology-loom.html",
+        "bytes": 40137,
+        "sha256": "b636b1848adf803a318cdeef7d26df32a2c2a7da39541f9232ccdb6b04a3bafe"
+      },
+      {
+        "path": "compact.html",
+        "bytes": 27466,
+        "sha256": "a686eb4b2e0fd0b82d620b626f7857070e3134db38a9137b4085fe8f2ec18ba4"
+      },
+      {
+        "path": "concept.html",
+        "bytes": 32987,
+        "sha256": "3d73542578247601484b93bb1dec1b146b149a44ba087ed810436c5339829e5a"
+      },
+      {
+        "path": "directions.html",
+        "bytes": 49184,
+        "sha256": "4d93c7fe1958f5a03589f77c23a08e08186cdfa810f93ed0f651ee8493c3e6b9"
+      },
+      {
+        "path": "feature-scale-space.html",
+        "bytes": 40786,
+        "sha256": "fd8fd1b1294ebaa5d74a3f252249c0eb99c5b5cc444288de53dbe5ca258ac316"
+      },
+      {
+        "path": "focus-order.html",
+        "bytes": 15954,
+        "sha256": "bfb834867dc509c8afe72d67ca89eca044924e3d2661358ee8bbc7718dff1d8e"
+      },
+      {
+        "path": "grayscale.html",
+        "bytes": 45700,
+        "sha256": "6ccaa96c6b29093366f45ee52737e078d3b04dafebe86c03ad1fcd3c7757864d"
+      },
+      {
+        "path": "index.html",
+        "bytes": 3206,
+        "sha256": "6531dd12ec72684260abfd90eedb45973dae41432498544829ce02d5283469bf"
+      },
+      {
+        "path": "interview-mode.html",
+        "bytes": 46905,
+        "sha256": "b40163a27d7064c71b2e78be88cbd44678bbc96aa56e9062339f0c7982760f48"
+      },
+      {
+        "path": "main.html",
+        "bytes": 41991,
+        "sha256": "b67c2cc76854e33827f39959d88faf67d5701a55691adb077145f340410d6e55"
+      },
+      {
+        "path": "motion.html",
+        "bytes": 16303,
+        "sha256": "4c20b17344aff277ccde3d553ccde78713dfab39a146c89a1fb0466009645aa7"
+      },
+      {
+        "path": "recall-matrix.html",
+        "bytes": 61093,
+        "sha256": "78ff48217115c732d707a3f0ee24b1a47d856474623f01e48cdfc140e96b1b82"
+      },
+      {
+        "path": "reflow.html",
+        "bytes": 13354,
+        "sha256": "f4fc821cacf36905539ea4dbe720d38ab0498c99727985bffdc397bfe0e2c50e"
+      },
+      {
+        "path": "renderer-gap.html",
+        "bytes": 26140,
+        "sha256": "0829fcafd6f3aec676cd48aa90856e78d6ade552503ba8bfec074dc75b33deaf"
+      },
+      {
+        "path": "state-board.html",
+        "bytes": 37524,
+        "sha256": "c51f2ec4bbbb838aec1aeab04589952dd68a058234e04a2dbf8832ed8b18ec48"
+      },
+      {
+        "path": "tokens.html",
+        "bytes": 42039,
+        "sha256": "675d8f9d6026092aabb87c64da3a2020d601f79050ed71b28b56f46b562a7792"
+      }
+    ]
+  },
+  "reproducibleDigest": "5914d1500cc3f2cf825bbd8e5f4072110fc961f291082e403a3318cd7b82cd3b",
+  "diagnostics": {
+    "meaning": "Unsigned generation context and machine-dependent timing. Exact output bytes remain bound by artifactDigest.",
+    "browser": {
+      "engine": "Chromium",
+      "version": "140.0.7339.186"
+    },
+    "platform": {
+      "os": "darwin",
+      "arch": "arm64"
+    },
+    "generatorContext": {
+      "preCommitSourceHead": "84554a52a839d485e8c010c33c39f0de9169d594",
+      "worktreeDirty": true,
+      "sourceSetDigest": "420a523f83a9c271d60dbc0cd98990f7a9fcb54bbb3ae3c99544d24a1041bcae"
+    },
+    "rendererGap": {
+      "interactionGateMs": 16.7,
+      "results": {
+        "geometric": {
+          "constructionMs": 143.89999997615814,
+          "selectionP95Ms": 0.10000002384185791,
+          "transformP95Ms": 0.10000002384185791,
+          "selectionGate": true,
+          "transformGate": true
+        },
+        "sharedPattern": {
+          "constructionMs": 12.599999904632568,
+          "selectionP95Ms": 0.20000004768371582,
+          "transformP95Ms": 0.10000002384185791,
+          "selectionGate": true,
+          "transformGate": true
+        }
+      },
+      "environment": {
+        "browser": {
+          "engine": "Chromium",
+          "version": "140.0.7339.186"
+        },
+        "platform": {
+          "os": "darwin",
+          "arch": "arm64"
+        },
+        "devicePixelRatio": 2
+      }
+    },
+    "manifestVerifier": {
+      "verified": {
+        "artifactDigest": "42f8d04aa75691fa718b969b3c2148df4cb1034cf598e832ff07924eedf97367",
+        "reproducibleDigest": "5914d1500cc3f2cf825bbd8e5f4072110fc961f291082e403a3318cd7b82cd3b",
+        "sources": 26,
+        "outputs": 33,
+        "reproducibleSources": 26,
+        "reproducibleOutputs": 16
+      },
+      "mutations": [
+        {
+          "name": "digest-rule",
+          "killed": true
+        },
+        {
+          "name": "duplicate-output-path",
+          "killed": true
+        },
+        {
+          "name": "reproducible-source-set",
+          "killed": true
+        },
+        {
+          "name": "reproducible-only-source-hash",
+          "killed": true
+        },
+        {
+          "name": "reproducible-only-output-hash",
+          "killed": true
+        }
+      ]
     }
-  ],
-  "sources": [
-    {
-      "path": "Compact.dc.html",
-      "bytes": 22706,
-      "sha256": "16fa52e5f8e68fe4f587fb75fa4ed1a7794b2368c6c27c18e2c435d8d16a19ce"
-    },
-    {
-      "path": "Concept.dc.html",
-      "bytes": 21557,
-      "sha256": "045a631b29dbb2ce059e7a9cba9439a0d5124143b38a2554c0710d2a21353ebd"
-    },
-    {
-      "path": "Directions.dc.html",
-      "bytes": 24953,
-      "sha256": "3eeea5647cc7dd32944b897a27b7186b4e3c5562586f89ba9d9c21079ab5c6cc"
-    },
-    {
-      "path": "FIXTURE-NOTES.md",
-      "bytes": 4569,
-      "sha256": "5b52eb0d4ed9e1f258958bfa0c5d2b19e0a2b260648e1452861b183212090681"
-    },
-    {
-      "path": "FocusOrder.dc.html",
-      "bytes": 11994,
-      "sha256": "e33bc9852ae5033e6a125c1e5526460d75b8128f5bf7c6c8bbbb69e15d657711"
-    },
-    {
-      "path": "Grayscale.dc.html",
-      "bytes": 16941,
-      "sha256": "c4580f46fc956a15228ed3c851a92e94dd97e324ed8df77cd7e2180f32308542"
-    },
-    {
-      "path": "InterviewMode.dc.html",
-      "bytes": 29014,
-      "sha256": "f65e9b077587c1de5d1ea6bea5bb3f45a6a9145c20fbc9193eece18d71c74b64"
-    },
-    {
-      "path": "Main.dc.html",
-      "bytes": 55916,
-      "sha256": "d1aff289296e9bb5a831b8e2a40870dbb7c0d9a0e7ca90bbef8a52c424182c2e"
-    },
-    {
-      "path": "Motion.dc.html",
-      "bytes": 12152,
-      "sha256": "cb17709e35e40783a55f428f258d73e474294933dfb13d10f7af4a7574a6cba1"
-    },
-    {
-      "path": "PROOF-BOUNDARY.md",
-      "bytes": 4735,
-      "sha256": "e8be4a7f639d27049b77411390dd890c565bc285a038314f2b3aab99012e2532"
-    },
-    {
-      "path": "RecallMatrix.dc.html",
-      "bytes": 35659,
-      "sha256": "568447272b7f8225e81f6b2f6774c6f90533d4f8c5523b84e1f412a1fb051a8d"
-    },
-    {
-      "path": "Reflow.dc.html",
-      "bytes": 12433,
-      "sha256": "ed8f36c542bfb16802d4e194037b6d8df06c478105fe05b5e025687c8a980a4d"
-    },
-    {
-      "path": "RendererGap.dc.html",
-      "bytes": 20694,
-      "sha256": "0c8163657ec74665674bbf792380ffafbd0973f13ec31c363532c5d96d3a3309"
-    },
-    {
-      "path": "StateBoard.dc.html",
-      "bytes": 30003,
-      "sha256": "88ac733745cb3da7c3c0235f145797d2ffa00d3702ccddee42b947344d33fdb7"
-    },
-    {
-      "path": "Tokens.dc.html",
-      "bytes": 40968,
-      "sha256": "3b485d0314026e31887a0727a343f0d9888d0bb5b2ee27bc26b56aeb8f7726ed"
-    },
-    {
-      "path": "canvas.json",
-      "bytes": 8068,
-      "sha256": "1a5203eca78584a419933d2ae07e8293d70d4261d3136e3542bc0a94fa1e4815"
-    },
-    {
-      "path": "export.cjs",
-      "bytes": 11828,
-      "sha256": "ac93fa10ed35bd166c1f5140da9f6c782daaa877ca54ef0af2bfe5187f1a90ff"
-    },
-    {
-      "path": "renderer-gap-benchmark.cjs",
-      "bytes": 2757,
-      "sha256": "630b9bf68f7b1e31d7023c43314945d036826c6c332d4ff0572b53501835ee47"
-    },
-    {
-      "path": "renderer-gap-benchmark.html",
-      "bytes": 8347,
-      "sha256": "b569405e2e1d59705bc2e3ce8f10224fefee6de0c126f41c97506349d7b1d03d"
-    },
-    {
-      "path": "storyatlas-mockup-v2.html",
-      "bytes": 2860578,
-      "sha256": "683e1f6d5efaf7121b778c7e26bb6d3b94bdc9fedc39fa9af1c73eeb7a0656c7"
-    },
-    {
-      "path": "support.js",
-      "bytes": 7720,
-      "sha256": "d733eba1dfa103475261563b474722bf284b3adfa497acce5e7cf7a3b452f5e8"
-    }
-  ],
-  "outputs": [
-    {
-      "path": "compact.html",
-      "bytes": 22612,
-      "sha256": "a6194b94eb4610fb1685fae570383dd8609ba86a9ffc1f349780fd286df7542b"
-    },
-    {
-      "path": "compact.png",
-      "bytes": 156484,
-      "sha256": "0f485b9d5f91ec3246362c103d150e296727201942d02c51abb413b6414ba190"
-    },
-    {
-      "path": "concept.html",
-      "bytes": 32319,
-      "sha256": "5a814ba348b9231c5c621b9643e84503cd52e9ea464e897cb47d05ce9940e8f1"
-    },
-    {
-      "path": "concept.png",
-      "bytes": 662656,
-      "sha256": "aa4c2ba680069d0717d4c2bab6f46f3bf27411f8280e87031abafea5fd9862d6"
-    },
-    {
-      "path": "directions.html",
-      "bytes": 48030,
-      "sha256": "4486b60b11c969f5ca60827849d20b2cac8ccaeb56ea6f88e3da8bda514d4abc"
-    },
-    {
-      "path": "directions.png",
-      "bytes": 524983,
-      "sha256": "d6fd6088ec4a8718d9fe82437e0a742549d29998f54eab7048bee06cf61f57a6"
-    },
-    {
-      "path": "focus-order.html",
-      "bytes": 14555,
-      "sha256": "1b163332042f06cfd31c310de1e8efe9945be41e594d945f192bcef4291903ae"
-    },
-    {
-      "path": "focus-order.png",
-      "bytes": 245832,
-      "sha256": "d9c2250b446f0449323f9a99b3efb05dd578074eebd8c0d181a0fa43a069ec95"
-    },
-    {
-      "path": "grayscale.html",
-      "bytes": 45034,
-      "sha256": "cd4b0ca2e6e2ffaad1ca57c650f234dc4da4b4bbe356a844a46ad7ad656af42a"
-    },
-    {
-      "path": "grayscale.png",
-      "bytes": 289013,
-      "sha256": "ec47e3e4f48713c173865a0582fe6869734d6a7bdf9b89e1c02ace827da4d62e"
-    },
-    {
-      "path": "index.html",
-      "bytes": 2444,
-      "sha256": "644a42499ab493b7b755fbabc32964a7938843227d7749a76e26936d3b9caee8"
-    },
-    {
-      "path": "interview-mode.html",
-      "bytes": 44899,
-      "sha256": "aadb5e6d1cd29fdf07d932207b4b6068ee7353ecfd0b71a15ae8c96bc65ba44e"
-    },
-    {
-      "path": "interview-mode.png",
-      "bytes": 330429,
-      "sha256": "bb0906908e66c603ab3e71a6b9c825c61c6472eb7d0cbc6c0140652daf59a74a"
-    },
-    {
-      "path": "main.html",
-      "bytes": 36282,
-      "sha256": "ef3ea73581abaf5c33337ee7a6b58fea2f17b961f801b0366950e6b2d3bc206b"
-    },
-    {
-      "path": "main.png",
-      "bytes": 333658,
-      "sha256": "819b1841fd525d27531d21bbb0c974a3cbf7f2dbddae7ea92dcf890f895e3b3e"
-    },
-    {
-      "path": "motion.html",
-      "bytes": 15299,
-      "sha256": "d4b1ed6cd6083e08a8efc09b2ffe5a24da060b9e4cd36f81b23627dee9ba3a5c"
-    },
-    {
-      "path": "motion.png",
-      "bytes": 186785,
-      "sha256": "43739329f6d4beb0b78490e50f8d80bd46b2891075cf791402627a16f1884d27"
-    },
-    {
-      "path": "recall-matrix.html",
-      "bytes": 50147,
-      "sha256": "b14c8173092e2ce3a46feaa99865192a3704cf79d0fd73f9a204ec72c1ae9094"
-    },
-    {
-      "path": "recall-matrix.png",
-      "bytes": 325778,
-      "sha256": "d409da63eb3076b8edf74f4de9997640a3e0a7c7062254cb3e82156533d8179c"
-    },
-    {
-      "path": "reflow.html",
-      "bytes": 12338,
-      "sha256": "c047cef454e332a7b02d9a4a689f82235895d1ea37efe2dd0074edd8a80a6810"
-    },
-    {
-      "path": "reflow.png",
-      "bytes": 318242,
-      "sha256": "2de2a05f96a0ae90087e31c6e569c1a173ff1e60dc6603fc5bab268303309a46"
-    },
-    {
-      "path": "renderer-gap-benchmark.json",
-      "bytes": 1635,
-      "sha256": "d7d6b91cda407ae9935a4e899188a329293bd062cf26bd93ce554705391a71ce"
-    },
-    {
-      "path": "renderer-gap-benchmark.png",
-      "bytes": 329522,
-      "sha256": "f38e6ca8c085d5c8ab489343e09b2b7dfdc9eb125fc11af5c9208ab34091b674"
-    },
-    {
-      "path": "renderer-gap.html",
-      "bytes": 25467,
-      "sha256": "86d251d83e943417fc60e87f0b42b0ed9bf72cf36f0b37f28155a5ce8c5621f2"
-    },
-    {
-      "path": "renderer-gap.png",
-      "bytes": 582459,
-      "sha256": "36c14a0fcad92f463906a729550cf3c01a8fdc8c7f7514806840c25b05db241b"
-    },
-    {
-      "path": "state-board.html",
-      "bytes": 34668,
-      "sha256": "9265d0c271eaf751da6d2a7259c8bbb2f0aea40a9bd7e07c5b45b065d85295f6"
-    },
-    {
-      "path": "state-board.png",
-      "bytes": 441256,
-      "sha256": "3ed452c826c13ad9971a5e807727e6db33bc48592378ff45678a46513bd1c927"
-    },
-    {
-      "path": "tokens.html",
-      "bytes": 40858,
-      "sha256": "8c8ae66645735d5796dc4136bdce16dd572e3e49d7d973083bf5600e0ad84970"
-    },
-    {
-      "path": "tokens.png",
-      "bytes": 603653,
-      "sha256": "3ef35cc35d50831d706e5b9e30c519016c7f6a3d9a1d3da63cfbd060fbaeda97"
-    }
-  ]
+  }
 }

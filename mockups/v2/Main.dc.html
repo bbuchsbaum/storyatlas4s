@@ -25,7 +25,7 @@
   </style>
 </helmet>
 
-<div style="width: 1536px; height: 1024px; background: #F9F5EF; display: flex; flex-direction: column; overflow: hidden;">
+<div data-dc-artboard data-dc-layout="fixed" style="width: 1536px; height: 1024px; background: #F9F5EF; display: flex; flex-direction: column; overflow: hidden;">
 
   <!-- synthetic banner -->
   <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 6px 24px; flex: none;">
@@ -38,10 +38,10 @@
     <span style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em;">storyatlas4s</span>
     <span style="width: 1px; height: 18px; background: #D7D2CB;"></span>
     <span style="font-size: 12.5px;">Source exploration</span>
-    <span class="m" style="font-size: 11px; color: #544D47;">synthetic/two-boats@v0</span>
+    <span class="m" style="font-size: 11px; color: #544D47;">synthetic/two-boats-source@v1 · sha256 40c889d9…a43cc</span>
     <span style="display: inline-flex; align-items: center; gap: 5px; border: 1px solid #817B74; background: #F9F5EF; padding: 2px 7px;">
       <svg width="9" height="9" aria-hidden="true"><rect x="0.5" y="0.5" width="8" height="8" fill="none" stroke="#221D19"></rect></svg>
-      <span class="lbl">basis <span class="m" style="font-size: 10.5px;">researcher-reviewed narrative acceptance fixture</span></span>
+      <span class="lbl">basis <span class="m" style="font-size: 10.5px;">synthetic design fixture — unadmitted, not human adjudicated</span></span>
     </span>
     <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
       <span class="lbl">Export</span>
@@ -126,16 +126,16 @@
 
       <div style="flex-grow: 1; overflow: hidden; padding: 12px 0 0;">
         <sc-for list="{{ sentences }}" as="s" hint-placeholder-count="10">
-          <div class="row" style="{{ s.rowStyle }}" onClick="{{ s.pick }}">
+          <div class="row" data-main-sentence="{{ s.num }}" data-feature-unit="{{ s.num }}" data-feature-eligible="{{ s.featureEligible }}" data-feature-observed="{{ s.featureObserved }}" style="{{ s.rowStyle }}" onClick="{{ s.pick }}">
             <span class="gut m" style="{{ s.numStyle }}" tabindex="0" role="button" aria-pressed="{{ s.pressed }}" aria-label="{{ s.aria }}">{{ s.num }}</span>
             <span style="{{ s.laneStyle }}"></span>
-            <span class="m" style="{{ s.textStyle }}">{{ s.text }}</span>
+            <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="{{ s.num }}" style="{{ s.textStyle }}">{{ s.text }}</span>
           </div>
         </sc-for>
       </div>
 
       <div style="display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-top: 1px solid #817B74; background: #F0EBE3; flex: none;">
-        <span class="lbl m" style="font-size: 10.5px;">Page 1 of 1 · researcher-reviewed narrative acceptance fixture</span>
+        <span class="lbl m" style="font-size: 10.5px;">10 of 10 units · synthetic design fixture · sha256 40c889d9…a43cc</span>
         <span class="lbl" style="margin-left: auto;">gutter: ▌scene edge · ▪ situation · ⌇ reported context · ▨ feature missing</span>
       </div>
     </div>
@@ -143,7 +143,7 @@
     <!-- ---------- primary projection ---------- -->
     <div style="{{ projPaneStyle }}">
       <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
-        <span class="h2">Narrative Atlas</span>
+        <span class="h2">{{ projTitle }}</span>
         <div style="margin-left: auto; display: flex; border: 1px solid #817B74;">
           <span class="{{ segAtlas }}" onClick="{{ pickAtlas }}" tabindex="0" role="button">Discourse Atlas</span>
           <span class="{{ segChron }}" onClick="{{ pickChron }}" tabindex="0" role="button">Chronology Loom</span>
@@ -164,7 +164,7 @@
           <svg viewBox="0 0 468 252" style="width: 100%; height: auto;" role="img" aria-label="Discourse Atlas. Horizontal position is exact discourse offset. Vertical position is context lane; lane distance has no metric. Two episode regions, four scene regions, nine situations in the narrated-world lane and one in the reported lane, one entity thread, one reference portal.">
             <g font-family="system-ui, -apple-system, sans-serif" font-size="9.5" fill="#544D47">
               <text x="0" y="24">Episode</text><text x="0" y="54">Scene</text>
-              <text x="0" y="106">lane 0</text><text x="0" y="118" font-size="8.5">narrated world</text>
+              <text x="0" y="92">lane 0</text><text data-clear-label="atlas-lane0" x="0" y="102" font-size="8.5">narrated world</text>
               <text x="0" y="176">lane 1</text><text x="0" y="188" font-size="8.5">reported</text>
             </g>
             <!-- episode regions -->
@@ -182,12 +182,12 @@
             <line x1="60" y1="180" x2="460" y2="180" stroke="#D7D2CB"></line>
             <!-- entity thread: Erran's participations, discourse order -->
             <polyline points="158,110 232,110 349,110 414,110" fill="none" stroke="#221D19" stroke-width="1.5"></polyline>
-            <!-- reference portal: s02's announced claim to its realisation at s09 -->
-            <path d="M110 180 C 110 145, 394 148, 394 110" fill="none" stroke="#221D19" stroke-width="1" stroke-dasharray="6 4"></path>
-            <text x="250" y="152" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">portal · reference</text>
+            <!-- opposite-polarity semantic recurrence across different contexts and times -->
+            <path data-clear-mark="atlas-portal" d="M110 180 C 110 145, 394 148, 394 110" fill="none" stroke="#221D19" stroke-width="1" stroke-dasharray="6 4"></path>
+            <text data-clear-label="atlas-portal" x="250" y="202" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">portal · recurrence; persistence unestablished</text>
             <!-- landmarks, lane 0 -->
             <sc-for list="{{ marks0 }}" as="k" hint-placeholder-count="9">
-              <rect x="{{ k.x }}" y="{{ k.y }}" width="{{ k.w }}" height="{{ k.w }}" fill="{{ k.fill }}" stroke="#221D19" stroke-width="{{ k.sw }}"></rect>
+              <rect data-clear-mark="atlas-lane0" x="{{ k.x }}" y="{{ k.y }}" width="{{ k.w }}" height="{{ k.w }}" fill="{{ k.fill }}" stroke="#221D19" stroke-width="{{ k.sw }}"></rect>
             </sc-for>
             <!-- landmark, lane 1 (reported context) -->
             <rect x="106" y="176" width="8" height="8" fill="#F9F5EF" stroke="#221D19" stroke-width="1" stroke-dasharray="2 1.5"></rect>
@@ -209,61 +209,61 @@
         </sc-if>
 
         <sc-if value="{{ isChron }}" hint-placeholder-val="{{ true }}">
-          <svg viewBox="0 0 468 330" style="width: 100%; height: auto;" role="img" aria-label="Chronology Loom. Left column is discourse order, exact and total. Right column is story-world partial order rank; it is not a clock. Two lines cross: sentence 2 is a flashback, and sentence 4 states a condition holding before sentence 3. Sentences 1 and 4 share an incomparable band.">
-            <g font-family="system-ui, -apple-system, sans-serif" font-size="9.5" fill="#544D47">
-              <text x="6" y="14" font-weight="600" fill="#221D19">discourse order</text>
-              <text x="6" y="26">exact · total</text>
-              <text x="330" y="14" font-weight="600" fill="#221D19">story-world order</text>
-              <text x="330" y="26">partial · rank, not a clock</text>
+          <svg data-chronology-loom viewBox="0 0 468 356" style="width: 100%; height: auto;" role="img" aria-label="Chronology Loom with three separately declared clocks: exact discourse order, story-world partial-order rank, and exact synthetic recall-production order. The s01 and s02 links cross because sentence 2 reports an earlier winter; the crossing is the visible flashback. Off-source and unranked recall units remain on the recall clock without invented source positions.">
+            <defs><pattern id="ch-off" width="4" height="4" patternUnits="userSpaceOnUse"><line x1="1" y1="0" x2="1" y2="4" stroke="#69625C" stroke-width="1.1"></line></pattern></defs>
+            <g font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#544D47" text-anchor="middle">
+              <text x="75" y="13" font-weight="600" fill="#221D19">discourse clock</text><text x="75" y="25">exact · total</text>
+              <text x="235" y="13" font-weight="600" fill="#221D19">story-world order</text><text x="235" y="25">partial rank · not elapsed time</text>
+              <text x="395" y="13" font-weight="600" fill="#221D19">recall clock · p01</text><text x="395" y="25">exact production order</text>
             </g>
-            <line x1="150" y1="34" x2="150" y2="300" stroke="#817B74"></line>
-            <line x1="322" y1="34" x2="322" y2="300" stroke="#817B74"></line>
-            <!-- incomparable band on the story-world side -->
-            <rect x="314" y="76" width="16" height="42" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-width="0.8" stroke-dasharray="3 2"></rect>
-            <text x="336" y="94" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">incomparable —</text>
-            <text x="336" y="105" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">no order is asserted</text>
-            <g font-family="ui-monospace, Menlo, monospace" font-size="9.5" fill="#221D19">
-              <text x="138" y="49" text-anchor="end">s01</text><text x="138" y="75" text-anchor="end">s02</text>
-              <text x="138" y="101" text-anchor="end">s03</text><text x="138" y="127" text-anchor="end">s04</text>
-              <text x="138" y="153" text-anchor="end">s05</text><text x="138" y="179" text-anchor="end">s06</text>
-              <text x="138" y="205" text-anchor="end">s07</text><text x="138" y="231" text-anchor="end">s08</text>
-              <text x="138" y="257" text-anchor="end">s09</text><text x="138" y="283" text-anchor="end">s10</text>
+
+            <g data-clock="discourse" font-family="ui-monospace, Menlo, monospace" font-size="8.5" fill="#221D19">
+              <line x1="75" y1="46" x2="75" y2="282" stroke="#817B74"></line>
+              <g text-anchor="end"><text x="66" y="61">s01</text><text x="66" y="85">s02</text><text x="66" y="109">s03</text><text x="66" y="133">s04</text><text x="66" y="157">s05</text><text x="66" y="181">s06</text><text x="66" y="205">s07</text><text x="66" y="229">s08</text><text x="66" y="253">s09</text><text x="66" y="277">s10</text></g>
+              <g fill="#221D19"><circle cx="75" cy="58" r="2.5"></circle><circle cx="75" cy="82" r="2.5"></circle><circle cx="75" cy="106" r="2.5"></circle><circle cx="75" cy="130" r="2.5"></circle><circle cx="75" cy="154" r="2.5"></circle><circle cx="75" cy="178" r="2.5"></circle><circle cx="75" cy="202" r="2.5"></circle><circle cx="75" cy="226" r="2.5"></circle><circle cx="75" cy="250" r="2.5"></circle><circle cx="75" cy="274" r="2.5"></circle></g>
             </g>
-            <!-- slopes -->
-            <g stroke="#221D19" fill="none" stroke-width="1">
-              <line x1="150" y1="46" x2="322" y2="88"></line>
-              <line x1="150" y1="98" x2="322" y2="140"></line>
-              <line x1="150" y1="124" x2="322" y2="106"></line>
-              <line x1="150" y1="150" x2="322" y2="166"></line>
-              <line x1="150" y1="176" x2="322" y2="192"></line>
-              <line x1="150" y1="202" x2="322" y2="218"></line>
-              <line x1="150" y1="228" x2="322" y2="244"></line>
-              <line x1="150" y1="254" x2="322" y2="270"></line>
-              <line x1="150" y1="280" x2="322" y2="296"></line>
+
+            <g stroke="#817B74" stroke-width="0.9" fill="none">
+              <line data-chron-link="s01" x1="78" y1="58" x2="231" y2="94"></line>
+              <line data-chron-link="s02" x1="78" y1="82" x2="231" y2="56" stroke="#221D19" stroke-width="2.2"></line>
+              <line x1="78" y1="106" x2="231" y2="94"></line><line x1="78" y1="130" x2="231" y2="94"></line>
+              <line x1="78" y1="154" x2="231" y2="150"></line><line x1="78" y1="178" x2="231" y2="174"></line>
+              <line x1="78" y1="202" x2="231" y2="198"></line><line x1="78" y1="226" x2="231" y2="222"></line>
+              <line x1="78" y1="250" x2="231" y2="246"></line><line x1="78" y1="274" x2="231" y2="270"></line>
             </g>
-            <!-- the flashback, drawn as the crossing it is -->
-            <line x1="150" y1="72" x2="322" y2="52" stroke="#221D19" stroke-width="2.5"></line>
-            <circle cx="322" cy="52" r="3.5" fill="#221D19"></circle>
-            <text x="336" y="49" font-size="9" font-family="system-ui, sans-serif" fill="#221D19" font-weight="600">s02 · flashback</text>
-            <text x="336" y="61" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">later in the telling, earlier in the world</text>
-            <text x="336" y="120" font-size="9" font-family="system-ui, sans-serif" fill="#221D19" font-weight="600">s03 × s04 · second crossing</text>
-            <text x="336" y="132" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">s04 states a condition already holding</text>
-            <text x="336" y="143" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">when s03 occurs; the model orders them,</text>
-            <text x="336" y="154" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">the telling does not</text>
-            <!-- announced -> realised, opposite polarity -->
-            <path d="M150 72 C 96 130, 96 200, 150 254" fill="none" stroke="#221D19" stroke-width="1" stroke-dasharray="6 4"></path>
-            <text x="6" y="166" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">announced at s02,</text>
-            <text x="6" y="177" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">realised at s09</text>
-            <text x="6" y="191" font-size="8.5" font-family="system-ui, sans-serif" fill="#653E00">polarity reversed</text>
-            <!-- selection tether -->
-            <rect x="{{ chSelY0 }}" y="{{ chSelY }}" width="24" height="18" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
-            <line x1="6" y1="312" x2="460" y2="312" stroke="#D7D2CB"></line>
-            <text x="6" y="325" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">No horizontal axis. Slope carries direction only; its angle has no magnitude.</text>
+            <text x="96" y="294" font-size="8.5" font-family="system-ui, sans-serif" fill="#653E00" font-weight="600">crossing = prior report / flashback</text>
+
+            <g data-clock="story-world" font-family="ui-monospace, Menlo, monospace" font-size="8.5" fill="#221D19">
+              <line x1="235" y1="46" x2="235" y2="282" stroke="#817B74"></line>
+              <circle cx="235" cy="56" r="3.2" fill="#221D19"></circle><text x="245" y="59">s02 · winter before</text>
+              <rect x="229" y="86" width="12" height="17" fill="#9C958C" fill-opacity="0.3" stroke="#817B74" stroke-dasharray="3 2"></rect>
+              <text x="245" y="96">s01/s03/s04 · incomparable</text>
+              <circle cx="235" cy="150" r="2.5" fill="#221D19"></circle><circle cx="235" cy="174" r="2.5" fill="#221D19"></circle><circle cx="235" cy="198" r="2.5" fill="#221D19"></circle><circle cx="235" cy="222" r="2.5" fill="#221D19"></circle><circle cx="235" cy="246" r="2.5" fill="#221D19"></circle><circle cx="235" cy="270" r="2.5" fill="#221D19"></circle>
+              <text x="245" y="153">s05</text><text x="245" y="177">s06</text><text x="245" y="201">s07</text><text x="245" y="225">s08</text><text x="245" y="249">s09</text><text x="245" y="273">s10</text>
+              <rect x="223" y="140" width="24" height="20" fill="none" stroke="#221D19" stroke-width="3" stroke-dasharray="6 3"></rect>
+            </g>
+
+            <g data-clock="recall" font-family="ui-monospace, Menlo, monospace" font-size="8" fill="#221D19">
+              <line x1="395" y1="46" x2="395" y2="270" stroke="#817B74"></line>
+              <g fill="#221D19"><rect x="391" y="54" width="8" height="8"></rect><rect x="391" y="74" width="8" height="8"></rect><rect x="391" y="94" width="8" height="8"></rect><rect x="391" y="114" width="8" height="8"></rect><rect x="391" y="134" width="8" height="8"></rect><rect x="391" y="214" width="8" height="8"></rect></g>
+              <g fill="url(#ch-off)" stroke="#69625C"><rect x="391" y="154" width="8" height="8"></rect><rect x="391" y="174" width="8" height="8"></rect><rect x="391" y="194" width="8" height="8"></rect><rect x="391" y="254" width="8" height="8"></rect></g>
+              <rect x="391" y="234" width="8" height="8" fill="#F9F5EF" stroke="#221D19" stroke-dasharray="3 2"></rect>
+              <text x="403" y="61">r01 · s01</text><text x="403" y="81">r02 · s05</text><text x="403" y="101">r03 · s02</text><text x="403" y="121">r04 · s06/s08</text><text x="403" y="141">r05 · s07</text>
+              <text x="403" y="161">r06 · off-src</text><text x="403" y="181">r07 · off-src</text><text x="403" y="201">r08 · off-src</text><text x="403" y="221">r09 · s10</text><text x="403" y="241">r10 · unrkd</text><text x="403" y="261">r11 · off-src</text>
+            </g>
+
+            <line x1="6" y1="300" x2="462" y2="300" stroke="#D7D2CB"></line>
+            <g font-family="system-ui, sans-serif" font-size="8.5" fill="#544D47">
+              <text x="6" y="315">Clock positions are ordinal declarations. Vertical gaps and connector angles carry no duration or magnitude.</text>
+              <text x="6" y="328">■ source-addressed recall · ▥ named off-source · □ dashed unranked.</text>
+              <text x="6" y="340">Off-source and unranked units receive no invented story position.</text>
+              <text data-chronology-receipt data-fixture-receipts="synthetic/two-boats-source@v1|synthetic/two-boats-recall-p01@v1" x="6" y="353" fill="#653E00">receipts · source 40c889d9…a43cc · recall p01 9612ddc1…052b · proposed StoryAtlas design state</text>
+            </g>
           </svg>
         </sc-if>
 
         <sc-if value="{{ isFeature }}" hint-placeholder-val="{{ true }}">
-          <svg viewBox="0 0 468 356" style="width: 100%; height: auto;" role="img" aria-label="Feature scale-space for imageability. Horizontal position is exact discourse offset; vertical position is the provider's raw score from 0 to 1. Three declared windows are overlaid on the raw token observations. One region carries no value and is hatched.">
+          <svg data-feature-scale-space viewBox="0 0 468 356" style="width: 100%; height: auto;" role="img" aria-label="Feature scale-space for imageability. Horizontal position is exact discourse offset; vertical position is the provider's raw score from 0 to 1. Three declared windows are overlaid on the raw token observations. One region carries no value and is hatched.">
             <defs><pattern id="fs-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#69625C" stroke-width="1.2"></line></pattern></defs>
             <g font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#544D47">
               <text x="52" y="38" text-anchor="end">1.0</text><text x="52" y="118" text-anchor="end">0.5</text><text x="52" y="198" text-anchor="end">0.0</text>
@@ -271,16 +271,16 @@
             <line x1="58" y1="34" x2="58" y2="194" stroke="#817B74"></line>
             <line x1="58" y1="194" x2="460" y2="194" stroke="#817B74"></line>
             <line x1="58" y1="114" x2="460" y2="114" stroke="#D7D2CB"></line>
-            <g stroke="#69625C" stroke-width="1"><line x1="66" y1="150" x2="66" y2="194"></line><line x1="80" y1="128" x2="80" y2="194"></line><line x1="94" y1="162" x2="94" y2="194"></line><line x1="108" y1="118" x2="108" y2="194"></line><line x1="122" y1="140" x2="122" y2="194"></line><line x1="136" y1="171" x2="136" y2="194"></line><line x1="150" y1="133" x2="150" y2="194"></line><line x1="164" y1="155" x2="164" y2="194"></line><line x1="178" y1="110" x2="178" y2="194"></line><line x1="192" y1="146" x2="192" y2="194"></line><line x1="206" y1="167" x2="206" y2="194"></line><line x1="220" y1="124" x2="220" y2="194"></line><line x1="234" y1="139" x2="234" y2="194"></line><line x1="248" y1="101" x2="248" y2="194"></line><line x1="262" y1="126" x2="262" y2="194"></line><line x1="276" y1="88" x2="276" y2="194"></line><line x1="290" y1="112" x2="290" y2="194"></line><line x1="356" y1="120" x2="356" y2="194"></line><line x1="370" y1="94" x2="370" y2="194"></line><line x1="384" y1="131" x2="384" y2="194"></line><line x1="398" y1="107" x2="398" y2="194"></line><line x1="412" y1="143" x2="412" y2="194"></line><line x1="426" y1="119" x2="426" y2="194"></line><line x1="440" y1="136" x2="440" y2="194"></line><line x1="454" y1="104" x2="454" y2="194"></line></g>
-            <rect x="300.3" y="34" width="47.5" height="160" fill="url(#fs-hatch)" stroke="#69625C" stroke-width="1"></rect>
+            <g data-feature-raw-marks stroke="#69625C" stroke-width="1"><line x1="66" y1="150" x2="66" y2="194"></line><line x1="80" y1="128" x2="80" y2="194"></line><line x1="94" y1="162" x2="94" y2="194"></line><line x1="108" y1="118" x2="108" y2="194"></line><line x1="122" y1="140" x2="122" y2="194"></line><line x1="136" y1="171" x2="136" y2="194"></line><line x1="150" y1="133" x2="150" y2="194"></line><line x1="164" y1="155" x2="164" y2="194"></line><line x1="178" y1="110" x2="178" y2="194"></line><line x1="192" y1="146" x2="192" y2="194"></line><line x1="206" y1="167" x2="206" y2="194"></line><line x1="220" y1="124" x2="220" y2="194"></line><line x1="234" y1="139" x2="234" y2="194"></line><line x1="248" y1="101" x2="248" y2="194"></line><line x1="262" y1="126" x2="262" y2="194"></line><line x1="276" y1="88" x2="276" y2="194"></line><line x1="290" y1="112" x2="290" y2="194"></line><line x1="356" y1="120" x2="356" y2="194"></line><line x1="370" y1="94" x2="370" y2="194"></line><line x1="384" y1="131" x2="384" y2="194"></line><line x1="398" y1="107" x2="398" y2="194"></line><line x1="412" y1="143" x2="412" y2="194"></line><line x1="426" y1="119" x2="426" y2="194"></line><line x1="440" y1="136" x2="440" y2="194"></line><line x1="454" y1="104" x2="454" y2="194"></line></g>
+            <rect data-feature-missing-region x="300.3" y="34" width="47.5" height="160" fill="url(#fs-hatch)" stroke="#69625C" stroke-width="1"></rect>
             <text x="324" y="70" text-anchor="middle" font-size="9" font-family="system-ui, sans-serif" fill="#653E00" font-weight="600">missing</text>
             <text x="324" y="82" text-anchor="middle" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">provider returned</text>
             <text x="324" y="93" text-anchor="middle" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">no value — not 0</text>
-            <polyline points="66,152 108,134 150,140 192,131 234,126 276,108 300,112" fill="none" stroke="#221D19" stroke-width="0.9" stroke-dasharray="2 2"></polyline>
+            <polyline data-feature-window-style="9" points="66,152 108,134 150,140 192,131 234,126 276,108 300,112" fill="none" stroke="#221D19" stroke-width="0.9" stroke-dasharray="2 2"></polyline>
             <polyline points="348,122 396,110 432,126 460,118" fill="none" stroke="#221D19" stroke-width="0.9" stroke-dasharray="2 2"></polyline>
-            <polyline points="66,146 108,138 150,136 192,133 234,128 276,116 300,118" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
+            <polyline data-feature-window-style="25" points="66,146 108,138 150,136 192,133 234,128 276,116 300,118" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
             <polyline points="348,126 396,116 432,128 460,122" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
-            <polyline points="66,141 108,140 150,138 192,136 234,132 276,126 300,126" fill="none" stroke="#221D19" stroke-width="2.6" stroke-opacity="0.45"></polyline>
+            <polyline data-feature-window-style="61" points="66,141 108,140 150,138 192,136 234,132 276,126 300,126" fill="none" stroke="#221D19" stroke-width="2.6" stroke-opacity="0.45"></polyline>
             <polyline points="348,130 396,124 432,130 460,127" fill="none" stroke="#221D19" stroke-width="2.6" stroke-opacity="0.45"></polyline>
             <rect x="{{ featSelX }}" y="34" width="{{ featSelW }}" height="160" fill="#2F4693" fill-opacity="0.08" stroke="#2F4693" stroke-width="2"></rect>
             <g font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#544D47">
@@ -305,11 +305,11 @@
             <line x1="58" y1="280" x2="460" y2="280" stroke="#D7D2CB"></line>
             <g font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#544D47">
               <text x="58" y="294">feature   imageability · raw provider score, uncalibrated · 0–1</text>
-              <text x="58" y="307">target    token · reducer mean · basis rolling window</text>
-              <text x="58" y="320">provider  syn-imag@v3 · coverage 0.88 · missing 0.12 · n=515</text>
-              <text x="58" y="333">receipt   featureConfigChecksum 9c2e…41ab</text>
+              <text x="58" y="307">raw       target Token; derived target Window(TokenRange)</text>
+              <text x="58" y="320" data-feature-window="s05-centered-25" data-feature-eligible="25" data-feature-observed="21">plan      25 lexical tokens · step 1 · centred context · KeepPartial</text>
+              <text x="58" y="333" data-feature-track="sensory.imageability.synthetic@v1" data-feature-eligible="117" data-feature-observed="92">track     coverage 92/117 = .7863 · missing 25 · Mean + IgnoreMissing</text>
             </g>
-            <text x="58" y="350" font-size="9" font-family="system-ui, sans-serif" fill="#653E00">No calibration model exists for this provider. This number is not a probability.</text>
+            <text data-feature-receipt data-fixture-receipts="synthetic/two-boats-source@v1" x="58" y="350" font-size="8.5" font-family="system-ui, sans-serif" fill="#653E00">receipt syn-feature/imageability@v1 · source 40c…a43cc · display-only · uncalibrated</text>
           </svg>
         </sc-if>
 
@@ -321,7 +321,7 @@
               <span class="lbl">the one active quantitative feature</span>
               <span class="m" style="font-size: 10.5px; color: #653E00; margin-left: auto;">raw score, uncalibrated — not a probability</span>
             </div>
-            <svg viewBox="0 0 468 96" style="width: 100%; height: auto;" role="img" aria-label="Docked imageability track. Horizontal position is discourse offset, shared with the projection above. Vertical position is raw score 0 to 1. One hatched region carries no value.">
+            <svg data-feature-track="sensory.imageability.synthetic@v1" data-feature-eligible="117" data-feature-observed="92" viewBox="0 0 468 96" style="width: 100%; height: auto;" role="img" aria-label="Docked imageability track. Horizontal position is discourse offset, shared with the projection above. Vertical position is raw score 0 to 1. One hatched region carries no value.">
               <defs><pattern id="dk-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#69625C" stroke-width="1.2"></line></pattern></defs>
               <line x1="60" y1="8" x2="60" y2="62" stroke="#817B74"></line>
               <line x1="60" y1="62" x2="460" y2="62" stroke="#817B74"></line>
@@ -331,7 +331,7 @@
               <polyline points="260,30 302,33" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
               <polyline points="350,34 394,26 460,31" fill="none" stroke="#221D19" stroke-width="1.6"></polyline>
               <rect x="{{ atSelX }}" y="8" width="{{ atSelW }}" height="54" fill="#2F4693" fill-opacity="0.08" stroke="#2F4693" stroke-width="2"></rect>
-              <text x="60" y="80" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">reducer mean · window 25w · coverage 0.88 · provider syn-imag@v3</text>
+              <text x="60" y="80" data-feature-window="s05-centered-25" data-feature-eligible="25" data-feature-observed="21" font-size="9" font-family="system-ui, sans-serif" fill="#544D47">25 lexical tokens · step 1 · KeepPartial · selected 21/25 = .840 · track 92/117 · missing 25</text>
               <text x="60" y="92" font-size="9" font-family="system-ui, sans-serif" fill="#653E00">▨ missing — the provider returned no value here; it is not a low score</text>
             </svg>
           </div>
@@ -339,7 +339,7 @@
       </div>
 
       <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-top: 1px solid #817B74; background: #F0EBE3; flex: none;">
-        <span class="lbl">▸ Atlas twin (text)</span><span class="lbl">▸ Feature twin (table)</span>
+        <span class="lbl">▸ {{ projTitle }} twin (text)</span><span class="lbl">▸ Feature twin (table)</span>
         <span class="lbl" style="margin-left: auto;">Every projection has a deterministic textual counterpart.</span>
       </div>
     </div>
@@ -351,7 +351,7 @@
           <span class="h2">Selection</span>
           <span style="margin-left: auto; font-size: 11.5px; border: 1px solid #817B74; background: #F9F5EF; padding: 3px 8px; cursor: pointer; min-height: 24px; display: flex; align-items: center;" onClick="{{ toggleInspector }}" tabindex="0" role="button" aria-label="Collapse the inspector">Collapse ›</span>
         </div>
-        <div style="flex-grow: 1; overflow: hidden; padding: 11px 12px; display: flex; flex-direction: column; gap: 11px;">
+        <div data-dc-scroll-region="main-claim-inspector" style="flex-grow: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 11px 12px; display: flex; flex-direction: column; gap: 11px;">
           <div style="display: flex; flex-direction: column; gap: 4px;">
             <span style="font-size: 13.5px; line-height: 1.35;">{{ selLabel }}</span>
             <span class="lbl">model label — an assertion about the text, not the text</span>
@@ -365,9 +365,20 @@
             <span style="font-weight: 600;">Modality</span><span>{{ selModality }}</span>
           </div>
           <div style="display: flex; flex-direction: column; gap: 5px;">
-            <span class="lbl" style="font-weight: 600;">Epistemic status</span>
+            <span class="lbl" style="font-weight: 600;">Selection summary · not a ClaimMeta status</span>
             <span style="{{ selStatusStyle }}">{{ selStatus }}</span>
-            <span class="lbl" style="line-height: 1.4;">{{ selStatusWhy }}</span>
+            <span class="lbl" data-main-status-why="{{ selStatusWhy }}" style="line-height: 1.4;">{{ selStatusWhy }}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #D7D2CB; padding-top: 6px;">
+            <span class="lbl" style="font-weight: 600;">Field-level claims</span>
+            <sc-for list="{{ selClaims }}" as="c" hint-placeholder-count="2">
+              <div data-claim-id="{{ c.id }}" data-claim-value="{{ c.value }}" data-claim-status="{{ c.status }}" data-claim-support="{{ c.support }}" data-claim-support-text="{{ c.supportText }}" data-claim-upstream="{{ c.upstream }}" data-claim-receipt="{{ c.receipt }}" data-claim-alternative-group="{{ c.alternativeGroup }}" tabindex="0" role="button" aria-label="Claim {{ c.id }}: {{ c.value }}. {{ c.status }}." style="display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 1px 6px; font-size: 10px; line-height: 1.3; cursor: pointer;">
+                <span class="m">{{ c.id }}</span><span>{{ c.value }}</span>
+                <span class="lbl">status</span><span>{{ c.status }}</span>
+                <span class="lbl">evidence</span><span class="m">{{ c.evidence }}</span>
+                <span class="lbl">receipt</span><span class="m">{{ c.receipt }}</span>
+              </div>
+            </sc-for>
           </div>
           <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px;">
             <span class="lbl" style="font-weight: 600;">Quantities</span>
@@ -459,68 +470,68 @@ class Component extends DCLogic {
 
   data() {
     // Synthetic fixture. Offsets are internally consistent inventions, not admitted source offsets.
-    var F = 'reducer mean · window 25w · provider syn-imag@v3';
+    var F = 'sentence-local lexical-token support · provider syn-imag@v3';
     return [
       { id:'s01', a:0, b:72, ep:'Episode 1 · shingle', sc:'Scene 1.1 · shingle',
-        addr:'story/situation/syn:sit:boats-drawn-up', label:'Two boats lie drawn up on the shingle at first light',
+        addr:'story/situation/syn:sit:boats-drawn-up', label:'At first light, two boats were drawn up on the shingle below the village',
         ctx:'narrated world (lane 0)', pol:'positive', mod:'none — asserted of the world',
-        status:'Source explicit', why:'Every constituent of the claim is a token of the span.',
-        feat:'0.377', featMeta:F + ' · coverage 0.94',
+        status:'Composite field view', why:'Time, drawn-up state, and location are separately SurfaceExplicit below. No absent verb such as “lie” is supplied.',
+        feat:'0.377', featMeta:F + ' · coverage 13/14 = .929',
         alt:'“At first light” is read as a time, not a place. No competing reading was retained.' },
       { id:'s02', a:73, b:142, ep:'Episode 1 · shingle', sc:'Scene 1.1 · shingle',
         addr:'story/context/syn:ctx:report-winter', label:'A prior telling: that the far shore is empty',
         ctx:'reported (lane 1) — embedded, not asserted', pol:'positive inside the report', mod:'reportative',
-        status:'Linguistically entailed', why:'The reporting frame is explicit. The embedded proposition is NOT promoted to world fact, and the source does not name the teller.',
-        feat:'0.318', featMeta:F + ' · coverage 0.91',
+        status:'Composite field view', why:'The reporting event, prior time, and embedded content are separate claims. The embedded proposition is NOT promoted to world fact, and the source does not name the teller.',
+        feat:'0.318', featMeta:F + ' · coverage 12/13 = .923',
         alt:'Speaker of the report is unresolved. No candidate is preferred.' },
       { id:'s03', a:143, b:165, ep:'Episode 1 · shingle', sc:'Scene 1.1 · shingle',
-        addr:'story/situation/syn:sit:disbelief', label:'Erran does not accept the reported claim',
+        addr:'story/situation/syn:sit:disbelief', label:'He did not believe it',
         ctx:'narrated world (lane 0)', pol:'negative', mod:'none — asserted of the world',
-        status:'Source explicit', why:'A stated mental state. Its object resolves to the context at s02, not to a world fact.',
-        feat:'0.204', featMeta:F + ' · coverage 0.86',
-        alt:'“it” resolves to the reported proposition, not to the act of telling. One alternative retained.' },
+        status:'Composite field view', why:'The surface mental-state claim is SurfaceExplicit. He→Erran is Hypothesized; the antecedent of “it” retains two Hypothesized readings.',
+        feat:'0.204', featMeta:F + ' · coverage 5/5 = 1.00',
+        alt:'“it” has two retained readings: the reported proposition, or the act of telling. Neither is silently accepted.' },
       { id:'s04', a:166, b:250, ep:'Episode 1 · shingle', sc:'Scene 1.1 · shingle',
-        addr:'story/situation/syn:sit:uncle-absent', label:'The older boat is the uncle’s; the uncle is not present',
+        addr:'story/situation/syn:sit:uncle-not-arrived', label:'The older boat belongs to the uncle; he had not yet come to the water',
         ctx:'narrated world (lane 0)', pol:'negative on the second conjunct', mod:'none — asserted of the world',
-        status:'Source explicit', why:'Two conjoined claims, separately supported and separately addressable.',
-        feat:'0.341', featMeta:F + ' · coverage 0.92',
+        status:'Composite field view', why:'Boat description, ownership, uncle reference, and non-arrival are separate SurfaceExplicit fields; this label only summarises them.',
+        feat:'0.341', featMeta:F + ' · coverage 16/18 = .889',
         alt:'Whether the absence is intentional is not stated and is not inferred.' },
       { id:'s05', a:251, b:291, ep:'Episode 1 · shingle', sc:'Scene 1.2 · launch',
-        addr:'story/situation/syn:sit:launch-boat', label:'Erran launches the smaller boat, unaccompanied',
+        addr:'story/situation/syn:sit:launch-boat', label:'Erran pushes the smaller boat out',
         ctx:'narrated world (lane 0)', pol:'positive', mod:'none — asserted of the world',
-        status:'Source explicit', why:'Every constituent of the claim is a token of the span. No inference step was taken.',
-        feat:'0.412', featMeta:F + ' · coverage 0.83',
-        alt:'2 readings of “alone”: unaccompanied, or unaided. The compiler retained both.' },
+        status:'Composite field view', why:'The push action is SurfaceExplicit. “Alone” is not folded into it; unaccompanied and unaided remain separate Hypothesized claims.',
+        feat:'0.412', featMeta:F + ' · coverage 6/7 = .857; selected 25-token window 21/25 = .840',
+        alt:'“Alone” has two unresolved interpretation claims: unaccompanied, or unaided. Neither is accepted.' },
       { id:'s06', a:292, b:351, ep:'Episode 2 · channel', sc:'Scene 2.1 · crossing',
         addr:'story/situation/syn:sit:fog-on-channel', label:'Fog on the channel; the far shore is not visible',
         ctx:'narrated world (lane 0)', pol:'negative on visibility', mod:'none — asserted of the world',
-        status:'Source explicit', why:'Stated condition. Visibility is scoped to the moment, not to the crossing as a whole.',
-        feat:'0.508', featMeta:F + ' · coverage 0.90',
+        status:'Composite field view', why:'Fog and non-visibility are separate SurfaceExplicit fields. Vantage readings remain separate hypotheses.',
+        feat:'0.508', featMeta:F + ' · coverage 11/12 = .917',
         alt:'Whose vantage the visibility claim takes is unresolved. Both readings retained.' },
       { id:'s07', a:352, b:421, ep:'Episode 2 · channel', sc:'Scene 2.1 · crossing',
         addr:'story/situation/syn:sit:call-from-shingle', label:'An unrecovered utterance from the shingle',
         ctx:'narrated world (lane 0)', pol:'positive on the call, negative on its recovery', mod:'none — asserted of the world',
-        status:'Source explicit', why:'The calling is stated. Its content is stated to be unavailable, which is a source fact, not a model gap.',
-        feat:'—', featMeta:'provider returned no value over this span · missing, not zero',
-        alt:'None. The source withholds the content; the model does not supply one.' },
+        status:'Composite field view', why:'The call and failure of the words to carry are separate SurfaceExplicit fields; no utterance content is invented.',
+        feat:'—', featMeta:'Missing(MissingReason.AllMissing) · observed 0/13 lexical tokens · provider outcome ProviderAbstained',
+        alt:'None. The source states that the words did not carry; their content is unavailable.' },
       { id:'s08', a:422, b:487, ep:'Episode 2 · channel', sc:'Scene 2.1 · crossing',
         addr:'story/situation/syn:sit:past-midpoint', label:'The fog lifts; Erran is past the middle of the channel',
         ctx:'narrated world (lane 0)', pol:'positive', mod:'none — asserted of the world',
-        status:'Linguistically entailed', why:'“By the time” entails an ordering between the lifting and the position. The ordering is entailed; no clock is asserted.',
-        feat:'0.446', featMeta:F + ' · coverage 0.89',
+        status:'Composite field view', why:'The two surface fields are explicit; “by the time” LinguisticallyEntails a local ordering. He→Erran remains a separate identity claim.',
+        feat:'0.446', featMeta:F + ' · coverage 12/14 = .857',
         alt:'Whether the crossing continued after this point is not stated.' },
       { id:'s09', a:488, b:516, ep:'Episode 2 · channel', sc:'Scene 2.2 · return',
         addr:'story/situation/syn:sit:shore-not-empty', label:'The far shore is not empty',
         ctx:'narrated world (lane 0)', pol:'negative', mod:'none — asserted of the world',
-        status:'Source explicit', why:'Directly contradicts the proposition embedded at s02. The contradiction is between a world claim and a reported claim, and is recorded as such.',
-        feat:'0.289', featMeta:F + ' · coverage 0.81',
-        alt:'What occupies the shore is not stated. The model supplies no filler.' },
+        status:'Composite field view', why:'The narrated-world proposition is SurfaceExplicit. Its opposite-polarity recurrence with reported s02 is StructurallyDerived; identity and persistence remain Hypothesized.',
+        feat:'0.289', featMeta:F + ' · coverage 5/6 = .833',
+        alt:'An opposite-polarity recurrence to reported s02 is linked. Same-state persistence and contradiction remain hypotheses.' },
       { id:'s10', a:517, b:584, ep:'Episode 2 · channel', sc:'Scene 2.2 · return',
-        addr:'story/situation/syn:sit:return-silent', label:'Erran returns and withholds what he saw',
-        ctx:'narrated world (lane 0)', pol:'positive on return, negative on telling', mod:'none — asserted of the world',
-        status:'Source explicit', why:'The source marks the withheld content as existing without supplying it. That is an ellipsis in the source, not missing model output.',
-        feat:'0.352', featMeta:F + ' · coverage 0.87',
-        alt:'The content of what he saw is unresolved and stays unresolved.' }
+        addr:'story/situation/syn:sit:return-silent', label:'He turns the boat, goes back, and does not say what he had seen',
+        ctx:'narrated world (lane 0)', pol:'positive on turning/going back, negative on telling', mod:'none — asserted of the world',
+        status:'Composite field view', why:'Turning/going back and non-telling are SurfaceExplicit. Something seen is LinguisticallyEntailed; completed return and intentional withholding are Hypothesized.',
+        feat:'0.352', featMeta:F + ' · coverage 12/15 = .800',
+        alt:'What he saw remains unresolved. Completed return and intentional withholding are retained only as Hypothesized interpretations.' }
     ];
   }
 
@@ -538,16 +549,16 @@ class Component extends DCLogic {
 
     var TOTAL = 584;
     var sentences = [
-      { id:'s01', num:'s01', a:0,   b:72,  text:'At first light two boats were drawn up on the shingle below the village.', lane:0, scene:1 },
-      { id:'s02', num:'s02', a:73,  b:142, text:'Erran had been told, the winter before, that the far shore was empty.',   lane:1, scene:1 },
-      { id:'s03', num:'s03', a:143, b:165, text:'He did not believe it.',                                                   lane:0, scene:1 },
-      { id:'s04', num:'s04', a:166, b:250, text:'The older of the two boats belonged to his uncle, who had not yet come to the water.', lane:0, scene:1 },
-      { id:'s05', num:'s05', a:251, b:291, text:'Erran pushed the smaller boat out alone.',                                 lane:0, scene:2 },
-      { id:'s06', num:'s06', a:292, b:351, text:'Fog stood on the channel and the far shore was not visible.',              lane:0, scene:3 },
-      { id:'s07', num:'s07', a:352, b:421, text:'Someone on the shingle called after him, but the words did not carry.',    lane:0, scene:3 },
-      { id:'s08', num:'s08', a:422, b:487, text:'By the time the fog lifted he was past the middle of the channel.',        lane:0, scene:3 },
-      { id:'s09', num:'s09', a:488, b:516, text:'The far shore was not empty.',                                             lane:0, scene:4 },
-      { id:'s10', num:'s10', a:517, b:584, text:'He turned the boat and went back, and did not say what he had seen.',      lane:0, scene:4 }
+      { id:'s01', num:'s01', a:0,   b:72,  text:'At first light two boats were drawn up on the shingle below the village.', lane:0, scene:1, featureEligible:14, featureObserved:13 },
+      { id:'s02', num:'s02', a:73,  b:142, text:'Erran had been told, the winter before, that the far shore was empty.',   lane:1, scene:1, featureEligible:13, featureObserved:12 },
+      { id:'s03', num:'s03', a:143, b:165, text:'He did not believe it.',                                                   lane:0, scene:1, featureEligible:5, featureObserved:5 },
+      { id:'s04', num:'s04', a:166, b:250, text:'The older of the two boats belonged to his uncle, who had not yet come to the water.', lane:0, scene:1, featureEligible:18, featureObserved:16 },
+      { id:'s05', num:'s05', a:251, b:291, text:'Erran pushed the smaller boat out alone.',                                 lane:0, scene:2, featureEligible:7, featureObserved:6 },
+      { id:'s06', num:'s06', a:292, b:351, text:'Fog stood on the channel and the far shore was not visible.',              lane:0, scene:3, featureEligible:12, featureObserved:11 },
+      { id:'s07', num:'s07', a:352, b:421, text:'Someone on the shingle called after him, but the words did not carry.',    lane:0, scene:3, featureEligible:13, featureObserved:0 },
+      { id:'s08', num:'s08', a:422, b:487, text:'By the time the fog lifted he was past the middle of the channel.',        lane:0, scene:3, featureEligible:14, featureObserved:12 },
+      { id:'s09', num:'s09', a:488, b:516, text:'The far shore was not empty.',                                             lane:0, scene:4, featureEligible:6, featureObserved:5 },
+      { id:'s10', num:'s10', a:517, b:584, text:'He turned the boat and went back, and did not say what he had seen.',      lane:0, scene:4, featureEligible:15, featureObserved:12 }
     ];
     var sceneEdge = { s01: 1, s05: 1, s06: 1, s09: 1 };
 
@@ -562,6 +573,7 @@ class Component extends DCLogic {
         : 'width: 10px; flex: none; margin: 0 6px 0 2px;';
       return {
         id: s.id, num: s.num, text: s.text,
+        featureEligible: s.featureEligible, featureObserved: s.featureObserved,
         pressed: on ? 'true' : 'false',
         aria: 'sentence ' + s.num + ', code units ' + s.a + ' to ' + s.b + (on ? ', selected' : ''),
         rowStyle: 'display: flex; align-items: flex-start; gap: 0; padding: 1px 12px 1px 9px; cursor: pointer; background: ' + rowBg + '; ' + rowOutline + edge,
@@ -586,7 +598,7 @@ class Component extends DCLogic {
       marks0.push({ x: x(s.a) - 4, y: 106, w: 8, fill: isSel ? '#2F4693' : '#221D19', sw: isSel ? 2 : 1 });
     }
 
-    var chY = { s01:46, s02:72, s03:98, s04:124, s05:150, s06:176, s07:202, s08:228, s09:254, s10:280 };
+    var chY = { s01:94, s02:56, s03:94, s04:94, s05:150, s06:174, s07:198, s08:222, s09:246, s10:270 };
     var selSent = sentences[0];
     for (var k = 0; k < sentences.length; k++) { if (sentences[k].id === selId) selSent = sentences[k]; }
 
@@ -596,8 +608,85 @@ class Component extends DCLogic {
     // scene, because lane 1 carries no landmark of its own at Scene level.
     var atlasVia = selId === 's02';
 
-    var statusStyle = 'font-size: 11.5px; padding: 3px 8px; align-self: flex-start; background: #F9F5EF; border: 1px ' +
-      (cur.status === 'Source explicit' ? 'solid #221D19' : 'solid #544D47') + '; border-left-width: 3px;';
+    var statusStyle = 'font-size: 11.5px; padding: 3px 8px; align-self: flex-start; background: #F9F5EF; border: 1px dashed #544D47; border-left-width: 3px;';
+
+    function claim(id, value, status, spans, supportTexts, upstream, receipt, alternativeGroup) {
+      var support = spans.map(function (span) { return span[0] + ':' + span[1]; }).join(';');
+      var spanEvidence = spans.map(function (span) { return '[' + span[0] + ',' + span[1] + ')'; }).join(' + ');
+      var upstreamText = upstream.length ? 'upstream ' + upstream.join(' + ') : '';
+      return {
+        id: id,
+        value: value,
+        status: status,
+        support: support,
+        supportText: supportTexts.join(' | '),
+        upstream: upstream.join(','),
+        alternativeGroup: alternativeGroup || '',
+        evidence: (spanEvidence ? 'source@40c889d9 ' + spanEvidence : '') +
+          (spanEvidence && upstreamText ? '; ' : '') + upstreamText,
+        receipt: receipt
+      };
+    }
+
+    var claimSets = {
+      s01: [
+        claim('c-s01-time', 'time = first light', 'SurfaceExplicit', [[0,14]], ['At first light'], [], 'syn-claims@v2'),
+        claim('c-s01-boats-drawn', 'two boats were drawn up', 'SurfaceExplicit', [[15,38]], ['two boats were drawn up'], [], 'syn-claims@v2'),
+        claim('c-s01-location', 'on the shingle below the village', 'SurfaceExplicit', [[39,71]], ['on the shingle below the village'], [], 'syn-claims@v2')
+      ],
+      s02: [
+        claim('c-s02-report', 'Erran received a prior report', 'SurfaceExplicit', [[73,92]], ['Erran had been told'], [], 'syn-claims@v2'),
+        claim('c-s02-report-time', 'report time = winter before', 'SurfaceExplicit', [[94,111]], ['the winter before'], [], 'syn-claims@v2'),
+        claim('c-s02-embedded', 'reported content: far shore was empty', 'SurfaceExplicit', [[118,141]], ['the far shore was empty'], ['c-s02-report'], 'syn-claims@v2')
+      ],
+      s03: [
+        claim('c-s03-surface', 'He did not believe it', 'SurfaceExplicit', [[143,164]], ['He did not believe it'], [], 'syn-claims@v2'),
+        claim('c-s03-agent-erran', 'He resolves to Erran', 'Hypothesized', [], [], ['c-s02-report','c-s03-surface'], 'syn-coref@v1'),
+        claim('c-s03-object-report', '“it” resolves to the reported proposition', 'Hypothesized', [[162,164]], ['it'], ['c-s02-embedded'], 'syn-interpret@v2', 'alt-s03-object'),
+        claim('c-s03-object-telling', '“it” resolves to the act of telling', 'Hypothesized', [[162,164]], ['it'], ['c-s02-report'], 'syn-interpret@v2', 'alt-s03-object')
+      ],
+      s04: [
+        claim('c-s04-boat', 'the older of the two boats', 'SurfaceExplicit', [[166,192]], ['The older of the two boats'], [], 'syn-claims@v2'),
+        claim('c-s04-ownership', 'the older boat belonged to his uncle', 'SurfaceExplicit', [[193,214]], ['belonged to his uncle'], ['c-s04-boat'], 'syn-claims@v2'),
+        claim('c-s04-uncle-ref', 'possessor phrase = his uncle', 'SurfaceExplicit', [[205,214]], ['his uncle'], [], 'syn-claims@v2'),
+        claim('c-s04-nonarrival', 'the uncle had not yet come to the water', 'SurfaceExplicit', [[220,249]], ['had not yet come to the water'], ['c-s04-uncle-ref'], 'syn-claims@v2')
+      ],
+      s05: [
+        claim('c-s05-action', 'push(Erran, smaller boat)', 'SurfaceExplicit', [[251,284]], ['Erran pushed the smaller boat out'], [], 'syn-claims@v2'),
+        claim('c-s05-alone-unaccompanied', 'alone = unaccompanied', 'Hypothesized', [[285,290]], ['alone'], ['c-s05-action'], 'syn-interpret@v2', 'alt-s05-alone'),
+        claim('c-s05-alone-unaided', 'alone = unaided', 'Hypothesized', [[285,290]], ['alone'], ['c-s05-action'], 'syn-interpret@v2', 'alt-s05-alone')
+      ],
+      s06: [
+        claim('c-s06-fog', 'fog stood on the channel', 'SurfaceExplicit', [[292,316]], ['Fog stood on the channel'], [], 'syn-claims@v2'),
+        claim('c-s06-visibility', 'far shore was not visible', 'SurfaceExplicit', [[321,350]], ['the far shore was not visible'], [], 'syn-claims@v2'),
+        claim('c-s06-vantage-participant', 'visibility is from the participant viewpoint', 'Hypothesized', [[321,350]], ['the far shore was not visible'], ['c-s06-visibility'], 'syn-interpret@v2', 'alt-s06-vantage'),
+        claim('c-s06-vantage-general', 'visibility is narrator-general', 'Hypothesized', [[321,350]], ['the far shore was not visible'], ['c-s06-visibility'], 'syn-interpret@v2', 'alt-s06-vantage')
+      ],
+      s07: [
+        claim('c-s07-call', 'someone on the shingle called after him', 'SurfaceExplicit', [[352,391]], ['Someone on the shingle called after him'], [], 'syn-claims@v2'),
+        claim('c-s07-not-carried', 'the words did not carry', 'SurfaceExplicit', [[397,420]], ['the words did not carry'], [], 'syn-claims@v2')
+      ],
+      s08: [
+        claim('c-s08-fog-lift', 'the fog lifted', 'SurfaceExplicit', [[422,448]], ['By the time the fog lifted'], [], 'syn-claims@v2'),
+        claim('c-s08-position', 'he was past the middle of the channel', 'SurfaceExplicit', [[449,486]], ['he was past the middle of the channel'], [], 'syn-claims@v2'),
+        claim('c-s08-local-order', 'fog lifting precedes-or-coincides with the stated position', 'LinguisticallyEntailed', [[422,486]], ['By the time the fog lifted he was past the middle of the channel'], ['c-s08-fog-lift','c-s08-position'], 'syn-temporal@v2'),
+        claim('c-s08-agent-erran', 'he resolves to Erran', 'Hypothesized', [], [], ['c-s05-action','c-s08-position'], 'syn-coref@v1')
+      ],
+      s09: [
+        claim('c-s09-state', 'far shore was not empty', 'SurfaceExplicit', [[488,515]], ['The far shore was not empty'], [], 'syn-claims@v2'),
+        claim('c-s02-s09-link', 'opposite-polarity lexical recurrence', 'StructurallyDerived', [], [], ['c-s02-embedded','c-s09-state'], 'syn-relations@v2'),
+        claim('c-s02-s09-identity', 's02 and s09 denote the same shore referent', 'Hypothesized', [], [], ['c-s02-embedded','c-s09-state'], 'syn-interpret@v2'),
+        claim('c-s02-s09-persistence', 'the reported state persists to the s09 comparison time', 'Hypothesized', [], [], ['c-s02-embedded','c-s09-state'], 'syn-interpret@v2')
+      ],
+      s10: [
+        claim('c-s10-turn-back', 'he turned the boat and went back', 'SurfaceExplicit', [[517,549]], ['He turned the boat and went back'], [], 'syn-claims@v2'),
+        claim('c-s10-agent-erran', 'he resolves to Erran', 'Hypothesized', [], [], ['c-s05-action','c-s10-turn-back'], 'syn-coref@v1'),
+        claim('c-s10-nontell', 'did not say what he had seen', 'SurfaceExplicit', [[555,583]], ['did not say what he had seen'], [], 'syn-claims@v2'),
+        claim('c-s10-seeing', 'something had been seen', 'LinguisticallyEntailed', [[567,583]], ['what he had seen'], ['c-s10-nontell'], 'syn-claims@v2'),
+        claim('c-s10-return-complete', 'a return was completed', 'Hypothesized', [], [], ['c-s10-turn-back'], 'syn-interpret@v2'),
+        claim('c-s10-intentional-withholding', 'non-telling was intentional withholding', 'Hypothesized', [], [], ['c-s10-nontell'], 'syn-interpret@v2')
+      ]
+    };
 
     var segBase = 'seg';
     return {
@@ -605,12 +694,13 @@ class Component extends DCLogic {
       marks0: marks0,
 
       crumbEpisode: cur.ep, crumbScene: cur.sc, crumbEvent: level,
-      selAddress: cur.addr, selSpan: 'tok ' + cur.a + '–' + cur.b,
+      selAddress: cur.addr, selSpan: 'UTF-16 [' + cur.a + ',' + cur.b + ')',
       selLabel: cur.label, selLevel: level + ' · surface Hidden',
       selContext: cur.ctx, selPolarity: cur.pol, selModality: cur.mod,
       selStatus: cur.status, selStatusWhy: cur.why, selStatusStyle: statusStyle,
+      selClaims: claimSets[selId],
       selFeature: cur.feat, selFeatureMeta: cur.featMeta, selAlt: cur.alt,
-      selReceipt: 'sourceChecksum 4f1c…a03e · codexConfigChecksum 77b2…e14d · atlasConfigChecksum 3ae9…0c58 · storymodel4sRevision 8492e43 · intaglioRevision 596b398',
+      selReceipt: 'sourceTextSha256 40c889d9…a43cc · synthetic claimCompiler syn-claims@v2 · no calibration model · not human adjudicated',
 
       placeCodex: 'Codex: on-mark', placeCodexStyle: chipOn,
       placeAtlas: atlasVia ? 'Atlas: via-ancestor' : 'Atlas: on-mark',
@@ -621,10 +711,11 @@ class Component extends DCLogic {
       featSelW: Math.max(6, (selSent.b - selSent.a) * (402 / TOTAL)),
       ovSelX: ox(selSent.a), ovSelW: Math.max(3, ox(selSent.b) - ox(selSent.a)),
       atSelX: x(selSent.a) - 5, atSelW: Math.max(10, x(selSent.b) - x(selSent.a) + 10),
-      chSelY0: 138, chSelY: (chY[selId] || 150) - 13,
+      chSelY0: 223, chSelY: (chY[selId] || 150) - 10,
 
       isAtlas: proj === 'atlas', isChron: proj === 'chronology', isFeature: proj === 'feature',
-      showDock: proj !== 'feature',
+      showDock: proj === 'atlas',
+      projTitle: proj === 'atlas' ? 'Narrative Atlas' : (proj === 'chronology' ? 'Chronology Loom' : 'Feature scale-space'),
       segAtlas: segBase + (proj === 'atlas' ? ' seg-on' : ''),
       segChron: segBase + (proj === 'chronology' ? ' seg-on' : ''),
       segFeat: segBase + (proj === 'feature' ? ' seg-on' : ''),
@@ -635,17 +726,17 @@ class Component extends DCLogic {
       contractLine: proj === 'atlas'
         ? 'x: DiscourseOffset; y: ContextLane; distance: NoMeaning; area: none'
         : (proj === 'chronology'
-          ? 'left: DiscourseOrder; right: WorldPartialOrder; distance: NoMeaning; area: none'
+          ? 'clocks: DiscourseOrder × WorldPartialOrder × RecallOrder; distance: NoMeaning; area: none'
           : 'x: DiscourseOffset; y: RawScore[0,1]; distance: NoMeaning; area: none'),
       contractProse: proj === 'atlas'
         ? 'X is the exact discourse offset in UTF-16 code units. Y is the context lane, narrated world = 0; vertical distance has no meaning. A region is the hull of its visible children.'
         : (proj === 'chronology'
-          ? 'The left column is exact discourse order. The right column is a rank in the compiled partial order — not a clock. Situations the model does not order share one band.'
+          ? 'Discourse and synthetic recall order are exact and total. Story-world placement is a partial-order rank, not an elapsed-time clock. The s01/s02 crossing exposes the earlier reported winter without promoting its proposition to narrated-world fact.'
           : 'X is the exact discourse offset. Y is the provider’s raw score. Each line is one declared rolling window; none is a smoothing the view invented.'),
       contractNot: proj === 'atlas'
         ? 'story-world time · duration · causal strength · lane distance'
         : (proj === 'chronology'
-          ? 'elapsed time · duration · gap size · slope magnitude'
+          ? 'elapsed time · duration · gap size · slope magnitude · a source position for off-source recall'
           : 'calibrated probability · significance · imputed values across the missing span'),
       atlasLegend: '10 mark(s). x = DiscourseOffset; y = ContextLane. Click a mark (shift-click extends) or focus it and press Enter to select its address. Region ▭ · situation ▪ · thread ── · portal ┈',
 

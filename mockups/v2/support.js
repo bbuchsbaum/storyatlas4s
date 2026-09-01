@@ -4,6 +4,42 @@
   const exactExpression = /^\s*\{\{\s*([^}]+?)\s*\}\}\s*$/;
   const expression = /\{\{\s*([^}]+?)\s*\}\}/g;
   const directiveSelector = "sc-for, sc-if, template[data-dc-directive]";
+  const directiveCandidateSelector = "sc-for, sc-if, template[data-dc-directive], *";
+
+  function exactDirectiveExpression(directive, attributeName, directiveKind) {
+    const raw = directive.getAttribute(attributeName);
+    const match = raw && raw.match(exactExpression);
+    if (!match) {
+      throw new Error(
+        `${directiveKind} ${attributeName} must be one exact design-canvas expression`
+      );
+    }
+    return match[1];
+  }
+
+  function directiveKindOf(directive) {
+    const localName = directive.localName.toLowerCase();
+    return localName === "template"
+      ? directive.getAttribute("data-dc-directive")
+      : localName;
+  }
+
+  function assertKnownDirectiveCandidates(container) {
+    for (const element of Array.from(container.querySelectorAll(directiveCandidateSelector))) {
+      const localName = element.localName.toLowerCase();
+      if (localName.startsWith("sc-") && localName !== "sc-for" && localName !== "sc-if") {
+        throw new Error(`Unsupported design-canvas directive: ${localName}`);
+      }
+      if (localName === "template" && element.hasAttribute("data-dc-directive")) {
+        const kind = directiveKindOf(element);
+        if (kind !== "for" && kind !== "if" && kind !== "sc-for" && kind !== "sc-if") {
+          throw new Error(
+            `Unsupported design-canvas directive: ${kind == null ? "<missing>" : kind}`
+          );
+        }
+      }
+    }
+  }
 
   function lookup(source, path) {
     const trimmed = path.trim();
@@ -69,11 +105,12 @@
   }
 
   function processDirectives(container, values, locals) {
+    assertKnownDirectiveCandidates(container);
     let directive = container.querySelector(directiveSelector);
     while (directive) {
       const currentScope = scopeOf(values, locals);
       const replacement = document.createDocumentFragment();
-      const directiveKind = directive.dataset.dcDirective || directive.tagName.toLowerCase();
+      const directiveKind = directiveKindOf(directive);
       const children =
         directive.tagName.toLowerCase() === "template" && directive.content
           ? Array.from(directive.content.childNodes)
@@ -82,7 +119,7 @@
       if (directiveKind === "if" || directiveKind === "sc-if") {
         const condition = lookup(
           currentScope,
-          directive.getAttribute("value").match(exactExpression)[1]
+          exactDirectiveExpression(directive, "value", directiveKind)
         );
         if (condition) {
           for (const child of children) {
@@ -91,15 +128,16 @@
           processDirectives(replacement, values, locals);
           interpolateTree(replacement, currentScope);
         }
-      } else {
-        const listExpression = directive.getAttribute("list").match(exactExpression);
-        if (!listExpression) throw new Error("sc-for list must be one exact expression");
-        const list = lookup(currentScope, listExpression[1]);
+      } else if (directiveKind === "for" || directiveKind === "sc-for") {
+        const listExpression = exactDirectiveExpression(directive, "list", directiveKind);
+        const list = lookup(currentScope, listExpression);
         if (!Array.isArray(list)) {
-          throw new Error(`sc-for ${listExpression[1]} did not resolve to an array`);
+          throw new Error(`${directiveKind} ${listExpression} did not resolve to an array`);
         }
         const localName = directive.getAttribute("as");
-        if (!localName) throw new Error("sc-for requires an as attribute");
+        if (!localName || !localName.trim()) {
+          throw new Error(`${directiveKind} requires a non-empty as attribute`);
+        }
         for (const item of list) {
           const itemFragment = document.createDocumentFragment();
           for (const child of children) {
@@ -110,6 +148,10 @@
           interpolateTree(itemFragment, scopeOf(values, itemLocals));
           replacement.appendChild(itemFragment);
         }
+      } else {
+        throw new Error(
+          `Unsupported design-canvas directive: ${directiveKind == null ? "<missing>" : directiveKind}`
+        );
       }
 
       directive.replaceWith(replacement);

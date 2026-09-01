@@ -1,6 +1,6 @@
 # StoryAtlas mockup v2: professional UI design brief
 
-- **Status:** Design package implemented and frozen for review; not runtime acceptance
+- **Status:** Independent-review repair candidate; not accepted and not runtime acceptance
 - **Audience:** Product, interaction, information-visualization, and UI designer
 - **Reference image:** [`mockup1.png`](mockup1.png)
 - **Product direction:** [`../vision.md`](../vision.md) and [`../mission.md`](../mission.md)
@@ -286,7 +286,10 @@ Required external or non-source destinations include:
 
 Do not collapse all of these into “external,” “irrelevant,” or “error.”
 
-Keep fidelity facets distinct from source address. A recall unit may identify the correct event while reversing actor and patient, changing polarity, moving it to the wrong location, or asserting reported content as fact.
+Keep fidelity facets distinct from faithful source mass. The typed alignment state must preserve
+`Source(ref)` separately from `Distorted(ref, facets)`, even when both share one source address. A
+recall unit may identify the correct event while reversing actor and patient, changing polarity,
+moving it to the wrong location, or asserting reported content as fact.
 
 Misordering is a property of transitions between aligned recall units. It should appear as a path, transition overlay, or derived diagnostic—not as a property of one matrix cell.
 
@@ -511,6 +514,10 @@ Please provide:
 12. An interactive prototype for selection, projection switching, semantic zoom, inspector disclosure, and basic text traversal.
 13. Annotation notes defining every non-obvious axis, mark, color, line, and numerical encoding.
 14. Exportable PNG or PDF review plates plus the editable design source.
+15. A populated Chronology Loom plate that separates discourse, story-world,
+    and recall clocks and makes at least one reversal legible as a crossing.
+16. A populated Feature scale-space plate that shows raw observations,
+    missingness, multiple declared aggregation windows, and the source receipt.
 
 The prototype does not need to implement scientific computation. It does need to show where real data, receipts, uncertainty, and alternatives would appear.
 
@@ -535,7 +542,78 @@ The mockup is ready for engineering and scientific review when all of the follow
 - [ ] Every visualization has a textual or tabular accessible counterpart.
 - [ ] The design can be implemented as DOM text and controls plus SVG scientific graphics.
 
-## 18. Design north star
+## 18. Independent-review amendments
+
+The v2 review round made the following constraints acceptance-bearing for the
+repair candidate.
+
+### Exact observations and scientific state
+
+- Source, recall, and interview are three independent text identities with exact
+  bytes, UTF-16 coordinate systems, hashes, unit spans, and storage pointers.
+- Passing a fixture hash establishes identity only. All three remain synthetic,
+  unadmitted, and not human adjudicated.
+- Exact text uses at least 16px type with 24.8px line height and cannot be clamped
+  or hidden. If it does not fit, it lives in a declared, executable scroll region.
+- Feature receipts name raw and derived target grains, lexical-token universe,
+  window, step, typed edge policy, reducer, missing-value policy, observed and missing counts,
+  provider, calibration status, and use ledger. One token-ordinal ledger must conserve sentence,
+  selected-window, and whole-track counts.
+- `Source(ref)` and `Distorted(ref, facets)` are distinct `AlignState` identities.
+  The matrix includes a counterexample where 0.30 faithful and 0.41 Attribute-
+  distorted mass share `s05`; their 0.71 anchor total must never masquerade as
+  source-faithful mass.
+- Interview address projections conserve Target episode, Other specific episode,
+  Extended episode, Repeated/categoric, Personal knowledge, General knowledge,
+  Discourse, and Unresolved mass. The proposed StoryAtlas view state `Unestablished` makes source
+  coverage uncomputable rather than zero; it is not presented as a type already supplied by the
+  pinned StoryModel revision.
+- Interpretive summaries are decomposed into field-addressable claim ids, status,
+  evidence or upstream claims, and receipts. In particular, “alone,” the `s02` /
+  `s09` relation, and intentional withholding at `s10` stay weaker than the
+  source-explicit action fields.
+
+### Frozen output and accessibility
+
+- The review deliverable is a bundle, not one magic file: editable source,
+  synthetic fixture registry, frozen HTML/CSS plates, PNG plates, courts, and a
+  manifest with reproducible and diagnostic portions.
+- Frozen HTML contains no JavaScript or external resource, opens from the
+  filesystem, visibly declares that controls are inert, and removes focus and
+  button semantics. It is design evidence, not an interactive prototype.
+- A live two-dimensional projection uses inert SVG paint plus one visible DOM
+  composite twin with `aria-activedescendant`. The matrix twin exposes all 11 × 16
+  cells, including zero, off-source, and Unranked states. Runtime accessibility
+  remains an open application-level court.
+- Printable-character shortcuts require a modifier, are scoped to the focused
+  instrument, are remappable and disableable, and are suspended while text entry
+  or editing owns the keyboard.
+- Every plate declares exactly one fixed or flowing artboard. Courts check exact
+  evidence, cumulative visibility through every clipping ancestor, artboard extent, frozen
+  semantics, portable replay, feature conservation, claim span/upstream integrity, fixture
+  mutations, and manifest mutations. The verifier checks reproducible source/output bytes and
+  derives that receipt from the authenticated artifact rather than trusting parallel arrays.
+- Pixel review is a DPR-2 gate, not a convenience export. Natural PNG dimensions
+  must be twice the declared CSS viewport. The plate court additionally rejects
+  SVG text clipping and text-on-text collisions, checks explicitly paired
+  mark/label clearances and declared blank bands, and carries killing mutations
+  for the reviewed semantic failures.
+- Chronology Loom and Feature scale-space are populated exported states of the
+  main editable source. Their presence is acceptance-bearing: a tab label without
+  the corresponding marks, receipts, and textual contract is a failed plate.
+
+### Graph-over-text spike
+
+The design does not assume that text-lane overlays can carry every nonlocal
+relation. The working hypothesis is two synchronized projections with one identity
+system: the Codex carries local annotations and typed portal endpoints; the Atlas
+or Loom carries cross-page causal and world-time geometry. The O3 spike must draw
+at least one cross-page causal relation and one world-time reversal, then compare
+comprehension, evidence access, crossings, and keyboard traversal against a
+Codex-only lane overlay. Until that spike is evaluated, “text alone is sufficient”
+is not an accepted claim.
+
+## 19. Design north star
 
 The ideal StoryAtlas view should let a researcher move from a sentence to an event, from an event to a scene, from a scene to the story's changing trajectory, and from any of those back to the exact words and evidence—without ever confusing a compelling picture with a scientific fact.
 

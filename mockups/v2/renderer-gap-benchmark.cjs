@@ -5,6 +5,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { pathToFileURL } = require("url");
+const { canonical } = require("./manifest-digest.cjs");
 
 const root = path.resolve(__dirname, "../..");
 const reviewDir = path.join(__dirname, "review");
@@ -29,7 +30,7 @@ async function main() {
   try {
     browser = await chromium.launch({ headless: true });
     version = browser.version();
-    context = await browser.newContext({ viewport: { width: 1400, height: 1000 }, deviceScaleFactor: 1, reducedMotion: "reduce" });
+    context = await browser.newContext({ viewport: { width: 1400, height: 1000 }, deviceScaleFactor: 2, reducedMotion: "reduce" });
     const page = await context.newPage();
     page.on("pageerror", (error) => errors.push(String(error)));
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
@@ -43,13 +44,69 @@ async function main() {
   }
   if (errors.length) throw new Error(errors.join(" | "));
 
-  const receipt = {
-    ...result,
-    environment: { browser: { engine: "Chromium", version }, platform: { os: os.platform(), arch: os.arch() }, devicePixelRatio: 1 },
-    source: { path: "renderer-gap-benchmark.html", sha256: sha256(fs.readFileSync(sourcePath)) }
+  const source = {
+    path: "renderer-gap-benchmark.html",
+    sha256: sha256(fs.readFileSync(sourcePath))
   };
-  const geometric = receipt.results.geometric;
-  const shared = receipt.results.sharedPattern;
+  const structural = {
+    schema: "storyatlas4s.renderer-gap-structural.v1",
+    workload: result.workload,
+    gates: {
+      maxSvgElements: result.gates.maxSvgElements,
+      maxSerializedSvgBytes: result.gates.maxSerializedSvgBytes
+    },
+    results: Object.fromEntries(
+      Object.entries(result.results).map(([key, value]) => [
+        key,
+        {
+          label: value.label,
+          marks: value.marks,
+          hatchSegmentsPerMark: value.hatchSegmentsPerMark,
+          elementCount: value.elementCount,
+          serializedBytes: value.serializedBytes,
+          gates: {
+            elementBudget: value.gates.elementBudget,
+            byteBudget: value.gates.byteBudget
+          }
+        }
+      ])
+    ),
+    source
+  };
+  const structuralDigestRule =
+    "sha256(storyatlas4s-canonical-json-v1(structural)); timings and environment excluded";
+  const structuralDigest = sha256(Buffer.from(canonical(structural), "utf8"));
+  const diagnostics = {
+    interactionGateMs: result.gates.interactionP95Ms,
+    results: Object.fromEntries(
+      Object.entries(result.results).map(([key, value]) => [
+        key,
+        {
+          constructionMs: value.constructionMs,
+          selectionP95Ms: value.selectionP95Ms,
+          transformP95Ms: value.transformP95Ms,
+          selectionGate: value.gates.selectionP95,
+          transformGate: value.gates.transformP95
+        }
+      ])
+    ),
+    environment: {
+      browser: { engine: "Chromium", version },
+      platform: { os: os.platform(), arch: os.arch() },
+      devicePixelRatio: 2
+    }
+  };
+  const receipt = {
+    schema: "storyatlas4s.renderer-gap-court.v2",
+    structuralDigestRule,
+    structuralDigest,
+    structural,
+    diagnostics,
+    interpretation:
+      "Structural counts and bytes form the reproducible court. Timings and environment are diagnostics only."
+  };
+  const geometric = structural.results.geometric;
+  const shared = structural.results.sharedPattern;
   if (geometric.gates.elementBudget && geometric.gates.byteBudget) {
     throw new Error("Geometric court unexpectedly passed both structural gates; RendererGap disposition must be revisited");
   }

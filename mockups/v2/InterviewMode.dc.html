@@ -22,7 +22,7 @@
   </style>
 </helmet>
 
-<div style="width: 1536px; height: 1024px; background: #F9F5EF; display: flex; flex-direction: column; overflow: hidden;">
+<div data-dc-artboard data-dc-layout="fixed" style="width: 1536px; height: 1024px; background: #F9F5EF; display: flex; flex-direction: column; overflow: hidden;">
 
   <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 6px 24px; flex: none;">
     <span style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
@@ -33,9 +33,9 @@
     <span style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em;">storyatlas4s</span>
     <span style="width: 1px; height: 18px; background: #D7D2CB;"></span>
     <span style="font-size: 12.5px;">Autobiographical interview</span>
-    <span class="m" style="font-size: 11px; color: #544D47;">synthetic/interview-p07@v0 · cue “a time you got lost”</span>
+    <span class="m" style="font-size: 10px; color: #544D47;">two-boats-interview-p07@v1 · sha256 c0488527…c86 · cue “a time you got lost”</span>
     <span style="display: inline-flex; align-items: center; gap: 6px; border: 1px dashed #544D47; border-left: 3px dashed #544D47; background: #F0EBE3; padding: 3px 8px;">
-      <span style="font-size: 11px; color: #221D19;"><strong style="font-weight: 600;">No observed source episode exists.</strong> The transcript is the only observation.</span>
+      <span style="font-size: 11px; color: #221D19;"><strong style="font-weight: 600;">proposed StoryAtlas sourceState = Unestablished.</strong> The transcript is the only observation; source coverage is not computable. This is not yet a pinned provider type.</span>
     </span>
   </div>
 
@@ -48,8 +48,8 @@
     <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
       <span class="lbl">placement</span>
       <span style="display: inline-flex; align-items: center; gap: 5px; border: 1px solid #221D19; background: #F9F5EF; padding: 2px 7px;"><span class="m" style="font-size: 11px; font-weight: 600;">Transcript: on-mark</span></span>
-      <span style="display: inline-flex; align-items: center; gap: 5px; border: 1px dashed #544D47; background: #F9F5EF; padding: 2px 7px;"><span class="m" style="font-size: 11px; font-weight: 600;">Episode: via-ancestor</span></span>
-      <span class="lbl">— the episode is hypothesised, so a detail is placed through it, never on it.</span>
+      <span style="display: inline-flex; align-items: center; gap: 5px; border: 1px dashed #544D47; background: #F9F5EF; padding: 2px 7px;"><span class="m" style="font-size: 11px; font-weight: 600;">{{ episodePlacement }}</span></span>
+      <span class="lbl">{{ episodePlacementWhy }}</span>
     </div>
   </div>
 
@@ -65,11 +65,11 @@
       <div style="padding: 6px 12px; border-bottom: 1px solid #D7D2CB; flex: none;">
         <span class="lbl" style="line-height: 1.45;">Interviewer turns are <strong style="font-weight: 600;">protocol context</strong>. They are shown, they carry phase provenance, and they contribute no memory-address mass.</span>
       </div>
-      <div style="flex-grow: 1; overflow: hidden; padding: 10px 0;">
+      <div data-dc-scroll-region="interview-transcript" style="flex-grow: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 10px 0;">
         <sc-for list="{{ turns }}" as="t" hint-placeholder-count="10">
           <div style="{{ t.wrapStyle }}" onClick="{{ t.pick }}">
             <div style="{{ t.tagStyle }}">{{ t.tag }}</div>
-            <div style="{{ t.textStyle }}">{{ t.text }}</div>
+            <div data-dc-exact-evidence="interview-turn" data-observation-fixture="synthetic/two-boats-interview-p07@v1" data-observation-ref="{{ t.id }}" style="{{ t.textStyle }}">{{ t.text }}</div>
           </div>
         </sc-for>
       </div>
@@ -94,7 +94,7 @@
       <!-- hypothesised episode: dashed everywhere, never drawn as a record -->
       <div style="margin: 10px 12px 0; border: 1px dashed #544D47; border-left-width: 3px; background: #F0EBE3; padding: 9px 11px; flex: none; display: flex; flex-direction: column; gap: 7px;">
         <div style="display: flex; align-items: baseline; gap: 9px;">
-          <span style="font-size: 12.5px; font-weight: 600;">Hypothesised episode structure</span>
+          <span style="font-size: 12.5px; font-weight: 600;">Hypothesized episode structure</span>
           <span style="font-size: 11px; border: 1px dotted #544D47; padding: 1px 6px; background: #F9F5EF;">structurally derived</span>
           <span class="lbl" style="margin-left: auto;">not an observed record · no independent evidence exists</span>
         </div>
@@ -128,8 +128,9 @@
 
       <div style="flex-grow: 1; overflow: hidden; padding: 0 12px 8px; display: flex; gap: 0; min-height: 0;">
         <div style="width: 340px; flex: none; display: flex; flex-direction: column;">
-          <div style="height: 98px; flex: none; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4px;">
-            <span class="lbl" style="font-weight: 600;">Participant details, in transcript order</span>
+          <div style="height: 146px; flex: none; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4px;">
+            <span class="lbl" style="font-weight: 600;">Detail summaries, in transcript order</span>
+            <span class="lbl" style="font-size: 10px;">assessment grain · “Okay. Um.” remains transcript-only discourse evidence</span>
           </div>
           <sc-for list="{{ details }}" as="d" hint-placeholder-count="12">
             <div style="{{ d.rowStyle }}" onClick="{{ d.pick }}" tabindex="0" role="button" aria-label="{{ d.aria }}">
@@ -139,7 +140,7 @@
           </sc-for>
         </div>
 
-        <svg width="290" height="512" viewBox="0 -40 290 512" style="flex: none;" role="img" aria-label="Detail assessment by memory address. Twelve participant details against eight memory-address destinations. Square area is address mass; each row sums to one.">
+        <svg width="290" height="562" viewBox="0 -90 290 562" style="flex: none;" role="img" aria-label="Detail assessment by memory address. Twelve participant details against eight memory-address destinations. Square area is address mass; each row sums to one.">
           <defs>
             <pattern id="iv-vert" width="4" height="4" patternUnits="userSpaceOnUse"><line x1="1" y1="0" x2="1" y2="4" stroke="#69625C" stroke-width="1.3"></line></pattern>
           </defs>
@@ -175,7 +176,7 @@
       </div>
 
       <div style="display: flex; align-items: center; gap: 12px; padding: 7px 12px; border-top: 1px solid #817B74; background: #F0EBE3; flex: none;">
-        <span style="{{ ovBtnStyle }}" onClick="{{ toggleOverlay }}" tabindex="0" role="button" aria-pressed="{{ ovPressed }}">Internal / External overlay</span>
+        <span style="{{ ovBtnStyle }}" onClick="{{ toggleOverlay }}" tabindex="0" role="button" aria-pressed="{{ ovPressed }}">Address-scope projection</span>
         <span class="lbl" style="line-height: 1.4; flex-grow: 1;">{{ ovText }}</span>
       </div>
     </div>
@@ -185,10 +186,10 @@
       <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
         <span class="h2">Selection</span><span class="lbl">one detail</span>
       </div>
-      <div style="flex-grow: 1; overflow: hidden; padding: 11px 12px; display: flex; flex-direction: column; gap: 11px;">
+      <div data-dc-scroll-region="interview-selection-inspector" style="flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 11px 12px; display: flex; flex-direction: column; gap: 11px;">
         <div style="display: flex; flex-direction: column; gap: 5px;">
           <span class="lbl" style="font-weight: 600;">Detail · exact participant words</span>
-          <span class="m" style="font-size: 12.5px; line-height: 1.45; border-left: 3px solid #852A12; padding-left: 8px;">{{ selText }}</span>
+          <span class="m" data-dc-exact-evidence="selected-detail" style="font-size: 16px; line-height: 24.8px; border-left: 3px solid #852A12; padding-left: 8px;">{{ selText }}</span>
         </div>
         <div style="display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 5px 12px; font-size: 12px;">
           <span style="font-weight: 600;">Address</span><span class="m" style="font-size: 11px; overflow-wrap: anywhere;">{{ selAddr }}</span>
@@ -222,7 +223,7 @@
 
         <div style="margin-top: auto; display: flex; flex-direction: column; gap: 3px; border-top: 1px solid #817B74; padding-top: 8px;">
           <span class="lbl" style="font-weight: 600;">Receipts</span>
-          <span class="m" style="font-size: 10.5px; color: #544D47; line-height: 1.5; overflow-wrap: anywhere;">transcriptChecksum e40a…7f23 · addressPolicy syn-mem@v1 · episodeModel hypothesised/A · no calibration model</span>
+          <span class="m" style="font-size: 10.5px; color: #544D47; line-height: 1.5; overflow-wrap: anywhere;">transcriptTextSha256 c0488527…c86 · proposed view state Unestablished@v1 · addressPolicy syn-memory-address@v1 · episodeModel Hypothesized/A · no calibration model</span>
         </div>
       </div>
     </div>
@@ -309,7 +310,7 @@ class Component extends DCLogic {
 
     var cols = COLS.map(function (c) {
       var x = colX[c.k] + 17;
-      return { name: c.n, cx: x, rot: 'rotate(-52 ' + x + ' 52)', fill: c.k === 'UNR' ? '#653E00' : '#221D19' };
+      return { name: c.n, cx: x, rot: 'rotate(-90 ' + x + ' 52)', fill: c.k === 'UNR' ? '#653E00' : '#221D19' };
     });
 
     var detailRows = details.map(function (d) {
@@ -328,29 +329,29 @@ class Component extends DCLogic {
 
     // transcript: interviewer turns are protocol, participant turns are exact
     var script = [
-      { who:'I', tag:'FR · free recall', text:'Tell me about a time you got lost. Take as long as you need.' },
-      { who:'P', tag:'participant', text:'Okay. Um. There was a market — this was maybe two years ago — and I went in through one entrance and I could not find the way back out.', ids:['d01','d02','d03'] },
-      { who:'I', tag:'GP · general probe', text:'Can you tell me anything more about that?' },
-      { who:'P', tag:'participant', text:"It was hot. There were stalls with fabric hanging down so you couldn't see over them.", ids:['d04','d05'] },
-      { who:'I', tag:'SP · specific probe', text:'Do you remember what time of day it was?' },
-      { who:'P', tag:'participant', text:'Afternoon, I think. I usually go in the afternoon. Markets in that region are always laid out in rings.', ids:['d06','d07','d08'] },
-      { who:'I', tag:'GP · general probe', text:'Was anyone with you?' },
-      { who:'P', tag:'participant', text:'My sister was with me — no, wait, that was a different trip. I remember my chest going tight.', ids:['d09','d10','d11'] },
-      { who:'I', tag:'SP · specific probe', text:'Roughly how long were you looking for the way out?' },
-      { who:'P', tag:"participant", text:"I don't know how long it took. Honestly I couldn't tell you.", ids:['d12'] }
+      { id:'t01', who:'I', tag:'FR · free recall', text:'Tell me about a time you got lost. Take as long as you need.' },
+      { id:'t02', who:'P', tag:'participant', text:'Okay. Um. There was a market — this was maybe two years ago — and I went in through one entrance and I could not find the way back out.', ids:['d01','d02','d03'] },
+      { id:'t03', who:'I', tag:'GP · general probe', text:'Can you tell me anything more about that?' },
+      { id:'t04', who:'P', tag:'participant', text:"It was hot. There were stalls with fabric hanging down so you couldn't see over them.", ids:['d04','d05'] },
+      { id:'t05', who:'I', tag:'SP · specific probe', text:'Do you remember what time of day it was?' },
+      { id:'t06', who:'P', tag:'participant', text:'Afternoon, I think. I usually go in the afternoon. Markets in that region are always laid out in rings.', ids:['d06','d07','d08'] },
+      { id:'t07', who:'I', tag:'GP · general probe', text:'Was anyone with you?' },
+      { id:'t08', who:'P', tag:'participant', text:'My sister was with me — no, wait, that was a different trip. I remember my chest going tight.', ids:['d09','d10','d11'] },
+      { id:'t09', who:'I', tag:'SP · specific probe', text:'Roughly how long were you looking for the way out?' },
+      { id:'t10', who:'P', tag:"participant", text:"I don't know how long it took. Honestly I couldn't tell you.", ids:['d12'] }
     ];
     var turns = script.map(function (t) {
       var isP = t.who === 'P';
       var has = isP && t.ids && t.ids.indexOf(selId) >= 0;
       return {
-        tag: t.tag, text: t.text,
+        id: t.id, tag: t.tag, text: t.text,
         wrapStyle: 'display: flex; flex-direction: column; gap: 2px; padding: 5px 12px 5px ' + (isP ? '12px' : '30px') +
           '; border-left: 3px solid ' + (isP ? (has ? '#2F4693' : '#852A12') : '#B5B0A9') + '; margin-bottom: 5px;' +
           (has ? ' background: #F0EDE9;' : '') + (isP ? ' cursor: pointer;' : ''),
         tagStyle: 'font-size: 10px; letter-spacing: 0.04em; color: ' + (isP ? '#69625C' : '#544D47') + ';' + (isP ? '' : ' font-weight: 600;'),
         textStyle: isP
-          ? 'font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; line-height: 1.5; color: #221D19;'
-          : 'font-size: 12px; line-height: 1.45; color: #544D47; font-style: italic;',
+          ? 'font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 16px; line-height: 24.8px; color: #221D19;'
+          : 'font-size: 16px; line-height: 24.8px; color: #544D47; font-style: italic;',
         pick: function () { if (isP && t.ids) self.setState({ sel: t.ids[0] }); }
       };
     });
@@ -369,6 +370,18 @@ class Component extends DCLogic {
     });
 
     var phaseOf = { FR: 'free recall', GP: 'general probe', SP: 'specific probe' };
+    var topKey = dist[0].k;
+    var episodePlacement = topKey === 'TE' ? 'Episode: via-ancestor' : 'Episode: off-projection';
+    var episodePlacementWhy = topKey === 'TE'
+      ? '— target-episode placement is mediated by the hypothesised episode; it is never an observed on-mark placement.'
+      : '— the top address is outside the hypothesised target episode, so no target-episode mark is implied.';
+    var targetScope = sel.m.TE || 0;
+    var otherEpisodeScope = (sel.m.OSE || 0) + (sel.m.EXT || 0);
+    var repeatedScope = sel.m.REP || 0;
+    var semanticScope = (sel.m.PK || 0) + (sel.m.GK || 0);
+    var discourseScope = sel.m.DIS || 0;
+    var unresolvedScope = sel.m.UNR || 0;
+    var addressTotal = targetScope + otherEpisodeScope + repeatedScope + semanticScope + discourseScope + unresolvedScope;
 
     return {
       turns: turns, details: detailRows, cells: cells, bands: bands, gauges: gauges, cols: cols,
@@ -377,14 +390,20 @@ class Component extends DCLogic {
       selPhase: phaseOf[sel.ph], selPrompt: sel.pr,
       selTop: nameOf[dist[0].k] + ' · ' + dist[0].v.toFixed(2),
       selUnr: (sel.m.UNR || 0).toFixed(2),
+      episodePlacement: episodePlacement,
+      episodePlacementWhy: episodePlacementWhy,
       dist: distOut,
       ovPressed: ov ? 'true' : 'false',
       toggleOverlay: function () { self.setState({ overlay: !ov }); },
       ovBtnStyle: 'font-size: 11.5px; min-height: 24px; display: flex; align-items: center; padding: 0 10px; cursor: pointer; flex: none; border: 1px solid #817B74; background: ' +
         (ov ? '#221D19' : '#F9F5EF') + '; color: ' + (ov ? '#F9F5EF' : '#221D19') + '; font-weight: ' + (ov ? '600' : '400') + ';',
       ovText: ov
-        ? 'Overlay ON · policy syn-intext@v2.1. Internal = TE. External = OSE + REP + PK + GK. Unresolved and Discourse are excluded from both, and the excluded mass is printed rather than absorbed. This partition is the policy’s, not the model’s.'
-        : 'Off by default. Internal/External is a named, versioned policy projection over the address columns — never a property the details themselves carry.'
+        ? 'Projection ON · syn-address-scope@v1 · selected detail: target=' + targetScope.toFixed(2) +
+          '; other-episode (OSE+EXT)=' + otherEpisodeScope.toFixed(2) +
+          '; repeated/categoric=' + repeatedScope.toFixed(2) + '; semantic (PK+GK)=' + semanticScope.toFixed(2) + '; discourse=' + discourseScope.toFixed(2) +
+          '; unresolved=' + unresolvedScope.toFixed(2) + '; conserved total=' + addressTotal.toFixed(2) +
+          '. This is a view policy, not an intrinsic detail label.'
+        : 'Off by default. The named projection partitions every MemoryAddress state, including Extended episode and Unresolved. Under the proposed StoryAtlas Unestablished view state, no binary Internal/External rate is computed.'
     };
   }
 }

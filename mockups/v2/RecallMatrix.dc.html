@@ -22,7 +22,7 @@
   </style>
 </helmet>
 
-<div style="width: 1536px; height: 1024px; background: #F9F5EF; display: flex; flex-direction: column; overflow: hidden;">
+<div data-dc-artboard data-dc-layout="fixed" style="width: 1536px; height: 1024px; background: #F9F5EF; display: flex; flex-direction: column; overflow: hidden;">
 
   <div style="display: flex; align-items: center; gap: 14px; background: #221D19; border-bottom: 2px solid #221D19; padding: 6px 24px; flex: none;">
     <span style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; color: #F9F5EF;">SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT</span>
@@ -33,7 +33,7 @@
     <span style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em;">storyatlas4s</span>
     <span style="width: 1px; height: 18px; background: #D7D2CB;"></span>
     <span style="font-size: 12.5px;">Known-source recall</span>
-    <span class="m" style="font-size: 11px; color: #544D47;">source synthetic/two-boats@v0 · recall synthetic/recall-p01@v0</span>
+    <span class="m" style="font-size: 10px; color: #544D47;">source two-boats-source@v1 40c889d9…a43cc · recall two-boats-recall-p01@v1 9612ddc1…052b</span>
     <span style="display: inline-flex; align-items: center; gap: 5px; border: 1px solid #24356F; border-left-width: 3px; background: #F0EDE9; padding: 2px 7px;">
       <svg width="9" height="11" aria-hidden="true"><path d="M2 5 V3.2 a2.5 2.5 0 0 1 5 0 V5" fill="none" stroke="#24356F" stroke-width="1.1"></path><rect x="1" y="5" width="7" height="5.5" fill="none" stroke="#24356F" stroke-width="1.1"></rect></svg>
       <span style="font-size: 11px; color: #24356F;">recall spans authorised · privacy capability granted</span>
@@ -57,23 +57,41 @@
 
   <div style="display: flex; gap: 24px; padding: 18px 24px; flex-grow: 1; min-height: 0;">
 
-    <!-- ---------- source Codex ---------- -->
+    <!-- ---------- dual exact-evidence Codex ---------- -->
     <div style="width: 300px; flex: none; display: flex; flex-direction: column; border: 1px solid #817B74; background: #F9F5EF; min-height: 0;">
       <div style="display: flex; align-items: center; gap: 8px; padding: 8px 11px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
-        <span class="h2">Narrative Codex</span><span class="lbl">source</span>
+        <span class="h2">Dual Narrative Codex</span><span class="lbl">exact evidence</span>
         <span style="margin-left: auto; width: 8px; height: 8px; background: #2F4693;"></span>
       </div>
-      <div style="flex-grow: 1; overflow: hidden; padding: 9px 0;">
-        <sc-for list="{{ source }}" as="s" hint-placeholder-count="10">
-          <div style="{{ s.rowStyle }}">
-            <span class="m" style="{{ s.numStyle }}">{{ s.num }}</span>
-            <span class="m" style="{{ s.textStyle }}">{{ s.text }}</span>
-          </div>
-        </sc-for>
+      <div style="display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; border-bottom: 1px solid #817B74;">
+        <div style="padding: 5px 10px; background: #F0EBE3; border-bottom: 1px solid #D7D2CB; flex: none;">
+          <span class="lbl" style="font-weight: 600;">Source · 10/10 units · UTF-16 evidence rail</span>
+        </div>
+        <div data-dc-scroll-region="recall-source-codex" style="flex-grow: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 7px 0;">
+          <sc-for list="{{ source }}" as="s" hint-placeholder-count="10">
+            <div style="{{ s.rowStyle }}">
+              <span class="m" style="{{ s.numStyle }}">{{ s.num }}</span>
+              <span class="m" data-dc-exact-evidence="source" data-observation-fixture="synthetic/two-boats-source@v1" data-observation-ref="{{ s.num }}" style="{{ s.textStyle }}">{{ s.text }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; flex: 1 1 0; min-height: 0;">
+        <div style="padding: 5px 10px; background: #F0EBE3; border-bottom: 1px solid #D7D2CB; flex: none;">
+          <span class="lbl" style="font-weight: 600;">Recall · 11/11 units · UTF-16 evidence rail</span>
+        </div>
+        <div data-dc-scroll-region="recall-transcript-codex" style="flex-grow: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 7px 0;">
+          <sc-for list="{{ recallEvidence }}" as="r" hint-placeholder-count="11">
+            <div style="{{ r.rowStyle }}">
+              <span class="m" style="{{ r.idStyle }}">{{ r.id }}</span>
+              <span class="m" data-dc-exact-evidence="recall" data-observation-fixture="synthetic/two-boats-recall-p01@v1" data-observation-ref="{{ r.id }}" style="{{ r.textStyle }}">{{ r.text }}</span>
+            </div>
+          </sc-for>
+        </div>
       </div>
       <div style="padding: 7px 11px; border-top: 1px solid #817B74; background: #F0EBE3; flex: none; display: flex; flex-direction: column; gap: 3px;">
-        <span class="lbl" style="line-height: 1.4;">Shaded band = the source target of the selected cell.</span>
-        <span class="lbl" style="color: #653E00; line-height: 1.4;">▨ s03, s09 receive no aggregate recall mass — source-side omission. Nothing is inserted into the recall rail to mark it.</span>
+        <span class="lbl" style="line-height: 1.4;">Both rails remain exact DOM text; the matrix labels are summaries.</span>
+        <span class="lbl" style="color: #653E00; line-height: 1.4;">▨ s03, s09 receive no aggregate recall mass — source-side omission.</span>
       </div>
     </div>
 
@@ -91,30 +109,32 @@
 
       <div style="padding: 7px 12px; border-bottom: 1px solid #D7D2CB; background: #F9F5EF; display: flex; flex-direction: column; gap: 3px; flex: none;">
         <div class="m" style="font-size: 11px;">rows: RecallOrder; cols: SourceAddress ∪ OffSourceDestination ∪ Unranked; area: PosteriorMass; distance: NoMeaning</div>
-        <div class="lbl" style="line-height: 1.45;">Cell area is posterior mass, not a rank. Every row sums to exactly 1.00 across all three column groups — abstained and off-source mass is carried, never dropped to make a winner.</div>
-        <div class="lbl" style="color: #653E00; line-height: 1.45;">not encoded: order errors (a transition property — see the overlay) · omission (a column property) · fidelity facets (per-cell, listed separately)</div>
+        <div class="lbl" style="line-height: 1.45;">Mark area is mass over the full <span class="m">AlignState</span>: Source, Distorted(facets), or External(destination). In this synthetic fixture every row sums to exactly 1.00; <span class="m">AlignmentRow</span> itself permits unbalanced producer output. No state is collapsed to manufacture a winner.</div>
+        <div class="lbl" style="line-height: 1.45;"><span class="m">Inference*</span> is a compact column alias only; the inspector renders the canonical state <span class="m">External(SourceConsistentInference)</span>.</div>
+        <div class="lbl" style="color: #653E00; line-height: 1.45;">not encoded: order errors (a transition property) · omission (a column property). Fidelity facets remain part of Distorted-state identity, not a tooltip detached from mass.</div>
       </div>
 
       <div style="flex-grow: 1; overflow: hidden; padding: 10px 12px; display: flex; gap: 0;">
         <!-- exact recall units: real DOM text -->
         <div style="width: 296px; flex: none; display: flex; flex-direction: column;">
-          <div style="height: 92px; flex: none; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 5px;">
-            <span class="lbl" style="font-weight: 600;">Recall units, in recall order</span>
-            <span class="lbl" style="font-size: 10px;">exact participant text · 11 units</span>
+          <div style="height: 130px; flex: none; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 5px;">
+            <span class="lbl" style="font-weight: 600;">Recall-unit summaries, in recall order</span>
+            <span class="lbl" style="font-size: 10px;">identifiers only · exact text is in the dual Codex</span>
           </div>
           <sc-for list="{{ rows }}" as="r" hint-placeholder-count="11">
-            <div style="{{ r.rowStyle }}" onClick="{{ r.pick }}" tabindex="0" role="button" aria-label="{{ r.aria }}">
+            <div data-recall-row="{{ r.id }}" style="{{ r.rowStyle }}" onClick="{{ r.pick }}" tabindex="0" role="button" aria-label="{{ r.aria }}">
               <span class="m" style="{{ r.idStyle }}">{{ r.id }}</span>
-              <span class="m" style="{{ r.textStyle }}">{{ r.text }}</span>
+              <span class="m" style="{{ r.textStyle }}">{{ r.summary }}</span>
             </div>
           </sc-for>
         </div>
 
         <!-- the grid -->
-        <svg width="520" height="554" viewBox="0 -24 520 554" style="flex: none;" role="img" aria-label="Posterior matrix. Eleven recall units against ten source events, five off-source destinations and one unranked column. Square area is posterior mass. Each row sums to one. Source events s03 and s09 receive no mass.">
+        <svg width="520" height="600" viewBox="0 0 520 600" style="flex: none;" role="img" aria-label="Posterior matrix. Eleven recall units against ten source anchors, five individually ruled off-source destinations and one unranked column. Mark area is AlignState mass. Source and Distorted states can share an anchor without being merged. Each row in this synthetic fixture sums to one; the model type permits unbalanced rows. Source anchors s03 and s09 receive no mass.">
           <defs>
             <pattern id="rx-vert" width="4" height="4" patternUnits="userSpaceOnUse"><line x1="1" y1="0" x2="1" y2="4" stroke="#69625C" stroke-width="1.3"></line></pattern>
             <pattern id="rx-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#69625C" stroke-width="1.2"></line></pattern>
+            <pattern id="rx-distorted" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#653E00" stroke-width="1.4"></line></pattern>
           </defs>
 
           <!-- hierarchy header: episode / scene / event, all three levels visible -->
@@ -139,16 +159,21 @@
             <text x="290" y="56">off-source destinations</text>
             <text x="440" y="56">held</text>
           </g>
-          <!-- rotated off-source labels -->
+          <!-- vertical labels leave every named destination independently readable -->
           <g font-family="system-ui, sans-serif" font-size="9" fill="#221D19">
             <sc-for list="{{ offCols }}" as="c" hint-placeholder-count="6">
-              <text x="{{ c.cx }}" y="44" transform="{{ c.rot }}" text-anchor="start">{{ c.name }}</text>
+              <text data-off-source-column="{{ c.name }}" x="{{ c.cx }}" y="122" transform="{{ c.rot }}" text-anchor="start">{{ c.name }}</text>
             </sc-for>
           </g>
-          <line x1="0" y1="60" x2="520" y2="60" stroke="#817B74"></line>
-          <line x1="283.5" y1="0" x2="283.5" y2="486" stroke="#817B74"></line>
-          <line x1="433.5" y1="0" x2="433.5" y2="486" stroke="#817B74"></line>
-          <line x1="472" y1="60" x2="472" y2="486" stroke="#D7D2CB"></line>
+          <line x1="0" y1="126" x2="520" y2="126" stroke="#817B74"></line>
+          <line x1="283.5" y1="0" x2="283.5" y2="548" stroke="#817B74"></line>
+          <line data-off-source-rule="Association" x1="315" y1="126" x2="315" y2="548" stroke="#D7D2CB"></line>
+          <line data-off-source-rule="Commentary" x1="343" y1="126" x2="343" y2="548" stroke="#D7D2CB"></line>
+          <line data-off-source-rule="Intrusion" x1="371" y1="126" x2="371" y2="548" stroke="#D7D2CB"></line>
+          <line data-off-source-rule="Inference" x1="399" y1="126" x2="399" y2="548" stroke="#D7D2CB"></line>
+          <line data-off-source-rule="Uninterpretable" x1="427" y1="126" x2="427" y2="548" stroke="#D7D2CB"></line>
+          <line x1="433.5" y1="0" x2="433.5" y2="548" stroke="#817B74"></line>
+          <line x1="472" y1="126" x2="472" y2="548" stroke="#D7D2CB"></line>
 
           <!-- row bands -->
           <sc-for list="{{ bands }}" as="b" hint-placeholder-count="11">
@@ -168,7 +193,7 @@
             <line x1="{{ u.x1 }}" y1="{{ u.y }}" x2="{{ u.x2 }}" y2="{{ u.y }}" stroke="#221D19" stroke-width="1.4" stroke-dasharray="4 3"></line>
           </sc-for>
 
-          <!-- row mass gauge: proves every row sums to 1.00 -->
+          <!-- row mass gauge: this synthetic fixture's rows sum to 1.00; the model type is unbalanced -->
           <sc-for list="{{ gauges }}" as="g" hint-placeholder-count="11">
             <g>
               <rect x="480" y="{{ g.y }}" width="{{ g.wSrc }}" height="8" fill="#221D19"></rect>
@@ -176,31 +201,29 @@
               <rect x="{{ g.xUnr }}" y="{{ g.y }}" width="{{ g.wUnr }}" height="8" fill="#F9F5EF" stroke="#221D19" stroke-width="0.8"></rect>
             </g>
           </sc-for>
-          <text x="480" y="56" font-family="system-ui, sans-serif" font-size="8.5" fill="#544D47">row mass</text>
+          <text x="480" y="122" font-family="system-ui, sans-serif" font-size="8.5" fill="#544D47">row mass</text>
 
           <!-- transition overlay: misordering is a property of transitions -->
           <sc-if value="{{ showTransitions }}" hint-placeholder-val="{{ true }}">
             <g>
-              <polyline points="13,87 125,125 41,163 153,201 181,239 265,391" fill="none" stroke="#2F4693" stroke-width="1.2" stroke-dasharray="3 2" stroke-opacity="0.85"></polyline>
-              <path d="M125 125 L41 163" stroke="#2F4693" stroke-width="2.6" fill="none"></path>
-              <circle cx="41" cy="163" r="5" fill="none" stroke="#2F4693" stroke-width="2"></circle>
-              <path d="M51 157 L41 163 L51 169" fill="none" stroke="#2F4693" stroke-width="2"></path>
-              <text x="60" y="167" font-size="8.5" font-family="system-ui, sans-serif" fill="#2F4693">inversion · s05 → s02</text>
-              <text x="275" y="316" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">r06–r08 are off-source: not transitions,</text>
-              <text x="275" y="327" font-size="8.5" font-family="system-ui, sans-serif" fill="#544D47">so the path steps over them</text>
+              <polyline points="13,149 125,187 41,225 153,263 181,301 265,453" fill="none" stroke="#2F4693" stroke-width="1.2" stroke-dasharray="3 2" stroke-opacity="0.85"></polyline>
+              <path d="M125 187 L41 225" stroke="#2F4693" stroke-width="2.6" fill="none"></path>
+              <circle data-clear-mark="recall-inversion" cx="41" cy="225" r="5" fill="none" stroke="#2F4693" stroke-width="2"></circle>
+              <path data-clear-mark="recall-inversion" d="M51 219 L41 225 L51 231" fill="none" stroke="#2F4693" stroke-width="2"></path>
+              <text data-clear-label="recall-inversion" x="60" y="229" font-size="8.5" font-family="system-ui, sans-serif" fill="#2F4693">inversion · s05 → s02</text>
             </g>
           </sc-if>
 
           <!-- column foot: coverage, and omission where it is zero -->
-          <line x1="0" y1="486" x2="472" y2="486" stroke="#817B74"></line>
+          <line x1="0" y1="548" x2="472" y2="548" stroke="#817B74"></line>
           <sc-for list="{{ colFoot }}" as="f" hint-placeholder-count="15">
             <rect x="{{ f.x }}" y="{{ f.y }}" width="26" height="{{ f.h }}" fill="{{ f.fill }}" stroke="{{ f.stroke }}" stroke-width="{{ f.sw }}"></rect>
           </sc-for>
           <g font-family="system-ui, sans-serif" font-size="8.5" fill="#653E00" font-weight="600">
-            <text x="70" y="524" text-anchor="middle">omitted</text>
-            <text x="238" y="524" text-anchor="middle">omitted</text>
+            <text x="70" y="590" text-anchor="middle">omitted</text>
+            <text x="238" y="590" text-anchor="middle">omitted</text>
           </g>
-          <text x="0" y="524" font-family="system-ui, sans-serif" font-size="8.5" fill="#544D47">column mass</text>
+          <text x="300" y="590" font-family="system-ui, sans-serif" font-size="8.5" fill="#544D47">column mass · 11 recall units</text>
         </svg>
       </div>
 
@@ -216,27 +239,29 @@
       <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #817B74; background: #F0EBE3; flex: none;">
         <span class="h2">Selection</span><span class="lbl">one cell</span>
       </div>
-      <div style="flex-grow: 1; overflow: hidden; padding: 11px 12px; display: flex; flex-direction: column; gap: 11px;">
+      <div data-dc-scroll-region="recall-selection-inspector" style="flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 11px 12px; display: flex; flex-direction: column; gap: 11px;">
         <div style="display: flex; flex-direction: column; gap: 5px;">
           <span class="lbl" style="font-weight: 600;">Recall unit · exact text</span>
-          <span class="m" style="font-size: 12.5px; line-height: 1.45; border-left: 3px solid #852A12; padding-left: 8px;">{{ selRecallText }}</span>
+          <span class="m" data-dc-exact-evidence="recall-selection" style="font-size: 16px; line-height: 24.8px; border-left: 3px solid #852A12; padding-left: 8px;">{{ selRecallText }}</span>
         </div>
         <div style="display: flex; flex-direction: column; gap: 5px;">
           <span class="lbl" style="font-weight: 600;">Source target · exact text</span>
-          <span class="m" style="font-size: 12.5px; line-height: 1.45; border-left: 3px solid #2F4693; padding-left: 8px;">{{ selSourceText }}</span>
+          <span class="m" data-dc-exact-evidence="source-selection" style="font-size: 16px; line-height: 24.8px; border-left: 3px solid #2F4693; padding-left: 8px;">{{ selSourceText }}</span>
         </div>
         <div style="display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 5px 12px; font-size: 12px;">
-          <span style="font-weight: 600;">Posterior mass</span><span class="m" style="font-size: 12.5px;">{{ selMass }}</span>
+          <span style="font-weight: 600;">AlignState</span><span class="m" data-recall-align-state="{{ selAlignState }}" style="font-size: 11px; overflow-wrap: anywhere;">{{ selAlignState }}</span>
+          <span style="font-weight: 600;">State mass</span><span class="m" style="font-size: 12.5px;">{{ selMass }}</span>
+          <span style="font-weight: 600;">Anchor total</span><span class="m" style="font-size: 12.5px;">{{ selAnchorMass }}</span>
           <span style="font-weight: 600;">Rank in row</span><span class="m" style="font-size: 12.5px;">{{ selRank }}</span>
           <span style="font-weight: 600;">Row total</span><span class="m" style="font-size: 12.5px;">1.00 <span style="color: #69625C;">(complete)</span></span>
           <span style="font-weight: 600;">Address</span><span class="m" style="font-size: 11px; overflow-wrap: anywhere;">{{ selAddr }}</span>
         </div>
 
         <div style="border: 1px solid #817B74; background: #F0EBE3; padding: 9px 10px; display: flex; flex-direction: column; gap: 6px;">
-          <span class="lbl" style="font-weight: 600;">Fidelity facets — independent of address</span>
-          <span class="lbl" style="line-height: 1.4; font-size: 10.5px;">A unit can identify the right event and still misstate it. These are scored separately and never folded into the mass.</span>
+          <span class="lbl" style="font-weight: 600;">Fidelity facets — part of Distorted identity</span>
+          <span class="lbl" style="line-height: 1.4; font-size: 10.5px;">A unit can identify the right anchor and still misstate it. A non-empty facet set makes this a distinct Distorted state; it is never merged into Source mass.</span>
           <sc-for list="{{ facets }}" as="f" hint-placeholder-count="5">
-            <div style="display: flex; align-items: center; gap: 7px;">
+            <div data-recall-facet="{{ f.name }}" style="display: flex; align-items: center; gap: 7px;">
               <span style="{{ f.mark }}"></span>
               <span style="font-size: 11.5px; flex-grow: 1;">{{ f.name }}</span>
               <span class="m" style="font-size: 11px; color: {{ f.color }};">{{ f.state }}</span>
@@ -246,7 +271,7 @@
 
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <span class="lbl" style="font-weight: 600;">Structural compatibility</span>
-          <span style="font-size: 12px; line-height: 1.4;">{{ selCompat }}</span>
+          <span data-recall-compat style="font-size: 12px; line-height: 1.4;">{{ selCompat }}</span>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -260,7 +285,7 @@
 
         <div style="margin-top: auto; display: flex; flex-direction: column; gap: 3px; border-top: 1px solid #817B74; padding-top: 8px;">
           <span class="lbl" style="font-weight: 600;">Receipts</span>
-          <span class="m" style="font-size: 10.5px; color: #544D47; line-height: 1.5; overflow-wrap: anywhere;">recallChecksum b81f…22ce · viewFingerprint 0d47…9a10 · alignConfigChecksum 5e30…c7b1 · no calibration model</span>
+          <span class="m" style="font-size: 10.5px; color: #544D47; line-height: 1.5; overflow-wrap: anywhere;">recallTextSha256 9612ddc1…052b · sourceTextSha256 40c889d9…a43cc · align policy syn-align@v2 · no calibration model</span>
         </div>
       </div>
     </div>
@@ -278,6 +303,7 @@
       <span class="lbl" style="font-weight: 600;">Cell encoding</span>
       <div style="display: flex; align-items: center; gap: 14px;">
         <span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="22" height="14" aria-hidden="true"><rect x="0" y="1" width="12" height="12" fill="#221D19"></rect></svg><span class="lbl">source mass</span></span>
+        <span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="22" height="14" aria-hidden="true"><defs><pattern id="legend-distorted" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#653E00" stroke-width="1.4"></line></pattern></defs><rect x="0" y="1" width="12" height="12" fill="url(#legend-distorted)" stroke="#653E00"></rect></svg><span class="lbl">distorted source · facet set retained</span></span>
         <span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="22" height="14" aria-hidden="true"><rect x="0" y="1" width="12" height="12" fill="none" stroke="#69625C"></rect><line x1="2" y1="1" x2="2" y2="13" stroke="#69625C" stroke-width="1.3"></line><line x1="6" y1="1" x2="6" y2="13" stroke="#69625C" stroke-width="1.3"></line><line x1="10" y1="1" x2="10" y2="13" stroke="#69625C" stroke-width="1.3"></line></svg><span class="lbl">off-source</span></span>
         <span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="22" height="14" aria-hidden="true"><line x1="0" y1="7" x2="14" y2="7" stroke="#221D19" stroke-width="1.4" stroke-dasharray="4 3"></line></svg><span class="lbl">unranked / abstained</span></span>
         <span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="22" height="14" aria-hidden="true"><line x1="0" y1="7" x2="16" y2="7" stroke="#2F4693" stroke-width="1.2" stroke-dasharray="3 2"></line></svg><span class="lbl">recall transition</span></span>
@@ -295,12 +321,12 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { row: 'r02', col: 's05', transitions: true };
+    this.state = { row: 'r02', col: 's05', align: 'Distorted', transitions: true };
   }
 
   model() {
     var SRC = ['s01','s02','s03','s04','s05','s06','s07','s08','s09','s10'];
-    var OFF = ['Association','Commentary','Intrusion','Inference','Uninterpretable'];
+    var OFF = ['Association','Commentary','Intrusion','SourceConsistentInference','Uninterpretable'];
     var srcText = {
       s01:'At first light two boats were drawn up on the shingle below the village.',
       s02:'Erran had been told, the winter before, that the far shore was empty.',
@@ -314,17 +340,18 @@ class Component extends DCLogic {
       s10:'He turned the boat and went back, and did not say what he had seen.'
     };
     var rows = [
-      { id:'r01', text:'there were two boats on the beach',                       mass:{s01:0.88,s04:0.07}, unr:0.05 },
-      { id:'r02', text:'the guy took the bigger one',                             mass:{s05:0.71,s04:0.19}, unr:0.10 },
-      { id:'r03', text:'his uncle told him the other side was empty',             mass:{s02:0.46,s04:0.21,Inference:0.28}, unr:0.05 },
-      { id:'r04', text:"there was a lot of fog, you couldn't see anything",       mass:{s06:0.44,s08:0.41}, unr:0.15 },
-      { id:'r05', text:'somebody was shouting at him from the shore',             mass:{s07:0.79,s01:0.06}, unr:0.15 },
-      { id:'r06', text:'this is like that story you did last week',               mass:{Commentary:0.94}, unr:0.06 },
-      { id:'r07', text:'it reminded me of a ferry I took once',                   mass:{Association:0.91}, unr:0.09 },
-      { id:'r08', text:"and then, I don't know, something about a bird?",         mass:{Intrusion:0.62,Uninterpretable:0.11}, unr:0.27 },
-      { id:'r09', text:'he went back but he never said what happened',            mass:{s10:0.93}, unr:0.07 },
-      { id:'r10', text:"there was something else at the end but I can't get it",  mass:{}, unr:1.00 },
-      { id:'r11', text:'the— with the— you know',                                 mass:{Uninterpretable:0.83}, unr:0.17 }
+      { id:'r01', summary:'two boats on beach', text:'there were two boats on the beach', mass:{s01:0.88,s04:0.07}, unr:0.05 },
+      { id:'r02', summary:'takes bigger boat', text:'the guy took the bigger one', mass:{s05:0.71,s04:0.19},
+        states:[{kind:'Source',dest:'s05',facets:[],v:0.30},{kind:'Distorted',dest:'s05',facets:['Object'],v:0.41},{kind:'Source',dest:'s04',facets:[],v:0.19}], unr:0.10 },
+      { id:'r03', summary:'uncle says shore empty', text:'his uncle told him the other side was empty', mass:{s02:0.46,s04:0.21,SourceConsistentInference:0.28}, unr:0.05 },
+      { id:'r04', summary:'fog; cannot see', text:"there was a lot of fog, you couldn't see anything", mass:{s06:0.44,s08:0.41}, unr:0.15 },
+      { id:'r05', summary:'shouting from shore', text:'somebody was shouting at him from the shore', mass:{s07:0.79,s01:0.06}, unr:0.15 },
+      { id:'r06', summary:'commentary on prior story', text:'this is like that story you did last week', mass:{Commentary:0.94}, unr:0.06 },
+      { id:'r07', summary:'ferry association', text:'it reminded me of a ferry I took once', mass:{Association:0.91}, unr:0.09 },
+      { id:'r08', summary:'possible bird intrusion', text:"and then, I don't know, something about a bird?", mass:{Intrusion:0.62,Uninterpretable:0.11}, unr:0.27 },
+      { id:'r09', summary:'returns; never tells', text:'he went back but he never said what happened', mass:{s10:0.93}, unr:0.07 },
+      { id:'r10', summary:'residual content unavailable', text:"there was something else at the end but I can't get it", mass:{}, unr:1.00 },
+      { id:'r11', summary:'uninterpretable fragment', text:'the— with the— you know', mass:{Uninterpretable:0.83}, unr:0.17 }
     ];
     return { SRC: SRC, OFF: OFF, srcText: srcText, rows: rows };
   }
@@ -334,11 +361,12 @@ class Component extends DCLogic {
     var self = this;
     var selRowId = st.row || 'r02';
     var selCol = st.col || 's05';
+    var selAlign = st.align || 'Distorted';
     var showT = st.transitions !== false;
     var M = this.model();
     var SRC = M.SRC, OFF = M.OFF, srcText = M.srcText, rows = M.rows;
 
-    var PITCH = 28, CELL = 26, HEAD = 68, ROWH = 38;
+    var PITCH = 28, CELL = 26, HEAD = 130, ROWH = 38;
     var colX = {};
     for (var i = 0; i < SRC.length; i++) colX[SRC[i]] = i * PITCH;
     for (var j = 0; j < OFF.length; j++) colX[OFF[j]] = 290 + j * PITCH;
@@ -359,6 +387,7 @@ class Component extends DCLogic {
         var v = row.mass[key];
         var isSrc = key.charAt(0) === 's' && key.length === 3;
         if (isSrc) srcSum += v; else offSum += v;
+        if (row.states && key === 's05') continue;
         var side = 24 * Math.sqrt(v);
         var sel = (row.id === selRowId && key === selCol);
         cells.push({
@@ -367,6 +396,24 @@ class Component extends DCLogic {
           stroke: sel ? '#2F4693' : (isSrc ? '#221D19' : '#69625C'),
           sw: sel ? 3 : (isSrc ? 0 : 1), dash: sel ? '6 3' : 'none'
         });
+      }
+      if (row.states) {
+        for (var stateIndex = 0; stateIndex < row.states.length; stateIndex++) {
+          var state = row.states[stateIndex];
+          if (state.dest !== 's05') continue;
+          var stateSide = 24 * Math.sqrt(state.v);
+          var stateSelected = row.id === selRowId && selCol === state.dest && selAlign === state.kind;
+          var distorted = state.kind === 'Distorted';
+          cells.push({
+            x: colX[state.dest] + (distorted ? CELL - stateSide : 0),
+            y: yMid + (distorted ? 0 : -stateSide),
+            s: stateSide,
+            fill: distorted ? 'url(#rx-distorted)' : '#221D19',
+            stroke: stateSelected ? '#2F4693' : (distorted ? '#653E00' : '#221D19'),
+            sw: stateSelected ? 3 : (distorted ? 1.4 : 0),
+            dash: stateSelected ? '6 3' : 'none'
+          });
+        }
       }
       if (row.unr > 0) {
         var uw = 24 * row.unr;
@@ -393,8 +440,8 @@ class Component extends DCLogic {
     for (var c2 = 0; c2 < allCols.length; c2++) {
       var name = allCols[c2], tot = colTot[name] || 0;
       var h = Math.max(1.5, tot * 22);
-      if (tot === 0) colFoot.push({ x: colX[name], y: 492, h: 22, fill: 'url(#rx-hatch)', stroke: '#653E00', sw: 1.6 });
-      else colFoot.push({ x: colX[name], y: 492 + (22 - h), h: h,
+      if (tot === 0) colFoot.push({ x: colX[name], y: 554, h: 22, fill: 'url(#rx-hatch)', stroke: '#653E00', sw: 1.6 });
+      else colFoot.push({ x: colX[name], y: 554 + (22 - h), h: h,
         fill: RAMP[Math.min(4, Math.floor((tot / 0.95) * 5))], stroke: '#817B74', sw: 0.6 });
     }
 
@@ -402,8 +449,8 @@ class Component extends DCLogic {
       return { name: n, cx: colX[n] + 13, fill: (colTot[n] || 0) === 0 ? '#653E00' : '#221D19' };
     });
     var offCols = OFF.concat(['Unranked']).map(function (n) {
-      var x = colX[n] + 18;
-      return { name: n, cx: x, rot: 'rotate(-52 ' + x + ' 44)' };
+      var x = colX[n] + 13;
+      return { name: n === 'SourceConsistentInference' ? 'Inference*' : n, cx: x, rot: 'rotate(-90 ' + x + ' 122)' };
     });
 
     // source rail
@@ -414,8 +461,19 @@ class Component extends DCLogic {
         num: n, text: srcText[n],
         rowStyle: 'display: flex; align-items: flex-start; gap: 6px; padding: 2px 10px; background: ' +
           (target ? '#F0EDE9' : 'transparent') + '; border-left: 3px solid ' + (omitted ? '#653E00' : (target ? '#2F4693' : 'transparent')) + ';',
-        numStyle: 'font-size: 10px; color: ' + (omitted ? '#653E00' : '#69625C') + '; flex: none; padding-top: 3px; min-width: 22px;',
-        textStyle: 'font-size: 12px; line-height: 1.4; color: ' + (omitted ? '#69625C' : '#221D19') + '; flex-grow: 1;'
+        numStyle: 'font-size: 10px; color: ' + (omitted ? '#653E00' : '#69625C') + '; flex: none; padding-top: 4px; min-width: 22px;',
+        textStyle: 'font-size: 16px; line-height: 24.8px; color: ' + (omitted ? '#69625C' : '#221D19') + '; flex-grow: 1;'
+      };
+    });
+
+    var recallEvidence = rows.map(function (row) {
+      var on = row.id === selRowId;
+      return {
+        id: row.id, text: row.text,
+        rowStyle: 'display: flex; align-items: flex-start; gap: 6px; padding: 2px 10px; background: ' +
+          (on ? '#F0EDE9' : 'transparent') + '; border-left: 3px solid ' + (on ? '#2F4693' : 'transparent') + ';',
+        idStyle: 'font-size: 10px; color: ' + (on ? '#2F4693' : '#69625C') + '; flex: none; padding-top: 4px; min-width: 22px;',
+        textStyle: 'font-size: 16px; line-height: 24.8px; color: #221D19; flex-grow: 1;'
       };
     });
 
@@ -423,52 +481,85 @@ class Component extends DCLogic {
     var rowsOut = rows.map(function (row) {
       var on = row.id === selRowId;
       return {
-        id: row.id, text: row.text,
+        id: row.id, text: row.text, summary: row.summary,
         aria: 'recall unit ' + row.id + ', ' + row.text + (on ? ', selected' : ''),
         rowStyle: 'height: 38px; display: flex; align-items: center; gap: 7px; padding: 0 8px 0 5px; cursor: pointer; background: ' +
           (on ? '#F0EDE9' : 'transparent') + ';' + (on ? ' outline: 2px dashed #221D19; outline-offset: -2px;' : '') +
           ' border-left: 3px solid ' + (on ? '#2F4693' : 'transparent') + ';',
         idStyle: 'font-size: 10px; color: ' + (on ? '#2F4693' : '#69625C') + '; flex: none; font-weight: ' + (on ? '600' : '400') + ';',
-        textStyle: 'font-size: 11px; line-height: 13px; color: #221D19; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;',
-        pick: function () { self.setState({ row: row.id, col: self.topOf(row) }); }
+        textStyle: 'font-size: 11px; line-height: 13px; color: #221D19; flex-grow: 1;',
+        pick: function () {
+          var top = self.topOf(row);
+          self.setState({ row: row.id, col: top.col, align: top.align });
+        }
       };
     });
 
-    // inspector for the selected cell
-    var mass = selRow.mass[selCol];
+    // Inspector ranks the full AlignState distribution. Source and Distorted mass at the same
+    // narrative anchor remain distinct states and must not be added before inspection.
+    var anchorMass = selRow.mass[selCol];
     var isUnr = selCol === 'Unranked';
-    if (isUnr) mass = selRow.unr;
+    if (isUnr) anchorMass = selRow.unr;
     var ranked = [];
-    for (var kk in selRow.mass) ranked.push({ name: kk, v: selRow.mass[kk] });
-    if (selRow.unr > 0) ranked.push({ name: 'Unranked', v: selRow.unr });
+    if (selRow.states) {
+      for (var stateEntryIndex = 0; stateEntryIndex < selRow.states.length; stateEntryIndex++) {
+        var stateEntry = selRow.states[stateEntryIndex];
+        ranked.push({
+          name: stateEntry.kind + '(' + stateEntry.dest + (stateEntry.facets.length ? ',{' + stateEntry.facets.join(',') + '}' : '') + ')',
+          col: stateEntry.dest,
+          align: stateEntry.kind,
+          facets: stateEntry.facets,
+          v: stateEntry.v
+        });
+      }
+    } else {
+      for (var kk in selRow.mass) {
+        var sourceState = kk.charAt(0) === 's' && kk.length === 3;
+        ranked.push({
+          name: sourceState ? ('Source(' + kk + ')') : ('External(' + kk + ')'),
+          col: kk,
+          align: sourceState ? 'Source' : 'External',
+          facets: [],
+          v: selRow.mass[kk]
+        });
+      }
+    }
+    if (selRow.unr > 0) ranked.push({ name: 'External(Unranked)', col: 'Unranked', align: 'External', facets: [], v: selRow.unr });
     ranked.sort(function (p, q2) { return q2.v - p.v; });
+    var selectedState = ranked[0];
     var rank = 1;
-    for (var rr = 0; rr < ranked.length; rr++) if (ranked[rr].name === selCol) rank = rr + 1;
+    for (var rr = 0; rr < ranked.length; rr++) {
+      if (ranked[rr].col === selCol && ranked[rr].align === selAlign) {
+        rank = rr + 1;
+        selectedState = ranked[rr];
+      }
+    }
+    var mass = selectedState.v;
 
     var facetTable = {
       'r02|s05': [
-        { name: 'Attribute', state: 'conflict — “bigger” vs “smaller”', bad: true },
-        { name: 'Role', state: 'consistent', bad: false },
+        { name: 'Object', state: 'conflict — “bigger” vs “smaller” boat', bad: true },
+        { name: 'RoleReversal', state: 'consistent', bad: false },
         { name: 'Polarity', state: 'consistent', bad: false },
         { name: 'Location', state: 'consistent', bad: false },
-        { name: 'Reported as fact', state: 'not applicable', bad: false }
+        { name: 'Context', state: 'not applicable', bad: false }
       ],
       'r03|s02': [
-        { name: 'Agent supplied', state: 'conflict — source names no teller', bad: true },
-        { name: 'Reported as fact', state: 'conflict — report asserted as event', bad: true },
+        { name: 'Actor', state: 'supplied separately — source names no teller', bad: false },
+        { name: 'Context', state: 'consistent — “told him” retains report context', bad: false },
         { name: 'Polarity', state: 'consistent', bad: false },
-        { name: 'Role', state: 'consistent', bad: false },
+        { name: 'RoleReversal', state: 'consistent', bad: false },
         { name: 'Location', state: 'not applicable', bad: false }
       ]
     };
     var defFacets = [
-      { name: 'Role', state: 'consistent', bad: false },
+      { name: 'RoleReversal', state: 'consistent', bad: false },
       { name: 'Polarity', state: 'consistent', bad: false },
       { name: 'Location', state: 'consistent', bad: false },
-      { name: 'Attribute', state: 'consistent', bad: false },
-      { name: 'Reported as fact', state: 'not applicable', bad: false }
+      { name: 'Object', state: 'consistent', bad: false },
+      { name: 'Context', state: 'not applicable', bad: false }
     ];
-    var fset = facetTable[selRowId + '|' + selCol] || defFacets;
+    var fset = selAlign === 'Distorted' ? (facetTable[selRowId + '|' + selCol] || defFacets) : defFacets;
     var facets = fset.map(function (f) {
       return {
         name: f.name, state: f.state, color: f.bad ? '#653E00' : '#69625C',
@@ -479,8 +570,8 @@ class Component extends DCLogic {
     });
 
     var compat = {
-      'r02|s05': 'Compatible. The unit addresses the launch event correctly; the boat attribute is reversed. Address and fidelity are scored on separate axes.',
-      'r03|s02': 'Compatible with the reporting frame, not with the world. The source states a telling occurred and does not name a teller; the unit supplies one and asserts the content as fact.',
+      'r02|s05': 'Discriminating probe: Source(s05)=0.30 and Distorted(s05,{Object})=0.41 share an anchor but remain different states. Their 0.71 anchor total is never presented as faithful source mass.',
+      'r03|s02': 'Faithful to the reporting frame: the unit retains “told him” rather than asserting the shore state as narrated-world fact. The supplied uncle-as-teller identity is represented separately as External(SourceConsistentInference), not as a Distorted(Context) state.',
       'r04|s06': 'Compatible with two targets. The mass is genuinely bimodal; no winner is manufactured.',
       'r10|Unranked': 'No destination was ranked. The participant marked residual content they could not retrieve. The full unit mass is held here rather than distributed.'
     };
@@ -488,20 +579,22 @@ class Component extends DCLogic {
     var isSrcSel = selCol.charAt(0) === 's' && selCol.length === 3;
 
     return {
-      source: source, rows: rowsOut, cells: cells, bands: bands, gauges: gauges,
+      source: source, recallEvidence: recallEvidence, rows: rowsOut, cells: cells, bands: bands, gauges: gauges,
       unranked: unranked, colFoot: colFoot, srcCols: srcCols, offCols: offCols,
 
       selRow: selRowId, selColName: isUnr ? 'Unranked' : selCol,
-      selAddr: isSrcSel ? ('story/situation/syn:sit:' + selCol) : ('recall/destination/syn:dest:' + selCol.toLowerCase()),
+      selAddr: selectedState.name + ' · ' + (isSrcSel ? ('story/situation/syn:sit:' + selCol) : ('recall/destination/syn:dest:' + selCol.toLowerCase())),
       selRecallText: selRow.text,
       selSourceText: isSrcSel ? srcText[selCol] : (isUnr
         ? 'No source target. The unit was not ranked against any destination.'
         : 'No source target. This destination is off-source by construction.'),
+      selAlignState: selectedState.name,
       selMass: (mass === undefined ? '0.00' : mass.toFixed(2)),
-      selRank: rank + ' of ' + ranked.length + ' destinations carrying mass',
+      selAnchorMass: (anchorMass === undefined ? '0.00' : anchorMass.toFixed(2)) + ' at ' + selCol,
+      selRank: rank + ' of ' + ranked.length + ' AlignStates carrying mass',
       selCompat: compat[selRowId + '|' + selCol] || 'Compatible. No facet conflict is recorded for this pairing.',
       facets: facets,
-      competing: ranked.filter(function (x) { return x.name !== selCol; }).map(function (x) {
+      competing: ranked.filter(function (x) { return x !== selectedState; }).map(function (x) {
         return { name: x.name, mass: x.v.toFixed(2) };
       }),
 
@@ -517,10 +610,21 @@ class Component extends DCLogic {
   }
 
   topOf(row) {
-    var best = null, bv = -1;
-    for (var k in row.mass) if (row.mass[k] > bv) { bv = row.mass[k]; best = k; }
-    if (row.unr > bv) return 'Unranked';
-    return best || 'Unranked';
+    var best = { col: 'Unranked', align: 'Unranked' }, bv = row.unr || 0;
+    if (row.states) {
+      for (var i = 0; i < row.states.length; i++) {
+        if (row.states[i].v > bv) {
+          bv = row.states[i].v;
+          best = { col: row.states[i].dest, align: row.states[i].kind };
+        }
+      }
+    } else {
+      for (var k in row.mass) if (row.mass[k] > bv) {
+        bv = row.mass[k];
+        best = { col: k, align: (k.charAt(0) === 's' && k.length === 3) ? 'Source' : 'External' };
+      }
+    }
+    return best;
   }
 }
 </script>
