@@ -240,8 +240,8 @@ it from the storymodel4s fixture at run time.
 
 Registered in the workspace catalog (`../packages.toml`) as package
 `storyatlas4s` (kind application, stage prototype, JVM + Scala.js) with two
-`source-pin` dependency edges: `storymodel4s` at `8492e43…` (`viewJVM`,
-`viewJS`, `fixturesJVM`, `fixturesJS`) and `intaglio` at `596b398…`
+`source-pin` dependency edges: `storymodel4s` at `5ca2f79…` (`viewJVM`,
+`viewJS`, `fixturesJVM`, `fixturesJS`) and `intaglio` at `52dddee…`
 (`coreJVM`, `coreJS`, `svgJVM`, `svgJS`). `tools/workspace.py check` reports
 one policy warning for this repository — storymodel4s is a prototype-stage
 provider — which is expected until storymodel4s advances a lifecycle stage.
