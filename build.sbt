@@ -42,7 +42,7 @@ lazy val storymodel4sFixturesJVM = ProjectRef(storymodel4sBuild, "fixturesJVM")
 lazy val storymodel4sFixturesJS = ProjectRef(storymodel4sBuild, "fixturesJS")
 
 // Intaglio (renderer-neutral scene + SVG backend) is consumed as an immutable source pin.
-lazy val intaglioRevision = "596b398af380079e4b251535230d0bc03cd88c51"
+lazy val intaglioRevision = "52dddee0be9706b4c9ce02ae214f771343d150fb"
 lazy val intaglioBuild =
   sys.props
     .get("storyatlas4s.intaglio.build")
