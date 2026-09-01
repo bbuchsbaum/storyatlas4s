@@ -91,6 +91,11 @@ object CodexHtml:
         "header, footer { font: 13px/1.5 sans-serif; max-width: 72em; margin: 0 auto 1rem; }\n"
       )
       out.append("h1 { font-size: 1.2em; margin: 0 0 0.5em; }\n")
+      out.append(".identity { margin: 0 0 0.5em; }\n")
+      out.append(".legend { margin: 0 0 0.5em; }\n")
+      out.append(
+        "details { margin: 0 0 0.75em; } summary { cursor: pointer; font-weight: bold; }\n"
+      )
       out.append(
         "dl { display: grid; grid-template-columns: max-content 1fr; gap: 0 1em; margin: 0; }\n"
       )
@@ -122,7 +127,22 @@ object CodexHtml:
         ".page-label { position: absolute; left: 0; bottom: -1.4em; font: 11px/1.2 sans-serif; }\n"
       )
       out.append("</style>\n</head>\n<body>\n<header>\n")
-      out.append("<h1>").append(escapeText(title)).append("</h1>\n<dl>\n")
+      out.append("<h1>").append(escapeText(title)).append("</h1>\n")
+      out.append("<p class=\"identity\"><strong>Story:</strong> ")
+      out.append(escapeText(flow.source.title.getOrElse(flow.source.id.value)))
+      out.append("<br><strong>Basis:</strong> ")
+      out.append(escapeText(flow.provenance.basis.label)).append("</p>\n")
+      out.append("<p class=\"legend\"><strong>Overlay:</strong> ")
+      if rows.isEmpty then out.append("no annotation rows")
+      else
+        val kinds = rows.map(_.kind.wireName).distinct
+        out
+          .append(rows.length)
+          .append(" typed rows — ")
+          .append(escapeText(kinds.mkString(", ")))
+          .append(". Full lane map in the receipt.")
+      out.append("</p>\n")
+      out.append("<details>\n<summary>Provenance and layout receipt</summary>\n<dl>\n")
       definition(out, "Story", flow.source.title.getOrElse(flow.source.id.value))
       definition(out, "Basis", flow.provenance.basis.label)
       definition(out, "Source checksum", flow.provenance.sourceChecksum.hex)
@@ -139,7 +159,7 @@ object CodexHtml:
             .map((row, index) => s"${index + 1}: ${row.label}")
             .mkString("top to bottom within each line — ", "; ", "")
       )
-      out.append("</dl>\n</header>\n<main>\n")
+      out.append("</dl>\n</details>\n</header>\n<main>\n")
       pages.foreach(out.append)
       out.append("</main>\n<footer>")
       out.append(escapeText(s"Basis: ${flow.provenance.basis.label}. "))

@@ -4,7 +4,8 @@
 //   sbt <overrides> "cli/run edition --out target/edition"
 //   node e2e/static/static.cjs target/edition
 //
-// Against the live DOM of each `codex-*.html` (file:// and an in-process static server):
+// Against the live DOM of `preview.html` and each `codex-*.html` (file:// and an in-process static
+// server), in a DPR-2 browser context and again at 200% CSS zoom:
 //   1. sha256 of concatenated `.line` text content == receipt.json sourceChecksum (V-T2;
 //      no copy of the story text lives in this repository);
 //   2. every `data-name` is unique; line ids are `line/…`; piece count == the file's
@@ -13,7 +14,8 @@
 //      and every layout field (V-D3);
 //   4. no <script>, no external resource (href/src/srcset on any element);
 //   5. Reading has zero overlay pieces; Overview has some;
-//   6. no page error and no console error.
+//   6. DOM read order is header/main/footer and overlay meaning is stated in text, not colour alone;
+//   7. no dependent request, page error, or console error.
 // Failures write a PNG under e2e/static/diagnostics/ (diagnostic only; not a gold).
 //
 // Playwright is resolved from this directory, NODE_PATH, then the global npm root.
@@ -28,7 +30,7 @@ const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 
 const PLAYWRIGHT_PIN = "1.55.1";
-const HTML_FILES = ["codex-reading.html", "codex-overview.html"];
+const HTML_FILES = ["preview.html", "codex-reading.html", "codex-overview.html"];
 
 function loadPlaywright() {
   const candidates = ["playwright", "@playwright/test"];
@@ -144,7 +146,9 @@ async function assertHtml(page, url, receipt, entry, transport) {
   const layout = entry.layout;
   const pageErrors = [];
   const consoleErrors = [];
+  const requests = [];
   const onPageError = (e) => pageErrors.push(String(e));
+  const onRequest = (request) => requests.push(request.url());
   const onConsole = (m) => {
     if (m.type() !== "error") return;
     const text = m.text();
@@ -154,6 +158,7 @@ async function assertHtml(page, url, receipt, entry, transport) {
   };
   page.on("pageerror", onPageError);
   page.on("console", onConsole);
+  page.on("request", onRequest);
 
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("section.page .text .line", { timeout: 15000 });
@@ -246,6 +251,21 @@ async function assertHtml(page, url, receipt, entry, transport) {
     resources.external.length === 0,
     `${transport} ${name}: no href/src/srcset ${resources.external.length ? JSON.stringify(resources.external) : ""}`
   );
+  const unexpectedRequests = requests.filter(
+    (requestUrl) => requestUrl !== url && !requestUrl.endsWith("/favicon.ico")
+  );
+  check(
+    unexpectedRequests.length === 0,
+    `${transport} ${name}: no dependent request ${unexpectedRequests.length ? JSON.stringify(unexpectedRequests) : ""}`
+  );
+
+  const documentOrder = await page.$$eval("body > *", (elements) =>
+    elements.map((element) => element.tagName.toLowerCase())
+  );
+  check(
+    documentOrder.join(",") === "header,main,footer",
+    `${transport} ${name}: DOM read order is header, main, footer`
+  );
 
   const layoutKeys = [
     "paginator",
@@ -274,6 +294,58 @@ async function assertHtml(page, url, receipt, entry, transport) {
     typeof headerMap.Basis === "string" && headerMap.Basis.includes("researcher-reviewed"),
     `${transport} ${name}: header prints the researcher-reviewed basis`
   );
+  check(
+    typeof headerMap["Overlay rows"] === "string" && headerMap["Overlay rows"].length > 0,
+    `${transport} ${name}: overlay meaning is stated in text, not colour alone`
+  );
+  const visibleLegend = await page.$eval("header .legend", (legend) => ({
+    text: legend.textContent || "",
+    visible: legend.getBoundingClientRect().height > 0
+  }));
+  check(
+    visibleLegend.visible && visibleLegend.text.startsWith("Overlay:"),
+    `${transport} ${name}: compact overlay legend is visible without opening the receipt`
+  );
+  const receiptDisclosure = await page.$eval("header details", (details) => ({
+    open: details.open,
+    summary: details.querySelector("summary")?.textContent || ""
+  }));
+  check(!receiptDisclosure.open, `${transport} ${name}: detailed receipt is initially collapsed`);
+  check(
+    receiptDisclosure.summary === "Provenance and layout receipt",
+    `${transport} ${name}: receipt disclosure has an explicit accessible label`
+  );
+
+  const devicePixelRatio = await page.evaluate(() => window.devicePixelRatio);
+  check(devicePixelRatio === 2, `${transport} ${name}: devicePixelRatio is 2`);
+  let qaDir;
+  if (transport === "file" && name === "preview.html" && process.env.STORYATLAS_VISUAL_QA_DIR) {
+    qaDir = path.resolve(process.env.STORYATLAS_VISUAL_QA_DIR);
+    fs.mkdirSync(qaDir, { recursive: true });
+    const screenshot = path.join(qaDir, "preview-file-dpr2.png");
+    await page.screenshot({ path: screenshot });
+    console.log(`visual QA screenshot ${screenshot}`);
+  }
+  await page.evaluate(() => {
+    document.documentElement.style.zoom = "2";
+  });
+  const zoomed = await page.evaluate(() => ({
+    rail: [...document.querySelectorAll("section.page .text .line")]
+      .map((line) => line.textContent)
+      .join(""),
+    headerVisible: document.querySelector("header")?.getBoundingClientRect().height > 0,
+    mainVisible: document.querySelector("main")?.getBoundingClientRect().height > 0
+  }));
+  check(sha256Utf8(zoomed.rail) === receipt.sourceChecksum, `${transport} ${name}: 200% zoom preserves canonical DOM text`);
+  check(zoomed.headerVisible && zoomed.mainVisible, `${transport} ${name}: 200% zoom keeps header and preview visible`);
+  if (qaDir) {
+    const screenshot = path.join(qaDir, "preview-file-dpr2-zoom200.png");
+    await page.screenshot({ path: screenshot });
+    console.log(`visual QA screenshot ${screenshot}`);
+  }
+  await page.evaluate(() => {
+    document.documentElement.style.zoom = "";
+  });
 
   check(pageErrors.length === 0, `${transport} ${name}: no page error ${pageErrors.length ? JSON.stringify(pageErrors) : ""}`);
   check(
@@ -283,6 +355,7 @@ async function assertHtml(page, url, receipt, entry, transport) {
 
   page.off("pageerror", onPageError);
   page.off("console", onConsole);
+  page.off("request", onRequest);
 }
 
 function diskSha(editionDir, name) {
@@ -333,7 +406,11 @@ async function main() {
     console.log(`chromium executable ${fallbackChrome}`);
   }
   const browser = await chromium.launch(launch);
-  const page = await browser.newPage({ viewport: { width: 900, height: 1200 } });
+  const context = await browser.newContext({
+    viewport: { width: 900, height: 1200 },
+    deviceScaleFactor: 2
+  });
+  const page = await context.newPage();
   const diagnosticsDir = path.join(__dirname, "diagnostics");
 
   try {
@@ -357,6 +434,7 @@ async function main() {
       await new Promise((resolve) => server.close(resolve));
     }
   } finally {
+    await context.close();
     await browser.close();
   }
 

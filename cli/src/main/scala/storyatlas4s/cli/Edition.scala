@@ -170,28 +170,60 @@ object Edition:
       placed <- Paginator.layout(flow, page, style, MonospaceMeasurer.instance).left.map(_.message)
       html <- CodexHtml.render(placed, detail).left.map(_.message)
       pieces = placed.annotationFragments.length
-    yield Vector(
-      EditionFile(s"$stem.svg", "codex", detail, config, names, svg.value, None),
-      EditionFile(
-        s"$stem.txt",
-        "codex-twin",
-        detail,
-        config,
-        flow.annotations.length,
-        flow.textualTwin,
-        None
-      ),
-      EditionFile(s"$stem.html", "codex-pages", detail, config, pieces, html, Some(placed.receipt)),
-      EditionFile(
-        s"$stem-pages.txt",
-        "codex-pages-twin",
-        detail,
-        config,
-        pieces,
-        placed.textualTwin,
-        Some(placed.receipt)
+      codexFiles = Vector(
+        EditionFile(s"$stem.svg", "codex", detail, config, names, svg.value, None),
+        EditionFile(
+          s"$stem.txt",
+          "codex-twin",
+          detail,
+          config,
+          flow.annotations.length,
+          flow.textualTwin,
+          None
+        ),
+        EditionFile(
+          s"$stem.html",
+          "codex-pages",
+          detail,
+          config,
+          pieces,
+          html,
+          Some(placed.receipt)
+        ),
+        EditionFile(
+          s"$stem-pages.txt",
+          "codex-pages-twin",
+          detail,
+          config,
+          pieces,
+          placed.textualTwin,
+          Some(placed.receipt)
+        )
       )
-    )
+      previewFiles =
+        if lens == CodexLens.Overview then
+          Vector(
+            EditionFile(
+              "preview.html",
+              "static-preview",
+              detail,
+              config,
+              pieces,
+              html,
+              Some(placed.receipt)
+            ),
+            EditionFile(
+              "preview.txt",
+              "static-preview-twin",
+              detail,
+              config,
+              pieces,
+              placed.textualTwin,
+              Some(placed.receipt)
+            )
+          )
+        else Vector.empty
+    yield codexFiles ++ previewFiles
 
   /** Write every file and the receipt into `dir`, creating it; returns the paths written. */
   def write(edition: Edition, dir: java.nio.file.Path): Either[String, Vector[java.nio.file.Path]] =

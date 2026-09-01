@@ -25,7 +25,9 @@ class EditionSuite extends FunSuite:
     "codex-overview.svg",
     "codex-overview.txt",
     "codex-overview.html",
-    "codex-overview-pages.txt"
+    "codex-overview-pages.txt",
+    "preview.html",
+    "preview.txt"
   )
 
   private val dataName = """data-name="([^"]*)"""".r
@@ -53,6 +55,14 @@ class EditionSuite extends FunSuite:
     assert(a.files.find(_.name == "codex-reading.svg").exists(_.names == 0))
     assert(a.files.find(_.name == "codex-overview.html").exists(_.names > 0))
     assert(a.files.find(_.name == "codex-reading.html").exists(_.names == 0))
+    assertEquals(
+      a.files.find(_.name == "preview.html").map(_.content),
+      a.files.find(_.name == "codex-overview.html").map(_.content)
+    )
+    assertEquals(
+      a.files.find(_.name == "preview.txt").map(_.content),
+      a.files.find(_.name == "codex-overview-pages.txt").map(_.content)
+    )
 
   test("the static edition emits every configured two-axis zoom with real surface marks"):
     val edition = ok(Edition.warOfTheGhosts)
@@ -82,8 +92,11 @@ class EditionSuite extends FunSuite:
       assert(layout.pages > 1, s"${html.name}: ${layout.pages} page(s)")
       assertEquals(count(html.content, "<svg "), layout.pages, html.name)
       assert(!html.content.contains("<script"), html.name)
+      val twinName =
+        if html.name == "preview.html" then "preview.txt"
+        else html.name.stripSuffix(".html") + "-pages.txt"
       val twin = e.files
-        .find(_.name == html.name.stripSuffix(".html") + "-pages.txt")
+        .find(_.name == twinName)
         .getOrElse(fail("pages twin"))
       assertEquals(twin.names, html.names, twin.name)
       assertEquals(twin.layout, html.layout, twin.name)
@@ -123,7 +136,7 @@ class EditionSuite extends FunSuite:
         assert(receipt.contains(s""""$key": "$value""""), s"receipt lacks $key")
       )
     }
-    assertEquals(count(receipt, "\"layout\": {"), 4)
+    assertEquals(count(receipt, "\"layout\": {"), 6)
     assert(receipt.contains(s""""paginator": "${storyatlas4s.layout.Paginator.Version}""""))
 
   test("`edition --out <dir>` writes the files and returns exit code 0"):
