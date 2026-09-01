@@ -1,0 +1,63 @@
+{
+  "schema": "storyatlas4s.renderer-gap-court.v1",
+  "workload": {
+    "marks": 2300,
+    "columns": 100,
+    "geometricSegmentsPerMark": 10
+  },
+  "gates": {
+    "maxSvgElements": 10000,
+    "maxSerializedSvgBytes": 2097152,
+    "interactionP95Ms": 16.7
+  },
+  "results": {
+    "geometric": {
+      "label": "geometric",
+      "marks": 2300,
+      "hatchSegmentsPerMark": 10,
+      "elementCount": 32202,
+      "serializedBytes": 2497582,
+      "constructionMs": 262,
+      "selectionP95Ms": 0.10000002384185791,
+      "transformP95Ms": 0.10000002384185791,
+      "gates": {
+        "elementBudget": false,
+        "byteBudget": false,
+        "selectionP95": true,
+        "transformP95": true
+      }
+    },
+    "sharedPattern": {
+      "label": "shared-pattern",
+      "marks": 2300,
+      "hatchSegmentsPerMark": 0,
+      "elementCount": 2305,
+      "serializedBytes": 296925,
+      "constructionMs": 17.399999976158142,
+      "selectionP95Ms": 0.20000004768371582,
+      "transformP95Ms": 0.10000002384185791,
+      "gates": {
+        "elementBudget": true,
+        "byteBudget": true,
+        "selectionP95": true,
+        "transformP95": true
+      }
+    }
+  },
+  "interpretation": "Structural counts and bytes are reproducible. Timings are browser/machine diagnostics only.",
+  "environment": {
+    "browser": {
+      "engine": "Chromium",
+      "version": "140.0.7339.186"
+    },
+    "platform": {
+      "os": "darwin",
+      "arch": "arm64"
+    },
+    "devicePixelRatio": 1
+  },
+  "source": {
+    "path": "renderer-gap-benchmark.html",
+    "sha256": "b569405e2e1d59705bc2e3ce8f10224fefee6de0c126f41c97506349d7b1d03d"
+  }
+}

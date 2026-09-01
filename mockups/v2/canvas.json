@@ -1,0 +1,213 @@
+{
+  "pages": [
+    {
+      "id": "page-0",
+      "name": "Colour directions"
+    },
+    {
+      "id": "page-1",
+      "name": "Workspace screens"
+    },
+    {
+      "id": "page-2",
+      "name": "Accessibility"
+    },
+    {
+      "id": "page-3",
+      "name": "System and states"
+    },
+    {
+      "id": "page-4",
+      "name": "Renderer gap"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Directions.dc.html",
+      "page": "page-0",
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 1500,
+      "title": "Colour directions \u2014 A Rubric \u00b7 B Instrument \u00b7 C Oxide",
+      "print": "flow"
+    },
+    {
+      "file": "Main.dc.html",
+      "page": "page-1",
+      "x": 0,
+      "y": 0,
+      "w": 1536,
+      "h": 1024,
+      "title": "Source exploration \u00b7 1536\u00d71024",
+      "is_interactive": true
+    },
+    {
+      "file": "RecallMatrix.dc.html",
+      "page": "page-1",
+      "x": 1636,
+      "y": 0,
+      "w": 1536,
+      "h": 1024,
+      "title": "Known-source recall \u00b7 1536\u00d71024",
+      "is_interactive": true
+    },
+    {
+      "file": "InterviewMode.dc.html",
+      "page": "page-1",
+      "x": 3272,
+      "y": 0,
+      "w": 1536,
+      "h": 1024,
+      "title": "Autobiographical interview \u00b7 1536\u00d71024",
+      "is_interactive": true
+    },
+    {
+      "file": "Compact.dc.html",
+      "page": "page-1",
+      "x": 4908,
+      "y": 0,
+      "w": 1280,
+      "h": 800,
+      "title": "Compact variant \u00b7 1280\u00d7800"
+    },
+    {
+      "file": "Reflow.dc.html",
+      "page": "page-2",
+      "x": 0,
+      "y": 0,
+      "w": 520,
+      "h": 1760,
+      "title": "200% text \u00b7 narrow reflow"
+    },
+    {
+      "file": "FocusOrder.dc.html",
+      "page": "page-2",
+      "x": 620,
+      "y": 0,
+      "w": 1440,
+      "h": 980,
+      "title": "Keyboard focus order"
+    },
+    {
+      "file": "Grayscale.dc.html",
+      "page": "page-2",
+      "x": 2160,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "title": "Greyscale and colour-vision check"
+    },
+    {
+      "file": "Motion.dc.html",
+      "page": "page-2",
+      "x": 3700,
+      "y": 0,
+      "w": 1440,
+      "h": 760,
+      "title": "Reduced-motion transition"
+    },
+    {
+      "file": "Concept.dc.html",
+      "page": "page-3",
+      "x": 0,
+      "y": 0,
+      "w": 1180,
+      "h": 1780,
+      "title": "Concept statement and annotation notes",
+      "print": "flow"
+    },
+    {
+      "file": "Tokens.dc.html",
+      "page": "page-3",
+      "x": 1280,
+      "y": 0,
+      "w": 1440,
+      "h": 2040,
+      "title": "Component and design-token sheet",
+      "print": "flow"
+    },
+    {
+      "file": "StateBoard.dc.html",
+      "page": "page-3",
+      "x": 2820,
+      "y": 0,
+      "w": 1440,
+      "h": 1500,
+      "title": "State board",
+      "print": "flow"
+    },
+    {
+      "file": "RendererGap.dc.html",
+      "page": "page-4",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1560,
+      "title": "What this design asks of Intaglio",
+      "print": "flow"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-colour",
+      "page": "page-0",
+      "x": 1540,
+      "y": 0,
+      "w": 620,
+      "text": "You said the colours were bleh. Agreed \u2014 the diagnosis is that I treated \"colour must never carry meaning\" as \"colour must be apologetic\", and those are different. ADR 0002 V-U5 frees colour from semantic duty, which makes it available for character.\n\nThree fixes are common to all three directions and are the actual repair:\n\u2022 the pastel washes are deleted \u2014 selection becomes an 8% tint of the accent, 1.07:1 against paper, so it reads as a lit row rather than a coloured one\n\u2022 five near-identical warm greys cut to three\n\u2022 the watermark stops being amber and stays dominant through weight, not saturation\n\nPick a letter and I will apply it across all eleven artboards. My vote is C with A's black watermark bar \u2014 it is the only accent with real headroom under dichromat simulation (7.69:1 worst case, against 3.34:1 for the vermilion)."
+    },
+    {
+      "id": "note-modes",
+      "page": "page-1",
+      "x": 0,
+      "y": 1110,
+      "w": 760,
+      "text": "Three modes, one product.\n\nThe shell, the focus contract, the inspector fields, the epistemic vocabulary and every accessibility path are identical across all three. What changes is the observation (story text / story + recall / two-speaker transcript) and the primary projection.\n\nAll three screens are live: click a sentence, a matrix cell or a transcript turn and every face follows. On the first screen the projection selector, narrative level, inspector collapse and reader horizon all work."
+    },
+    {
+      "id": "note-compact",
+      "page": "page-1",
+      "x": 4908,
+      "y": 890,
+      "w": 620,
+      "text": "What gives way at 1280\u00d7800, in order:\n\n1. Inspector collapses to a 40px rail (its content is one click away, nothing is dropped).\n2. Codex annotation budget falls from 3 channels to 2; the feature moves to the docked track.\n3. Measure returns to today's 50 columns.\n4. Overview loses its label column, keeps viewport and selection.\n\nThe exact text keeps its 16px size and 24.8px leading at every width. Note the app's current breakpoint is max-width:1280px \u2192 single column, so 1280 would stack today; this variant proposes moving it to 1100."
+    },
+    {
+      "id": "note-reflow",
+      "page": "page-2",
+      "x": 0,
+      "y": 1850,
+      "w": 520,
+      "text": "The honest cost of 200%: the measure falls to about 23 columns and the projection becomes a table plus a pannable figure.\n\nWhat is never traded away: the size of the exact text, any inspector field, any control, or any keyboard route."
+    },
+    {
+      "id": "note-cvd",
+      "page": "page-2",
+      "x": 2160,
+      "y": 1090,
+      "w": 700,
+      "text": "The simulations here are computed, not eyeballed \u2014 Vi\u00e9not\u2013Brettel\u2013Mollon projection in linear sRGB, then WCAG relative-luminance contrast recomputed on the projected pair.\n\nThe finding worth reading: the three role hues DO collapse to within 1.03\u20131.48:1 of each other. That is the design working. They were built equiluminant so nothing could depend on them, which is what ADR 0002 V-U5 requires."
+    },
+    {
+      "id": "note-system",
+      "page": "page-3",
+      "x": 0,
+      "y": 1870,
+      "w": 900,
+      "text": "Read these three in order: the concept states the hierarchy and the interaction loop and maps every change back to a specific review blocker; the token sheet gives the values, with every contrast ratio computed; the state board covers the 25 states, each with the state it must never be confused with.\n\nAll three are set as flowing artboards, so Export PDF paginates them rather than squeezing each onto one page."
+    },
+    {
+      "id": "note-renderer",
+      "page": "page-4",
+      "x": 1540,
+      "y": 0,
+      "w": 640,
+      "text": "You asked whether Intaglio is holding us back. It is \u2014 on exactly one thing, and it is the thing this design leans on hardest.\n\nGraphicParams.fill is Option[Rgba]. A solid colour, full stop. There is no paint, pattern, texture or gradient concept anywhere in the library, and no TODO proposing one \u2014 this is a genuinely new capability, not a planned-but-unbuilt one.\n\nSince colour is barred from carrying meaning, texture is what distinguishes missing from unauthorised from low-coverage from off-source. So as specified, this design cannot be rendered today.\n\nThe good news is that the fix is unusually cheap for a new backend concept: <defs> is already emitted and forward-referenced in shipped output, GraphicParams flows untouched through the device layer, and a trailing defaulted field is source-compatible across all 107 construction sites.\n\nSplit it: the theming change is ours alone and should happen now regardless. The pattern change is upstream, and is far cheaper before Intaglio's 1.0 vocabulary freezes than after."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-4"
+  }
+}

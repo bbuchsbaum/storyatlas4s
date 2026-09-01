@@ -1,0 +1,677 @@
+{
+  "artifactDigest": "2cff910ec709065a38feb64d8e1f5f9c575eb4ec9286b0ad3557437ad8141005",
+  "digestRule": "sha256(canonical-json(payload-without-artifactDigest))",
+  "schema": "storyatlas4s.mockup-review-artifact.v1",
+  "fixture": "synthetic/two-boats@v0",
+  "sourcePolicy": "SYNTHETIC PLACEHOLDER — NOT SOURCE OR MODEL OUTPUT",
+  "typography": "system-ui with platform fallbacks; ui-monospace with platform fallbacks",
+  "renderer": "storyatlas4s mockup DC resolver v1 to frozen DOM; Chromium PNG at DPR 1",
+  "generatorBaseRevision": "003f12b21e1b9793fea479e104c2e2eff3e55fe5",
+  "browser": {
+    "engine": "Chromium",
+    "version": "140.0.7339.186"
+  },
+  "platform": {
+    "os": "darwin",
+    "arch": "arm64"
+  },
+  "views": [
+    {
+      "name": "Main",
+      "sourceName": "Main.dc.html",
+      "html": "main.html",
+      "png": "main.png",
+      "viewport": {
+        "width": 1536,
+        "height": 1024
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 7110
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1536,
+          "height": 1024
+        },
+        "artboard": {
+          "width": 1536,
+          "height": 1024
+        },
+        "scroll": {
+          "width": 1536,
+          "height": 1024
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "RecallMatrix",
+      "sourceName": "RecallMatrix.dc.html",
+      "html": "recall-matrix.html",
+      "png": "recall-matrix.png",
+      "viewport": {
+        "width": 1536,
+        "height": 1024
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 9685
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1536,
+          "height": 1024
+        },
+        "artboard": {
+          "width": 1536,
+          "height": 1024
+        },
+        "scroll": {
+          "width": 1536,
+          "height": 1024
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "InterviewMode",
+      "sourceName": "InterviewMode.dc.html",
+      "html": "interview-mode.html",
+      "png": "interview-mode.png",
+      "viewport": {
+        "width": 1536,
+        "height": 1024
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 8920
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1536,
+          "height": 1024
+        },
+        "artboard": {
+          "width": 1536,
+          "height": 1024
+        },
+        "scroll": {
+          "width": 1536,
+          "height": 1024
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "Compact",
+      "sourceName": "Compact.dc.html",
+      "html": "compact.html",
+      "png": "compact.png",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 3513
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "artboard": {
+          "width": 1280,
+          "height": 800
+        },
+        "scroll": {
+          "width": 1280,
+          "height": 800
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "Reflow",
+      "sourceName": "Reflow.dc.html",
+      "html": "reflow.html",
+      "png": "reflow.png",
+      "viewport": {
+        "width": 520,
+        "height": 1760
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 2566
+      },
+      "overflow": {
+        "viewport": {
+          "width": 520,
+          "height": 1760
+        },
+        "artboard": {
+          "width": 520,
+          "height": 2841.34375
+        },
+        "scroll": {
+          "width": 520,
+          "height": 2841
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "FocusOrder",
+      "sourceName": "FocusOrder.dc.html",
+      "html": "focus-order.html",
+      "png": "focus-order.png",
+      "viewport": {
+        "width": 1440,
+        "height": 980
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 4985
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1440,
+          "height": 980
+        },
+        "artboard": {
+          "width": 1440,
+          "height": 980
+        },
+        "scroll": {
+          "width": 1440,
+          "height": 980
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "Grayscale",
+      "sourceName": "Grayscale.dc.html",
+      "html": "grayscale.html",
+      "png": "grayscale.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 8142
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "artboard": {
+          "width": 1440,
+          "height": 1307.515625
+        },
+        "scroll": {
+          "width": 1440,
+          "height": 1308
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "Motion",
+      "sourceName": "Motion.dc.html",
+      "html": "motion.html",
+      "png": "motion.png",
+      "viewport": {
+        "width": 1440,
+        "height": 760
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 4932
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1440,
+          "height": 760
+        },
+        "artboard": {
+          "width": 1440,
+          "height": 834.390625
+        },
+        "scroll": {
+          "width": 1440,
+          "height": 834
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "StateBoard",
+      "sourceName": "StateBoard.dc.html",
+      "html": "state-board.html",
+      "png": "state-board.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1500
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 11469
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1440,
+          "height": 1500
+        },
+        "artboard": {
+          "width": 1440,
+          "height": 1820
+        },
+        "scroll": {
+          "width": 1440,
+          "height": 1820
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "Tokens",
+      "sourceName": "Tokens.dc.html",
+      "html": "tokens.html",
+      "png": "tokens.png",
+      "viewport": {
+        "width": 1440,
+        "height": 2040
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 11986
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1440,
+          "height": 2040
+        },
+        "artboard": {
+          "width": 1440,
+          "height": 2040
+        },
+        "scroll": {
+          "width": 1440,
+          "height": 3117
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "Concept",
+      "sourceName": "Concept.dc.html",
+      "html": "concept.html",
+      "png": "concept.png",
+      "viewport": {
+        "width": 1180,
+        "height": 1780
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 12539
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1180,
+          "height": 1780
+        },
+        "artboard": {
+          "width": 1180,
+          "height": 2808.796875
+        },
+        "scroll": {
+          "width": 1180,
+          "height": 2809
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "Directions",
+      "sourceName": "Directions.dc.html",
+      "html": "directions.html",
+      "png": "directions.png",
+      "viewport": {
+        "width": 1920,
+        "height": 1500
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 11675
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1920,
+          "height": 1500
+        },
+        "artboard": {
+          "width": 1920,
+          "height": 1500
+        },
+        "scroll": {
+          "width": 1920,
+          "height": 1500
+        },
+        "offenders": []
+      }
+    },
+    {
+      "name": "RendererGap",
+      "sourceName": "RendererGap.dc.html",
+      "html": "renderer-gap.html",
+      "png": "renderer-gap.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1560
+      },
+      "portable": {
+        "scripts": 0,
+        "directives": 0,
+        "unresolved": false,
+        "textLength": 9835
+      },
+      "overflow": {
+        "viewport": {
+          "width": 1440,
+          "height": 1560
+        },
+        "artboard": {
+          "width": 1440,
+          "height": 1928.84375
+        },
+        "scroll": {
+          "width": 1440,
+          "height": 1929
+        },
+        "offenders": []
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": "Compact.dc.html",
+      "bytes": 22706,
+      "sha256": "16fa52e5f8e68fe4f587fb75fa4ed1a7794b2368c6c27c18e2c435d8d16a19ce"
+    },
+    {
+      "path": "Concept.dc.html",
+      "bytes": 21557,
+      "sha256": "045a631b29dbb2ce059e7a9cba9439a0d5124143b38a2554c0710d2a21353ebd"
+    },
+    {
+      "path": "Directions.dc.html",
+      "bytes": 24953,
+      "sha256": "3eeea5647cc7dd32944b897a27b7186b4e3c5562586f89ba9d9c21079ab5c6cc"
+    },
+    {
+      "path": "FIXTURE-NOTES.md",
+      "bytes": 4569,
+      "sha256": "5b52eb0d4ed9e1f258958bfa0c5d2b19e0a2b260648e1452861b183212090681"
+    },
+    {
+      "path": "FocusOrder.dc.html",
+      "bytes": 11994,
+      "sha256": "e33bc9852ae5033e6a125c1e5526460d75b8128f5bf7c6c8bbbb69e15d657711"
+    },
+    {
+      "path": "Grayscale.dc.html",
+      "bytes": 16941,
+      "sha256": "c4580f46fc956a15228ed3c851a92e94dd97e324ed8df77cd7e2180f32308542"
+    },
+    {
+      "path": "InterviewMode.dc.html",
+      "bytes": 29014,
+      "sha256": "f65e9b077587c1de5d1ea6bea5bb3f45a6a9145c20fbc9193eece18d71c74b64"
+    },
+    {
+      "path": "Main.dc.html",
+      "bytes": 55916,
+      "sha256": "d1aff289296e9bb5a831b8e2a40870dbb7c0d9a0e7ca90bbef8a52c424182c2e"
+    },
+    {
+      "path": "Motion.dc.html",
+      "bytes": 12152,
+      "sha256": "cb17709e35e40783a55f428f258d73e474294933dfb13d10f7af4a7574a6cba1"
+    },
+    {
+      "path": "PROOF-BOUNDARY.md",
+      "bytes": 4735,
+      "sha256": "e8be4a7f639d27049b77411390dd890c565bc285a038314f2b3aab99012e2532"
+    },
+    {
+      "path": "RecallMatrix.dc.html",
+      "bytes": 35659,
+      "sha256": "568447272b7f8225e81f6b2f6774c6f90533d4f8c5523b84e1f412a1fb051a8d"
+    },
+    {
+      "path": "Reflow.dc.html",
+      "bytes": 12433,
+      "sha256": "ed8f36c542bfb16802d4e194037b6d8df06c478105fe05b5e025687c8a980a4d"
+    },
+    {
+      "path": "RendererGap.dc.html",
+      "bytes": 20694,
+      "sha256": "0c8163657ec74665674bbf792380ffafbd0973f13ec31c363532c5d96d3a3309"
+    },
+    {
+      "path": "StateBoard.dc.html",
+      "bytes": 30003,
+      "sha256": "88ac733745cb3da7c3c0235f145797d2ffa00d3702ccddee42b947344d33fdb7"
+    },
+    {
+      "path": "Tokens.dc.html",
+      "bytes": 40968,
+      "sha256": "3b485d0314026e31887a0727a343f0d9888d0bb5b2ee27bc26b56aeb8f7726ed"
+    },
+    {
+      "path": "canvas.json",
+      "bytes": 8068,
+      "sha256": "1a5203eca78584a419933d2ae07e8293d70d4261d3136e3542bc0a94fa1e4815"
+    },
+    {
+      "path": "export.cjs",
+      "bytes": 11828,
+      "sha256": "ac93fa10ed35bd166c1f5140da9f6c782daaa877ca54ef0af2bfe5187f1a90ff"
+    },
+    {
+      "path": "renderer-gap-benchmark.cjs",
+      "bytes": 2757,
+      "sha256": "630b9bf68f7b1e31d7023c43314945d036826c6c332d4ff0572b53501835ee47"
+    },
+    {
+      "path": "renderer-gap-benchmark.html",
+      "bytes": 8347,
+      "sha256": "b569405e2e1d59705bc2e3ce8f10224fefee6de0c126f41c97506349d7b1d03d"
+    },
+    {
+      "path": "storyatlas-mockup-v2.html",
+      "bytes": 2860578,
+      "sha256": "683e1f6d5efaf7121b778c7e26bb6d3b94bdc9fedc39fa9af1c73eeb7a0656c7"
+    },
+    {
+      "path": "support.js",
+      "bytes": 7720,
+      "sha256": "d733eba1dfa103475261563b474722bf284b3adfa497acce5e7cf7a3b452f5e8"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "compact.html",
+      "bytes": 22612,
+      "sha256": "a6194b94eb4610fb1685fae570383dd8609ba86a9ffc1f349780fd286df7542b"
+    },
+    {
+      "path": "compact.png",
+      "bytes": 156484,
+      "sha256": "0f485b9d5f91ec3246362c103d150e296727201942d02c51abb413b6414ba190"
+    },
+    {
+      "path": "concept.html",
+      "bytes": 32319,
+      "sha256": "5a814ba348b9231c5c621b9643e84503cd52e9ea464e897cb47d05ce9940e8f1"
+    },
+    {
+      "path": "concept.png",
+      "bytes": 662656,
+      "sha256": "aa4c2ba680069d0717d4c2bab6f46f3bf27411f8280e87031abafea5fd9862d6"
+    },
+    {
+      "path": "directions.html",
+      "bytes": 48030,
+      "sha256": "4486b60b11c969f5ca60827849d20b2cac8ccaeb56ea6f88e3da8bda514d4abc"
+    },
+    {
+      "path": "directions.png",
+      "bytes": 524983,
+      "sha256": "d6fd6088ec4a8718d9fe82437e0a742549d29998f54eab7048bee06cf61f57a6"
+    },
+    {
+      "path": "focus-order.html",
+      "bytes": 14555,
+      "sha256": "1b163332042f06cfd31c310de1e8efe9945be41e594d945f192bcef4291903ae"
+    },
+    {
+      "path": "focus-order.png",
+      "bytes": 245832,
+      "sha256": "d9c2250b446f0449323f9a99b3efb05dd578074eebd8c0d181a0fa43a069ec95"
+    },
+    {
+      "path": "grayscale.html",
+      "bytes": 45034,
+      "sha256": "cd4b0ca2e6e2ffaad1ca57c650f234dc4da4b4bbe356a844a46ad7ad656af42a"
+    },
+    {
+      "path": "grayscale.png",
+      "bytes": 289013,
+      "sha256": "ec47e3e4f48713c173865a0582fe6869734d6a7bdf9b89e1c02ace827da4d62e"
+    },
+    {
+      "path": "index.html",
+      "bytes": 2444,
+      "sha256": "644a42499ab493b7b755fbabc32964a7938843227d7749a76e26936d3b9caee8"
+    },
+    {
+      "path": "interview-mode.html",
+      "bytes": 44899,
+      "sha256": "aadb5e6d1cd29fdf07d932207b4b6068ee7353ecfd0b71a15ae8c96bc65ba44e"
+    },
+    {
+      "path": "interview-mode.png",
+      "bytes": 330429,
+      "sha256": "bb0906908e66c603ab3e71a6b9c825c61c6472eb7d0cbc6c0140652daf59a74a"
+    },
+    {
+      "path": "main.html",
+      "bytes": 36282,
+      "sha256": "ef3ea73581abaf5c33337ee7a6b58fea2f17b961f801b0366950e6b2d3bc206b"
+    },
+    {
+      "path": "main.png",
+      "bytes": 333658,
+      "sha256": "819b1841fd525d27531d21bbb0c974a3cbf7f2dbddae7ea92dcf890f895e3b3e"
+    },
+    {
+      "path": "motion.html",
+      "bytes": 15299,
+      "sha256": "d4b1ed6cd6083e08a8efc09b2ffe5a24da060b9e4cd36f81b23627dee9ba3a5c"
+    },
+    {
+      "path": "motion.png",
+      "bytes": 186785,
+      "sha256": "43739329f6d4beb0b78490e50f8d80bd46b2891075cf791402627a16f1884d27"
+    },
+    {
+      "path": "recall-matrix.html",
+      "bytes": 50147,
+      "sha256": "b14c8173092e2ce3a46feaa99865192a3704cf79d0fd73f9a204ec72c1ae9094"
+    },
+    {
+      "path": "recall-matrix.png",
+      "bytes": 325778,
+      "sha256": "d409da63eb3076b8edf74f4de9997640a3e0a7c7062254cb3e82156533d8179c"
+    },
+    {
+      "path": "reflow.html",
+      "bytes": 12338,
+      "sha256": "c047cef454e332a7b02d9a4a689f82235895d1ea37efe2dd0074edd8a80a6810"
+    },
+    {
+      "path": "reflow.png",
+      "bytes": 318242,
+      "sha256": "2de2a05f96a0ae90087e31c6e569c1a173ff1e60dc6603fc5bab268303309a46"
+    },
+    {
+      "path": "renderer-gap-benchmark.json",
+      "bytes": 1635,
+      "sha256": "d7d6b91cda407ae9935a4e899188a329293bd062cf26bd93ce554705391a71ce"
+    },
+    {
+      "path": "renderer-gap-benchmark.png",
+      "bytes": 329522,
+      "sha256": "f38e6ca8c085d5c8ab489343e09b2b7dfdc9eb125fc11af5c9208ab34091b674"
+    },
+    {
+      "path": "renderer-gap.html",
+      "bytes": 25467,
+      "sha256": "86d251d83e943417fc60e87f0b42b0ed9bf72cf36f0b37f28155a5ce8c5621f2"
+    },
+    {
+      "path": "renderer-gap.png",
+      "bytes": 582459,
+      "sha256": "36c14a0fcad92f463906a729550cf3c01a8fdc8c7f7514806840c25b05db241b"
+    },
+    {
+      "path": "state-board.html",
+      "bytes": 34668,
+      "sha256": "9265d0c271eaf751da6d2a7259c8bbb2f0aea40a9bd7e07c5b45b065d85295f6"
+    },
+    {
+      "path": "state-board.png",
+      "bytes": 441256,
+      "sha256": "3ed452c826c13ad9971a5e807727e6db33bc48592378ff45678a46513bd1c927"
+    },
+    {
+      "path": "tokens.html",
+      "bytes": 40858,
+      "sha256": "8c8ae66645735d5796dc4136bdce16dd572e3e49d7d973083bf5600e0ad84970"
+    },
+    {
+      "path": "tokens.png",
+      "bytes": 603653,
+      "sha256": "3ef35cc35d50831d706e5b9e30c519016c7f6a3d9a1d3da63cfbd060fbaeda97"
+    }
+  ]
+}
