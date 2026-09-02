@@ -120,6 +120,10 @@ class CodexHtmlSuite extends ScalaCheckSuite:
         assert(!html.contains("<link"))
         assert(!html.contains("src=\""))
         assert(!html.contains("href=\""))
+        assert(html.contains("<details>\n<summary>Provenance and layout receipt</summary>"))
+        assert(!html.contains("<details open"))
+        assert(html.indexOf("<details>") < html.indexOf("<main>"))
+        assert(html.contains("<p class=\"legend\"><strong>Overlay:</strong> "))
         assertEquals(count(html, "<section class=\"page\""), placed.pages.length)
       }
       true
