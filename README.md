@@ -110,6 +110,27 @@ with no record knows nothing about derivation either way. The pipeline's
 `evidence` as sizes rather than contents and every address as a one-way
 render.
 
+### The Recall Voyage
+
+```sh
+sbt <overrides> "cli/run voyage --document /path/to/recall-map-NNxx.tsv.voyage.json --out target/voyage-NNxx"
+```
+
+A `voyage.json` is the Recall Voyage document (ADR 0002 §14) the storymodel4s
+pipeline writes beside every recall-to-video report: the recall's units with
+their word timings, the aligner's posterior rows, every segment and scene on
+one source clock, one decision per unit with its origin, and, when the run
+named it, the released scene coding as an independent coding. `voyage` decodes
+it through storymodel4s `codec`, which re-proves its join, compiles the scene
+through storymodel4s `VoyageCompiler`, so the evidence law runs here, lowers it
+through `VoyageLowering`, and writes `voyage.svg`, its twin `voyage.txt`, the
+standalone `voyage.html`, and `voyage-receipt.json`. Put `app.js` beside
+`voyage.html` (`app/editionBundle` writes it to `target/edition/`) and the
+page mounts the interactive pane over the same document: hover a mark for the
+unit's words and the row's numbers, click or walk with the arrow keys to
+inspect a unit and see its whole posterior column, area by mass. Without
+`app.js` the page shows the static plate.
+
 Either way, `edition --out <dir>` writes (relative paths resolve against the
 repository root):
 
