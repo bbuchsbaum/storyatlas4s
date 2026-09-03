@@ -1,0 +1,410 @@
+package storyatlas4s.intaglio
+
+import storymodel4s.acquire.ClaimFamily
+import storymodel4s.story.ContextKind
+import storymodel4s.view.*
+
+/** The composition of one Discourse Atlas plate, decided before anything is drawn.
+  *
+  * Every question a beautiful plate has to answer — how tall is a lane, which labels are drawn and
+  * where, how 65 marks of one unsatisfied law become readable rather than a smear — is a decision
+  * over measured extents, so it is taken here, once, as data. [[AtlasLowering]] then only draws.
+  *
+  * Two rules govern the whole plan and are why it is a plan at all:
+  *
+  *   - **No mark is dropped.** A label may be elided or withheld; the mark it belongs to is always
+  *     drawn, always named, and always in the textual twin. What the plate withholds it says it is
+  *     withholding, with a count.
+  *   - **Nothing here is a claim.** A packing row, a label row, a margin column position: all are
+  *     device layout over a coordinate the projection contract declares meaningless in y
+  *     (`VisualInvariant.LaneHasNoMetric`). The plate says so on its face.
+  */
+private[intaglio] object AtlasPlate:
+
+  /** One context lane of the plot. `kind` is absent when no visible band names the lane, which
+    * happens when a frame's clipped support is empty; the lane is then numbered and not named,
+    * because guessing its kind from a neighbouring landmark would invent a context.
+    */
+  final case class Lane(index: Int, kind: Option[ContextKind])
+
+  /** A label the budget accepted: `dxPx` is the offset of its left edge from the mark's own x, in
+    * device pixels, so the label never scales with the discourse axis.
+    */
+  final case class PlacedLabel(text: String, markX: Int, lane: Int, row: Int, dxPx: Double)
+
+  /** What one lane's label budget spent, so the plate can print it. */
+  final case class LaneBudget(lane: Int, labelled: Int, total: Int)
+
+  /** One reason a model does not promote, and every mark that records it.
+    *
+    * Grouping is the whole treatment: 65 marks of `hierarchy.situation-root-reachable` are not 65
+    * facts, they are one fact about 65 situations. The reason is written once with its count; the
+    * marks keep their own identities and their own exact spans, so the reader sees precisely which
+    * material each concerns.
+    */
+  final case class AbsenceGroup(
+      headline: String,
+      detail: String,
+      count: Int,
+      /** Packing row of each spanned mark, by `MarkId`. Layout only; it means nothing. */
+      rowOf: Map[String, Int],
+      /** Marks with no honest discourse position, in mark order, for the margin column. */
+      unplaced: Vector[String],
+      rowCount: Int,
+      /** Top of this group within the absence band, in pixels. */
+      topPx: Double,
+      heightPx: Double
+  )
+
+  /** The plate plan. All pixel coordinates are measured from the top-left of the box. */
+  final case class Plan(
+      box: PlateBox,
+      discourseLength: Int,
+      lanes: Vector[Lane],
+      contentLeftPx: Double,
+      plotLeftPx: Double,
+      rightPx: Double,
+      headerTopPx: Double,
+      contractTopPx: Double,
+      laneTopPx: Double,
+      laneHeightPx: Double,
+      labelRows: Int,
+      axisTopPx: Double,
+      surfaceTopPx: Double,
+      surfaceHeightPx: Double,
+      absenceTopPx: Double,
+      absenceHeightPx: Double,
+      absence: Vector[AbsenceGroup],
+      legendTopPx: Double,
+      labels: Map[String, PlacedLabel],
+      laneBudget: Vector[LaneBudget],
+      /** Ticks of the discourse axis: value and label, from Intaglio's own break generator. */
+      ticks: Vector[(Double, String)]
+  ):
+    def laneCount: Int = lanes.length
+
+    /** Centre of a lane's context-band ribbon, in pixels below the lane's own top edge. */
+    def bandOffsetPx: Double = laneHeightPx - Metric.bandFromLaneBottomPx
+
+    /** The lane's situation row: landmark glyphs, thread rings, relation endpoints. */
+    def situationOffsetPx: Double = laneHeightPx - Metric.situationFromLaneBottomPx
+
+    /** Baseline of label row `row`, counting up from the situation row. */
+    def labelOffsetPx(row: Int): Double =
+      situationOffsetPx - Metric.labelRowLiftPx - row * Metric.labelRowStepPx
+    def plotWidthPx: Double = rightPx - plotLeftPx
+    def laneBottomPx: Double = laneTopPx + laneHeightPx * laneCount
+    def marginLeftPx: Double = contentLeftPx + Metric.laneNameWidthPx
+    def marginWidthPx: Double = plotLeftPx - marginLeftPx
+
+    /** npc y of a pixel measured down from the top of the box; the root frame is y-up. */
+    def y(px: Double): Double = 1.0 - px / box.heightPx
+    def x(px: Double): Double = px / box.widthPx
+
+    /** Device x of an exact discourse offset. */
+    def xOf(offset: Double): Double =
+      plotLeftPx + offset / math.max(discourseLength.toDouble, 1.0) * plotWidthPx
+
+    def labelsDrawn: Int = labels.size
+    def labelsWithheld: Int = laneBudget.map(b => b.total - b.labelled).sum
+    def labellable: Int = laneBudget.map(_.total).sum
+
+  /** Compose a plate for `scene` in `box`. */
+  def plan(scene: NarrativeScene, discourseLength: Int, box: PlateBox): Plan =
+    val marks = scene.marks
+    val laneCount = marks.flatMap(maxContextLane).maxOption.fold(1)(_ + 1)
+    val bandKinds = marks
+      .collect { case b: VisualPrimitive.ContextBand => b.lane -> b.kind }
+      .sortBy(_._1)
+      .toMap
+    val lanes = (0 until laneCount).toVector.map(i => Lane(i, bandKinds.get(i)))
+
+    val contentLeftPx = Metric.gutterPx
+    val plotLeftPx = contentLeftPx + Metric.laneNameWidthPx + Metric.marginColumnPx
+    val rightPx = box.widthPx - Metric.rightPadPx
+    val plotWidthPx = rightPx - plotLeftPx
+
+    val absenceMarks = marks.filter(_.epistemicPlacement.isDefined)
+    val groups = groupAbsences(absenceMarks, discourseLength, plotWidthPx)
+    val absenceHeightPx =
+      groups.lastOption.fold(Metric.absenceCaptionPx)(g => g.topPx + g.heightPx)
+
+    val headerTopPx = Metric.topPadPx
+    val contractTopPx = headerTopPx + Metric.headerPx
+    val laneTopPx = contractTopPx + Metric.contractPx
+    val fixedBelow =
+      Metric.axisPx + Metric.surfacePx + absenceHeightPx + Metric.legendPx + Metric.bottomPadPx
+    val lanesHeightPx = math.max(
+      Metric.laneMinPx * laneCount,
+      box.heightPx - laneTopPx - fixedBelow
+    )
+    val laneHeightPx = lanesHeightPx / laneCount
+    val situationOffsetPx = laneHeightPx - Metric.situationFromLaneBottomPx
+    val labelRows = math.max(
+      1,
+      math.min(
+        Metric.maxLabelRows,
+        ((situationOffsetPx - Metric.labelRowLiftPx + Metric.labelRowStepPx - 6.0) /
+          Metric.labelRowStepPx).toInt
+      )
+    )
+    val axisTopPx = laneTopPx + lanesHeightPx
+    val surfaceTopPx = axisTopPx + Metric.axisPx
+    val absenceTopPx = surfaceTopPx + Metric.surfacePx
+    val legendTopPx = absenceTopPx + absenceHeightPx
+
+    val partial = Plan(
+      box = box,
+      discourseLength = discourseLength,
+      lanes = lanes,
+      contentLeftPx = contentLeftPx,
+      plotLeftPx = plotLeftPx,
+      rightPx = rightPx,
+      headerTopPx = headerTopPx,
+      contractTopPx = contractTopPx,
+      laneTopPx = laneTopPx,
+      laneHeightPx = laneHeightPx,
+      labelRows = labelRows,
+      axisTopPx = axisTopPx,
+      surfaceTopPx = surfaceTopPx,
+      surfaceHeightPx = Metric.surfacePx,
+      absenceTopPx = absenceTopPx,
+      absenceHeightPx = absenceHeightPx,
+      absence = groups,
+      legendTopPx = legendTopPx,
+      labels = Map.empty,
+      laneBudget = Vector.empty,
+      ticks = ticksFor(discourseLength)
+    )
+    val (labels, budget) = budgetLabels(marks, partial)
+    partial.copy(labels = labels, laneBudget = budget)
+
+  private def maxContextLane(mark: VisualPrimitive): Option[Int] = mark match
+    case _: VisualPrimitive.SurfaceUnit                => None
+    case VisualPrimitive.Region(_, extent, _, _)       => Some(extent.lane1)
+    case VisualPrimitive.Landmark(_, at, _, _, _)      => Some(at.lane)
+    case VisualPrimitive.Thread(_, _, points)          => points.map(_.lane).maxOption
+    case VisualPrimitive.Portal(_, from, to, _)        => Some(math.max(from.lane, to.lane))
+    case VisualPrimitive.Route(_, from, to, _, _)      => Some(math.max(from.lane, to.lane))
+    case VisualPrimitive.ContextBand(_, _, _, e, _, _) => Some(e.toVector.map(_.lane1).max)
+    case _: VisualPrimitive.Gap                        => None
+    case _: VisualPrimitive.Abstention                 => None
+    case _: VisualPrimitive.UnsatisfiedLaw             => None
+
+  // ---------------------------------------------------------------- the discourse axis
+
+  /** Ticks from Intaglio's own pretty-break generator, so the axis is not hand-chosen. */
+  private def ticksFor(discourseLength: Int): Vector[(Double, String)] =
+    val result =
+      for
+        range <- _root_.intaglio.Interval(0.0, math.max(discourseLength.toDouble, 1.0))
+        values <- _root_.intaglio.Breaks.prettyUnsafe(9).generate(range)
+        kept = values.filter(range.contains)
+      yield kept.zip(_root_.intaglio.Labeler.default(kept))
+    result.getOrElse(Vector.empty)
+
+  // ---------------------------------------------------------------- the label budget
+
+  /** A label candidate, in discourse order within its lane. */
+  private final case class Candidate(markId: String, x: Int, lane: Int, text: String)
+
+  /** Entity threads, then landmarks, then relation edges.
+    *
+    * The order is a declared rule over what the scene supplies, never a judgement of importance. A
+    * thread is one entity's whole trajectory through the work and there are at most a handful, so
+    * naming the cast costs a lane three slots; a landmark is one situation and there are dozens; an
+    * edge is a claim about two landmarks and so cannot be read before them. Within each family the
+    * order is discourse order, the only ordering the scene supplies.
+    */
+  private def candidates(marks: Vector[VisualPrimitive]): Vector[Candidate] =
+    val landmarks = marks.collect { case VisualPrimitive.Landmark(id, at, label, _, _) =>
+      Candidate(id.mark.value, at.x, at.lane, label)
+    }
+    val threads = marks.collect {
+      case VisualPrimitive.Thread(id, label, points) if points.nonEmpty =>
+        Candidate(id.mark.value, points.head.x, points.head.lane, label)
+    }
+    val edges = marks.collect {
+      case VisualPrimitive.Portal(id, from, to, mode) =>
+        Candidate(id.mark.value, (from.x + to.x) / 2, from.lane, s"portal · $mode")
+      case VisualPrimitive.Route(id, from, to, layer, status) =>
+        Candidate(id.mark.value, (from.x + to.x) / 2, from.lane, s"$layer · $status")
+    }
+    threads.sortBy(c => (c.x, c.markId)) ++
+      landmarks.sortBy(c => (c.x, c.markId)) ++
+      edges.sortBy(c => (c.x, c.markId))
+
+  /** Greedy, collision-free placement into a small number of label rows per lane.
+    *
+    * Each candidate is offered its rows in order and, within a row, the space to the right of its
+    * mark and then the space to its left. A candidate that finds no clear interval is not drawn and
+    * is counted; nothing is ever moved to a position that would misreport which mark it labels, and
+    * nothing is shrunk to fit.
+    */
+  private def budgetLabels(
+      marks: Vector[VisualPrimitive],
+      plan: Plan
+  ): (Map[String, PlacedLabel], Vector[LaneBudget]) =
+    val gap = Metric.labelGapPx
+    val byLane = candidates(marks).groupBy(_.lane)
+    val placed = Map.newBuilder[String, PlacedLabel]
+    val budgets = Vector.newBuilder[LaneBudget]
+
+    plan.lanes.foreach { lane =>
+      val here = byLane.getOrElse(lane.index, Vector.empty)
+      // occupied[row] is the set of [start, end) pixel intervals already spoken for.
+      val occupied = Array.fill(plan.labelRows)(Vector.empty[(Double, Double)])
+      var labelled = 0
+      here.foreach { candidate =>
+        Measure.elide(candidate.text, Metric.labelMaxPx, Typeface.labelPt) match
+          case None       => ()
+          case Some(text) =>
+            val width = Measure.widthPx(text, Typeface.labelPt)
+            val markPx = plan.xOf(candidate.x.toDouble)
+            val toRight = markPx + 5.0
+            val toLeft = markPx - 5.0 - width
+            val options =
+              for
+                row <- (0 until plan.labelRows).toVector
+                start <- Vector(toRight, toLeft)
+              yield (row, start)
+            options
+              .find { (row, start) =>
+                start >= plan.plotLeftPx && start + width <= plan.rightPx &&
+                !occupied(row).exists((a, b) => start - gap < b && start + width + gap > a)
+              }
+              .foreach { (row, start) =>
+                occupied(row) = occupied(row) :+ (start, start + width)
+                placed += candidate.markId -> PlacedLabel(
+                  text,
+                  candidate.x,
+                  candidate.lane,
+                  row,
+                  start - markPx
+                )
+                labelled += 1
+              }
+      }
+      if here.nonEmpty then budgets += LaneBudget(lane.index, labelled, here.length)
+    }
+    (placed.result(), budgets.result())
+
+  // ---------------------------------------------------------------- recorded absence
+
+  /** `ClaimFamily.Custom` renders as a Scala product string upstream; name it ourselves so the twin
+    * and the picture read the same and no compiler-generated text reaches a label.
+    */
+  private def claimFamily(family: ClaimFamily): String = family match
+    case ClaimFamily.Custom(namespace, name) => s"$namespace/$name"
+    case other                               => other.toString
+
+  /** The (headline, detail) a mark is grouped under: what it records, not which object it records
+    * it about. Two marks share a group exactly when a reader would otherwise read the same sentence
+    * twice.
+    */
+  private def reasonOf(mark: VisualPrimitive): Option[(String, String)] = mark match
+    case VisualPrimitive.UnsatisfiedLaw(_, v, _) =>
+      Some((s"${v.law} · ${v.severity}", v.reason))
+    case VisualPrimitive.Gap(_, family, _, reason, state, _) =>
+      Some((s"derivation gap · ${claimFamily(family)} · $state", reason.render))
+    case VisualPrimitive.Abstention(_, _, reason, _) =>
+      Some(("provider abstention", reason.render))
+    case _ => None
+
+  private def sortRank(mark: VisualPrimitive): Int = mark match
+    case _: VisualPrimitive.UnsatisfiedLaw => 0
+    case _: VisualPrimitive.Gap            => 1
+    case _: VisualPrimitive.Abstention     => 2
+    case _                                 => 3
+
+  /** Most-repeated reason first, so what most stops the model promoting is read first. */
+  private def groupAbsences(
+      marks: Vector[VisualPrimitive],
+      discourseLength: Int,
+      plotWidthPx: Double
+  ): Vector[AbsenceGroup] =
+    val keyed = marks.flatMap(m => reasonOf(m).map(r => (r, sortRank(m), m)))
+    val ordered = keyed
+      .groupBy((reason, rank, _) => (rank, reason))
+      .toVector
+      .sortBy { case ((rank, (headline, detail)), members) =>
+        (rank, -members.length, headline, detail)
+      }
+    var top = Metric.absenceCaptionPx
+    ordered.map { case ((_, (headline, detail)), members) =>
+      val group = pack(headline, detail, members.map(_._3), discourseLength, plotWidthPx, top)
+      top += group.heightPx
+      group
+    }
+
+  /** First-fit interval packing of a group's marks into rows.
+    *
+    * Two marks share a row exactly when their exact spans do not come within a few pixels of each
+    * other, so a row reads as a stratum of disjoint footprints. Which row a mark lands in is
+    * layout, and the plate says so.
+    */
+  private def pack(
+      headline: String,
+      detail: String,
+      members: Vector[VisualPrimitive],
+      discourseLength: Int,
+      plotWidthPx: Double,
+      topPx: Double
+  ): AbsenceGroup =
+    val maxRows = 6
+    val gapPx = 5.0
+    val scale = plotWidthPx / math.max(discourseLength.toDouble, 1.0)
+    val spanned = members
+      .flatMap(m => m.epistemicPlacement.flatMap(_.spanSet).map(s => (m.identity.mark.value, s)))
+      .sortBy((id, s) => (s.spans.toVector.map(_.start).min, id))
+    val unplaced = members
+      .filter(_.epistemicPlacement.forall(_.spanSet.isEmpty))
+      .map(_.identity.mark.value)
+      .sorted
+
+    val rowEnd = Array.fill(maxRows)(Double.NegativeInfinity)
+    val rowOf = Map.newBuilder[String, Int]
+    var used = 0
+    spanned.zipWithIndex.foreach { case ((id, spans), index) =>
+      val xs = spans.spans.toVector
+      val startPx = xs.map(_.start).min * scale
+      val endPx = xs.map(_.endExclusive).max * scale
+      val free = (0 until maxRows).find(r => startPx >= rowEnd(r) + gapPx)
+      val row = free.getOrElse(index % maxRows)
+      rowEnd(row) = math.max(rowEnd(row), endPx)
+      used = math.max(used, row + 1)
+      rowOf += id -> row
+    }
+    val rowCount = math.max(used, if unplaced.isEmpty then 0 else 1)
+    AbsenceGroup(
+      headline = headline,
+      detail = detail,
+      count = members.length,
+      rowOf = rowOf.result(),
+      unplaced = unplaced,
+      rowCount = rowCount,
+      topPx = topPx,
+      heightPx =
+        Metric.absenceGroupHeadPx + rowCount * Metric.absenceRowPx + Metric.absenceGroupGapPx
+    )
+
+  // ---------------------------------------------------------------- lane naming
+
+  /** The head of a context kind, as the model spells it. Never prettified: a reader who sees
+    * `Speech` on the plate finds `Speech` in the twin and in the model.
+    */
+  def kindHead(kind: ContextKind): String = kind match
+    case ContextKind.NarratedWorld  => "NarratedWorld"
+    case ContextKind.Speech(_)      => "Speech"
+    case ContextKind.Belief(_)      => "Belief"
+    case ContextKind.Desire(_)      => "Desire"
+    case ContextKind.Intention(_)   => "Intention"
+    case ContextKind.Hypothetical   => "Hypothetical"
+    case ContextKind.Counterfactual => "Counterfactual"
+    case ContextKind.Memory(_)      => "Memory"
+    case ContextKind.Imagination(_) => "Imagination"
+
+  def kindHolder(kind: ContextKind): Option[String] = kind.heldBy.map(_.render)
+
+  /** The narrated world is the ground; everything else is a frame drawn on it. */
+  def isNarrated(kind: ContextKind): Boolean = kind == ContextKind.NarratedWorld

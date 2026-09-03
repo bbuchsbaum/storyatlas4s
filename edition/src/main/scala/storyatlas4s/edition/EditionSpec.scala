@@ -37,7 +37,7 @@ object EditionSpec:
   /** The Atlas document box in CSS pixels (the SVG carries a `viewBox`, so a shell may scale it).
     */
   val atlasWidthPx: Int = 1600
-  val atlasHeightPx: Int = 420
+  val atlasHeightPx: Int = 1080
   def atlasBox: String = s"${atlasWidthPx}x${atlasHeightPx}px"
 
   /** The flow-level Codex overlay document box (`codex-<lens>.svg`). */

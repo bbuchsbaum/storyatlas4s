@@ -3,7 +3,7 @@ package storyatlas4s.cli
 import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
 import storyatlas4s.edition.{EditionSpec, Pins}
-import storyatlas4s.intaglio.{AtlasLowering, CodexLowering, GraphicsNames}
+import storyatlas4s.intaglio.{AtlasLowering, CodexLowering, GraphicsNames, PlateBox}
 import storyatlas4s.layout.{LayoutReceipt, MonospaceMeasurer, PageSpec, Paginator, TextStyle}
 import storymodel4s.core.*
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel
@@ -200,8 +200,12 @@ object Edition:
         .left
         .map(_.message)
       scene <- AtlasCompiler(provenance).compileDraft(model, state, spec).left.map(_.message)
+      box <- PlateBox
+        .of(EditionSpec.atlasWidthPx, EditionSpec.atlasHeightPx)
+        .left
+        .map(_.message)
       lowered <- AtlasLowering
-        .lower(scene, model.model.source.canonicalText.length)
+        .lower(scene, model.model.source.canonicalText.length, box)
         .left
         .map(_.message)
       names = GraphicsNames.collect(lowered).length
@@ -284,7 +288,14 @@ object Edition:
         .left
         .map(_.message)
       scene <- AtlasCompiler(provenance).compile(model, state, spec).left.map(_.message)
-      lowered <- AtlasLowering.lower(scene, model.source.canonicalText.length).left.map(_.message)
+      box <- PlateBox
+        .of(EditionSpec.atlasWidthPx, EditionSpec.atlasHeightPx)
+        .left
+        .map(_.message)
+      lowered <- AtlasLowering
+        .lower(scene, model.source.canonicalText.length, box)
+        .left
+        .map(_.message)
       names = GraphicsNames.collect(lowered).length
       options <- SvgOptions(
         EditionSpec.atlasWidthPx,
