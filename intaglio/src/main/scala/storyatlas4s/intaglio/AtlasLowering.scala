@@ -341,7 +341,16 @@ object AtlasLowering:
         s"no semantic interpretation: ${unencoded.mkString(" · ")}   ·   $budget",
         style.fine
       )
-    yield Vector(axesGrob, xGrob, yGrob, noneGrob)
+      // The shared focus contract, stated on the plate: what this projection did with the one
+      // address every face of the view carries. Never silently dropped (design brief §6).
+      focusGrob <- pageText(
+        plan,
+        left,
+        top + 76.0,
+        s"shared selection: ${plan.focusNote}",
+        if plan.selected.isEmpty then style.fine else style.focusLabel
+      )
+    yield Vector(axesGrob, xGrob, yGrob, noneGrob, focusGrob)
 
   /** Each lane is named where it is drawn, from the context frame that occupies it. A lane with no
     * visible band is numbered and left unnamed: naming it from a neighbour would invent a context.
@@ -768,13 +777,27 @@ object AtlasLowering:
       val shape = kind match
         case LandmarkKind.Event => ig.PointShape.Circle
         case LandmarkKind.State => ig.PointShape.Square
+      val focused = plan.selected.contains(id.mark.value)
       val row = plan.situationOffsetPx
       val where = at(anchor.x.toDouble, anchor.lane.toDouble, row)
       for
         halo <- ig.Grob.points(Vector(where), Metric.glyphHalo, shape, gp = style.landmarkHalo)
-        glyph <- ig.Grob.points(Vector(where), Metric.glyph, shape, gp = style.landmark)
+        // The focus ring is a second, dashed shape rather than a change of colour, so the shared
+        // selection is still legible in monochrome (design brief §11).
+        ring <-
+          if !focused then Right(Vector.empty)
+          else
+            ig.Grob
+              .points(Vector(where), Metric.focusRing, ig.PointShape.Square, gp = style.focusRing)
+              .map(Vector(_))
+        glyph <- ig.Grob.points(
+          Vector(where),
+          Metric.glyph,
+          shape,
+          gp = if focused then style.focus else style.landmark
+        )
         label <- budgetedLabel(id.mark.value, anchor.x, anchor.lane.toDouble, plan, style)
-      yield Vector(halo, glyph) ++ label
+      yield (halo +: ring) ++ (glyph +: label)
 
     // The rings carry the participations; the path between them is drawn dotted because the
     // contract says it asserts nothing, and a solid line would say otherwise.
@@ -853,7 +876,7 @@ object AtlasLowering:
             placed.text,
             at(x.toDouble, lane, baseline, placed.dxPx),
             Style.labelAnchor,
-            gp = style.label
+            gp = if plan.selected.contains(markId) then style.focusLabel else style.label
           )
         yield Vector(leader, text)
 

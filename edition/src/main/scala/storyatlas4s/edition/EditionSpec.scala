@@ -46,3 +46,29 @@ object EditionSpec:
   def codexOverlayBox: String = s"${codexOverlayWidthPx}x${codexOverlayHeightPx}px"
 
   def pageBox: String = s"${pageWidthPx}x${pageHeightPx}px"
+
+  /** The workspace: one reading pane of exact text beside one Atlas plate, under one selection.
+    *
+    * The page is wider than the publication page because the workspace's job is reading, and a
+    * 40-column column is a specimen rather than a text. At 16px monospace a 640px page is about 66
+    * columns, which is inside the comfortable measure the design brief asks for, and the type is
+    * the same 16px the brief makes acceptance-bearing — the pane is never miniaturised to make the
+    * plate fit.
+    */
+  val workspacePageWidthPx: Int = 640
+  val workspacePageHeightPx: Int = 960
+
+  /** The plate beside it. Narrower than the standalone plate, so its label budget is composed for
+    * the width it actually gets rather than scaled down into illegibility.
+    */
+  val workspaceAtlasWidthPx: Int = 1240
+  val workspaceAtlasHeightPx: Int = 1080
+
+  /** The one zoom and lens the workspace joins: the level at which situations exist, and the lens
+    * that admits every structural channel.
+    */
+  val workspaceZoom: ZoomLevel = ZoomLevel(NarrativeLevel.Scene, SurfaceDetail.Hidden)
+  val workspaceLens: CodexLens = CodexLens.Overview
+
+  def workspaceBox: String =
+    s"${workspacePageWidthPx}x${workspacePageHeightPx}px + ${workspaceAtlasWidthPx}x${workspaceAtlasHeightPx}px"

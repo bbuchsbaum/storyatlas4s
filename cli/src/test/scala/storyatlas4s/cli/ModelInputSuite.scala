@@ -175,13 +175,24 @@ class ModelInputSuite extends FunSuite:
     assertEquals(edition.provenanceBasis, ViewBasis.DraftBuild)
     assertEquals(edition.promotion.map(_.promoted), Some(false))
     assertEquals(edition.promotion.map(_.violationCount), Some(3))
-    // Atlases only: there is no draft Codex compiler, and an empty Codex would claim the reading
-    // view was compiled and had nothing to say.
+    // The plates, the reading surface, and the workspace that joins them. `compileDraft` takes the
+    // same bundle on both compilers, so a partial model now has words as well as marks.
     assertEquals(
       edition.files.map(_.artifact).distinct.sorted,
-      Vector("atlas-draft", "atlas-draft-twin")
+      Vector(
+        "atlas-draft",
+        "atlas-draft-twin",
+        "codex-draft",
+        "codex-draft-pages",
+        "codex-draft-pages-twin",
+        "codex-draft-twin",
+        "workspace"
+      )
     )
-    assertEquals(edition.files.length, EditionSpec.zoomLevels.length * 2)
+    assertEquals(
+      edition.files.length,
+      EditionSpec.zoomLevels.length * 2 + EditionSpec.lenses.length * 4 + 1
+    )
     edition.files.foreach { f =>
       assert(f.content.contains(ViewBasis.DraftBuild.label), f.name)
     }

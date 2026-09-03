@@ -2,7 +2,7 @@ package storyatlas4s.cli
 
 import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
-import storyatlas4s.edition.{EditionSpec, Pins}
+import storyatlas4s.edition.{EditionSpec, Focus, Pins}
 import storyatlas4s.intaglio.{AtlasLowering, CodexLowering, GraphicsNames, PlateBox}
 import storyatlas4s.layout.{LayoutReceipt, MonospaceMeasurer, PageSpec, Paginator, TextStyle}
 import storymodel4s.core.*
@@ -151,34 +151,197 @@ object Edition:
       case None =>
         draft(read)
 
-  /** The draft edition: atlases only.
+  /** The draft edition: the plates, the reading surface, and the workspace that joins them.
     *
-    * There is no draft Codex compiler in this pin — `CodexCompiler.compile` still takes a
-    * `StoryModel[Validated]` — so a draft edition writes atlas SVGs and their twins and no
-    * `codex-*` files. Emitting an empty Codex would claim the reading view had been compiled and
-    * had nothing to say.
+    * `CodexCompiler.compileDraft` takes the same `DraftModel` the Atlas path does, so a partial
+    * model now has words as well as marks — and the words carry the model's failures, since an
+    * absence that cites spans becomes an annotation on exactly those spans. What has no honest
+    * discourse position stays out of the text entirely and is listed in its own ledger.
     */
   private def draft(read: ReadModel): Either[String, Edition] =
     val model = read.draftModel
     for
-      state <- CommonViewState
-        .of(relationLayers = EditionSpec.relationLayers)
-        .left
-        .map(_.message)
       threads <- PositiveInt
         .from(EditionSpec.threadMax)
         .map(ThreadPolicy.All.apply)
         .left
         .map(_.message)
-      files <- atlasZooms.flatTraverse(zoom => draftAtlasFiles(model, state, zoom, threads))
+      // Two passes. The first compiles with no selection and only to ask the scene which address
+      // the workspace should focus; the second compiles everything under that shared selection, so
+      // the Codex and the Atlas are two faces of one view state rather than two pictures.
+      unfocused <- CommonViewState
+        .of(relationLayers = EditionSpec.relationLayers)
+        .left
+        .map(_.message)
+      survey <- draftScene(model, unfocused, EditionSpec.workspaceZoom, threads)
+      focus = Focus.choose(survey)
+      state <- CommonViewState
+        .of(
+          selection = focus.map(_.address).toSet,
+          focus = focus.map(_.address),
+          relationLayers = EditionSpec.relationLayers
+        )
+        .left
+        .map(_.message)
+      atlases <- atlasZooms.flatTraverse(zoom => draftAtlasFiles(model, state, zoom, threads))
+      codices <- codexLenses.flatTraverse(lens => draftCodexFiles(model, state, lens, focus))
+      workspace <- draftWorkspace(model, state, threads, focus)
     yield Edition(
       read.path.getFileName.toString,
       ViewBasis.DraftBuild,
       model.model.source.canonicalChecksum,
       model.model.receipt.map(_.contentChecksum),
       state,
-      files,
+      atlases ++ codices ++ workspace,
       Some(model.promotion)
+    )
+
+  /** One draft Atlas scene, so the same compilation can be surveyed and then drawn. */
+  private def draftScene(
+      model: DraftModel,
+      state: CommonViewState,
+      zoom: ZoomLevel,
+      threads: ThreadPolicy
+  ): Either[String, NarrativeScene] =
+    val spec = AtlasSpec(zoom, threads)
+    for
+      provenance <- ViewProvenance
+        .draftBuild(
+          model,
+          EditionSpec.compilerVersion,
+          AtlasCompiler.configurationChecksum(state, spec)
+        )
+        .left
+        .map(_.message)
+      scene <- AtlasCompiler(provenance).compileDraft(model, state, spec).left.map(_.message)
+    yield scene
+
+  /** One draft Codex flow. */
+  private def draftFlow(
+      model: DraftModel,
+      state: CommonViewState,
+      lens: CodexLens
+  ): Either[String, CodexFlow] =
+    for
+      spec <- CodexSpec.forLens(lens, ChannelBudget.All).left.map(_.message)
+      provenance <- ViewProvenance
+        .draftBuild(
+          model,
+          EditionSpec.compilerVersion,
+          CodexCompiler.configurationChecksum(state, spec)
+        )
+        .left
+        .map(_.message)
+      flow <- CodexCompiler(provenance).compileDraft(model, state, spec).left.map(_.message)
+    yield flow
+
+  private def draftCodexFiles(
+      model: DraftModel,
+      state: CommonViewState,
+      lens: CodexLens,
+      focus: Option[Focus.Chosen]
+  ): Either[String, Vector[EditionFile]] =
+    val stem = s"codex-${lens.toString.toLowerCase}"
+    val detail = s"lens $lens"
+    val length = model.model.source.canonicalText.length
+    for
+      spec <- CodexSpec.forLens(lens, ChannelBudget.All).left.map(_.message)
+      config = CodexCompiler.configurationChecksum(state, spec)
+      flow <- draftFlow(model, state, lens)
+      lowered <- CodexLowering.lower(flow, length).left.map(_.message)
+      names = GraphicsNames.collect(lowered).length
+      options <- SvgOptions(
+        EditionSpec.codexOverlayWidthPx,
+        EditionSpec.codexOverlayHeightPx,
+        Some(s"Narrative Codex overlay (draft) — $detail")
+      ).left.map(_.message)
+      svg <- SvgRenderer.render(lowered, options).left.map(_.message)
+      page <- PageSpec.of(EditionSpec.pageWidthPx, EditionSpec.pageHeightPx).left.map(_.message)
+      style <- TextStyle.of(EditionSpec.fontFamily, EditionSpec.fontSizePx).left.map(_.message)
+      placed <- Paginator.layout(flow, page, style, MonospaceMeasurer.instance).left.map(_.message)
+      html <- CodexHtml
+        .render(placed, detail, Focus.annotations(flow, focus))
+        .left
+        .map(_.message)
+      pieces = placed.annotationFragments.length
+    yield Vector(
+      EditionFile(s"$stem.svg", "codex-draft", detail, config, names, svg.value, None),
+      EditionFile(
+        s"$stem.txt",
+        "codex-draft-twin",
+        detail,
+        config,
+        flow.annotations.length,
+        flow.textualTwin,
+        None
+      ),
+      EditionFile(
+        s"$stem.html",
+        "codex-draft-pages",
+        detail,
+        config,
+        pieces,
+        html,
+        Some(placed.receipt)
+      ),
+      EditionFile(
+        s"$stem-pages.txt",
+        "codex-draft-pages-twin",
+        detail,
+        config,
+        pieces,
+        placed.textualTwin,
+        Some(placed.receipt)
+      )
+    )
+
+  /** The workspace: the reading surface and one plate, under one selection. */
+  private def draftWorkspace(
+      model: DraftModel,
+      state: CommonViewState,
+      threads: ThreadPolicy,
+      focus: Option[Focus.Chosen]
+  ): Either[String, Vector[EditionFile]] =
+    val zoom = EditionSpec.workspaceZoom
+    val lens = EditionSpec.workspaceLens
+    val length = model.model.source.canonicalText.length
+    val detail = s"lens $lens beside zoom ${zoom.narrative}/${zoom.surface}"
+    for
+      spec <- CodexSpec.forLens(lens, ChannelBudget.All).left.map(_.message)
+      config = CodexCompiler.configurationChecksum(state, spec)
+      flow <- draftFlow(model, state, lens)
+      scene <- draftScene(model, state, zoom, threads)
+      box <- PlateBox
+        .of(EditionSpec.workspaceAtlasWidthPx, EditionSpec.workspaceAtlasHeightPx)
+        .left
+        .map(_.message)
+      lowered <- AtlasLowering.lower(scene, length, box).left.map(_.message)
+      options <- SvgOptions(
+        EditionSpec.workspaceAtlasWidthPx,
+        EditionSpec.workspaceAtlasHeightPx,
+        Some(s"Narrative Atlas (draft) — zoom ${zoom.narrative}/${zoom.surface}")
+      ).left.map(_.message)
+      plate <- SvgRenderer.render(lowered, options).left.map(_.message)
+      page <- PageSpec
+        .of(EditionSpec.workspacePageWidthPx, EditionSpec.workspacePageHeightPx)
+        .left
+        .map(_.message)
+      style <- TextStyle.of(EditionSpec.fontFamily, EditionSpec.fontSizePx).left.map(_.message)
+      placed <- Paginator.layout(flow, page, style, MonospaceMeasurer.instance).left.map(_.message)
+      html <- Workspace
+        .render(placed, scene, plate.value, focus, detail)
+        .left
+        .map(_.message)
+    yield Vector(
+      EditionFile(
+        Workspace.File,
+        "workspace",
+        detail,
+        config,
+        placed.annotationFragments.length,
+        html,
+        Some(placed.receipt)
+      )
     )
 
   private def draftAtlasFiles(

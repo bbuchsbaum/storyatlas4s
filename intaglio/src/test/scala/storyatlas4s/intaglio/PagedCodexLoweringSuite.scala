@@ -67,7 +67,7 @@ class PagedCodexLoweringSuite extends FunSuite:
     assertEquals(rows, rows.distinct)
     placed.flow.annotations.foreach { a =>
       val slot = placed.flow.lanes.slotOf(a.id).getOrElse(fail(a.id.value))
-      assert(rows.contains(PagedCodexLowering.Row(a.kind, slot)), a.id.value)
+      assert(rows.contains(PagedCodexLowering.Row(a.kind, Some(slot))), a.id.value)
     }
     assertEquals(ok(PagedCodexLowering.rows(paginate(CodexLens.Reading))), Vector.empty)
 

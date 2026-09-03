@@ -78,6 +78,10 @@ private[intaglio] object AtlasPlate:
       legendTopPx: Double,
       labels: Map[String, PlacedLabel],
       laneBudget: Vector[LaneBudget],
+      /** `MarkId`s the shared selection resolves to directly, by `SelectionPlacement.OnMark`. */
+      selected: Set[String],
+      /** What the projection did with each selected address, in the contract's own words. */
+      focusNote: String,
       /** Ticks of the discourse axis: value and label, from Intaglio's own break generator. */
       ticks: Vector[(Double, String)]
   ):
@@ -118,6 +122,7 @@ private[intaglio] object AtlasPlate:
       .sortBy(_._1)
       .toMap
     val lanes = (0 until laneCount).toVector.map(i => Lane(i, bandKinds.get(i)))
+    val selected = selectedMarks(scene)
 
     val contentLeftPx = Metric.gutterPx
     val plotLeftPx = contentLeftPx + Metric.laneNameWidthPx + Metric.marginColumnPx
@@ -174,10 +179,44 @@ private[intaglio] object AtlasPlate:
       legendTopPx = legendTopPx,
       labels = Map.empty,
       laneBudget = Vector.empty,
+      selected = selected,
+      focusNote = focusNote(scene),
       ticks = ticksFor(discourseLength)
     )
     val (labels, budget) = budgetLabels(marks, partial)
     partial.copy(labels = labels, laneBudget = budget)
+
+  /** Marks the shared selection resolves to directly. An address that resolves through an ancestor
+    * or off the projection is preserved and reported, never redrawn as though it were on a mark.
+    */
+  private def selectedMarks(scene: NarrativeScene): Set[String] =
+    scene.state.selection.toVector
+      .flatMap(address =>
+        scene.selectionPlacements.get(address) match
+          case Some(SelectionPlacement.OnMark(marks)) => marks.toVector.map(_.value)
+          case _                                      => Vector.empty
+      )
+      .toSet
+
+  /** One line naming every selected address and what this projection could do with it. */
+  private def focusNote(scene: NarrativeScene): String =
+    val addresses = scene.state.selection.toVector.map(_.render).sorted
+    if addresses.isEmpty then "no shared selection"
+    else
+      addresses
+        .map { rendered =>
+          val state = scene.state.selection
+            .find(_.render == rendered)
+            .flatMap(scene.selectionPlacements.get)
+            .fold("off projection") {
+              case SelectionPlacement.OnMark(marks) =>
+                s"on ${marks.length} ${if marks.length == 1 then "mark" else "marks"}"
+              case SelectionPlacement.ViaAncestor(a) => s"via ancestor ${a.render}"
+              case SelectionPlacement.OffProjection  => "off projection"
+            }
+          s"$rendered — $state"
+        }
+        .mkString("; ")
 
   private def maxContextLane(mark: VisualPrimitive): Option[Int] = mark match
     case _: VisualPrimitive.SurfaceUnit                => None
@@ -216,7 +255,7 @@ private[intaglio] object AtlasPlate:
     * edge is a claim about two landmarks and so cannot be read before them. Within each family the
     * order is discourse order, the only ordering the scene supplies.
     */
-  private def candidates(marks: Vector[VisualPrimitive]): Vector[Candidate] =
+  private def candidates(marks: Vector[VisualPrimitive], selected: Set[String]): Vector[Candidate] =
     val landmarks = marks.collect { case VisualPrimitive.Landmark(id, at, label, _, _) =>
       Candidate(id.mark.value, at.x, at.lane, label)
     }
@@ -230,8 +269,12 @@ private[intaglio] object AtlasPlate:
       case VisualPrimitive.Route(id, from, to, layer, status) =>
         Candidate(id.mark.value, (from.x + to.x) / 2, from.lane, s"$layer · $status")
     }
-    threads.sortBy(c => (c.x, c.markId)) ++
-      landmarks.sortBy(c => (c.x, c.markId)) ++
+    // A selected candidate is offered a row before any other, so the one object the whole view
+    // shares is never the one the budget withholds.
+    val (focused, rest) = landmarks.partition(c => selected.contains(c.markId))
+    focused.sortBy(c => (c.x, c.markId)) ++
+      threads.sortBy(c => (c.x, c.markId)) ++
+      rest.sortBy(c => (c.x, c.markId)) ++
       edges.sortBy(c => (c.x, c.markId))
 
   /** Greedy, collision-free placement into a small number of label rows per lane.
@@ -246,7 +289,7 @@ private[intaglio] object AtlasPlate:
       plan: Plan
   ): (Map[String, PlacedLabel], Vector[LaneBudget]) =
     val gap = Metric.labelGapPx
-    val byLane = candidates(marks).groupBy(_.lane)
+    val byLane = candidates(marks, plan.selected).groupBy(_.lane)
     val placed = Map.newBuilder[String, PlacedLabel]
     val budgets = Vector.newBuilder[LaneBudget]
 

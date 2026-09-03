@@ -4,6 +4,8 @@ import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
 import storyatlas4s.intaglio.{CodexLowering, PagedCodexLowering}
 import storyatlas4s.layout.{PaginatedCodex, PlacedLine, PlacedPage}
+import storymodel4s.core.TextSpan
+import storymodel4s.view.AnnotationId
 
 /** The paginated Narrative Codex as one self-contained HTML document (ADR 0002 D6).
   *
@@ -60,8 +62,19 @@ object CodexHtml:
       index += 1
     found
 
-  /** The document, or why it cannot be written faithfully. */
-  def render(placed: PaginatedCodex, detail: String): Either[Error, String] =
+  /** The document, or why it cannot be written faithfully.
+    *
+    * `selected` is the set of annotations the shared selection resolves to directly. The words
+    * those annotations support are wrapped in their own span so the **exact text itself** carries
+    * the selection, which is what the design brief means by keeping the text the evidential
+    * surface: no character is added, removed or reordered, so the concatenated text content of the
+    * rail is still the canonical text (V-T2).
+    */
+  def render(
+      placed: PaginatedCodex,
+      detail: String,
+      selected: Set[AnnotationId] = Set.empty
+  ): Either[Error, String] =
     val flow = placed.flow
     val receipt = placed.receipt
     for
@@ -76,7 +89,7 @@ object CodexHtml:
       overlays <- scenes.traverse(scene =>
         SvgRenderer.render(scene, options).bimap(e => Error.Rendering(e.message), _.value)
       )
-      pages <- placed.pages.traverse(page => renderPage(placed, page, overlays))
+      pages <- placed.pages.traverse(page => renderPage(placed, page, overlays, selected))
     yield
       val title = s"Narrative Codex — $detail"
       val lineHeight = px(receipt.lineHeight.toDouble / receipt.unitsPerPixel)
@@ -122,6 +135,7 @@ object CodexHtml:
         .append(lineHeight)
         .append("px; white-space: pre; overflow: hidden; }\n")
       out.append(".overlay { position: absolute; top: 0; left: 0; pointer-events: none; }\n")
+      out.append(selectionCss)
       out.append(".overlay svg { display: block; }\n")
       out.append(
         ".page-label { position: absolute; left: 0; bottom: -1.4em; font: 11px/1.2 sans-serif; }\n"
@@ -167,16 +181,17 @@ object CodexHtml:
       out.append("</footer>\n</body>\n</html>\n")
       out.result()
 
-  private def renderPage(
+  private[cli] def renderPage(
       placed: PaginatedCodex,
       page: PlacedPage,
-      overlays: Vector[String]
+      overlays: Vector[String],
+      selected: Set[AnnotationId]
   ): Either[Error, String] =
     for
       overlay <- overlays
         .lift(page.index)
         .toRight(Error.MissingOverlay(page.index, overlays.length))
-      lines <- page.lines.traverse(line => renderLine(placed, line))
+      lines <- page.lines.traverse(line => renderLine(placed, line, selected))
     yield
       val out = new StringBuilder
       out.append("<section class=\"page\" data-page=\"").append(page.index).append("\">\n")
@@ -190,16 +205,71 @@ object CodexHtml:
         .append("</div>\n</section>\n")
       out.result()
 
-  private def renderLine(placed: PaginatedCodex, line: PlacedLine): Either[Error, String] =
+  private def renderLine(
+      placed: PaginatedCodex,
+      line: PlacedLine,
+      selected: Set[AnnotationId]
+  ): Either[Error, String] =
     placed
       .text(line.text)
       .left
       .map(e => Error.Text(e.message))
-      .map(text =>
-        s"""<span class="line" data-name="${escapeAttr(line.text.id.value)}">${escapeText(
-            text
-          )}</span>"""
-      )
+      .map { text =>
+        val body = markSelection(text, line, selected)
+        s"""<span class="line" data-name="${escapeAttr(line.text.id.value)}">$body</span>"""
+      }
+
+  /** The line's exact text, with the selected annotation's own words wrapped.
+    *
+    * The wrapping spans are cut at the annotation fragments' exact offsets and merged where they
+    * touch, so a discontinuous support marks several runs of words and never the gap between them.
+    * Concatenating the text content of the result is the line, character for character.
+    */
+  private[cli] def markSelection(
+      text: String,
+      line: PlacedLine,
+      selected: Set[AnnotationId]
+  ): String =
+    val base = line.text.span.start
+    val cuts = merge(
+      line.annotations
+        .filter(fragment => selected.contains(fragment.annotation))
+        .map(_.span)
+        .sortBy(span => (span.start, span.endExclusive))
+    )
+    if cuts.isEmpty then escapeText(text)
+    else
+      val out = new StringBuilder
+      var cursor = 0
+      cuts.foreach { span =>
+        val from = math.max(0, math.min(text.length, span.start - base))
+        val to = math.max(from, math.min(text.length, span.endExclusive - base))
+        if from > cursor then out.append(escapeText(text.substring(cursor, from)))
+        if to > from then
+          out
+            .append("<span class=\"sel\">")
+            .append(escapeText(text.substring(from, to)))
+            .append("</span>")
+        cursor = math.max(cursor, to)
+      }
+      if cursor < text.length then out.append(escapeText(text.substring(cursor)))
+      out.result()
+
+  /** Touching or overlapping spans become one, so no zero-width span is ever emitted. */
+  private def merge(spans: Vector[TextSpan]): Vector[TextSpan] =
+    spans
+      .foldLeft(Vector.empty[(Int, Int)]) { (acc, span) =>
+        acc.lastOption match
+          case Some((start, end)) if span.start <= end =>
+            acc.init :+ (start, math.max(end, span.endExclusive))
+          case _ => acc :+ (span.start, span.endExclusive)
+      }
+      .flatMap((start, end) => TextSpan.of(start, end).toOption)
+
+  /** Selection is an outline and a weight, never a colour alone (design brief §11). */
+  private[cli] val selectionCss: String =
+    ".sel { background: #dbe7f3; outline: 1.5px solid #1b4f72; outline-offset: -1px; " +
+      "font-weight: bold; }\n"
 
   private def definition(out: StringBuilder, term: String, value: String): Unit =
     out

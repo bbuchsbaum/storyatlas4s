@@ -27,18 +27,42 @@ object PagedCodexLowering:
   /** The rows a flow's annotations occupy, in drawing order. Public so a page's legend can list
     * them in the same words the overlay draws them in.
     */
-  final case class Row(kind: AnnotationKind, slot: LaneSlot):
+  final case class Row(kind: AnnotationKind, slot: Option[LaneSlot]):
     def label: String = slot match
-      case LaneSlot.Lane(index) => s"${kind.wireName} lane ${index.value}"
-      case LaneSlot.Overflow    => s"${kind.wireName} overflow"
+      case Some(LaneSlot.Lane(index)) => s"${kind.wireName} lane ${index.value}"
+      case Some(LaneSlot.Overflow)    => s"${kind.wireName} overflow"
+      case None => s"${kind.wireName} — every lane on one rule; the lanes are in the twin"
+
+  /** Which channels a page paints, and at what resolution.
+    *
+    * A reading pane has one line's leading to work in — about three pixels at 16px type — and a
+    * flow with four kinds over four lanes each wants eleven rows in it. The design brief settles
+    * that: annotations use gutters and underlines rather than fills over the prose, and additional
+    * layers stay discoverable without being painted at once (§8.1). So a caller says what it is
+    * painting, and the page says so too.
+    */
+  enum RowPolicy:
+    /** One row per `(kind, lane)` the flow allocated: the full encoding, for a plate-sized page. */
+    case PerLane
+
+    /** One row per drawn kind. Lane stops being a visual and stays a fact of the twin. */
+    case Collapsed
 
   /** Rows are a pure function of the flow: `(kind, slot)` pairs present in its allocation, sorted
     * by kind ordinal then lane index, overflow after every lane of its kind.
     */
   def rows(placed: PaginatedCodex): Either[GraphicsError, Vector[Row]] =
+    rows(placed, AnnotationKind.values.toSet, RowPolicy.PerLane)
+
+  def rows(
+      placed: PaginatedCodex,
+      kinds: Set[AnnotationKind],
+      policy: RowPolicy
+  ): Either[GraphicsError, Vector[Row]] =
     val flow = placed.flow
     val maxLane = flow.contract.lanePolicy.maxLanesPerKind
     flow.annotations
+      .filter(annotation => kinds.contains(annotation.kind))
       .traverse { annotation =>
         flow.lanes.slotOf(annotation.id) match
           case Some(LaneSlot.Lane(index)) if index.value >= maxLane =>
@@ -47,8 +71,16 @@ object PagedCodexLowering:
                 s"codex ${annotation.kind.wireName} lane index ${index.value} out of range [0, $maxLane)"
               )
             )
-          case Some(slot) => Right(Row(annotation.kind, slot))
-          case None       =>
+          case Some(slot) =>
+            Right(
+              Row(
+                annotation.kind,
+                policy match
+                  case RowPolicy.PerLane   => Some(slot)
+                  case RowPolicy.Collapsed => None
+              )
+            )
+          case None =>
             Left(
               GraphicsError.InvalidExtent(
                 s"codex ${annotation.kind.wireName} annotation ${annotation.id.value} has no lane slot"
@@ -57,48 +89,78 @@ object PagedCodexLowering:
       }
       .map(_.distinct.sortBy(row => (row.kind.ordinal, slotOrdinal(row.slot, maxLane))))
 
-  private def slotOrdinal(slot: LaneSlot, maxLane: Int): Int = slot match
-    case LaneSlot.Lane(index) => index.value
-    case LaneSlot.Overflow    => maxLane
+  private def slotOrdinal(slot: Option[LaneSlot], maxLane: Int): Int = slot match
+    case Some(LaneSlot.Lane(index)) => index.value
+    case Some(LaneSlot.Overflow)    => maxLane
+    case None                       => 0
 
   /** One scene per page, in page order. */
   def lowerPages(placed: PaginatedCodex): Either[GraphicsError, Vector[ig.Scene]] =
+    lowerPages(placed, AnnotationKind.values.toSet, RowPolicy.PerLane)
+
+  def lowerPages(
+      placed: PaginatedCodex,
+      kinds: Set[AnnotationKind],
+      policy: RowPolicy
+  ): Either[GraphicsError, Vector[ig.Scene]] =
     for
-      rowTable <- rows(placed).map(_.zipWithIndex.toMap)
+      rowTable <- rows(placed, kinds, policy).map(_.zipWithIndex.toMap)
       style <- Style.params
-      scenes <- placed.pages.traverse(page => lowerPage(placed, page, rowTable, style))
+      scenes <- placed.pages.traverse(page =>
+        lowerPage(placed, page, kinds, policy, rowTable, style)
+      )
     yield scenes
 
   def lowerPage(placed: PaginatedCodex, page: PlacedPage): Either[GraphicsError, ig.Scene] =
     for
       rowTable <- rows(placed).map(_.zipWithIndex.toMap)
       style <- Style.params
-      scene <- lowerPage(placed, page, rowTable, style)
+      scene <- lowerPage(
+        placed,
+        page,
+        AnnotationKind.values.toSet,
+        RowPolicy.PerLane,
+        rowTable,
+        style
+      )
     yield scene
 
   private def lowerPage(
       placed: PaginatedCodex,
       page: PlacedPage,
+      kinds: Set[AnnotationKind],
+      policy: RowPolicy,
       rowTable: Map[Row, Int],
       style: Style.Params
   ): Either[GraphicsError, ig.Scene] =
-    val geometry = Geometry(placed, rowTable.size)
+    val geometry = Geometry(placed, rowTable.size, policy)
     for
       viewport <- pageViewport(placed)
       groups <- page.lines.flatTraverse(line =>
-        line.annotations.traverse(piece =>
-          pieceGroup(placed, line, piece, geometry, rowTable, style)
-        )
+        line.annotations
+          .filter(piece => placed.annotationOf(piece).exists(a => kinds.contains(a.kind)))
+          .traverse(piece => pieceGroup(placed, line, piece, geometry, policy, rowTable, style))
       )
     yield ig.Scene(Vector(ig.Grob.group(groups, viewport = Some(viewport))))
 
-  /** Pixel geometry of one paginated codex; `rowCount` is at least one so a row has a height. */
-  private final case class Geometry(placed: PaginatedCodex, rowCount: Int):
+  /** Pixel geometry of one paginated codex; `rowCount` is at least one so a row has a height.
+    *
+    * Under `Collapsed` the rows live in the line's **leading** — the strip below the glyph box that
+    * CSS half-leading leaves empty — so an annotation underlines its words instead of being painted
+    * over them. Under `PerLane` the rows still tile the whole line box: that form is a plate, read
+    * as a chart rather than as prose, and it needs every row it can get.
+    */
+  private final case class Geometry(placed: PaginatedCodex, rowCount: Int, policy: RowPolicy):
     private val units = placed.metrics.unitsPerPixel.toDouble
     val lineHeight: Double = placed.metrics.lineHeight.toDouble / units
-    val rowHeight: Double = lineHeight / math.max(rowCount, 1)
+    private val glyphBottom: Double = (lineHeight + placed.receipt.style.sizePx) / 2.0
+    private val bandTop: Double = policy match
+      case RowPolicy.PerLane   => 0.0
+      case RowPolicy.Collapsed => math.max(0.0, math.min(lineHeight - 1.0, glyphBottom - 1.2))
+    private val bandHeight: Double = lineHeight - bandTop
+    val rowHeight: Double = bandHeight / math.max(rowCount, 1)
 
-    def top(line: PlacedLine): Double = line.text.line * lineHeight
+    def top(line: PlacedLine): Double = line.text.line * lineHeight + bandTop
 
     /** Horizontal pixel offset from the line start to `offset` in the canonical text. */
     def x(line: PlacedLine, offset: Int): Double =
@@ -126,6 +188,7 @@ object PagedCodexLowering:
       line: PlacedLine,
       piece: AnnotationFragment,
       geometry: Geometry,
+      policy: RowPolicy,
       rowTable: Map[Row, Int],
       style: Style.Params
   ): Either[GraphicsError, ig.Grob] =
@@ -137,7 +200,14 @@ object PagedCodexLowering:
         .slotOf(annotation.id)
         .toRight(GraphicsError.InvalidExtent(s"fragment ${piece.id.value} has no lane slot"))
       row <- rowTable
-        .get(Row(annotation.kind, slot))
+        .get(
+          Row(
+            annotation.kind,
+            policy match
+              case RowPolicy.PerLane   => Some(slot)
+              case RowPolicy.Collapsed => None
+          )
+        )
         .toRight(GraphicsError.InvalidExtent(s"fragment ${piece.id.value} has no row"))
       name <- GraphicsNames.ofFragment(piece.id)
       top = geometry.top(line) + row * geometry.rowHeight
@@ -146,7 +216,7 @@ object PagedCodexLowering:
         top,
         geometry.x(line, piece.span.endExclusive),
         top + geometry.rowHeight,
-        style.band
+        if annotation.kind.marksAbsence then style.absenceBand else style.band
       )
     yield ig.Grob.group(Vector(band), name = Some(name))
 

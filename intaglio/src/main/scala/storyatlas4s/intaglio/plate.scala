@@ -102,6 +102,7 @@ private[intaglio] object Metric:
   val glyphHalo: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(4.3)
   val threadRing: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(1.9)
   val absenceGlyph: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(2.2)
+  val focusRing: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(5.6)
 
   /** Half-height of a context band ribbon, in device pixels. */
   val bandHalfPx: Double = 5.0
@@ -128,7 +129,7 @@ private[intaglio] object Metric:
   // Pixels: the vertical stack.
   val topPadPx: Double = 22.0
   val headerPx: Double = 94.0
-  val contractPx: Double = 74.0
+  val contractPx: Double = 92.0
   val axisPx: Double = 54.0
   val surfacePx: Double = 58.0
   val legendPx: Double = 66.0
@@ -165,11 +166,15 @@ private[intaglio] object Style:
       run: ig.GraphicParams,
       annotation: ig.GraphicParams,
       band: ig.GraphicParams,
+      absenceBand: ig.GraphicParams,
       contextBand: ig.GraphicParams,
       surfaceUnit: ig.GraphicParams,
       landmark: ig.GraphicParams,
       landmarkHalo: ig.GraphicParams,
       tie: ig.GraphicParams,
+      focus: ig.GraphicParams,
+      focusRing: ig.GraphicParams,
+      focusLabel: ig.GraphicParams,
       thread: ig.GraphicParams,
       threadRing: ig.GraphicParams,
       portal: ig.GraphicParams,
@@ -218,6 +223,9 @@ private[intaglio] object Style:
       // Page-overlay bands are fill-only: stacked in a line box they can be a pixel tall, and a
       // stroke on each would smear into one stripe.
       band <- ig.GraphicParams.checked(stroke = None, fill = Some(legacyFill))
+      // A recorded absence underlines its own words in the one accent the plate reserves for it,
+      // so a reader sees where the model failed without the prose being painted over.
+      absenceBand <- ig.GraphicParams.checked(stroke = None, fill = Some(absenceInk))
       // One extent of the narrated world. Fill-only: 281 of them each carrying a stroke is how the
       // ground became a black smear, and the gaps between them are what must stay visible.
       contextBand <- ig.GraphicParams.checked(stroke = None, fill = Some(groundInk))
@@ -240,6 +248,20 @@ private[intaglio] object Style:
       // is readable against every lane at once. Its x coordinates are the frame's own exact support;
       // its vertical run is in the coordinate the contract already declares metric-free.
       tie <- ig.GraphicParams.checked(stroke = Some(ruleInk), lineWidth = 0.5)
+      // The one place saturation is spent. It never carries the state alone: a focused mark is
+      // also ringed, so the selection reads in greyscale and under colour deficiency.
+      focusInk <- rgb(Ink.focus)
+      focus <- ig.GraphicParams.checked(
+        stroke = Some(focusInk),
+        fill = Some(focusInk),
+        lineWidth = 0.8
+      )
+      focusRing <- ig.GraphicParams.checked(
+        stroke = Some(focusInk),
+        fill = None,
+        lineWidth = 1.3,
+        lineType = ig.LineType.Dashed
+      )
       thread <- ig.GraphicParams.checked(
         stroke = Some(ruleInk),
         lineWidth = 0.9,
@@ -275,6 +297,12 @@ private[intaglio] object Style:
       label <- ig.GraphicParams.checked(
         stroke = None,
         fill = Some(ink),
+        fontSize = labelSize,
+        fontFamily = prose
+      )
+      focusLabel <- ig.GraphicParams.checked(
+        stroke = None,
+        fill = Some(focusInk),
         fontSize = labelSize,
         fontFamily = prose
       )
@@ -360,11 +388,15 @@ private[intaglio] object Style:
       run = run,
       annotation = annotation,
       band = band,
+      absenceBand = absenceBand,
       contextBand = contextBand,
       surfaceUnit = surfaceUnit,
       landmark = landmark,
       landmarkHalo = landmarkHalo,
       tie = tie,
+      focus = focus,
+      focusRing = focusRing,
+      focusLabel = focusLabel,
       thread = thread,
       threadRing = threadRing,
       portal = portal,
