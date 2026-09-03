@@ -169,6 +169,7 @@ private[intaglio] object Style:
       surfaceUnit: ig.GraphicParams,
       landmark: ig.GraphicParams,
       landmarkHalo: ig.GraphicParams,
+      tie: ig.GraphicParams,
       thread: ig.GraphicParams,
       threadRing: ig.GraphicParams,
       portal: ig.GraphicParams,
@@ -235,6 +236,10 @@ private[intaglio] object Style:
       landmark <- ig.GraphicParams.checked(stroke = Some(ink), fill = Some(ink), lineWidth = 0.8)
       // A paper disc under each glyph so a mark on the ground is separable from the ground.
       landmarkHalo <- ig.GraphicParams.checked(stroke = None, fill = Some(paper))
+      // The two edges of a context frame, carried up the plot so the discourse interval it occupies
+      // is readable against every lane at once. Its x coordinates are the frame's own exact support;
+      // its vertical run is in the coordinate the contract already declares metric-free.
+      tie <- ig.GraphicParams.checked(stroke = Some(ruleInk), lineWidth = 0.5)
       thread <- ig.GraphicParams.checked(
         stroke = Some(ruleInk),
         lineWidth = 0.9,
@@ -273,7 +278,10 @@ private[intaglio] object Style:
         fontSize = labelSize,
         fontFamily = prose
       )
-      leader <- ig.GraphicParams.checked(stroke = Some(ruleInk), lineWidth = 0.6)
+      // Lighter than a frame tie, which it would otherwise be mistaken for. A leader is
+      // redundant — the label already sits beside its mark — so it may be the faintest line
+      // on the plate.
+      leader <- ig.GraphicParams.checked(stroke = Some(hairlineInk), lineWidth = 0.6)
       titleSize <- font(Typeface.titlePt)
       title <- ig.GraphicParams.checked(
         stroke = None,
@@ -356,6 +364,7 @@ private[intaglio] object Style:
       surfaceUnit = surfaceUnit,
       landmark = landmark,
       landmarkHalo = landmarkHalo,
+      tie = tie,
       thread = thread,
       threadRing = threadRing,
       portal = portal,

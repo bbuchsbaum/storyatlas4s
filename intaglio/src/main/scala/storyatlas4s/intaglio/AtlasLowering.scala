@@ -556,8 +556,13 @@ object AtlasLowering:
       ),
       Key(
         26.0,
-        "a context frame that is not narration",
-        (x, ry) => pageBox(plan, x, ry - 5.0, x + 26.0, ry + 5.0, style.speechFill).map(Vector(_))
+        "a context frame that is not narration, tied to its extent on the axis",
+        (x, ry) =>
+          for
+            band <- pageBox(plan, x, ry - 3.0, x + 26.0, ry + 7.0, style.speechFill)
+            a <- pageStile(plan, x, ry - 9.0, ry - 3.0, style.tie)
+            b <- pageStile(plan, x + 26.0, ry - 9.0, ry - 3.0, style.tie)
+          yield Vector(a, b, band)
       ),
       Key(
         26.0,
@@ -697,21 +702,40 @@ object AtlasLowering:
     // narration. A frame that is not the narrated world is hatched as well as drawn on its own
     // lane, so "this is not narration" reads in monochrome and never from opacity (V-U5).
     case VisualPrimitive.ContextBand(_, kind, _, extents, _, _) =>
-      val gp = if AtlasPlate.isNarrated(kind) then style.contextBand else style.speechFill
+      val narrated = AtlasPlate.isNarrated(kind)
+      val gp = if narrated then style.contextBand else style.speechFill
       val h = Metric.bandHalfPx
       val centre = plan.bandOffsetPx
-      extents.toVector.traverse { e =>
-        val lane = e.lane0.toDouble
-        ig.Grob.polygon(
-          Vector(
-            at(e.x0.toDouble, lane, centre - h),
-            at(e.x1Exclusive.toDouble, lane, centre - h),
-            at(e.x1Exclusive.toDouble, lane, centre + h),
-            at(e.x0.toDouble, lane, centre + h)
-          ),
-          gp = gp
-        )
-      }
+      for
+        ribbon <- extents.toVector.traverse { e =>
+          val lane = e.lane0.toDouble
+          ig.Grob.polygon(
+            Vector(
+              at(e.x0.toDouble, lane, centre - h),
+              at(e.x1Exclusive.toDouble, lane, centre - h),
+              at(e.x1Exclusive.toDouble, lane, centre + h),
+              at(e.x0.toDouble, lane, centre + h)
+            ),
+            gp = gp
+          )
+        }
+        // A frame that is not the narrated world carries its own two edges up the plot, so the
+        // discourse interval it occupies can be read against every lane at once — including
+        // against the gap it leaves in the narrated ground. The tie's x is the frame's exact
+        // support; it asserts nothing about any lane it crosses.
+        ties <-
+          if narrated then Right(Vector.empty)
+          else
+            extents.toVector.flatMap(e => Vector(e.x0, e.x1Exclusive)).traverse { x =>
+              ig.Grob.lines(
+                Vector(
+                  at(x.toDouble, extents.head.lane0.toDouble, centre - h),
+                  at(x.toDouble, 0.0, 2.0)
+                ),
+                gp = style.tie
+              )
+            }
+      yield ties ++ ribbon
 
     // A region's hull is drawn where the model puts it — across the lanes of its visible children —
     // with its label inside, elided to the region's own width rather than allowed to run over its
