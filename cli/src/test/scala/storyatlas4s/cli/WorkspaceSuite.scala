@@ -234,9 +234,12 @@ class WorkspaceSuite extends FunSuite:
     val svg = plate
     marks.foreach(mark => assert(svg.contains(mark), s"$mark is not drawn"))
     assert(svg.contains("shared selection:"), "the plate does not state the shared selection")
-    chosen.foreach(c =>
-      assert(svg.contains(c.address.render), "the plate does not name the selected address")
-    )
+    chosen.foreach { c =>
+      // The plate names the object in the story's own word; the address stays in the inspector.
+      assert(svg.contains(c.label), "the plate does not name the selected object")
+      assert(!svg.contains(c.address.render), "the plate prints an address where a name would do")
+      assert(html.contains(c.address.render), "the inspector does not carry the address")
+    }
 
   // ------------------------------------------------------------------ what is not the text
 

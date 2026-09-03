@@ -298,6 +298,13 @@ private[intaglio] object AtlasPlate:
 
   /** One line naming every selected address and what this projection could do with it. */
   private def focusNote(scene: NarrativeScene): String =
+    // The selected object in the story's own word, not its address. An address is an identifier and
+    // belongs in the inspector, which prints it in full beside the words it supports.
+    val labels: Map[String, String] = scene.marks.collect {
+      case l: VisualPrimitive.Landmark => l.identity.address.render -> l.label
+      case t: VisualPrimitive.Thread   => t.identity.address.render -> t.label
+      case r: VisualPrimitive.Region   => r.identity.address.render -> r.label
+    }.toMap
     val addresses = scene.state.selection.toVector.map(_.render).sorted
     if addresses.isEmpty then "no shared selection"
     else
@@ -309,10 +316,13 @@ private[intaglio] object AtlasPlate:
             .fold("off projection") {
               case SelectionPlacement.OnMark(marks) =>
                 s"on ${marks.length} ${if marks.length == 1 then "mark" else "marks"}"
-              case SelectionPlacement.ViaAncestor(a) => s"via ancestor ${a.render}"
-              case SelectionPlacement.OffProjection  => "off projection"
+              case SelectionPlacement.ViaAncestor(a) =>
+                s"via its containing ${labels.getOrElse(a.render, "segment")}"
+              case SelectionPlacement.OffProjection => "off projection"
             }
-          s"$rendered — $state"
+          val name =
+            labels.get(rendered).fold("an object this projection does not name")(l => s"“$l”")
+          s"$name — $state"
         }
         .mkString("; ")
 
