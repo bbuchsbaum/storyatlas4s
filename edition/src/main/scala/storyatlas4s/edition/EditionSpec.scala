@@ -19,7 +19,15 @@ object EditionSpec:
   val fontSizePx: Int = 16
 
   val relationLayers: Set[RelationLayer] = Set(RelationLayer.Causal, RelationLayer.Reference)
-  val threadMax: Int = 3
+
+  /** Entity threads drawn at once.
+    *
+    * Three was starvation. A thread is the only place an entity's own label reaches a compiled
+    * scene, so a budget of three over twenty-nine entities left the plate naming its lanes by
+    * content hash and left question 3 — who is in this story, and where does each appear —
+    * unanswerable from the picture. Twelve draws the cast.
+    */
+  val threadMax: Int = 12
 
   /** The view compilers are storymodel4s's; the version recorded is its pinned revision. */
   val compilerVersion: String = s"storymodel4s@${Pins.storymodel4sRevision}"

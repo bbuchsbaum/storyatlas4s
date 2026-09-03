@@ -114,6 +114,53 @@ private[cli] object Reading:
       a.kind == kind && a.support.spans.toVector.exists(_.overlaps(row.span))
     )
 
+  /** One member of the cast: an entity, its own label, and where it appears.
+    *
+    * This is question 3 — who is in this story, and where does each appear — and it is answerable
+    * from what both faces already hold. The label comes from the entity's thread in the Atlas
+    * scene; the appearances come from the Codex's entity annotations, which cite exact spans, so
+    * every row can be read back to the words.
+    */
+  final case class CastMember(
+      address: Address,
+      label: String,
+      mentions: Int,
+      firstUnit: Int,
+      lastUnit: Int,
+      words: Vector[String]
+  )
+
+  /** The cast, in order of first appearance. */
+  def cast(
+      flow: CodexFlow,
+      scene: NarrativeScene,
+      rows: Vector[Row]
+  ): Vector[CastMember] =
+    val labels = scene.marks.collect { case t: VisualPrimitive.Thread =>
+      t.identity.address -> t.label
+    }.toMap
+    val text = flow.source.canonicalText
+    def unitOf(offset: Int): Int =
+      rows.find(r => r.span.contains(offset)).map(_.ordinal).getOrElse(0)
+    flow.annotations
+      .filter(_.kind == AnnotationKind.Entity)
+      .groupBy(_.target)
+      .toVector
+      .flatMap { (target, annotations) =>
+        val spans = annotations.flatMap(_.support.spans.toVector).sortBy(_.start)
+        labels.get(target).map { label =>
+          CastMember(
+            address = target,
+            label = label,
+            mentions = spans.length,
+            firstUnit = spans.headOption.map(s => unitOf(s.start)).getOrElse(0),
+            lastUnit = spans.lastOption.map(s => unitOf(s.start)).getOrElse(0),
+            words = spans.flatMap(_.slice(text).toOption).distinct
+          )
+        }
+      }
+      .sortBy(m => (m.firstUnit, -m.mentions, m.label))
+
   /** The context frames the Atlas scene named, so the pane can tell speech from narration without
     * guessing at an address.
     */

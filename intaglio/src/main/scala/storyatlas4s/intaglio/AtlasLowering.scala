@@ -350,11 +350,19 @@ object AtlasLowering:
         s"shared selection: ${plan.focusNote}",
         if plan.selected.isEmpty then style.fine else style.focusLabel
       )
+      sourceGrob <- pageText(
+        plan,
+        left,
+        top + 108.0,
+        "a situation's label is the model's own description of it, not the story's words; " +
+          "the words are in the Codex beside this plate",
+        style.fine
+      )
       levelGrob <- Measure
         .wrap(plan.levelNote, plan.rightPx - left, Typeface.finePt)
         .zipWithIndex
         .traverse((line, i) => pageText(plan, left, top + 92.0 + i * 14.0, line, style.fine))
-    yield Vector(axesGrob, xGrob, yGrob, noneGrob, focusGrob) ++ levelGrob
+    yield Vector(axesGrob, xGrob, yGrob, noneGrob, focusGrob, sourceGrob) ++ levelGrob
 
   /** Each lane is named where it is drawn, from the context frame that occupies it. A lane with no
     * visible band is numbered and left unnamed: naming it from a neighbour would invent a context.
@@ -368,20 +376,28 @@ object AtlasLowering:
     plan.lanes.flatTraverse { lane =>
       val mid = plan.laneTopPx + (lane.index + 0.5) * plan.laneHeightPx
       val head = lane.kind.fold("no band in view")(AtlasPlate.kindHead)
-      val holder = lane.kind.flatMap(AtlasPlate.kindHolder)
+      // The holder in the story's own word where the scene carries it, in plain words where it
+      // does not, and never as a content hash: an address belongs in the inspector.
+      val (holder, holderStyle) = lane.holder match
+        case AtlasPlate.LaneHolder.Named(label)    => (Some(s"“$label”"), style.laneName)
+        case AtlasPlate.LaneHolder.Unnamed(reason) => (Some(reason), style.laneKind)
+        case AtlasPlate.LaneHolder.Unheld          => (None, style.laneKind)
       for
         number <- pageText(
           plan,
           right,
-          mid - 13.0,
+          mid - 15.0,
           s"lane ${lane.index}",
-          style.laneName,
+          style.laneKind,
           Style.rowLabelAnchor
         )
-        kind <- pageText(plan, right, mid + 2.0, head, style.laneKind, Style.rowLabelAnchor)
-        heldBy <- holder
-          .flatMap(h => Measure.elideMiddle(h, width, Typeface.laneKindPt))
-          .traverse(h => pageText(plan, right, mid + 16.0, h, style.laneKind, Style.rowLabelAnchor))
+        kind <- pageText(plan, right, mid, head, style.laneName, Style.rowLabelAnchor)
+        heldBy <- holder.toVector
+          .flatMap(h => Measure.wrap(h, width, Typeface.laneKindPt))
+          .zipWithIndex
+          .traverse((line, i) =>
+            pageText(plan, right, mid + 15.0 + i * 12.0, line, holderStyle, Style.rowLabelAnchor)
+          )
       yield Vector(number, kind) ++ heldBy
     }
 
@@ -470,7 +486,8 @@ object AtlasLowering:
       else if promotes then s"${marks.length} marks, each drawn on the exact material it concerns."
       else
         s"this model does not promote. ${marks.length} marks, each drawn on the exact material " +
-          "it concerns; the packing row below a reason is layout and means nothing."
+          "it concerns. Read a row left to right for where a reason bites; the row a mark sits " +
+          "in only keeps neighbours apart."
     for
       title <- pageText(plan, left, plan.absenceTopPx + 9.0, head, style.section)
       caption <- pageText(
@@ -768,7 +785,8 @@ object AtlasLowering:
           else
             ig.Grob
               .text(
-                s"${extents.length} extents of ${bandBasis(basis)} — not a hull, not a measure",
+                s"${extents.length} separate stretches of narration, each at its own exact " +
+                  s"offsets (${bandBasis(basis)}); the gaps between them are where someone speaks",
                 at(extents.head.x0.toDouble, extents.head.lane0.toDouble, centre + 13.0, 1.0),
                 Style.labelAnchor,
                 gp = style.machine

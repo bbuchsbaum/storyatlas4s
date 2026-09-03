@@ -226,9 +226,14 @@ class PlateCraftSuite extends FunSuite:
         ok(SvgOptions(1600, 1080))
       )
     ).value
-    // The plate's most dominant object may not be an unnamed track.
-    assert(svg.contains("extents of exact scope evidence"), "the ribbon does not name itself")
-    assert(svg.contains("not a hull, not a measure"), "the ribbon does not say what it is not")
+    // The plate's most dominant object may not be an unnamed track, and what it says of itself is
+    // what it is rather than what it is not: a disclaimer against a real invitation to read
+    // structure is a worse answer than a description.
+    assert(svg.contains("separate stretches of narration"), "the ribbon does not name itself")
+    assert(
+      svg.contains("the gaps between them are where someone speaks"),
+      "the gaps are unexplained"
+    )
 
   test("a leader and a frame tie are never the same stroke"):
     val style = ok(Style.params)
@@ -382,6 +387,45 @@ class PlateCraftSuite extends FunSuite:
     assertEquals(p.lanes.headOption.flatMap(_.kind), Some(ContextKind.NarratedWorld))
     // Lanes above zero are speech frames here, and are named as the model names them.
     assert(p.lanes.tail.forall(l => l.kind.forall(k => !AtlasPlate.isNarrated(k))))
+
+  test("a lane is named in the story's own words, never by a content address"):
+    val s = draftScene(Vector.empty)
+    val plan = AtlasPlate.plan(s, length, box)
+    val labels = s.marks.collect { case t: VisualPrimitive.Thread =>
+      t.identity.address.key.render -> t.label
+    }.toMap
+    assert(plan.lanes.nonEmpty)
+    plan.lanes.foreach { lane =>
+      lane.holder match
+        case AtlasPlate.LaneHolder.Named(label) =>
+          // The label is the entity's own, taken from its thread and not invented.
+          assert(
+            labels.values.toSet.contains(label),
+            s"lane ${lane.index} label '$label' is not an entity's"
+          )
+        case AtlasPlate.LaneHolder.Unnamed(reason) =>
+          // Words, not an identifier: a hash on the face of the plate is what made it unreadable.
+          assert(reason.contains(" "), s"lane ${lane.index} holder '$reason' is not a phrase")
+          assert(
+            !reason.contains(":"),
+            s"lane ${lane.index} holder '$reason' looks like an address"
+          )
+        case AtlasPlate.LaneHolder.Unheld => ()
+    }
+    // And a frame the model does attribute really is named, so the law is not vacuous.
+    assert(
+      plan.lanes.exists(_.holder.isInstanceOf[AtlasPlate.LaneHolder.Named]),
+      "no lane is named, so the join to the entity threads is doing nothing"
+    )
+
+  test("the plate says what a situation label is, so it is not read as the story's words"):
+    val svg = ok(
+      SvgRenderer.render(
+        ok(AtlasLowering.lower(draftScene(Vector.empty), length, box)),
+        ok(SvgOptions(1600, 1080))
+      )
+    ).value
+    assert(svg.contains("the model's own description of it, not the story's words"), svg.take(0))
 
   test("the plate composes for the box it is given, and a bigger box buys more labels"):
     val s = scene()

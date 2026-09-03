@@ -1,7 +1,7 @@
 package storyatlas4s.intaglio
 
 import storymodel4s.acquire.ClaimFamily
-import storymodel4s.story.ContextKind
+import storymodel4s.story.{ContextHolder, ContextKind, HolderGap}
 import storymodel4s.view.*
 
 /** The composition of one Discourse Atlas plate, decided before anything is drawn.
@@ -21,11 +21,23 @@ import storymodel4s.view.*
   */
 private[intaglio] object AtlasPlate:
 
+  /** Who holds a context frame, in words.
+    *
+    * A frame held by an entity is named by that entity's own label, which reaches a compiled scene
+    * only through a `Thread` mark. When no thread carries it, or the model resolved no holder at
+    * all, the lane says so in words: printing the content hash instead is what made the plate
+    * unreadable, and a hash is an address, which belongs in the inspector.
+    */
+  enum LaneHolder:
+    case Named(label: String)
+    case Unnamed(reason: String)
+    case Unheld
+
   /** One context lane of the plot. `kind` is absent when no visible band names the lane, which
     * happens when a frame's clipped support is empty; the lane is then numbered and not named,
     * because guessing its kind from a neighbouring landmark would invent a context.
     */
-  final case class Lane(index: Int, kind: Option[ContextKind])
+  final case class Lane(index: Int, kind: Option[ContextKind], holder: LaneHolder)
 
   /** A label the budget accepted: `dxPx` is the offset of its left edge from the mark's own x, in
     * device pixels, so the label never scales with the discourse axis.
@@ -158,7 +170,15 @@ private[intaglio] object AtlasPlate:
       .collect { case b: VisualPrimitive.ContextBand => b.lane -> b.kind }
       .sortBy(_._1)
       .toMap
-    val lanes = (0 until laneCount).toVector.map(i => Lane(i, bandKinds.get(i)))
+    // An entity's label reaches the scene only through its thread; join on the entity address so
+    // a frame held by "he" is a lane called "he" rather than a lane called c-entity:b679d…
+    val entityLabels: Map[String, String] = marks.collect { case t: VisualPrimitive.Thread =>
+      t.identity.address.key.render -> t.label
+    }.toMap
+    val lanes = (0 until laneCount).toVector.map { i =>
+      val kind = bandKinds.get(i)
+      Lane(i, kind, kind.fold(LaneHolder.Unheld)(holderOf(_, entityLabels)))
+    }
     val selected = selectedMarks(scene)
 
     val contentLeftPx = Metric.gutterPx
@@ -580,6 +600,25 @@ private[intaglio] object AtlasPlate:
     case ContextKind.Imagination(_) => "Imagination"
 
   def kindHolder(kind: ContextKind): Option[String] = kind.heldBy.map(_.render)
+
+  /** The holder of a frame, named from the scene or described in words. */
+  private def holderOf(kind: ContextKind, labels: Map[String, String]): LaneHolder =
+    kind.heldBy match
+      case None                              => LaneHolder.Unheld
+      case Some(ContextHolder.Named(entity)) =>
+        labels
+          .get(entity.value)
+          .fold(LaneHolder.Unnamed("a speaker this plate draws no thread for"))(
+            LaneHolder.Named.apply
+          )
+      case Some(ContextHolder.Unattributed(gap)) =>
+        LaneHolder.Unnamed(gapWords(gap))
+
+  /** A holder gap in words rather than in its wire form. */
+  private def gapWords(gap: HolderGap): String = gap match
+    case HolderGap.NoCandidate         => "no speaker was proposed"
+    case HolderGap.SeveralCandidates   => "several speakers were proposed and none chosen"
+    case HolderGap.UnresolvedCandidate => "a speaker was proposed and not resolved"
 
   /** The narrated world is the ground; everything else is a frame drawn on it. */
   def isNarrated(kind: ContextKind): Boolean = kind == ContextKind.NarratedWorld

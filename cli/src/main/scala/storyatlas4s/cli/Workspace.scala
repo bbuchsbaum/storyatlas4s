@@ -61,12 +61,16 @@ object Workspace:
     header(out, flow, focus)
     projections(out, scene)
     focusBar(out, flow, scene, focus)
+    val rows = Reading.rows(sentences, flow.source.canonicalText.length)
     out.append("<main class=\"panes\">\n")
-    readingPane(out, flow, scene, sentences, focus)
+    readingPane(out, flow, scene, rows, focus)
+    out.append("<div class=\"pane atlas\">\n")
     platePane(out, plateSvg, scene)
-    out.append("</main>\n")
+    castList(out, flow, scene, rows)
     inspector(out, flow, scene, focus)
     unplacedLedger(out, flow)
+    out.append("</div>\n")
+    out.append("</main>\n")
     footer(out, flow)
     out.append("</body>\n</html>\n")
     out.result()
@@ -148,6 +152,24 @@ object Workspace:
           "says so; the selection is preserved either way and is never silently dropped."
       )
     )
+    out.append("</p>\n<p class=\"note\">")
+    // The reader's horizon is a state of the whole view and has to be visible, even where a static
+    // edition cannot offer the control that changes it.
+    out.append("<strong>Reader horizon</strong> ")
+    out.append(
+      CodexHtml.escapeText(
+        flow.contract.horizon match
+          case EpistemicHorizon.Omniscient => "omniscient — every claim the model holds is shown"
+          case EpistemicHorizon.ReaderAt(offset) =>
+            s"reader at UTF-16 offset $offset — only claims a reader could have made by there"
+      )
+    )
+    out.append(
+      CodexHtml.escapeText(
+        ". This edition compiles one horizon; comparing two is an interaction, and this page has " +
+          "no controls by design."
+      )
+    )
     out.append("</p>\n</section>\n")
 
   /** The words, one row per sentence, with what discriminates painted on them.
@@ -161,14 +183,13 @@ object Workspace:
       out: StringBuilder,
       flow: CodexFlow,
       scene: NarrativeScene,
-      sentences: Vector[VisualPrimitive.SurfaceUnit],
+      rows: Vector[Reading.Row],
       focus: Option[Focus.Chosen]
   ): Unit =
     val text = flow.source.canonicalText
     val selected = Focus.annotations(flow, focus)
     val frames = Reading.frames(scene)
     val painted = Reading.painted(flow, frames, selected)
-    val rows = Reading.rows(sentences, text.length)
     val speech = flow.annotations.count(a =>
       a.kind == AnnotationKind.Context &&
         frames.get(a.target).exists(_ != ContextKind.NarratedWorld)
@@ -204,7 +225,7 @@ object Workspace:
 
     out.append("<div class=\"reading\">\n")
     out.append("<div class=\"rowhead\"><span class=\"ord\">unit</span>")
-    out.append("<span class=\"tal\">cl</span><span class=\"tal\">law</span>")
+    out.append("<span class=\"tal\">claims</span><span class=\"tal\">laws</span>")
     out.append("<span class=\"prosehead\">the canonical text</span></div>\n")
     rows.foreach { row =>
       val claims = Reading.tally(flow, row, AnnotationKind.Claim)
@@ -243,6 +264,65 @@ object Workspace:
     if count == 0 then out.append(" zero")
     out.append("\">").append(if count == 0 then "·" else count.toString).append("</span>")
     ()
+
+  /** Question 3, answered: who is in this story, and where does each appear.
+    *
+    * Every row is the entity's own label, the count of its mentions, the sentences it runs between,
+    * and the exact words it is mentioned by. Nothing here is a summary of the story; it is an index
+    * of it, and every cell can be read back to the text beside it.
+    */
+  private def castList(
+      out: StringBuilder,
+      flow: CodexFlow,
+      scene: NarrativeScene,
+      rows: Vector[Reading.Row]
+  ): Unit =
+    val cast = Reading.cast(flow, scene, rows)
+    out.append("<section class=\"cast\">\n<h2>Cast <span class=\"sub\">")
+    out.append("who is in this story, and where</span></h2>\n")
+    if cast.isEmpty then
+      out.append("<p class=\"note\">")
+      out.append(
+        CodexHtml.escapeText(
+          "No entity in this compilation carries both a label and a mention. An entity's own " +
+            "label reaches a compiled scene only through its thread, so an entity outside the " +
+            "thread budget has an address here and no name."
+        )
+      )
+      out.append("</p>\n")
+    else
+      out.append("<p class=\"note\">")
+      out.append(cast.length).append(" of ")
+      out.append(
+        flow.annotations.map(_.target).filter(_.render.contains("/entity/")).distinct.length
+      )
+      out.append(
+        CodexHtml.escapeText(
+          " entities carry a label here. A label reaches the plate only through an entity's " +
+            "thread, so the thread budget is what decides how much of the cast can be named."
+        )
+      )
+      out.append("</p>\n<table>\n<thead><tr>")
+      Vector("Entity", "Mentions", "From", "To", "Mentioned by").foreach(h =>
+        out.append("<th scope=\"col\">").append(CodexHtml.escapeText(h)).append("</th>")
+      )
+      out.append("</tr></thead>\n<tbody>\n")
+      cast.foreach { member =>
+        out.append("<tr>")
+        out.append("<td class=\"who\">").append(CodexHtml.escapeText(member.label)).append("</td>")
+        out.append("<td class=\"num\">").append(member.mentions).append("</td>")
+        out.append("<td class=\"num\">s").append("%02d".format(member.firstUnit)).append("</td>")
+        out.append("<td class=\"num\">s").append("%02d".format(member.lastUnit)).append("</td>")
+        out.append("<td>")
+        out.append(
+          CodexHtml.escapeText(
+            member.words.take(8).mkString(", ") + (if member.words.length > 8 then ", …" else "")
+          )
+        )
+        out.append("</td></tr>\n")
+      }
+      out.append("</tbody>\n</table>\n")
+    out.append("</section>\n")
 
   /** Every projection this edition built, so "one at a time" is not mistaken for "only one".
     *
@@ -369,7 +449,7 @@ object Workspace:
       Some(s"Declared channels with no annotation here: ${empty.mkString(", ")}.$why")
 
   private def platePane(out: StringBuilder, plateSvg: String, scene: NarrativeScene): Unit =
-    out.append("<section class=\"pane atlas\">\n")
+    out.append("<section class=\"plateblock\">\n")
     out.append("<h2>Discourse Atlas <span class=\"sub\">")
     out.append(CodexHtml.escapeText(s"${scene.zoom.narrative} / ${scene.zoom.surface}"))
     out.append("</span></h2>\n")
@@ -530,7 +610,7 @@ object Workspace:
     // beside the words, never on them.
     sb.append(".reading { border: 1px solid var(--rule); background: #fffdf8; }\n")
     sb.append(".rowhead, .row { display: grid;")
-    sb.append(" grid-template-columns: 3.2em 2.2em 2.6em 1fr; align-items: baseline; }\n")
+    sb.append(" grid-template-columns: 3.2em 4.2em 3.6em 1fr; align-items: baseline; }\n")
     sb.append(".rowhead { border-bottom: 1px solid var(--rule); padding: 4px 10px;")
     sb.append(" font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;")
     sb.append(" color: var(--muted); }\n")
@@ -559,6 +639,15 @@ object Workspace:
     sb.append(".unavailable { margin: 0 0 12px; padding: 8px 10px; font-size: 13px;")
     sb.append(" color: var(--absence); border-left: 3px solid var(--absence);")
     sb.append(" background: #f4efe3; }\n")
+    sb.append(".plateblock { margin-bottom: 18px; }\n")
+    sb.append(".cast { margin-bottom: 18px; }\n")
+    sb.append(".cast table { border-collapse: collapse; font-size: 13px; width: 100%; }\n")
+    sb.append(".cast th, .cast td { text-align: left; vertical-align: top;")
+    sb.append(" padding: 3px 12px 3px 0; border-bottom: 1px solid var(--hair); }\n")
+    sb.append(".cast th { color: var(--muted); font-weight: bold; font-size: 12px; }\n")
+    sb.append(".cast .who { font: 15px/1.5 Palatino, Georgia, serif; }\n")
+    sb.append(".cast .num { font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas,")
+    sb.append(" monospace; text-align: right; color: var(--muted); }\n")
     sb.append(".unplaced { border-top: 3px double var(--rule); margin-top: 8px;")
     sb.append(" padding-top: 14px; }\n")
     sb.append(".unplaced table { border-collapse: collapse; font-size: 13px; width: 100%; }\n")

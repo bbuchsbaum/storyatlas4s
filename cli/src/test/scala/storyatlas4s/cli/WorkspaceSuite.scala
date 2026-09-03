@@ -318,6 +318,30 @@ class WorkspaceSuite extends FunSuite:
       assert(document.contains(s"codex-${lens.toString.toLowerCase}.html"), lens.toString)
     )
 
+  test("the cast answers who is in this story and where, from the model's own labels"):
+    val rows = Reading.rows(sentences, flow.source.canonicalText.length)
+    val cast = Reading.cast(flow, scene, rows)
+    val labels = scene.marks.collect { case t: VisualPrimitive.Thread => t.label }.toSet
+    assert(cast.nonEmpty, "no entity carries both a label and a mention")
+    cast.foreach { member =>
+      assert(labels.contains(member.label), s"'${member.label}' is not an entity's own label")
+      assert(member.mentions > 0)
+      assert(member.firstUnit <= member.lastUnit)
+      // Every word listed is a word of the source, at an offset the model cited.
+      member.words.foreach(word =>
+        assert(flow.source.canonicalText.contains(word), s"'$word' is not in the text")
+      )
+    }
+    // In order of first appearance, so the table reads as the story does.
+    assertEquals(cast.map(_.firstUnit), cast.map(_.firstUnit).sorted)
+    val document = html
+    cast.foreach(member => assert(document.contains(member.label), member.label))
+
+  test("the workspace states the reader horizon it was compiled under"):
+    val document = html
+    assert(document.contains("Reader horizon"), "the horizon is not on screen")
+    assert(document.contains("omniscient"), "the horizon is not named")
+
   test("the inspector exposes the selected object field by field"):
     val document = html
     assert(document.contains("<section class=\"inspector\">"))

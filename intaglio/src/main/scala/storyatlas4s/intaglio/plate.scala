@@ -150,7 +150,7 @@ private[intaglio] object Metric:
   // Pixels: the vertical stack.
   val topPadPx: Double = 22.0
   val headerPx: Double = 98.0
-  val contractPx: Double = 110.0
+  val contractPx: Double = 126.0
   val axisPx: Double = 54.0
   val surfacePx: Double = 58.0
   val legendPx: Double = 66.0
@@ -165,7 +165,7 @@ private[intaglio] object Metric:
 
   // Pixels: the horizontal frame.
   val gutterPx: Double = 22.0
-  val laneNameWidthPx: Double = 152.0
+  val laneNameWidthPx: Double = 176.0
   val marginColumnPx: Double = 92.0
   val rightPadPx: Double = 26.0
 
