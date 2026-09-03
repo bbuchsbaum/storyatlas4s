@@ -190,7 +190,9 @@ class PlateCraftSuite extends FunSuite:
           ok(SvgOptions(1600, 1080))
         )
       ).value
-      assert(svg.contains(plan.levelNote), s"$level does not state its own grain")
+      Measure
+        .wrap(plan.levelNote, plan.rightPx - plan.contentLeftPx, Typeface.finePt)
+        .foreach(line => assert(svg.contains(line), s"$level does not state its own grain"))
     }
     // Story and Episode are no longer the same picture: each says what it draws.
     val story = AtlasPlate.plan(scene(NarrativeLevel.Story), length, box).levelNote
@@ -211,7 +213,11 @@ class PlateCraftSuite extends FunSuite:
     val svg = ok(
       SvgRenderer.render(ok(AtlasLowering.lower(s, length, box)), ok(SvgOptions(1600, 1080)))
     ).value
-    assert(svg.contains(plan.channelNote))
+    // A statement the plate owes a reader is wrapped, never elided: every line of it is drawn.
+    val lines = Measure.wrap(plan.channelNote, plan.rightPx - plan.contentLeftPx, Typeface.finePt)
+    assert(lines.length > 1, "the note is short enough that wrapping is untested")
+    lines.foreach(line => assert(svg.contains(line), s"the plate drops '$line'"))
+    assertEquals(lines.mkString(" · "), plan.channelNote)
 
   test("the narrated ground names itself where it is drawn"):
     val svg = ok(

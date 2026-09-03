@@ -129,8 +129,15 @@ private[intaglio] object Metric:
     * extents and 53 situations on one line from reading as a single smear.
     */
   val bandFromLaneBottomPx: Double = 9.0
-  val situationFromLaneBottomPx: Double = 25.0
+  val situationFromLaneBottomPx: Double = 34.0
   val labelRowStepPx: Double = 16.0
+
+  /** Situation sub-rows: how far apart, how many at most, and how much clear space a glyph wants
+    * before it will share a row with its neighbour.
+    */
+  val situationRowStepPx: Double = 9.0
+  val situationRowsMax: Int = 4
+  val situationClearPx: Double = 9.0
   val labelRowLiftPx: Double = 14.0
   val maxLabelRows: Int = 4
 
@@ -148,10 +155,10 @@ private[intaglio] object Metric:
   val surfacePx: Double = 58.0
   val legendPx: Double = 66.0
   val bottomPadPx: Double = 16.0
-  val laneMinPx: Double = 56.0
+  val laneMinPx: Double = 68.0
 
   /** The absence rail's own stack. */
-  val absenceCaptionPx: Double = 42.0
+  val absenceCaptionPx: Double = 58.0
   val absenceGroupHeadPx: Double = 19.0
   val absenceRowPx: Double = 11.0
   val absenceGroupGapPx: Double = 7.0
@@ -525,6 +532,31 @@ private[intaglio] object Measure:
     * qualifiers are at the end (`go man (custom(amr,purpose): help)`), so an end-elision takes
     * exactly what tells one label from another. Removing the middle keeps both ends.
     */
+  /** `text` broken into lines that fit `maxPx`, at its own separators.
+    *
+    * A statement the plate owes a reader is not a candidate for elision: it has to be readable in
+    * full. So a long one wraps at the separators it was written with, and only falls back to word
+    * breaks when a single clause is itself too long.
+    */
+  def wrap(text: String, maxPx: Double, fontPt: Double): Vector[String] =
+    val clauses = text.split(" · ").toVector
+    val lines = clauses.foldLeft(Vector.empty[String]) { (acc, clause) =>
+      acc.lastOption match
+        case Some(line) if widthPx(s"$line · $clause", fontPt) <= maxPx =>
+          acc.init :+ s"$line · $clause"
+        case _ => acc :+ clause
+    }
+    lines.flatMap(line =>
+      if widthPx(line, fontPt) <= maxPx then Vector(line) else words(line, maxPx, fontPt)
+    )
+
+  private def words(line: String, maxPx: Double, fontPt: Double): Vector[String] =
+    line.split(" ").toVector.foldLeft(Vector.empty[String]) { (acc, word) =>
+      acc.lastOption match
+        case Some(head) if widthPx(s"$head $word", fontPt) <= maxPx => acc.init :+ s"$head $word"
+        case _                                                      => acc :+ word
+    }
+
   def elideMiddle(text: String, maxPx: Double, fontPt: Double): Option[String] =
     if widthPx(text, fontPt) <= maxPx then Some(text)
     else

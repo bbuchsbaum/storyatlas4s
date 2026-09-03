@@ -78,6 +78,15 @@ private[intaglio] object AtlasPlate:
       legendTopPx: Double,
       labels: Map[String, PlacedLabel],
       laneBudget: Vector[LaneBudget],
+      /** Sub-row of a mark within its lane's situation band. Layout only; it means nothing.
+        *
+        * Fifty-three situations over nine hundred pixels put a median gap of zero between
+        * consecutive marks, which is not a picture of anything. Packing them into sub-rows by first
+        * fit, exactly as the absence rail packs its footprints, separates them without moving a
+        * single x.
+        */
+      situationRow: Map[String, Int],
+      situationRows: Int,
       /** `MarkId`s the shared selection resolves to directly, by `SelectionPlacement.OnMark`. */
       selected: Set[String],
       /** What the projection did with each selected address, in the contract's own words. */
@@ -100,6 +109,10 @@ private[intaglio] object AtlasPlate:
     /** Baseline of label row `row`, counting up from the situation row. */
     def labelOffsetPx(row: Int): Double =
       situationOffsetPx - Metric.labelRowLiftPx - row * Metric.labelRowStepPx
+
+    /** Where a mark sits within its lane, once its sub-row is taken into account. */
+    def markOffsetPx(mark: String): Double =
+      situationOffsetPx + situationRow.getOrElse(mark, 0) * Metric.situationRowStepPx
     def plotWidthPx: Double = rightPx - plotLeftPx
     def laneBottomPx: Double = laneTopPx + laneHeightPx * laneCount
     def marginLeftPx: Double = contentLeftPx + Metric.laneNameWidthPx
@@ -183,14 +196,52 @@ private[intaglio] object AtlasPlate:
       legendTopPx = legendTopPx,
       labels = Map.empty,
       laneBudget = Vector.empty,
+      situationRow = Map.empty,
+      situationRows = 1,
       selected = selected,
       focusNote = focusNote(scene),
       ticks = ticksFor(discourseLength),
       levelNote = levelNote(scene),
       channelNote = channelNote(scene)
     )
-    val (labels, budget) = budgetLabels(marks, partial)
-    partial.copy(labels = labels, laneBudget = budget)
+    val (rows, rowCount) = packSituations(marks, partial)
+    val packed = partial.copy(situationRow = rows, situationRows = rowCount)
+    val (labels, budget) = budgetLabels(marks, packed)
+    packed.copy(labels = labels, laneBudget = budget)
+
+  /** First-fit packing of a lane's situation marks into sub-rows.
+    *
+    * Two marks share a sub-row exactly when their glyphs, at the width this plate is composed for,
+    * do not come within a glyph's diameter of each other. The row is device layout over an axis the
+    * contract already declares metric-free; x is untouched.
+    */
+  private def packSituations(
+      marks: Vector[VisualPrimitive],
+      plan: Plan
+  ): (Map[String, Int], Int) =
+    val clear = Metric.situationClearPx
+    val out = Map.newBuilder[String, Int]
+    var deepest = 1
+    marks
+      .collect { case l: VisualPrimitive.Landmark => l }
+      .groupBy(_.at.lane)
+      .toVector
+      .sortBy(_._1)
+      .foreach { (_, lane) =>
+        val rowEnd = Array.fill(Metric.situationRowsMax)(Double.NegativeInfinity)
+        lane
+          .sortBy(l => (l.at.x, l.identity.mark.value))
+          .zipWithIndex
+          .foreach { (landmark, index) =>
+            val x = plan.xOf(landmark.at.x.toDouble)
+            val free = (0 until Metric.situationRowsMax).find(r => x >= rowEnd(r) + clear)
+            val row = free.getOrElse(index % Metric.situationRowsMax)
+            rowEnd(row) = x
+            deepest = math.max(deepest, row + 1)
+            out += landmark.identity.mark.value -> row
+          }
+      }
+    (out.result(), deepest)
 
   /** Marks the shared selection resolves to directly. An address that resolves through an ancestor
     * or off the projection is preserved and reported, never redrawn as though it were on a mark.

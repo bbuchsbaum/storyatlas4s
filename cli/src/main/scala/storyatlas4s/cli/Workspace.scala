@@ -4,7 +4,7 @@ import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
 import storyatlas4s.edition.{EditionSpec, Focus}
 import storyatlas4s.intaglio.PagedCodexLowering
-import storyatlas4s.layout.PaginatedCodex
+import storymodel4s.story.ContextKind
 import storymodel4s.view.*
 
 /** The two-pane workspace: the exact words beside one plate, under one selection.
@@ -31,63 +31,43 @@ object Workspace:
 
   val File: String = "workspace.html"
 
-  /** The one annotation family the reading pane paints. */
-  val PaintedKinds: Set[AnnotationKind] = AnnotationKind.absence
-
   def render(
-      placed: PaginatedCodex,
+      flow: CodexFlow,
       scene: NarrativeScene,
+      sentences: Vector[VisualPrimitive.SurfaceUnit],
       plateSvg: String,
       focus: Option[Focus.Chosen],
       detail: String
   ): Either[CodexHtml.Error, String] =
-    val flow = placed.flow
-    val selected = Focus.annotations(flow, focus)
-    for
-      _ <- CodexHtml.unencodable(flow.source.canonicalText).toLeft(())
-      // The reading pane paints exactly one layer: recorded absence, underlined in the line's own
-      // leading. The other channels are compiled, named in the twin, and drawn at full resolution
-      // in the standalone Codex plate — discoverable, not painted over the prose (brief §8.1).
-      scenes <- PagedCodexLowering
-        .lowerPages(placed, PaintedKinds, PagedCodexLowering.RowPolicy.Collapsed)
-        .left
-        .map(e => CodexHtml.Error.Lowering(e.message))
-      options <- SvgOptions(
-        placed.page.widthPx,
-        placed.page.heightPx,
-        Some(s"Narrative Codex overlay — $detail")
-      ).left.map(e => CodexHtml.Error.Rendering(e.message))
-      overlays <- scenes.traverse(scene =>
-        SvgRenderer.render(scene, options).bimap(e => CodexHtml.Error.Rendering(e.message), _.value)
-      )
-      pages <- placed.pages.traverse(page => CodexHtml.renderPage(placed, page, overlays, selected))
-    yield document(placed, scene, plateSvg, focus, detail, pages)
+    CodexHtml
+      .unencodable(flow.source.canonicalText)
+      .toLeft(document(flow, scene, sentences, plateSvg, focus, detail))
 
   private def document(
-      placed: PaginatedCodex,
+      flow: CodexFlow,
       scene: NarrativeScene,
+      sentences: Vector[VisualPrimitive.SurfaceUnit],
       plateSvg: String,
       focus: Option[Focus.Chosen],
-      detail: String,
-      pages: Vector[String]
+      detail: String
   ): String =
-    val flow = placed.flow
-    val receipt = placed.receipt
     val title = s"StoryAtlas workspace — $detail"
     val out = new StringBuilder
     out.append("<!DOCTYPE html>\n<html lang=\"")
     out.append(CodexHtml.escapeAttr(flow.source.language.value)).append("\">\n<head>\n")
     out.append("<meta charset=\"utf-8\">\n")
     out.append("<title>").append(CodexHtml.escapeText(title)).append("</title>\n")
-    out.append("<style>\n").append(css(placed)).append("</style>\n</head>\n<body>\n")
-    header(out, placed, focus)
+    out.append("<style>\n").append(css()).append("</style>\n</head>\n<body>\n")
+    header(out, flow, focus)
+    projections(out, scene)
     focusBar(out, flow, scene, focus)
     out.append("<main class=\"panes\">\n")
-    readingPane(out, placed, pages)
+    readingPane(out, flow, scene, sentences, focus)
     platePane(out, plateSvg, scene)
     out.append("</main>\n")
+    inspector(out, flow, scene, focus)
     unplacedLedger(out, flow)
-    footer(out, flow, receipt)
+    footer(out, flow)
     out.append("</body>\n</html>\n")
     out.result()
 
@@ -95,10 +75,9 @@ object Workspace:
 
   private def header(
       out: StringBuilder,
-      placed: PaginatedCodex,
+      flow: CodexFlow,
       focus: Option[Focus.Chosen]
   ): Unit =
-    val flow = placed.flow
     val p = flow.provenance
     out.append("<header>\n<h1>StoryAtlas workspace</h1>\n")
     out.append("<p class=\"identity\">")
@@ -171,27 +150,50 @@ object Workspace:
     )
     out.append("</p>\n</section>\n")
 
-  private def readingPane(out: StringBuilder, placed: PaginatedCodex, pages: Vector[String]): Unit =
-    val flow = placed.flow
-    val kinds = flow.annotations.map(_.kind.wireName).distinct.sorted
+  /** The words, one row per sentence, with what discriminates painted on them.
+    *
+    * A row is a sentence and the material up to the next, so the rows tile the canonical text
+    * exactly and no character of the source is dropped between them. The prose is set in a serif at
+    * a reading size and a reading leading; the gutter beside it carries the sentence's own address
+    * and the counts of the uniform channels, which is where a count belongs.
+    */
+  private def readingPane(
+      out: StringBuilder,
+      flow: CodexFlow,
+      scene: NarrativeScene,
+      sentences: Vector[VisualPrimitive.SurfaceUnit],
+      focus: Option[Focus.Chosen]
+  ): Unit =
+    val text = flow.source.canonicalText
+    val selected = Focus.annotations(flow, focus)
+    val frames = Reading.frames(scene)
+    val painted = Reading.painted(flow, frames, selected)
+    val rows = Reading.rows(sentences, text.length)
+    val speech = flow.annotations.count(a =>
+      a.kind == AnnotationKind.Context &&
+        frames.get(a.target).exists(_ != ContextKind.NarratedWorld)
+    )
+    val mentions = flow.annotations.count(_.kind == AnnotationKind.Entity)
+
     out.append("<section class=\"pane codex\">\n")
-    out.append("<h2>Narrative Codex <span class=\"sub\">exact text</span></h2>\n")
+    out.append("<h2>Narrative Codex <span class=\"sub\">the exact words</span></h2>\n")
     out.append("<p class=\"note\">")
-    val painted = flow.annotations.count(a => PaintedKinds.contains(a.kind))
-    out.append(flow.annotations.length).append(" annotations over ")
-    out.append(placed.pages.length)
-    out.append(if placed.pages.length == 1 then " page — " else " pages — ")
-    out.append(CodexHtml.escapeText(kinds.mkString(", ")))
-    out.append(". Every word below is the canonical text; nothing is inserted, elided or rewritten")
-    out.append(" to explain a model state.")
-    out.append("</p>\n<p class=\"note\">")
-    out.append("Painted here: ").append(painted)
+    out.append(rows.length).append(" sentences · ").append(flow.annotations.length)
+    out.append(" annotations compiled. Every word below is the canonical text: nothing is ")
+    out.append("inserted, elided or rewritten to explain a model state.</p>\n")
+
+    out.append("<ul class=\"key\">\n")
+    keyRow(out, Reading.Speech, s"$speech context frames that are not the narrated world")
+    keyRow(out, Reading.Mention, s"$mentions entity mentions")
+    keyRow(out, Reading.Selected, "the shared selection")
+    out.append("</ul>\n")
+    out.append("<p class=\"note\">")
     out.append(
       CodexHtml.escapeText(
-        " recorded absences, underlined in the line's own leading on exactly the words they " +
-          "concern. The other channels are compiled and named in the twin, and drawn at full " +
-          "lane resolution in the standalone Codex plate: a reading surface carries one layer, " +
-          "not every layer at once."
+        "Painted on the words: only what tells one passage from another. The uniform channels — " +
+          "one claim per situation, one unsatisfied law per situation — are counted in the gutter " +
+          "instead, because sixty-five identical marks on the prose would say nothing about the " +
+          "story and would hide what does."
       )
     )
     out.append("</p>\n")
@@ -199,8 +201,146 @@ object Workspace:
       out.append("<p class=\"unavailable\">").append(CodexHtml.escapeText(statement))
       out.append("</p>\n")
     }
-    pages.foreach(out.append)
+
+    out.append("<div class=\"reading\">\n")
+    out.append("<div class=\"rowhead\"><span class=\"ord\">unit</span>")
+    out.append("<span class=\"tal\">cl</span><span class=\"tal\">law</span>")
+    out.append("<span class=\"prosehead\">the canonical text</span></div>\n")
+    rows.foreach { row =>
+      val claims = Reading.tally(flow, row, AnnotationKind.Claim)
+      val laws = Reading.tally(flow, row, AnnotationKind.UnsatisfiedLaw)
+      out.append("<div class=\"row\" data-name=\"")
+      out.append(CodexHtml.escapeAttr(row.mark.value)).append("\">")
+      out.append("<span class=\"ord\">s").append("%02d".format(row.ordinal)).append("</span>")
+      tallyCell(out, claims, "cl")
+      tallyCell(out, laws, "law")
+      out.append("<p class=\"prose\">")
+      Reading.runs(row, text, painted).foreach { run =>
+        if run.classes.isEmpty then out.append(CodexHtml.escapeText(run.text))
+        else
+          out
+            .append("<span class=\"")
+            .append(run.classes.mkString(" "))
+            .append("\">")
+            .append(CodexHtml.escapeText(run.text))
+            .append("</span>")
+      }
+      out.append("</p></div>\n")
+    }
+    out.append("</div>\n</section>\n")
+
+  private def keyRow(out: StringBuilder, cls: String, label: String): Unit =
+    out
+      .append("<li><span class=\"")
+      .append(cls)
+      .append(" swatch\">words</span> ")
+      .append(CodexHtml.escapeText(label))
+      .append("</li>\n")
+    ()
+
+  private def tallyCell(out: StringBuilder, count: Int, cls: String): Unit =
+    out.append("<span class=\"tal ").append(cls)
+    if count == 0 then out.append(" zero")
+    out.append("\">").append(if count == 0 then "·" else count.toString).append("</span>")
+    ()
+
+  /** Every projection this edition built, so "one at a time" is not mistaken for "only one".
+    *
+    * Plain links to sibling files: the page carries no script, and a reader who wants another zoom
+    * or lens can reach it without one.
+    */
+  private def projections(out: StringBuilder, scene: NarrativeScene): Unit =
+    out.append("<nav class=\"projections\"><span class=\"navlabel\">Projections</span>\n")
+    EditionSpec.zoomLevels.foreach { zoom =>
+      val stem =
+        s"atlas-${zoom.narrative.toString.toLowerCase}-${zoom.surface.toString.toLowerCase}"
+      val here = zoom == scene.zoom
+      out.append(
+        if here then s"""<span class="here" data-name="$stem">"""
+        else s"""<a href="$stem.svg">"""
+      )
+      out.append(CodexHtml.escapeText(s"${zoom.narrative}/${zoom.surface}"))
+      out.append(if here then "</span>" else "</a>")
+    }
+    EditionSpec.lenses.foreach { lens =>
+      out.append(s"""<a href="codex-${lens.toString.toLowerCase}.html">""")
+      out.append(CodexHtml.escapeText(s"Codex $lens"))
+      out.append("</a>")
+    }
+    out.append("\n<span class=\"navnote\">")
+    out.append(
+      CodexHtml.escapeText(
+        "This workspace shows one projection; the edition built the rest beside it."
+      )
+    )
+    out.append("</span></nav>\n")
+
+  /** Question 5 of the recovery plan: what supports this claim, and on what basis.
+    *
+    * Every field is separate and every field is the model's own. Nothing here is bundled into a
+    * single number, and nothing is called a probability that is not one.
+    */
+  private def inspector(
+      out: StringBuilder,
+      flow: CodexFlow,
+      scene: NarrativeScene,
+      focus: Option[Focus.Chosen]
+  ): Unit =
+    out.append("<section class=\"inspector\">\n<h2>Inspector <span class=\"sub\">")
+    out.append("the selected object, field by field</span></h2>\n")
+    focus match
+      case None         => out.append("<p class=\"note\">Nothing is selected.</p>\n")
+      case Some(chosen) =>
+        val ids = Focus.annotations(flow, chosen.some)
+        val annotations = flow.annotations.filter(a => ids.contains(a.id))
+        out.append("<dl>\n")
+        definition(out, "Address", chosen.address.render)
+        definition(out, "Model label", chosen.label)
+        definition(out, "Context frame", chosen.context.label)
+        definition(out, "Lane", chosen.lane.toString)
+        definition(
+          out,
+          "Atlas mark",
+          Focus.marks(scene, chosen.some).map(_.value).toVector.sorted.mkString(", ")
+        )
+        annotations.zipWithIndex.foreach { (annotation, index) =>
+          val n = if annotations.length == 1 then "" else s" ${index + 1}"
+          definition(out, s"Annotation$n", annotation.id.value)
+          definition(out, s"Kind$n", annotation.kind.wireName)
+          definition(
+            out,
+            s"Exact support$n",
+            annotation.support.spans.toVector
+              .map(s => s"[${s.start},${s.endExclusive})")
+              .mkString(", ")
+          )
+          definition(
+            out,
+            s"Words$n",
+            annotation.support.spans.toVector
+              .flatMap(_.slice(flow.source.canonicalText).toOption)
+              .mkString(" … ")
+          )
+          definition(out, s"Priority$n", annotation.priority.value.toString)
+          definition(
+            out,
+            s"Upstream$n",
+            if annotation.audit.upstream.isEmpty then "none"
+            else s"${annotation.audit.upstream.length} claims and evidence records"
+          )
+        }
+        out.append("</dl>\n<p class=\"note\">")
+        out.append(
+          CodexHtml.escapeText(
+            "No number on this page is a calibrated probability, and none is offered as one. " +
+              "Priority is the channel's own ordering; upstream is a count of the records the " +
+              "annotation cites, which the twin lists in full."
+          )
+        )
+        out.append("</p>\n")
     out.append("</section>\n")
+
+  extension [A](a: A) private def some: Option[A] = Some(a)
 
   /** Channels the contract declares and this compilation could not fill.
     *
@@ -295,12 +435,8 @@ object Workspace:
       out.append("</section>\n")
     }
 
-  private def footer(
-      out: StringBuilder,
-      flow: CodexFlow,
-      receipt: storyatlas4s.layout.LayoutReceipt
-  ): Unit =
-    out.append("<footer>\n<details>\n<summary>Provenance and layout receipt</summary>\n<dl>\n")
+  private def footer(out: StringBuilder, flow: CodexFlow): Unit =
+    out.append("<footer>\n<details>\n<summary>Provenance</summary>\n<dl>\n")
     definition(out, "Basis", flow.provenance.basis.label)
     definition(out, "Source checksum", flow.provenance.sourceChecksum.hex)
     definition(
@@ -316,8 +452,6 @@ object Workspace:
       flow.contract.activeKinds.toVector.map(_.wireName).sorted.mkString(", ")
     )
     definition(out, "Lane overflow", flow.lanes.overflow.length.toString)
-    receipt.fields.foreach((key, value) => definition(out, key, value))
-    definition(out, "receiptChecksum", receipt.checksum.hex)
     out.append("</dl>\n</details>\n<p class=\"note\">")
     out.append(
       CodexHtml.escapeText(
@@ -345,12 +479,10 @@ object Workspace:
       .append("</td>")
     ()
 
-  private def css(placed: PaginatedCodex): String =
-    val receipt = placed.receipt
-    val lineHeight = receipt.lineHeight.toDouble / receipt.unitsPerPixel
+  private def css(): String =
     val sb = new StringBuilder
     sb.append(":root { --paper: #faf8f2; --ink: #14140f; --muted: #4a4a44; --rule: #8e8e86;")
-    sb.append(" --focus: #1b4f72; --absence: #7a5310; }\n")
+    sb.append(" --hair: #d9d6cd; --focus: #1b4f72; --absence: #7a5310; --speech: #ece4d3; }\n")
     sb.append("* { box-sizing: border-box; }\n")
     sb.append("body { margin: 0; padding: 24px; background: var(--paper); color: var(--ink);")
     sb.append(" font: 15px/1.55 Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif; }\n")
@@ -358,55 +490,80 @@ object Workspace:
     sb.append("h2 { font-size: 15px; margin: 0 0 6px; }\n")
     sb.append("h2 .sub { font-weight: normal; color: var(--muted); }\n")
     sb.append(".note { margin: 0 0 10px; color: var(--muted); font-size: 13px; }\n")
-    sb.append(".unavailable { margin: 0 0 12px; padding: 8px 10px; font-size: 13px;")
-    sb.append(" color: var(--absence); border-left: 3px solid var(--absence);")
-    sb.append(" background: #f4efe3; }\n")
-    sb.append("header, .focus, .unplaced, footer { max-width: ")
-    sb.append(EditionSpec.workspacePageWidthPx + EditionSpec.workspaceAtlasWidthPx + 60)
-    sb.append("px; }\n")
+    val width = EditionSpec.workspacePageWidthPx + EditionSpec.workspaceAtlasWidthPx + 60
+    sb.append("header, .focus, .projections, .inspector, .unplaced, footer { max-width: ")
+    sb.append(width).append("px; }\n")
     sb.append("header { border-bottom: 1px solid var(--rule); padding-bottom: 12px; }\n")
     sb.append(".identity { margin: 0 0 4px; }\n")
     sb.append(".checksums { margin: 0; font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo,")
     sb.append(" Consolas, monospace; color: var(--muted); }\n")
     sb.append(".checksums span { display: inline-block; margin-right: 22px; }\n")
-    sb.append(".focus { border-bottom: 1px solid var(--rule); padding: 12px 0; }\n")
-    sb.append(".focus dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 16px;")
-    sb.append(" margin: 0 0 8px; font-size: 13px; }\n")
+    // Projections: plain links, so one at a time is never mistaken for only one.
+    sb.append(".projections { padding: 10px 0; border-bottom: 1px solid var(--rule);")
+    sb.append(" font-size: 12px; }\n")
+    sb.append(".navlabel { color: var(--muted); margin-right: 10px; }\n")
+    sb.append(".projections a, .projections .here { display: inline-block; padding: 2px 8px;")
+    sb.append(" margin: 0 4px 4px 0; border: 1px solid var(--rule); text-decoration: none;")
+    sb.append(" color: var(--muted); font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo,")
+    sb.append(" Consolas, monospace; }\n")
+    sb.append(".projections .here { border-color: var(--focus); color: var(--focus);")
+    sb.append(" font-weight: bold; }\n")
+    sb.append(".navnote { color: var(--muted); margin-left: 8px; }\n")
+    sb.append(".focus, .inspector { border-bottom: 1px solid var(--rule); padding: 12px 0; }\n")
+    sb.append(".focus dl, .inspector dl { display: grid;")
+    sb.append(" grid-template-columns: max-content 1fr; gap: 2px 16px; margin: 0 0 8px;")
+    sb.append(" font-size: 13px; }\n")
     sb.append("dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; }\n")
-    sb.append(".focus dd { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas,")
-    sb.append(" monospace; }\n")
+    sb.append(".focus dd, .inspector dd { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo,")
+    sb.append(" Consolas, monospace; }\n")
     sb.append(".panes { display: flex; gap: 28px; align-items: flex-start; padding: 16px 0; }\n")
     sb.append(".pane { min-width: 0; }\n")
     sb.append(".codex { flex: 0 0 ")
-    sb.append(placed.page.widthPx + 2).append("px; }\n")
+    sb.append(EditionSpec.workspacePageWidthPx).append("px; }\n")
     sb.append(".atlas { flex: 0 0 ")
     sb.append(EditionSpec.workspaceAtlasWidthPx + 2).append("px; }\n")
     sb.append(".plate { border: 1px solid var(--rule); background: var(--paper); }\n")
-    // Never scaled: the plate's type floor is stated in points, and a browser downscale would
-    // put it below the floor the plate's own laws enforce.
+    // Never scaled: the plate's type floor is stated in points, and a browser downscale would put
+    // it below the floor the plate's own laws enforce.
     sb.append(".plate svg { display: block; }\n")
-    sb.append(".page { position: relative; width: ")
-    sb.append(receipt.page.widthPx).append("px; height: ")
-    sb.append(receipt.page.heightPx).append("px; margin: 0 0 20px;")
-    sb.append(" border: 1px solid var(--rule); background: #ffffff; }\n")
-    sb.append(".text { position: absolute; top: 0; left: 0; margin: 0; width: 100%; height: 100%;")
-    sb.append(" overflow: hidden; font-family: ")
-    sb.append(CodexHtml.cssFamily(receipt.style.family))
-    sb.append("; font-size: ").append(receipt.style.sizePx)
-    sb.append("px; line-height: ").append(lineHeight).append("px; color: var(--ink); }\n")
-    sb.append(".line { display: block; height: ").append(lineHeight)
-    sb.append("px; white-space: pre; overflow: hidden; }\n")
-    sb.append(".overlay { position: absolute; top: 0; left: 0; pointer-events: none; }\n")
-    sb.append(".overlay svg { display: block; }\n")
-    sb.append(".page-label { position: absolute; left: 0; bottom: -1.4em;")
-    sb.append(" font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;")
+    // The reading surface. A real serif at a reading size and a reading leading; the gutter is
+    // beside the words, never on them.
+    sb.append(".reading { border: 1px solid var(--rule); background: #fffdf8; }\n")
+    sb.append(".rowhead, .row { display: grid;")
+    sb.append(" grid-template-columns: 3.2em 2.2em 2.6em 1fr; align-items: baseline; }\n")
+    sb.append(".rowhead { border-bottom: 1px solid var(--rule); padding: 4px 10px;")
+    sb.append(" font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;")
     sb.append(" color: var(--muted); }\n")
-    sb.append(CodexHtml.selectionCss)
+    sb.append(".row { padding: 3px 10px; border-bottom: 1px solid var(--hair); }\n")
+    sb.append(".row:last-child { border-bottom: 0; }\n")
+    sb.append(".ord, .tal { font: 12px/1.62 ui-monospace, SFMono-Regular, Menlo, Consolas,")
+    sb.append(" monospace; color: var(--muted); }\n")
+    sb.append(".tal { text-align: right; padding-right: 0.9em; }\n")
+    sb.append(".tal.law { color: var(--absence); }\n")
+    sb.append(".tal.zero { color: var(--hair); }\n")
+    sb.append(".prose { margin: 0; font: 17px/1.62 Palatino, 'Palatino Linotype',")
+    sb.append(" 'Book Antiqua', Georgia, serif; color: var(--ink); }\n")
+    sb.append(".prosehead { font-size: 11px; }\n")
+    // Three treatments, each a shape or a weight and not a hue alone.
+    sb.append(".sp { background: var(--speech); box-shadow: -0.18em 0 0 var(--absence),")
+    sb.append(" 0.18em 0 0 var(--absence); }\n")
+    sb.append(".en { text-decoration: underline; text-decoration-thickness: 1px;")
+    sb.append(" text-underline-offset: 3px; text-decoration-color: var(--muted); }\n")
+    sb.append(".sl { outline: 1.5px solid var(--focus); outline-offset: 1px;")
+    sb.append(" font-weight: bold; }\n")
+    sb.append(".key { list-style: none; margin: 0 0 10px; padding: 0; font-size: 13px;")
+    sb.append(" color: var(--muted); }\n")
+    sb.append(".key li { margin-bottom: 3px; }\n")
+    sb.append(".swatch { font: 15px/1.5 Palatino, Georgia, serif; color: var(--ink);")
+    sb.append(" margin-right: 6px; }\n")
+    sb.append(".unavailable { margin: 0 0 12px; padding: 8px 10px; font-size: 13px;")
+    sb.append(" color: var(--absence); border-left: 3px solid var(--absence);")
+    sb.append(" background: #f4efe3; }\n")
     sb.append(".unplaced { border-top: 3px double var(--rule); margin-top: 8px;")
     sb.append(" padding-top: 14px; }\n")
     sb.append(".unplaced table { border-collapse: collapse; font-size: 13px; width: 100%; }\n")
     sb.append(".unplaced th, .unplaced td { text-align: left; vertical-align: top;")
-    sb.append(" padding: 3px 14px 3px 0; border-bottom: 1px solid #e0ded6; }\n")
+    sb.append(" padding: 3px 14px 3px 0; border-bottom: 1px solid var(--hair); }\n")
     sb.append(".unplaced th { color: var(--absence); font-weight: bold; }\n")
     sb.append(".unplaced .mono { font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas,")
     sb.append(" monospace; }\n")

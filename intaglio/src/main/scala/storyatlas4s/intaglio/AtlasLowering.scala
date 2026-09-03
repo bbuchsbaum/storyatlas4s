@@ -350,8 +350,11 @@ object AtlasLowering:
         s"shared selection: ${plan.focusNote}",
         if plan.selected.isEmpty then style.fine else style.focusLabel
       )
-      levelGrob <- pageText(plan, left, top + 92.0, plan.levelNote, style.fine)
-    yield Vector(axesGrob, xGrob, yGrob, noneGrob, focusGrob, levelGrob)
+      levelGrob <- Measure
+        .wrap(plan.levelNote, plan.rightPx - left, Typeface.finePt)
+        .zipWithIndex
+        .traverse((line, i) => pageText(plan, left, top + 92.0 + i * 14.0, line, style.fine))
+    yield Vector(axesGrob, xGrob, yGrob, noneGrob, focusGrob) ++ levelGrob
 
   /** Each lane is named where it is drawn, from the context frame that occupies it. A lane with no
     * visible band is numbered and left unnamed: naming it from a neighbour would invent a context.
@@ -477,7 +480,12 @@ object AtlasLowering:
         body,
         style.fine
       )
-      channels <- pageText(plan, left, plan.absenceTopPx + 24.0, plan.channelNote, style.fine)
+      channels <- Measure
+        .wrap(plan.channelNote, plan.rightPx - left, Typeface.finePt)
+        .zipWithIndex
+        .traverse((line, i) =>
+          pageText(plan, left, plan.absenceTopPx + 24.0 + i * 14.0, line, style.fine)
+        )
       groups <- plan.absence.flatTraverse { group =>
         val y = plan.absenceTopPx + group.topPx + 9.0
         val headWidth = Measure.widthPx(group.headline, Typeface.finePt)
@@ -498,7 +506,7 @@ object AtlasLowering:
         yield Vector(count, headline) ++ detail
       }
       margin <- marginCaption(plan, style)
-    yield Vector(title, caption, channels) ++ groups ++ margin
+    yield Vector(title, caption) ++ channels ++ groups ++ margin
 
   /** The margin column's own label. Marks land here when the model states they have no honest
     * discourse position at all, which is a different thing from being placed at zero.
@@ -800,7 +808,7 @@ object AtlasLowering:
         case LandmarkKind.Event => ig.PointShape.Circle
         case LandmarkKind.State => ig.PointShape.Square
       val focused = plan.selected.contains(id.mark.value)
-      val row = plan.situationOffsetPx
+      val row = plan.markOffsetPx(id.mark.value)
       val where = at(anchor.x.toDouble, anchor.lane.toDouble, row)
       for
         halo <- ig.Grob.points(Vector(where), Metric.glyphHalo, shape, gp = style.landmarkHalo)
@@ -818,7 +826,7 @@ object AtlasLowering:
           shape,
           gp = if focused then style.focus else style.landmark
         )
-        label <- budgetedLabel(id.mark.value, anchor.x, anchor.lane.toDouble, plan, style)
+        label <- budgetedLabel(id.mark.value, anchor.x, anchor.lane.toDouble, plan, style, row)
       yield (halo +: ring) ++ (glyph +: label)
 
     // The rings carry the participations; the path between them is drawn dotted because the
@@ -833,7 +841,16 @@ object AtlasLowering:
             .points(Vector(where), Metric.threadRing, ig.PointShape.Circle, gp = style.threadRing)
         )
         label <- points.headOption
-          .traverse(head => budgetedLabel(id.mark.value, head.x, head.lane.toDouble, plan, style))
+          .traverse(head =>
+            budgetedLabel(
+              id.mark.value,
+              head.x,
+              head.lane.toDouble,
+              plan,
+              style,
+              plan.situationOffsetPx
+            )
+          )
           .map(_.getOrElse(Vector.empty))
       yield (line +: rings) ++ label
 
@@ -886,7 +903,14 @@ object AtlasLowering:
         ig.Grob
           .points(Vector(where), Metric.threadRing, ig.PointShape.Circle, gp = style.threadRing)
       )
-      label <- budgetedLabel(markId, (from.x + to.x) / 2, from.lane.toDouble, plan, style)
+      label <- budgetedLabel(
+        markId,
+        (from.x + to.x) / 2,
+        from.lane.toDouble,
+        plan,
+        style,
+        plan.situationOffsetPx
+      )
     yield (line +: ends) ++ label
 
   /** The label the budget accepted for this mark, if any, with a leader from the mark to it.
@@ -899,7 +923,8 @@ object AtlasLowering:
       x: Int,
       lane: Double,
       plan: AtlasPlate.Plan,
-      style: Style.Params
+      style: Style.Params,
+      fromPx: Double
   ): Either[GraphicsError, Vector[ig.Grob]] =
     plan.labels.get(markId) match
       case None         => Right(Vector.empty)
@@ -912,7 +937,7 @@ object AtlasLowering:
           // ends where its label begins, and nowhere else.
           leader <- ig.Grob.lines(
             Vector(
-              at(x.toDouble, lane, plan.situationOffsetPx - 6.0),
+              at(x.toDouble, lane, fromPx - 6.0),
               at(x.toDouble, lane, baseline + 4.5),
               at(x.toDouble, lane, baseline + 4.5, foot)
             ),

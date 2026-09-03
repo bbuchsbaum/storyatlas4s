@@ -108,12 +108,22 @@ class WorkspaceSuite extends FunSuite:
   private val scene = sceneOf(state)
   private val flow = flowOf(state)
 
-  private def paginated: PaginatedCodex =
-    val page = ok(
-      PageSpec.of(EditionSpec.workspacePageWidthPx, EditionSpec.workspacePageHeightPx)
+  /** The surface-bearing scene the reading pane's rows come from. */
+  private val sentences: Vector[VisualPrimitive.SurfaceUnit] =
+    val spec = AtlasSpec(
+      ZoomLevel(EditionSpec.workspaceZoom.narrative, SurfaceDetail.Sentences),
+      ThreadPolicy.All(PositiveInt.unsafe(3))
     )
-    val style = ok(TextStyle.of(EditionSpec.fontFamily, EditionSpec.fontSizePx))
-    ok(Paginator.layout(flow, page, style, MonospaceMeasurer.instance))
+    val provenance = ok(
+      ViewProvenance.draftBuild(
+        draft,
+        "workspace-suite",
+        AtlasCompiler.configurationChecksum(state, spec)
+      )
+    )
+    ok(AtlasCompiler(provenance).compileDraft(draft, state, spec)).marks.collect {
+      case m: VisualPrimitive.SurfaceUnit => m
+    }
 
   private def plate: String =
     val box = ok(
@@ -126,10 +136,10 @@ class WorkspaceSuite extends FunSuite:
     ok(SvgRenderer.render(lowered, options)).value
 
   private def html: String =
-    ok(Workspace.render(paginated, scene, plate, chosen, "workspace-suite"))
+    ok(Workspace.render(flow, scene, sentences, plate, chosen, "workspace-suite"))
 
   private val tag = """<[^>]*>""".r
-  private val textRail = """(?s)<div class="text">(.*?)</div>""".r
+  private val textRail = """(?s)<p class="prose">(.*?)</p>""".r
 
   private def unescape(value: String): String =
     value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
@@ -147,12 +157,14 @@ class WorkspaceSuite extends FunSuite:
     val document = html
     assertEquals(railText(document), flow.source.canonicalText)
     // And the marking really happened, so the law is not passing vacuously.
-    assert(document.contains("class=\"sel\""), "no selection was marked")
+    assert(document.contains("sl\"") || document.contains("sl "), "no selection was marked")
 
-  test("the words are set at the size the brief makes acceptance-bearing, never clamped"):
+  test("the words are set in a real face at a reading size and a reading leading"):
     val document = html
-    assertEquals(paginated.receipt.style.sizePx, 16)
-    assert(document.contains("font-size: 16px"), "the reading pane is not at 16px")
+    // A generic `monospace` at 1.20 leading is a specimen, not a text; the pane's prose is a named
+    // serif at 17px and 1.62, which is looser than the metadata describing it.
+    assert(document.contains(".prose { margin: 0; font: 17px/1.62 Palatino"), "prose face")
+    assert(!document.contains("font-family: monospace"), "the prose is still generic monospace")
     // The plate is never scaled to fit: a browser downscale would drop its type below the floor
     // its own laws enforce.
     assert(!document.contains(".plate svg { display: block; width"), "the plate is scaled")
@@ -165,7 +177,7 @@ class WorkspaceSuite extends FunSuite:
       .flatMap(_.support.spans.toVector)
       .map(span => ok(span.slice(flow.source.canonicalText)))
       .toSet
-    val marked = """<span class="sel">(.*?)</span>""".r
+    val marked = """<span class="[^"]*\\bsl\\b[^"]*">(.*?)</span>""".r
       .findAllMatchIn(html)
       .map(m => unescape(m.group(1)))
       .toSet
@@ -242,19 +254,80 @@ class WorkspaceSuite extends FunSuite:
     assertEquals(ledger.marked.filterNot(ids.contains), Vector.empty)
     assertEquals(ledger.total, ledger.marked.length + ledger.unplaced.length)
 
-  test("the reading pane paints one annotation family and says which"):
+  test("the pane paints what discriminates, and counts what does not"):
     val document = html
-    val painted = flow.annotations.filter(a => Workspace.PaintedKinds.contains(a.kind))
-    assert(painted.nonEmpty)
-    // Every named piece in the page overlay belongs to a painted annotation.
-    val pieceNames = """data-name="([^"]*)/p\d+/l\d+/r\d+"""".r
-      .findAllMatchIn(document)
-      .map(_.group(1))
-      .toSet
-    assert(pieceNames.nonEmpty, "the overlay painted nothing")
-    val paintedIds = painted.map(_.id.value).toSet
-    assertEquals(pieceNames.diff(paintedIds), Set.empty[String])
-    assert(document.contains("Painted here"), "the pane does not declare what it paints")
+    // The uniform channels are counted in the gutter, never painted on the words: sixty-five
+    // identical marks on the prose would say nothing about the story and would hide what does.
+    val frames = Reading.frames(scene)
+    val painted = Reading.painted(flow, frames, Focus.annotations(flow, chosen))
+    // Only three treatments exist, and each is accounted for by the annotations that may carry it.
+    assertEquals(
+      painted.map(_._2).distinct.sorted,
+      Vector(Reading.Mention, Reading.Selected, Reading.Speech).sorted
+    )
+    val mentions = flow.annotations
+      .filter(_.kind == AnnotationKind.Entity)
+      .flatMap(_.support.spans.toVector)
+    assertEquals(painted.count(_._2 == Reading.Mention), mentions.length)
+    val speech = flow.annotations
+      .filter(a =>
+        a.kind == AnnotationKind.Context &&
+          frames.get(a.target).exists(_ != ContextKind.NarratedWorld)
+      )
+      .flatMap(_.support.spans.toVector)
+    assertEquals(painted.count(_._2 == Reading.Speech), speech.length)
+    // The uniform channels reach the words through no treatment at all.
+    val uniform = Set(AnnotationKind.Claim, AnnotationKind.UnsatisfiedLaw)
+    assert(flow.annotations.count(a => uniform.contains(a.kind)) > 60, "the fixture is uniform")
+    assert(document.contains("Painted on the words"), "the pane does not declare what it paints")
+    assert(document.contains("class=\"tal"), "the uniform channels are not tallied in a gutter")
+
+  test("the rows tile the canonical text and carry the sentence identities"):
+    val rows = Reading.rows(sentences, flow.source.canonicalText.length)
+    assert(rows.nonEmpty)
+    assertEquals(rows.head.span.start, 0)
+    assertEquals(rows.last.span.endExclusive, flow.source.canonicalText.length)
+    rows.sliding(2).foreach {
+      case Vector(a, b) => assertEquals(a.span.endExclusive, b.span.start, "the rows leave a gap")
+      case _            => ()
+    }
+    val document = html
+    rows.foreach(row => assert(document.contains(row.mark.value), s"${row.mark.value} is unnamed"))
+
+  test("overlapping treatments segment rather than nest, and lose no character"):
+    val text = flow.source.canonicalText
+    val painted = Reading.painted(flow, Reading.frames(scene), Focus.annotations(flow, chosen))
+    Reading.rows(sentences, text.length).foreach { row =>
+      val runs = Reading.runs(row, text, painted)
+      assertEquals(
+        runs.map(_.text).mkString,
+        text.substring(row.span.start, row.span.endExclusive),
+        s"row ${row.ordinal} does not reassemble"
+      )
+      runs.foreach(run => assert(run.text.nonEmpty, "an empty run was emitted"))
+    }
+
+  test("the workspace shows every projection the edition built"):
+    val document = html
+    EditionSpec.zoomLevels.foreach { zoom =>
+      val stem =
+        s"atlas-${zoom.narrative.toString.toLowerCase}-${zoom.surface.toString.toLowerCase}"
+      assert(document.contains(stem), s"$stem is not reachable from the workspace")
+    }
+    EditionSpec.lenses.foreach(lens =>
+      assert(document.contains(s"codex-${lens.toString.toLowerCase}.html"), lens.toString)
+    )
+
+  test("the inspector exposes the selected object field by field"):
+    val document = html
+    assert(document.contains("<section class=\"inspector\">"))
+    chosen.foreach { c =>
+      assert(document.contains(c.address.render))
+      assert(document.contains("Exact support"))
+      assert(document.contains("Words"))
+    }
+    // No bundled number is offered as a confidence.
+    assert(!document.toLowerCase.contains("confidence"), "the inspector claims a confidence")
 
   test("a channel that could not be compiled is named, and not left reading as empty"):
     val statement = Workspace

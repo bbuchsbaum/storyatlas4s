@@ -322,14 +322,18 @@ object Edition:
         Some(s"Narrative Atlas (draft) — zoom ${zoom.narrative}/${zoom.surface}")
       ).left.map(_.message)
       plate <- SvgRenderer.render(lowered, options).left.map(_.message)
-      page <- PageSpec
-        .of(EditionSpec.workspacePageWidthPx, EditionSpec.workspacePageHeightPx)
-        .left
-        .map(_.message)
-      style <- TextStyle.of(EditionSpec.fontFamily, EditionSpec.fontSizePx).left.map(_.message)
-      placed <- Paginator.layout(flow, page, style, MonospaceMeasurer.instance).left.map(_.message)
+      // The reading pane's rows are sentences, so it needs a surface-bearing scene. It is compiled
+      // rather than read off the model: a sentence reaches the page as a view mark with an exact
+      // span and an identity, the same as everything else the page draws.
+      surface <- draftScene(
+        model,
+        state,
+        ZoomLevel(zoom.narrative, SurfaceDetail.Sentences),
+        threads
+      )
+      sentences = surface.marks.collect { case m: VisualPrimitive.SurfaceUnit => m }
       html <- Workspace
-        .render(placed, scene, plate.value, focus, detail)
+        .render(flow, scene, sentences, plate.value, focus, detail)
         .left
         .map(_.message)
     yield Vector(
@@ -338,9 +342,9 @@ object Edition:
         "workspace",
         detail,
         config,
-        placed.annotationFragments.length,
+        flow.annotations.length,
         html,
-        Some(placed.receipt)
+        None
       )
     )
 
