@@ -49,11 +49,14 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   no `ViewBasis` is true of it. A model it does not promote is compiled as a
   draft (`ViewBasis.DraftBuild`, `AtlasCompiler.compileDraft`), atlases only,
   with its unsatisfied laws as marks. `ReadModel` carries a `DerivationRecord`
-  that is always `NotSupplied` today, and the receipt prints that rather than
-  zero gaps; `ModelInput.derivationRecordNote` records why
-  `compilation-report.json` cannot supply one. Reconstructing a record from
-  that file would mean fabricating claim and evidence ids, which is the
-  out-claiming the recovery plan exists to prevent.
+  read from `derivation.json` beside the model when that file exists
+  (storymodel4s `DerivationRecordCodec`, model-bound: a record for another
+  story, source or build is refused, never paired), and `NotSupplied` when it
+  does not; the receipt then prints `ModelInput.derivationRecordNote` rather
+  than zero gaps. `compilation-report.json` is never read: it writes counts and
+  one-way renders, and reconstructing a record from it would mean fabricating
+  claim and evidence ids, which is the out-claiming the recovery plan exists to
+  prevent.
 - `app`: Scala.js only (`ModuleKind.NoModule`, Laminar 17.2.1, scalajs-dom
   2.8.1), package `storyatlas4s.app`. `AppCompiler` is the pure step from a
   `ViewChoice` (lens, exact `ZoomLevel`, horizon, focus, selection, measurer) to

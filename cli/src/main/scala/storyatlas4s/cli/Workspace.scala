@@ -426,11 +426,10 @@ object Workspace:
     *
     * A declared channel with nothing in it is a scientific state of its own, and the design brief
     * is explicit that missing, not requested and unavailable must not all render as an empty mark
-    * (§8.4). Here the cause is the input boundary: a model read from a `storymodel.json` arrives
-    * with no derivation record, because the record is not an interchange artifact — the pipeline's
-    * own compilation report writes upstream claims and evidence as counts, so the data is not in
-    * the file. The gap and abstention channels are therefore uncompilable rather than empty, and
-    * the page says which.
+    * (§8.4). One cause is the input boundary: a model read from a `storymodel.json` with no
+    * `derivation.json` beside it arrives with no derivation record, so the gap and abstention
+    * channels are uncompilable rather than empty, and the page says which. With a record present an
+    * empty channel means the record reported nothing for it.
     */
   private[cli] def emptyChannels(flow: CodexFlow): Option[String] =
     val present = flow.annotations.map(_.kind).toSet
@@ -443,8 +442,8 @@ object Workspace:
         else if flow.provenance.draft.exists(_.gapCount.isEmpty) then
           s" No derivation record accompanied this model, so ${absenceChannels.mkString(" and ")} " +
             "could not be compiled at all. That is a state of the input, not a finding about the " +
-            "story: a derivation record is not yet an interchange artifact, so a model read from " +
-            "a file cannot carry one."
+            "story: no derivation.json sat beside the model, so nothing told this view what the " +
+            "compiler could not derive."
         else s" The derivation record reported nothing for ${absenceChannels.mkString(" and ")}."
       Some(s"Declared channels with no annotation here: ${empty.mkString(", ")}.$why")
 

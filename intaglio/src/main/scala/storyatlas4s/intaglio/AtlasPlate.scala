@@ -383,7 +383,7 @@ private[intaglio] object AtlasPlate:
   private def maxContextLane(mark: VisualPrimitive): Option[Int] = mark match
     case _: VisualPrimitive.SurfaceUnit                => None
     case VisualPrimitive.Region(_, extent, _, _)       => Some(extent.lane1)
-    case VisualPrimitive.Landmark(_, at, _, _, _)      => Some(at.lane)
+    case VisualPrimitive.Landmark(_, at, _, _, _, _)   => Some(at.lane)
     case VisualPrimitive.Thread(_, _, points)          => points.map(_.lane).maxOption
     case VisualPrimitive.Portal(_, from, to, _)        => Some(math.max(from.lane, to.lane))
     case VisualPrimitive.Route(_, from, to, _, _)      => Some(math.max(from.lane, to.lane))
@@ -418,7 +418,7 @@ private[intaglio] object AtlasPlate:
     * order is discourse order, the only ordering the scene supplies.
     */
   private def candidates(marks: Vector[VisualPrimitive], selected: Set[String]): Vector[Candidate] =
-    val landmarks = marks.collect { case VisualPrimitive.Landmark(id, at, label, _, _) =>
+    val landmarks = marks.collect { case VisualPrimitive.Landmark(id, at, label, _, _, _) =>
       Candidate(id.mark.value, at.x, at.lane, label)
     }
     val threads = marks.collect {

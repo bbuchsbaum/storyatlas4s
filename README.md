@@ -98,15 +98,17 @@ partial. A draft edition writes atlas SVGs and twins only, because
 `CodexCompiler.compile` still takes a validated model and an empty Codex would
 claim the reading view had been compiled and had nothing to say.
 
-The derivation record — the pipeline's gaps and its coverage ledger — is
-reported as **not supplied** for every model read from disk, and the receipt
-prints that rather than zero. Those are different states and
-`DerivationRecord` keeps them apart: a scene saying "0 gaps" claims the
-compiler derived everything, while a scene with no record knows nothing about
-derivation either way. The pipeline's `compilation-report.json` cannot supply
-one: it has no codecs, no parser inverting its rendered addresses and reasons,
-and it writes `upstreamClaims` and `evidence` as sizes rather than contents.
-Reading a real record needs a decodable artifact from storymodel4s.
+The derivation record — the pipeline's gaps and its coverage ledger — is read
+from `derivation.json` beside the model when the pipeline wrote one, through a
+decoder bound to the model's own content checksum, so a record for another
+story, source or build is refused rather than paired. Without that file the
+record is reported as **not supplied**, and the receipt prints that rather than
+zero. Those are different states and `DerivationRecord` keeps them apart: a
+scene saying "0 gaps" claims the compiler derived everything, while a scene
+with no record knows nothing about derivation either way. The pipeline's
+`compilation-report.json` is never read: it writes `upstreamClaims` and
+`evidence` as sizes rather than contents and every address as a one-way
+render.
 
 Either way, `edition --out <dir>` writes (relative paths resolve against the
 repository root):

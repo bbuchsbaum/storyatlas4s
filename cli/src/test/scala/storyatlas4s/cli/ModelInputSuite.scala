@@ -211,6 +211,71 @@ class ModelInputSuite extends FunSuite:
     // The distinction reaches the drawn artifact, not only the receipt.
     assertNotEquals(absent.files.map(_.checksum), reported.files.map(_.checksum))
 
+  /** A derivation record for `model`, in the shape the pipeline writes: one attempted summary that
+    * was not emitted, so the record reports exactly one gap.
+    */
+  private def derivationFor(model: StoryModel[?]): String =
+    import storymodel4s.acquire.{ClaimFamily, ResolutionFailure}
+    import storymodel4s.codec.{DerivationArtifact, DerivationRecordCodec, StoryModelCodec}
+    import storymodel4s.core.{Checksum, StageId}
+    import storymodel4s.document.*
+    val target = NarrativeCandidateAddress.StorySummary(model.source.id)
+    val reason = DerivationGapReason.Unresolved(ResolutionFailure.NoProposal)
+    val artifact = DerivationArtifact
+      .of(
+        model.source.id,
+        model.source.canonicalChecksum,
+        StoryModelCodec.contentChecksum(model),
+        Checksum.ofText("fingerprint"),
+        Checksum.ofText("candidates"),
+        Vector(
+          DerivationAttempt(target, ClaimFamily.Summary, DerivationDisposition.NotEmitted(reason))
+        ),
+        Vector(
+          DerivationGap(
+            StageId.unsafe("test"),
+            ClaimFamily.Summary,
+            target,
+            reason,
+            Set.empty,
+            Vector.empty
+          )
+        ),
+        Vector.empty,
+        SummaryCoverage.NoTitle
+      )
+      .fold(e => fail(e.message), identity)
+    DerivationRecordCodec.encode(artifact)
+
+  temp.test("a derivation.json beside the model is read as its record, bound to that model"): dir =>
+    val path = writeModel(dir, "storymodel.json", StoryModelCodec.encode(receiptedModel))
+    writeModel(dir, ModelInput.DerivationFile, derivationFor(receiptedModel))
+    val read = ok(ModelInput.read(path))
+    assertEquals(read.derivation.gapCount, Some(1))
+    // The record reaches the receipt and the drawn files as one gap, not as "not supplied".
+    val edition =
+      ok(Edition.fromRead(read.copy(outcome = unpromoted(dir, read.derivation).outcome)))
+    assertEquals(edition.promotion.flatMap(_.gapCount), Some(1))
+    assert(!edition.receipt.contains(ModelInput.derivationRecordNote), edition.receipt)
+    assert(edition.receipt.contains("\"gaps\": 1"), edition.receipt)
+
+  temp.test("a derivation.json written for another model is refused, never paired"): dir =>
+    val path = writeModel(dir, "storymodel.json", StoryModelCodec.encode(receiptedModel))
+    // The fixture's own draft has the same story and source but different bytes (no receipt), so
+    // its record binds to another model checksum.
+    writeModel(dir, ModelInput.DerivationFile, derivationFor(WarOfTheGhostsModel.draft))
+    ModelInput.read(path) match
+      case Left(message) =>
+        assert(message.contains("modelChecksum"), message)
+        assert(message.contains("is not the derivation record of"), message)
+      case Right(read) => fail(s"paired a foreign record: ${read.derivation.render}")
+
+  temp.test("no derivation.json beside the model is not supplied, and says so"): dir =>
+    val path = writeModel(dir, "storymodel.json", StoryModelCodec.encode(receiptedModel))
+    val read = ok(ModelInput.read(path))
+    assertEquals(read.derivation, DerivationRecord.NotSupplied)
+    assertEquals(read.derivation.gapCount, None)
+
   temp.test("a file that is not a storymodel.json is refused with the codec's reason"): dir =>
     val garbage = writeModel(dir, "storymodel.json", """{"schemaVersion":"0.1.0"}""")
     val problem = ModelInput

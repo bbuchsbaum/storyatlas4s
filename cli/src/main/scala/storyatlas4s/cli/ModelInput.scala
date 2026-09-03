@@ -3,7 +3,7 @@ package storyatlas4s.cli
 import java.io.IOException
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.{Files, Path}
-import storymodel4s.codec.StoryModelCodec
+import storymodel4s.codec.{DerivationRecordCodec, StoryModelCodec}
 import storymodel4s.story.{
   ModelStatus,
   StoryModel,
@@ -65,38 +65,40 @@ final case class ReadModel(
 /** Reads a model from disk. The only supported route from a `storymodel.json` to a `StoryModel`. */
 object ModelInput:
 
-  /** Why every model read from disk arrives with no derivation record.
+  /** The file the pipeline writes its derivation record to, beside `storymodel.json` (storymodel4s
+    * ADR 0009, amendment of 2026-09-03; schema `derivation-record/v1`).
+    */
+  val DerivationFile: String = "derivation.json"
+
+  /** Why a model read from disk can still arrive with no derivation record.
     *
-    * The pipeline writes its gaps and its coverage ledger to `compilation-report.json` beside the
-    * model, and that file is not an interchange artifact: it is `private[pipeline] BundleJson`'s
-    * own account of a run. There are no circe codecs for `DerivationGap` or `SentenceCoverage`
-    * anywhere in storymodel4s, no parser inverting `NarrativeCandidateAddress.render`,
-    * `DerivationGapReason.render`, `AbstentionReason.render` or `ChartNodeRef.key`, and —
-    * decisively — `upstreamClaims` and `evidence` are written as sizes rather than contents, so the
-    * data is simply not in the file. Reconstructing a record from it would mean fabricating claim
-    * and evidence ids of the right cardinality and guessing at ids whose own delimiters are legal
-    * characters inside them.
-    *
-    * A viewer that did that would out-claim the model at the input boundary, which is the failure
-    * the whole recovery plan exists to prevent. So the record is reported as not supplied, which is
-    * a state `DerivationRecord` deliberately distinguishes from a record reporting zero gaps.
-    * Reading a real record needs a decodable artifact from storymodel4s: circe codecs for those two
-    * types in `codec`, or a `derivation.json` emitted next to the model.
+    * Until 2026-09-03 no model could carry one: the pipeline's `compilation-report.json` wrote
+    * upstream claims and evidence as counts and every address as a one-way render, so a record
+    * could only have been fabricated, and a viewer that fabricated it would out-claim the model at
+    * the input boundary. Since then the pipeline writes `derivation.json`, a typed record bound to
+    * the model by story id, source checksum and the model's own content checksum, and [[read]]
+    * decodes it when it sits beside the model. A model directory without one, or built before the
+    * artifact existed, is still reported as not supplied, which `DerivationRecord` keeps distinct
+    * from a record reporting zero gaps.
     */
   val derivationRecordNote: String =
-    "no derivation record: compilation-report.json is not a decodable artifact"
+    s"no derivation record: no $DerivationFile beside the model"
 
   /** Decode `path`, then validate under `policy`. A decode failure is fatal; a validation failure
     * is not — it is reported, because a partial model is a fact about the pipeline, not an error in
     * the file.
     *
-    * `derivation` is the seam: when storymodel4s emits a decodable derivation artifact, a decoder
-    * for it is the only new code, and everything downstream already carries a `Reported` record.
+    * The derivation record is read from `derivation.json` beside the model when that file exists,
+    * through the model-bound decoder, so a record written for another story, another source or
+    * another build of the same text is refused rather than paired: pairing the wrong record would
+    * out-claim the model exactly as fabricating one would. No file beside the model means
+    * `NotSupplied`. A caller may still pass a record explicitly (tests do), which takes precedence
+    * over the file.
     */
   def read(
       path: Path,
       policy: ValidationPolicy = ValidationPolicy.default,
-      derivation: DerivationRecord = DerivationRecord.NotSupplied
+      derivation: Option[DerivationRecord] = None
   ): Either[String, ReadModel] =
     for
       text <- slurp(path)
@@ -104,7 +106,25 @@ object ModelInput:
         .decode(text)
         .left
         .map(e => s"$path is not a readable storymodel.json: ${e.message}")
-    yield ReadModel(path, draft, StoryValidator.validate(draft, policy), derivation)
+      record <- derivation.fold(readDerivation(path, draft))(r => Right(r))
+    yield ReadModel(path, draft, StoryValidator.validate(draft, policy), record)
+
+  /** `derivation.json` beside `modelPath`, bound to `draft`; `NotSupplied` when absent. */
+  def readDerivation(
+      modelPath: Path,
+      draft: StoryModel[ModelStatus.Draft]
+  ): Either[String, DerivationRecord] =
+    val sidecar = Option(modelPath.toAbsolutePath.getParent).map(_.resolve(DerivationFile))
+    sidecar.filter(Files.isRegularFile(_)) match
+      case None       => Right(DerivationRecord.NotSupplied)
+      case Some(file) =>
+        slurp(file).flatMap { text =>
+          DerivationRecordCodec
+            .decode(draft, text)
+            .left
+            .map(e => s"$file is not the derivation record of $modelPath: ${e.message}")
+            .map(_.record)
+        }
 
   private def slurp(path: Path): Either[String, String] =
     try Right(new String(Files.readAllBytes(path), UTF_8))

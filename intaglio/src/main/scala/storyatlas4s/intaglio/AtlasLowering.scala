@@ -821,7 +821,7 @@ object AtlasLowering:
           )
       yield polygon +: text.toVector
 
-    case VisualPrimitive.Landmark(id, anchor, _, kind, _) =>
+    case VisualPrimitive.Landmark(id, anchor, _, kind, _, _) =>
       val shape = kind match
         case LandmarkKind.Event => ig.PointShape.Circle
         case LandmarkKind.State => ig.PointShape.Square
