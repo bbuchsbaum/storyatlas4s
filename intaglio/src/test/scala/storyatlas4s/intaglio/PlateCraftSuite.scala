@@ -110,6 +110,125 @@ class PlateCraftSuite extends FunSuite:
     assertEquals(round2(contrast(Ink.focus, Ink.paper)), 8.21)
     assertEquals(round2(contrast(Ink.ink, Ink.ground)), 5.09)
 
+  test("the type scale has real steps and two families, not one flat size"):
+    val sizes = Vector(
+      Typeface.titlePt,
+      Typeface.sectionPt,
+      Typeface.labelPt,
+      Typeface.metaPt,
+      Typeface.machinePt
+    ).distinct
+    // A plate whose type sits inside a 1.1:1 range has no hierarchy whatever its content.
+    assert(sizes.length >= 4, s"only ${sizes.length} distinct sizes in the scale")
+    assert(
+      sizes.max / sizes.min >= 1.5,
+      s"the scale spans only ${sizes.max / sizes.min}:1, which reads as one size"
+    )
+    // And size is not the only channel: model text is set in a serif, machine strings in a mono.
+    assertNotEquals(Typeface.prose, Typeface.machine)
+    val svg = ok(
+      SvgRenderer.render(
+        ok(AtlasLowering.lower(draftScene(Vector.empty), length, box)),
+        ok(SvgOptions(1600, 1080))
+      )
+    ).value
+    val families = """font-family="([^"]*)"""".r.findAllMatchIn(svg).map(_.group(1)).toSet
+    assertEquals(families, Set(Typeface.prose, Typeface.machine))
+    val emitted = """font-size="([\d.]+)"""".r.findAllMatchIn(svg).map(_.group(1).toDouble).toSet
+    assert(emitted.size >= 4, s"the plate emits only ${emitted.size} distinct type sizes")
+
+  test("a label that does not fit keeps both of its ends"):
+    // Cutting the end takes exactly what tells one identity or one qualifier from another.
+    val identity = "c-entity:b679d64ced89"
+    val cut = Measure
+      .elideMiddle(identity, Measure.widthPx(identity, Typeface.labelPt) * 0.6, Typeface.labelPt)
+      .getOrElse(fail("a 20-character identity should still elide to something"))
+    assert(cut.contains("…"), cut)
+    assert(identity.startsWith(cut.takeWhile(_ != '…')), cut)
+    assert(identity.endsWith(cut.reverse.takeWhile(_ != '…').reverse), cut)
+    assert(cut.length < identity.length, cut)
+    // A label that fits is returned whole.
+    assertEquals(Measure.elideMiddle(identity, 10000.0, Typeface.labelPt), Some(identity))
+
+  test("every drawn label is served by a leader that ends at that label's baseline"):
+    val s = draftScene(Vector.empty)
+    val plan = AtlasPlate.plan(s, length, box)
+    val lowered = ok(AtlasLowering.lower(s, length, box))
+    val device = ok(
+      ig.DeviceScene.fromScene(lowered, ig.DeviceContext.unsafe(box.widthPx, box.heightPx))
+    )
+    // For each labelled mark the group holds a leader polyline whose last point is at the text's
+    // own y: a leader that ran on through the block could not say which label it serves.
+    val labelled = plan.labels.keySet
+    assert(labelled.nonEmpty)
+    var checked = 0
+    def walk(elements: Vector[ig.DeviceElement], name: Option[String]): Unit =
+      elements.foreach {
+        case ig.DeviceElement.Group(n, _, _, children) =>
+          walk(children, n.map(_.value).orElse(name))
+        case ig.DeviceElement.Mark(primitive) =>
+          name.filter(labelled.contains).foreach { _ =>
+            primitive match
+              case ig.DevicePrimitive.Polyline(points, false, _, _) if points.length == 3 =>
+                assertEquals(points(1).y, points(2).y, "the leader's foot is not level")
+                assertNotEquals(points.head.y, points(1).y, "the leader has no rise")
+                checked += 1
+              case _ => ()
+          }
+      }
+    walk(device.elements, None)
+    assertEquals(checked, labelled.size, "not every labelled mark carries a terminating leader")
+
+  test("the plate states what its level draws and what the model has of it"):
+    Vector(NarrativeLevel.Story, NarrativeLevel.Episode, NarrativeLevel.Scene).foreach { level =>
+      val plan = AtlasPlate.plan(scene(level), length, box)
+      assert(plan.levelNote.contains(level.toString), plan.levelNote)
+      assert(plan.levelNote.contains("regions"), plan.levelNote)
+      val svg = ok(
+        SvgRenderer.render(
+          ok(AtlasLowering.lower(scene(level), length, box)),
+          ok(SvgOptions(1600, 1080))
+        )
+      ).value
+      assert(svg.contains(plan.levelNote), s"$level does not state its own grain")
+    }
+    // Story and Episode are no longer the same picture: each says what it draws.
+    val story = AtlasPlate.plan(scene(NarrativeLevel.Story), length, box).levelNote
+    val episode = AtlasPlate.plan(scene(NarrativeLevel.Episode), length, box).levelNote
+    assertNotEquals(story, episode)
+
+  test("the plate names the epistemic channels it reaches and the ones it does not"):
+    val s = draftScene(
+      Vector(Violation("hierarchy.single-primary-root", Severity.Error, "segments", "none"))
+    )
+    val plan = AtlasPlate.plan(s, length, box)
+    assert(plan.channelNote.contains("Bracket"), plan.channelNote)
+    Vector("Fan", "OpenHatch", "Placeholder").foreach(channel =>
+      assert(plan.channelNote.contains(channel), s"$channel is not accounted for")
+    )
+    // A plate whose dots are all alike has to say that uniformity is the projection's limit.
+    assert(plan.channelNote.contains("no epistemic status"), plan.channelNote)
+    val svg = ok(
+      SvgRenderer.render(ok(AtlasLowering.lower(s, length, box)), ok(SvgOptions(1600, 1080)))
+    ).value
+    assert(svg.contains(plan.channelNote))
+
+  test("the narrated ground names itself where it is drawn"):
+    val svg = ok(
+      SvgRenderer.render(
+        ok(AtlasLowering.lower(draftScene(Vector.empty), length, box)),
+        ok(SvgOptions(1600, 1080))
+      )
+    ).value
+    // The plate's most dominant object may not be an unnamed track.
+    assert(svg.contains("extents of exact scope evidence"), "the ribbon does not name itself")
+    assert(svg.contains("not a hull, not a measure"), "the ribbon does not say what it is not")
+
+  test("a leader and a frame tie are never the same stroke"):
+    val style = ok(Style.params)
+    assertNotEquals(style.leader.lineType, style.tie.lineType)
+    assertNotEquals(style.leader.stroke, style.tie.stroke)
+
   test("no type on the plate is smaller than the declared floor"):
     val sizes = Vector(
       Typeface.titlePt,

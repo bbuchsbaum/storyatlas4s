@@ -81,14 +81,28 @@ private[intaglio] object Typeface:
 
   val minimumPt: Double = 9.0
 
-  val titlePt: Double = 15.0
-  val sectionPt: Double = 10.0
+  /** Four roles, four sizes, two families. A plate whose type sits inside a 1.1:1 range has no
+    * hierarchy at all, whatever its content: the design brief asks that exact text, model labels,
+    * metadata and numeric readouts be typographically distinguished, and size alone will not do it,
+    * so each role also carries a family and a weight of ink.
+    *
+    *   - **Title and section**, serif, the only steps above the body.
+    *   - **Model text** — a landmark's description, an entity's label, a segment's summary — serif
+    *     at reading size. These are assertions about the story.
+    *   - **Prose metadata** — captions, declared meanings, budgets — serif, smaller and lighter.
+    *   - **Machine strings** — checksums, addresses, law names, lane kinds — monospace.
+    *   - **Numeric readouts** — axis ticks, tallies — monospace, so digits align in a column.
+    */
+  val titlePt: Double = 17.0
+  val sectionPt: Double = 11.5
+  val labelPt: Double = 10.5
+  val laneNamePt: Double = 10.5
   val metaPt: Double = 9.5
-  val finePt: Double = 9.0
-  val labelPt: Double = 9.5
-  val laneNamePt: Double = 10.0
-  val laneKindPt: Double = 9.0
-  val axisPt: Double = 9.0
+  val finePt: Double = 9.5
+  val laneKindPt: Double = 9.5
+  val machinePt: Double = 9.0
+  val numericPt: Double = 9.5
+  val axisPt: Double = 9.5
 
 /** Absolute, data-independent geometry of the plate, in points and pixels.
   *
@@ -128,8 +142,8 @@ private[intaglio] object Metric:
 
   // Pixels: the vertical stack.
   val topPadPx: Double = 22.0
-  val headerPx: Double = 94.0
-  val contractPx: Double = 92.0
+  val headerPx: Double = 98.0
+  val contractPx: Double = 110.0
   val axisPx: Double = 54.0
   val surfacePx: Double = 58.0
   val legendPx: Double = 66.0
@@ -137,14 +151,14 @@ private[intaglio] object Metric:
   val laneMinPx: Double = 56.0
 
   /** The absence rail's own stack. */
-  val absenceCaptionPx: Double = 26.0
+  val absenceCaptionPx: Double = 42.0
   val absenceGroupHeadPx: Double = 19.0
   val absenceRowPx: Double = 11.0
   val absenceGroupGapPx: Double = 7.0
 
   // Pixels: the horizontal frame.
   val gutterPx: Double = 22.0
-  val laneNameWidthPx: Double = 132.0
+  val laneNameWidthPx: Double = 152.0
   val marginColumnPx: Double = 92.0
   val rightPadPx: Double = 26.0
 
@@ -179,6 +193,8 @@ private[intaglio] object Style:
       threadRing: ig.GraphicParams,
       portal: ig.GraphicParams,
       route: ig.GraphicParams,
+      routeObserved: ig.GraphicParams,
+      routeInferred: ig.GraphicParams,
       epistemic: ig.GraphicParams,
       epistemicRule: ig.GraphicParams,
       label: ig.GraphicParams,
@@ -193,6 +209,7 @@ private[intaglio] object Style:
       laneName: ig.GraphicParams,
       laneKind: ig.GraphicParams,
       axis: ig.GraphicParams,
+      numeric: ig.GraphicParams,
       axisRule: ig.GraphicParams,
       separator: ig.GraphicParams,
       rule: ig.GraphicParams,
@@ -247,7 +264,13 @@ private[intaglio] object Style:
       // The two edges of a context frame, carried up the plot so the discourse interval it occupies
       // is readable against every lane at once. Its x coordinates are the frame's own exact support;
       // its vertical run is in the coordinate the contract already declares metric-free.
-      tie <- ig.GraphicParams.checked(stroke = Some(ruleInk), lineWidth = 0.5)
+      // Dashed and faint, so it is never mistaken for a label leader, which is solid and ends in
+      // an elbow at the label it serves.
+      tie <- ig.GraphicParams.checked(
+        stroke = Some(hairlineInk),
+        lineWidth = 0.7,
+        lineType = ig.LineType.Dashed
+      )
       // The one place saturation is spent. It never carries the state alone: a focused mark is
       // also ringed, so the selection reads in greyscale and under colour deficiency.
       focusInk <- rgb(Ink.focus)
@@ -278,6 +301,15 @@ private[intaglio] object Style:
         lineType = ig.LineType.Dashed
       )
       route <- ig.GraphicParams.checked(stroke = Some(muted), lineWidth = 1.0)
+      // The one epistemic status the scene supplies per mark, drawn in weight and dash so it
+      // survives monochrome. Solid and heavy is observed; the default is derived; broken is
+      // inferred or hypothesised.
+      routeObserved <- ig.GraphicParams.checked(stroke = Some(ink), lineWidth = 1.8)
+      routeInferred <- ig.GraphicParams.checked(
+        stroke = Some(muted),
+        lineWidth = 1.0,
+        lineType = ig.LineType.Dotted
+      )
       // Absence marks are unfilled: an open glyph is what distinguishes "we could not say" from a
       // solid landmark that asserts something. The shape carries the state, never a colour (V-U5).
       epistemic <- ig.GraphicParams.checked(
@@ -309,7 +341,9 @@ private[intaglio] object Style:
       // Lighter than a frame tie, which it would otherwise be mistaken for. A leader is
       // redundant — the label already sits beside its mark — so it may be the faintest line
       // on the plate.
-      leader <- ig.GraphicParams.checked(stroke = Some(hairlineInk), lineWidth = 0.6)
+      // A leader has to be followable to the label it serves, so it is a stroke a reader can see
+      // and it stops at that label's baseline rather than running on through the block.
+      leader <- ig.GraphicParams.checked(stroke = Some(ruleInk), lineWidth = 0.8)
       titleSize <- font(Typeface.titlePt)
       title <- ig.GraphicParams.checked(
         stroke = None,
@@ -338,16 +372,18 @@ private[intaglio] object Style:
         fontSize = fineSize,
         fontFamily = prose
       )
+      machineSize <- font(Typeface.machinePt)
       machine <- ig.GraphicParams.checked(
         stroke = None,
         fill = Some(muted),
-        fontSize = fineSize,
+        fontSize = machineSize,
         fontFamily = machineFamily
       )
+      accentSize <- font(Typeface.numericPt)
       accent <- ig.GraphicParams.checked(
         stroke = None,
         fill = Some(absenceInk),
-        fontSize = fineSize,
+        fontSize = accentSize,
         fontFamily = machineFamily
       )
       laneNameSize <- font(Typeface.laneNamePt)
@@ -369,6 +405,13 @@ private[intaglio] object Style:
         stroke = None,
         fill = Some(muted),
         fontSize = axisSize,
+        fontFamily = machineFamily
+      )
+      numericSize <- font(Typeface.numericPt)
+      numeric <- ig.GraphicParams.checked(
+        stroke = None,
+        fill = Some(ink),
+        fontSize = numericSize,
         fontFamily = machineFamily
       )
       axisRule <- ig.GraphicParams.checked(stroke = Some(muted), lineWidth = 0.9)
@@ -401,6 +444,8 @@ private[intaglio] object Style:
       threadRing = threadRing,
       portal = portal,
       route = route,
+      routeObserved = routeObserved,
+      routeInferred = routeInferred,
       epistemic = epistemic,
       epistemicRule = epistemicRule,
       label = label,
@@ -415,6 +460,7 @@ private[intaglio] object Style:
       laneName = laneName,
       laneKind = laneKind,
       axis = axis,
+      numeric = numeric,
       axisRule = axisRule,
       separator = separator,
       rule = ruleParams,
@@ -471,3 +517,20 @@ private[intaglio] object Measure:
     else
       val budget = math.floor(maxPx / charPx(fontPt)).toInt - 1
       if budget < 8 then None else Some(text.take(budget) + "…")
+
+  /** `text` if it fits, otherwise its head and its tail with the middle removed.
+    *
+    * Cutting the end is the wrong cut for almost everything this plate labels. An identity's
+    * discriminating characters are its last ones (`c-entity:b679d64ced89`), and a model label's
+    * qualifiers are at the end (`go man (custom(amr,purpose): help)`), so an end-elision takes
+    * exactly what tells one label from another. Removing the middle keeps both ends.
+    */
+  def elideMiddle(text: String, maxPx: Double, fontPt: Double): Option[String] =
+    if widthPx(text, fontPt) <= maxPx then Some(text)
+    else
+      val budget = math.floor(maxPx / charPx(fontPt)).toInt - 1
+      if budget < 10 then None
+      else
+        val head = (budget + 1) / 2
+        val tail = budget - head
+        Some(text.take(head) + "…" + text.takeRight(tail))

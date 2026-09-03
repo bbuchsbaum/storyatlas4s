@@ -3,7 +3,7 @@ package storyatlas4s.intaglio
 import _root_.intaglio as ig
 import _root_.intaglio.GraphicsError
 import cats.syntax.all.*
-import storymodel4s.core.SurfaceUnitKind
+import storymodel4s.core.{EpistemicStatus, SurfaceUnitKind}
 import storymodel4s.view.*
 
 /** Pure lowering of a compiled [[NarrativeScene]] to an Intaglio scene.
@@ -350,7 +350,8 @@ object AtlasLowering:
         s"shared selection: ${plan.focusNote}",
         if plan.selected.isEmpty then style.fine else style.focusLabel
       )
-    yield Vector(axesGrob, xGrob, yGrob, noneGrob, focusGrob)
+      levelGrob <- pageText(plan, left, top + 92.0, plan.levelNote, style.fine)
+    yield Vector(axesGrob, xGrob, yGrob, noneGrob, focusGrob, levelGrob)
 
   /** Each lane is named where it is drawn, from the context frame that occupies it. A lane with no
     * visible band is numbered and left unnamed: naming it from a neighbour would invent a context.
@@ -376,7 +377,7 @@ object AtlasLowering:
         )
         kind <- pageText(plan, right, mid + 2.0, head, style.laneKind, Style.rowLabelAnchor)
         heldBy <- holder
-          .flatMap(h => Measure.elide(h, width, Typeface.laneKindPt))
+          .flatMap(h => Measure.elideMiddle(h, width, Typeface.laneKindPt))
           .traverse(h => pageText(plan, right, mid + 16.0, h, style.laneKind, Style.rowLabelAnchor))
       yield Vector(number, kind) ++ heldBy
     }
@@ -476,6 +477,7 @@ object AtlasLowering:
         body,
         style.fine
       )
+      channels <- pageText(plan, left, plan.absenceTopPx + 24.0, plan.channelNote, style.fine)
       groups <- plan.absence.flatTraverse { group =>
         val y = plan.absenceTopPx + group.topPx + 9.0
         val headWidth = Measure.widthPx(group.headline, Typeface.finePt)
@@ -496,7 +498,7 @@ object AtlasLowering:
         yield Vector(count, headline) ++ detail
       }
       margin <- marginCaption(plan, style)
-    yield Vector(title, caption) ++ groups ++ margin
+    yield Vector(title, caption, channels) ++ groups ++ margin
 
   /** The margin column's own label. Marks land here when the model states they have no honest
     * discourse position at all, which is a different thing from being placed at zero.
@@ -559,18 +561,24 @@ object AtlasLowering:
             .map(Vector(_))
       ),
       Key(
-        26.0,
-        "the narrated world",
-        (x, ry) => pageBox(plan, x, ry - 5.0, x + 26.0, ry + 5.0, style.contextBand).map(Vector(_))
+        30.0,
+        "the narrated world, one extent per span of its exact scope evidence",
+        // Drawn as what it is: a comb of separate extents, never one block. A solid swatch would
+        // promise a continuous stretch the model does not claim.
+        (x, ry) =>
+          Vector(0.0, 6.0, 9.0, 15.0, 21.0, 24.0).grouped(2).toVector.traverse {
+            case Vector(a, b) => pageBox(plan, x + a, ry - 5.0, x + b, ry + 5.0, style.contextBand)
+            case _            => pageBox(plan, x, ry - 5.0, x + 4.0, ry + 5.0, style.contextBand)
+          }
       ),
       Key(
         26.0,
-        "a context frame that is not narration, tied to its extent on the axis",
+        "a context frame that is not narration; the dashed ties are its extent on the axis",
         (x, ry) =>
           for
             band <- pageBox(plan, x, ry - 3.0, x + 26.0, ry + 7.0, style.speechFill)
-            a <- pageStile(plan, x, ry - 9.0, ry - 3.0, style.tie)
-            b <- pageStile(plan, x + 26.0, ry - 9.0, ry - 3.0, style.tie)
+            a <- pageStile(plan, x, ry - 10.0, ry - 3.0, style.tie)
+            b <- pageStile(plan, x + 26.0, ry - 10.0, ry - 3.0, style.tie)
           yield Vector(a, b, band)
       ),
       Key(
@@ -601,19 +609,20 @@ object AtlasLowering:
       ),
       Key(
         24.0,
-        "a label withheld by the budget; its mark is drawn and named",
+        "a leader, ending in an elbow at the one label it serves",
         (x, ry) =>
           for
-            leader <- pageStile(plan, x + 12.0, ry - 7.0, ry + 4.0, style.leader)
+            leader <- pageRule(plan, x + 4.0, x + 20.0, ry - 7.0, style.leader)
+            stem <- pageStile(plan, x + 4.0, ry - 7.0, ry + 3.0, style.leader)
             glyph <- pageGlyph(
               plan,
-              x + 12.0,
-              ry + 6.0,
+              x + 4.0,
+              ry + 5.0,
               Metric.glyph,
               ig.PointShape.Circle,
               style.landmark
             )
-          yield Vector(leader, glyph)
+          yield Vector(leader, stem, glyph)
       )
     )
     // Wrapped by measurement, so no key ever runs off the plate.
@@ -710,7 +719,7 @@ object AtlasLowering:
     // speech frames inside it are not swallowed; hulling would redraw the fabricated battle as
     // narration. A frame that is not the narrated world is hatched as well as drawn on its own
     // lane, so "this is not narration" reads in monochrome and never from opacity (V-U5).
-    case VisualPrimitive.ContextBand(_, kind, _, extents, _, _) =>
+    case VisualPrimitive.ContextBand(_, kind, _, extents, _, basis) =>
       val narrated = AtlasPlate.isNarrated(kind)
       val gp = if narrated then style.contextBand else style.speechFill
       val h = Metric.bandHalfPx
@@ -744,7 +753,20 @@ object AtlasLowering:
                 gp = style.tie
               )
             }
-      yield ties ++ ribbon
+        // The dominant object on the plate may not be an unnamed track. The ribbon says what it is
+        // and how many extents it is, beside itself, in the lane it occupies.
+        caption <-
+          if extents.length < 8 then Right(Vector.empty)
+          else
+            ig.Grob
+              .text(
+                s"${extents.length} extents of ${bandBasis(basis)} — not a hull, not a measure",
+                at(extents.head.x0.toDouble, extents.head.lane0.toDouble, centre + 13.0, 1.0),
+                Style.labelAnchor,
+                gp = style.machine
+              )
+              .map(Vector(_))
+      yield ties ++ ribbon ++ caption
 
     // A region's hull is drawn where the model puts it — across the lanes of its visible children —
     // with its label inside, elided to the region's own width rather than allowed to run over its
@@ -762,7 +784,7 @@ object AtlasLowering:
           gp = style.region
         )
         text <- Measure
-          .elide(label, widthPx - 16.0, Typeface.labelPt)
+          .elideMiddle(label, widthPx - 16.0, Typeface.labelPt)
           .traverse(t =>
             ig.Grob.text(
               t,
@@ -818,8 +840,11 @@ object AtlasLowering:
     case VisualPrimitive.Portal(id, from, to, _) =>
       edge(id.mark.value, from, to, style.portal, plan, style)
 
-    case VisualPrimitive.Route(id, from, to, _, _) =>
-      edge(id.mark.value, from, to, style.route, plan, style)
+    // A stored relation edge carries the one epistemic status the scene actually supplies, and it
+    // carries it in stroke weight and dash rather than in its label alone (V-U5). No other mark in
+    // this scene has a status to draw: see `AtlasPlate.channelNote`.
+    case VisualPrimitive.Route(id, from, to, _, status) =>
+      edge(id.mark.value, from, to, routeStyle(status, style), plan, style)
 
     case other =>
       Left(
@@ -827,6 +852,22 @@ object AtlasLowering:
           s"${other.getClass.getSimpleName} carries no context lane and cannot enter the lane plot"
         )
       )
+
+  /** Weight and dash by epistemic status: observed edges are solid and heavy, derived edges
+    * lighter, inferred and hypothesised edges broken. The order is the contract's own, not a
+    * judgement.
+    */
+  private def routeStyle(status: EpistemicStatus, style: Style.Params): ig.GraphicParams =
+    status match
+      case EpistemicStatus.SurfaceExplicit        => style.routeObserved
+      case EpistemicStatus.HumanAdjudicated       => style.routeObserved
+      case EpistemicStatus.LinguisticallyEntailed => style.route
+      case EpistemicStatus.StructurallyDerived    => style.route
+      case EpistemicStatus.WorldKnowledgeInferred => style.routeInferred
+      case EpistemicStatus.Hypothesized           => style.routeInferred
+
+  private def bandBasis(basis: ContextBandBasis): String = basis match
+    case ContextBandBasis.ExactScopeEvidence => "exact scope evidence"
 
   private def edge(
       markId: String,
@@ -864,11 +905,16 @@ object AtlasLowering:
       case None         => Right(Vector.empty)
       case Some(placed) =>
         val baseline = plan.labelOffsetPx(placed.row)
+        val foot = placed.dxPx + (if placed.dxPx < 0.0 then -2.0 else 2.0)
         for
+          // Up from the mark, then along the label's own baseline to its edge. A leader that runs
+          // through four stacked rows without stopping cannot say which of them it serves; this one
+          // ends where its label begins, and nowhere else.
           leader <- ig.Grob.lines(
             Vector(
               at(x.toDouble, lane, plan.situationOffsetPx - 6.0),
-              at(x.toDouble, lane, baseline + 5.0)
+              at(x.toDouble, lane, baseline + 4.5),
+              at(x.toDouble, lane, baseline + 4.5, foot)
             ),
             gp = style.leader
           )

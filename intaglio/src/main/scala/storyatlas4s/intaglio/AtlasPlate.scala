@@ -83,7 +83,11 @@ private[intaglio] object AtlasPlate:
       /** What the projection did with each selected address, in the contract's own words. */
       focusNote: String,
       /** Ticks of the discourse axis: value and label, from Intaglio's own break generator. */
-      ticks: Vector[(Double, String)]
+      ticks: Vector[(Double, String)],
+      /** What this narrative level draws, and how much of it the model actually has. */
+      levelNote: String,
+      /** The epistemic channels the contract declares, and which of them occur here. */
+      channelNote: String
   ):
     def laneCount: Int = lanes.length
 
@@ -181,7 +185,9 @@ private[intaglio] object AtlasPlate:
       laneBudget = Vector.empty,
       selected = selected,
       focusNote = focusNote(scene),
-      ticks = ticksFor(discourseLength)
+      ticks = ticksFor(discourseLength),
+      levelNote = levelNote(scene),
+      channelNote = channelNote(scene)
     )
     val (labels, budget) = budgetLabels(marks, partial)
     partial.copy(labels = labels, laneBudget = budget)
@@ -217,6 +223,60 @@ private[intaglio] object AtlasPlate:
           s"$rendered — $state"
         }
         .mkString("; ")
+
+  /** What the level draws, and how much of it this model has.
+    *
+    * Story and Episode drew the same empty picture here, and the plate said nothing about why: a
+    * level shows segments, and this model has none. The widest view of a story should not be the
+    * one that tells a reader least without admitting it, so the level states its own grain and its
+    * own count.
+    */
+  private def levelNote(scene: NarrativeScene): String =
+    val level = scene.zoom.narrative
+    val wanted = level.visibleSegments.toVector.map(_.toString).sorted
+    val regions = scene.marks.count(_.isInstanceOf[VisualPrimitive.Region])
+    val situations = scene.marks.count(_.isInstanceOf[VisualPrimitive.Landmark])
+    val segments =
+      s"$level draws ${wanted.mkString(" and ")} segments as regions: $regions in this model"
+    val shown =
+      if level.showsSituations then s"situations are drawn at this level: $situations"
+      else "situations are not drawn above Scene, by the level's own definition"
+    s"$segments · $shown"
+
+  /** Which epistemic channels the contract declares, and which of them this model reaches.
+    *
+    * The contract advertises four non-colour channels. A model that mints one of them is not a
+    * plate with three empty legend rows: it is a model that recorded one kind of failure, and the
+    * plate says which and why the others did not arise.
+    */
+  private def channelNote(scene: NarrativeScene): String =
+    val present = scene.marks.flatMap(_.epistemicChannel).distinct.sortBy(_.toString)
+    val absent = EpistemicChannel.values.toVector.filterNot(present.contains).sortBy(_.toString)
+    val counts = present
+      .map(c => s"$c ${scene.marks.count(_.epistemicChannel.contains(c))}")
+      .mkString(", ")
+    val why =
+      if absent.isEmpty then ""
+      else
+        val gaps = scene.provenance.draft.flatMap(_.gapCount)
+        val reason =
+          if gaps.isEmpty then
+            "no derivation record reached this view, so no uncertainty state was minted"
+          else "this model recorded no gap of those kinds"
+        s" · declared and not reached here: ${absent.mkString(", ")} — $reason"
+    // The situations themselves carry no epistemic status in this projection, and a plate whose
+    // dots are all identical must say that rather than let a reader read uniformity as agreement.
+    val routes = scene.marks.count(_.isInstanceOf[VisualPrimitive.Route])
+    val situations = scene.marks.count(_.isInstanceOf[VisualPrimitive.Landmark])
+    val perMark =
+      if routes > 0 then
+        s" · $routes relation edges carry an epistemic status and are drawn in its weight and dash"
+      else if situations > 0 then
+        s" · the $situations situation marks carry no epistemic status in this scene: a landmark " +
+          "has a kind, a lane and a position and no claim status, so every dot is drawn alike"
+      else ""
+    if present.isEmpty then s"no epistemic channel is in use$why$perMark"
+    else s"epistemic channels in use: $counts$why$perMark"
 
   private def maxContextLane(mark: VisualPrimitive): Option[Int] = mark match
     case _: VisualPrimitive.SurfaceUnit                => None
@@ -299,7 +359,7 @@ private[intaglio] object AtlasPlate:
       val occupied = Array.fill(plan.labelRows)(Vector.empty[(Double, Double)])
       var labelled = 0
       here.foreach { candidate =>
-        Measure.elide(candidate.text, Metric.labelMaxPx, Typeface.labelPt) match
+        Measure.elideMiddle(candidate.text, Metric.labelMaxPx, Typeface.labelPt) match
           case None       => ()
           case Some(text) =>
             val width = Measure.widthPx(text, Typeface.labelPt)
