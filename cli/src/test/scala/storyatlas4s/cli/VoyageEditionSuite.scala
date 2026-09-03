@@ -109,6 +109,14 @@ class VoyageEditionSuite extends FunSuite:
     val e = ok(VoyageEdition.build(document, documentJson, "voyage.json"))
     assert(e.html.contains("""<script type="application/json" id="voyage-document">"""))
     assert(!e.html.contains("</script> two"), "a closing tag inside the document is escaped")
+    val start = e.html.indexOf("""id="voyage-document">""") + """id="voyage-document">""".length
+    val end = e.html.indexOf("</script>", start)
+    val embedded = e.html.substring(start, end)
+    assert(!embedded.contains("<"), "no raw < survives inside the inline document")
+    assert(
+      storymodel4s.codec.VoyageCodecs.decode(embedded).isRight,
+      "the escaped inline document decodes back to a document"
+    )
     assert(e.html.contains("""<script src="app.js"></script>"""))
     assert(e.html.contains("""data-name="voyage/anchor/u1""""))
     assert(!e.html.contains("googleapis"), "no external resource")
@@ -133,12 +141,12 @@ class VoyageEditionSuite extends FunSuite:
     )
     assertEquals(code, 0, err.toString(UTF_8))
     assert(Files.exists(dir.resolve("out").resolve("voyage.html")))
-    val broken = documentJson
-      .replace(""""decode_bound"""", """"decode_bound"""")
-      .replace(
-        """"origin":"posterior_argmax","unit":"u2"""",
-        """"origin":"decode_filled","unit":"u2""""
-      )
+    // u2's anchor carries mass, so calling it decode-filled cannot describe its row.
+    val broken = documentJson.replace(
+      """"origin":"posterior_argmax","unit":"u2"""",
+      """"origin":"decode_filled","unit":"u2""""
+    )
+    assert(broken != documentJson, "the mutation must change the document")
     val badDoc = dir.resolve("bad.json")
     Files.write(badDoc, broken.getBytes(UTF_8))
     val err2 = new ByteArrayOutputStream

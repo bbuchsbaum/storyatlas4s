@@ -232,7 +232,8 @@ object VoyageLowering:
           case None    => Right(ig.Grob.group(Vector.empty))
           case Some(g) =>
             val x0 = sc.x(iv.recall.start.value)
-            val x1 = sc.x(iv.recall.end.value)
+            // a coding may run past the last word (its coder heard the recording end); clip
+            val x1 = math.min(sc.x(iv.recall.end.value), sc.box.width - sc.box.right)
             val y0 = sc.y(g.span.end.value)
             val y1 = sc.y(g.span.start.value)
             ig.Grob.polygon(Vector(px(x0, y0), px(x1, y0), px(x1, y1), px(x0, y1)), band)
@@ -287,7 +288,7 @@ object VoyageLowering:
               )
               ring <- ig.Grob.points(
                 Vector(px(x, sc.y(a.span.midpoint))),
-                ig.ExtentExpr.nativeUnsafe(2.0 * (2.0 + 7.0 * math.sqrt(a.mass))),
+                ig.ExtentExpr.nativeUnsafe(2.0 * radius(a.mass)),
                 ig.PointShape.Circle,
                 altRing
               )
@@ -309,20 +310,31 @@ object VoyageLowering:
         case m: VoyageMark.UnitAnchor =>
           val x = sc.x(m.at.value)
           val cy = sc.y(m.span.midpoint)
-          val externalDominant = m.externalMass > 0.5
-          val opacity = if externalDominant then 0.9 else 0.45 + 0.55 * m.sourceMass
+          // external-dominant is the compiler's fact about the row, read from the mark (V-U5)
+          val externalDominant = m.externalDominant
           for
             name <- GraphicsNames.ofMark(m.identity.mark)
             grob <-
               if m.level > 0 then
-                // a group-level anchor spans its whole group
-                params(None, Some(Palette.model), alpha = 0.55).flatMap(gp =>
+                // a group-level anchor spans its whole group; its width carries the mass, its
+                // outline the origin and the external share, exactly as a point does
+                val half = radius(m.mass) * 0.6
+                val hollow = externalDominant || m.origin == AnchorOrigin.DecodeFilled
+                params(
+                  if hollow then Some(if externalDominant then Palette.external else Palette.model)
+                  else Some(Palette.surface),
+                  if hollow then None else Some(Palette.model),
+                  width = if hollow then 1.4 else 1.0,
+                  line =
+                    if m.origin == AnchorOrigin.DecodeFilled then ig.LineType.Dashed
+                    else ig.LineType.Solid
+                ).flatMap(gp =>
                   ig.Grob.polygon(
                     Vector(
-                      px(x - 2.5, sc.y(m.span.end.value)),
-                      px(x + 2.5, sc.y(m.span.end.value)),
-                      px(x + 2.5, sc.y(m.span.start.value)),
-                      px(x - 2.5, sc.y(m.span.start.value))
+                      px(x - half, sc.y(m.span.end.value)),
+                      px(x + half, sc.y(m.span.end.value)),
+                      px(x + half, sc.y(m.span.start.value)),
+                      px(x - half, sc.y(m.span.start.value))
                     ),
                     gp,
                     name = Some(name)
@@ -337,23 +349,13 @@ object VoyageLowering:
                     val fill = if externalDominant then None else Some(Palette.model)
                     val stroke =
                       if externalDominant then Some(Palette.external) else Some(Palette.surface)
-                    params(
-                      stroke,
-                      fill,
-                      width = if externalDominant then 1.6 else 1.2,
-                      alpha = opacity
-                    )
+                    params(stroke, fill, width = if externalDominant then 1.6 else 1.2)
                       .flatMap(gp => diamond(x, cy, radius(m.mass) * 1.2533, gp, name))
                   case AnchorOrigin.PosteriorArgmax =>
                     val fill = if externalDominant then None else Some(Palette.model)
                     val stroke =
                       if externalDominant then Some(Palette.external) else Some(Palette.surface)
-                    params(
-                      stroke,
-                      fill,
-                      width = if externalDominant then 1.6 else 1.2,
-                      alpha = opacity
-                    )
+                    params(stroke, fill, width = if externalDominant then 1.6 else 1.2)
                       .flatMap(gp =>
                         ig.Grob.points(
                           Vector(px(x, cy)),
@@ -422,8 +424,10 @@ object VoyageLowering:
     for
       hair <- params(Some(Palette.hair), None)
       label <- params(None, Some(Palette.ink2))
-      goldGp <- params(Some(Palette.gold), None, width = 2.5)
-      modelGp <- params(Some(Palette.model), None, width = 1.8)
+      // three encodings that survive monochrome: the coding is a thick band, the placement a thin
+      // solid line, the argmax a dashed one; colour restates, never carries
+      goldGp <- params(Some(Palette.gold), None, width = 4.0, alpha = 0.6)
+      modelGp <- params(Some(Palette.model), None, width = 1.6)
       rawGp <- params(Some(Palette.raw), None, width = 1.2, line = ig.LineType.Dashed)
       axis <- ig.Grob.lines(
         Vector(px(box.left, box.trackTop), px(box.left, box.trackTop + box.trackHeight)),
@@ -448,7 +452,7 @@ object VoyageLowering:
           )
         )
       caption <- ig.Grob.text(
-        "group index · coding (amber) · this placement (blue) · posterior argmax (grey, dashed)",
+        "group index · thick band: independent coding · thin line: this placement · dashed: posterior argmax",
         px(box.left + 6, box.trackTop + 10),
         ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
         gp = label
@@ -457,7 +461,10 @@ object VoyageLowering:
         ig.Grob.lines(
           Vector(
             px(sc.x(iv.recall.start.value), sc.track(iv.group, groupCount)),
-            px(sc.x(iv.recall.end.value), sc.track(iv.group, groupCount))
+            px(
+              math.min(sc.x(iv.recall.end.value), sc.box.width - sc.box.right),
+              sc.track(iv.group, groupCount)
+            )
           ),
           goldGp
         )

@@ -12,9 +12,13 @@ object VoyagePage:
   val DocumentElementId: String = "voyage-document"
   val MountElementId: String = "app"
 
-  /** Escape a JSON document for an inline `<script type="application/json">` body. */
+  /** Escape a JSON document for an inline `<script type="application/json">` body: every `<`
+    * becomes the six-character JSON unicode escape for the less-than sign, which covers `</script`,
+    * `<!--` and `<script` at once and decodes back to the same text. `<` never occurs outside a
+    * JSON string, so the rewrite is total and reversible.
+    */
   def inlineJson(json: String): String =
-    json.replace("</", "<\\/").replace("<!--", "<\\!--")
+    json.replace("<", "\\u003c")
 
   def render(documentJson: String, staticSvg: String, title: String): String =
     s"""<!DOCTYPE html>

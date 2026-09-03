@@ -1,12 +1,11 @@
 package storyatlas4s.app
 
 import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
-
 import com.raquo.laminar.api.L.*
 import org.scalajs.dom
 import storyatlas4s.intaglio.VoyageLowering
-import storymodel4s.codec.Canonical
-import storymodel4s.codec.VoyageCodecs.given
+import storymodel4s.align.SourceNodeRef
+import storymodel4s.codec.VoyageCodecs
 import storymodel4s.core.{Address, Addressable}
 import storymodel4s.recall.{RecallRef, RecallUnitId}
 import storymodel4s.view.*
@@ -17,127 +16,143 @@ import storymodel4s.view.*
   *
   * The shell adds exactly what a static plate cannot carry: a hover card naming the unit's words
   * and the row's numbers, click and keyboard selection resolved through the scene's navigation from
-  * `data-name` to `Address`, the posterior column for the selected unit, and an inspector that
+  * `data-name` to `Address`, the posterior column for the focused unit, and an inspector that
   * prints what the scene already holds. It computes no number: every figure is read from a mark or
-  * the compiled summary.
+  * the compiled summary, and a bar's segments are the masses the marks carry.
+  *
+  * The skeleton is built once and stays in the DOM; a selection change re-lowers only the plate's
+  * SVG and re-renders the inspector, so a focused section keeps its focus and the keyboard walk
+  * survives its own steps.
   */
 object VoyageView:
 
   private final case class Frame(scene: VoyageScene, svg: String)
 
   def fromDocumentText(text: String): HtmlElement =
-    Canonical.decode[RecallVoyageDocument](text) match
+    VoyageCodecs.decode(text) match
       case Left(problem) =>
         div(cls("error"), role("alert"), s"The voyage document does not decode: ${problem.message}")
       case Right(document) => apply(document)
 
   def apply(document: RecallVoyageDocument): HtmlElement =
+    document.compile(Set.empty) match
+      case Left(problem) =>
+        div(cls("error"), role("alert"), s"The voyage did not compile: ${problem.message}")
+      case Right(scene) => pane(document, scene)
+
+  private def pane(document: RecallVoyageDocument, scene: VoyageScene): HtmlElement =
     val selection = Var(Set.empty[Address])
+    val focus = Var(Option.empty[RecallUnitId])
     val hovered = Var(Option.empty[MarkId])
     val tip = Var(Option.empty[(Double, Double)])
-    val frame: Signal[Either[String, Frame]] = selection.signal.map(compile(document, _))
-
-    def selectedUnit(scene: VoyageScene, sel: Set[Address]): Option[VoyageUnit] =
-      sel.toVector
-        .flatMap(a => Addressable[RecallRef].parse(a))
-        .collectFirst { case RecallRef.Unit(id) => id }
-        .flatMap(id => scene.units.find(_.id == id))
+    val frames: Signal[Either[String, Frame]] = selection.signal.map(compile(document, _))
+    val timed = scene.units.filter(_.onset.isDefined).sortBy(_.onset.map(_.value))
 
     def unitAddress(id: RecallUnitId): Address = Addressable[RecallRef].address(RecallRef.Unit(id))
 
-    def activate(scene: VoyageScene, target: dom.EventTarget, extend: Boolean): Unit =
+    def unitOfAddress(address: Address): Option[RecallUnitId] =
+      Addressable[RecallRef].parse(address).collect { case RecallRef.Unit(id) => id }
+
+    def activate(target: dom.EventTarget, extend: Boolean): Unit =
       nameAt(target).flatMap(n => scene.navigation.addressOf.get(MarkId.unsafe(n))).foreach {
         addr =>
           selection.update { s =>
             if !extend then Set(addr) else if s.contains(addr) then s - addr else s + addr
           }
+          focus.set(unitOfAddress(addr).orElse(focus.now()))
       }
 
-    def walk(scene: VoyageScene, delta: Int): Unit =
-      val timed = scene.units.filter(_.onset.isDefined).sortBy(_.onset.map(_.value))
+    def walk(delta: Int): Unit =
       if timed.nonEmpty then
-        val current = selectedUnit(scene, selection.now()).map(_.id)
-        val at = current.map(id => timed.indexWhere(_.id == id)).getOrElse(-1)
+        val at = focus.now().map(id => timed.indexWhere(_.id == id)).getOrElse(-1)
         val next = math.max(0, math.min(timed.size - 1, at + delta))
-        selection.set(Set(unitAddress(timed(next).id)))
+        val id = timed(next).id
+        selection.set(Set(unitAddress(id)))
+        focus.set(Some(id))
+
+    val focusedUnit: Signal[Option[VoyageUnit]] =
+      focus.signal.map(_.flatMap(id => scene.units.find(_.id == id)))
 
     div(
       cls("page"),
-      child <-- frame.map {
-        case Left(problem) =>
-          div(cls("error"), role("alert"), s"The voyage did not compile: $problem")
-        case Right(f) =>
-          val scene = f.scene
+      dataAttr("marks") := scene.marks.size.toString,
+      dataAttr("selection") <-- selection.signal.map(
+        _.toVector.map(_.render).sorted.mkString(" ")
+      ),
+      dataAttr("focus") <-- focus.signal.map(_.fold("none")(_.value)),
+      header(scene),
+      stats(scene),
+      div(
+        cls("panes"),
+        sectionTag(
+          cls("panel"),
+          aria.label("Recall Voyage"),
+          tabIndex(0),
           div(
-            cls("voyage"),
-            dataAttr("marks") := scene.marks.size.toString,
-            dataAttr("selection") <-- selection.signal.map(
-              _.toVector.map(_.render).sorted.mkString(" ")
-            ),
-            header(scene),
-            stats(scene),
-            div(
-              cls("panes"),
-              sectionTag(
-                cls("panel"),
-                aria.label("Recall Voyage"),
-                tabIndex(0),
-                div(
-                  cls("head"),
-                  h2("Recall time against source time"),
-                  span(cls("hint"), "hover a mark · click to inspect · ← → walk the recall")
-                ),
-                onClick --> (ev => activate(scene, ev.target, ev.shiftKey)),
-                onKeyDown --> { ev =>
-                  ev.key match
-                    case "ArrowRight" => ev.preventDefault(); walk(scene, 1)
-                    case "ArrowLeft"  => ev.preventDefault(); walk(scene, -1)
-                    case "Enter"      => activate(scene, ev.target, ev.shiftKey)
-                    case _            => ()
-                },
-                div(
-                  cls("scroller"),
-                  onMouseMove --> { ev =>
-                    val name = nameAt(ev.target)
-                    hovered.set(name.map(MarkId.unsafe))
-                    val box = ev.currentTarget.asInstanceOf[dom.Element].getBoundingClientRect()
-                    tip.set(name.map(_ => (ev.clientX - box.left + 14, ev.clientY - box.top + 14)))
-                  },
-                  onMouseLeave --> { _ =>
-                    hovered.set(None)
-                    tip.set(None)
-                  },
-                  div(
-                    cls("plate"),
-                    onMountCallback(ctx => mount(ctx.thisNode.ref, f, selection.now())),
-                    // a re-render replaces the SVG string wholesale; selection classes follow
-                    inContext(node => selection.signal --> (sel => decorate(node.ref, scene, sel)))
-                  ),
-                  child.maybe <-- hovered.signal
-                    .combineWith(tip.signal)
-                    .map { case (h, at) =>
-                      for
-                        id <- h
-                        (x, y) <- at
-                        card <- hoverCard(scene, id)
-                      yield div(cls("tip"), left := s"${x}px", top := s"${y}px", card)
-                    }
-                ),
-                legend
-              ),
-              asideTag(
-                cls("panel inspector"),
-                aria.live("polite"),
-                child <-- selection.signal.map(sel =>
-                  selectedUnit(scene, sel).fold[HtmlElement](
-                    div(cls("empty"), "Click a mark to inspect a unit.")
-                  )(u => inspector(scene, u))
+            cls("head"),
+            h2("Recall time against source time"),
+            span(cls("hint"), "hover a mark · click to inspect · ← → walk the recall")
+          ),
+          onClick --> (ev => activate(ev.target, ev.shiftKey)),
+          onKeyDown --> { ev =>
+            ev.key match
+              case "ArrowRight" => ev.preventDefault(); walk(1)
+              case "ArrowLeft"  => ev.preventDefault(); walk(-1)
+              case "Enter"      => activate(ev.target, ev.shiftKey)
+              case _            => ()
+          },
+          div(
+            cls("scroller"),
+            onMouseMove --> { ev =>
+              val name = nameAt(ev.target)
+              hovered.set(name.map(MarkId.unsafe))
+              val scroller = ev.currentTarget.asInstanceOf[dom.Element]
+              val box = scroller.getBoundingClientRect()
+              tip.set(
+                name.map(_ =>
+                  (ev.clientX - box.left + scroller.scrollLeft + 14, ev.clientY - box.top + 14)
                 )
               )
+            },
+            onMouseLeave --> { _ =>
+              hovered.set(None)
+              tip.set(None)
+            },
+            div(
+              cls("plate"),
+              inContext { node =>
+                frames --> { frame =>
+                  frame match
+                    case Left(problem) =>
+                      node.ref.innerHTML = ""
+                      node.ref.textContent = s"The voyage did not compile: $problem"
+                    case Right(f) => mount(node.ref, f, selection.now())
+                }
+              }
             ),
-            provenance(scene)
+            child.maybe <-- hovered.signal
+              .combineWith(tip.signal)
+              .map { case (h, at) =>
+                for
+                  id <- h
+                  (x, y) <- at
+                  card <- hoverCard(scene, id)
+                yield div(cls("tip"), left := s"${x}px", top := s"${y}px", card)
+              }
+          ),
+          legend
+        ),
+        asideTag(
+          cls("panel inspector"),
+          aria.live("polite"),
+          child <-- focusedUnit.map(
+            _.fold[HtmlElement](div(cls("empty"), "Click a mark to inspect a unit."))(u =>
+              inspector(scene, u)
+            )
           )
-      }
+        )
+      ),
+      provenance(scene)
     )
 
   // ------------------------------------------------------------------ compile and draw
@@ -202,8 +217,9 @@ object VoyageView:
         div(cls("eyebrow"), s"storyatlas4s · recall voyage · ${scene.provenance.basis.label}"),
         h1("Recall Voyage"),
         p(
-          "Each spoken recall unit is placed on the source clock. The mark carries the posterior mass " +
-            "on the drawn anchor, how the anchor came to be, and where the independent coding puts the same moment."
+          "Each spoken recall unit is placed on the source clock. The mark carries the posterior " +
+            "mass on the drawn anchor, how the anchor came to be, and where the independent coding " +
+            "puts the same moment."
         )
       )
     )
@@ -226,7 +242,11 @@ object VoyageView:
         s"${s.decodeFilled} of them filled outside the posterior (mass zero)"
       ),
       ("unanchored", s.unanchored.toString, "no source anchor; drawn on the absence rail"),
-      ("external-dominant", s.externalDominant.toString, "external mass above one half")
+      (
+        "external-dominant",
+        s.externalDominant.toString,
+        "external mass exceeds source mass; drawn hollow"
+      )
     )
     sectionTag(
       cls("stats"),
@@ -235,15 +255,15 @@ object VoyageView:
       )
     )
 
-  private val legend: HtmlElement =
+  private def legend: HtmlElement =
     div(
       cls("legend-row"),
       span("circle: posterior argmax; area grows with posterior mass on the drawn anchor"),
       span("diamond: decode-bound, the scene decode chose it, with posterior mass"),
       span("hollow dashed diamond: decode-filled, mass zero, outside the posterior"),
-      span("bar: group-level anchor, the model stops at the group"),
-      span("hollow: more mass outside the source than in it"),
-      span("dashed rings: the posterior column of the selected unit, area by mass"),
+      span("bar: group-level anchor, the model stops at the group; width by mass"),
+      span("hollow: the row's external mass exceeds its source mass"),
+      span("dashed rings: the posterior column of the focused unit, area by mass"),
       span("amber bands: the independent coding, the group's span over the interval coded to it"),
       span("grey ghost: the posterior argmax a decode moved away from")
     )
@@ -253,8 +273,8 @@ object VoyageView:
     footerTag(
       cls("prov"),
       p(
-        s"Basis: ${prov.basis.label}. Source checksum ${prov.sourceChecksum.hex.take(12)}…; configuration " +
-          s"${prov.configChecksum.hex.take(12)}…; compiler ${prov.compilerVersion}. " +
+        s"Basis: ${prov.basis.label}. Source checksum ${prov.sourceChecksum.hex.take(12)}…; " +
+          s"configuration ${prov.configChecksum.hex.take(12)}…; compiler ${prov.compilerVersion}. " +
           scene.coding.fold("No independent coding.")(c =>
             s"Coding: ${c.name} (${c.checksum.hex.take(12)}…), ${c.intervals.size} intervals."
           )
@@ -269,14 +289,18 @@ object VoyageView:
   private def groupLabel(scene: VoyageScene, group: Option[Int]): String =
     group.flatMap(scene.timeline.byGroup.get).map(_.label).getOrElse("—")
 
+  private def nodeLabel(scene: VoyageScene, ref: SourceNodeRef): String =
+    scene.timeline.node(ref).map(_.label).getOrElse(ref.key)
+
   private def hoverCard(scene: VoyageScene, id: MarkId): Option[HtmlElement] =
     markOf(scene, id).flatMap { m =>
       scene.units.find(_.id == m.unit).map { u =>
         val where = m match
           case a: VoyageMark.UnitAnchor =>
-            s"${clock(a.at.value)} into recall → ${scene.timeline.node(a.anchor).map(_.label).getOrElse(a.anchor.key)} · ${groupLabel(scene, a.group)}"
+            s"${clock(a.at.value)} into recall → ${nodeLabel(scene, a.anchor)} · " +
+              groupLabel(scene, a.group)
           case a: VoyageMark.Alternative =>
-            s"alternative ${a.rank}: ${scene.timeline.node(a.anchor).map(_.label).getOrElse(a.anchor.key)} · mass ${f"${a.mass}%.2f"}"
+            f"alternative ${a.rank}: ${nodeLabel(scene, a.anchor)} · mass ${a.mass}%.2f"
           case a: VoyageMark.Unanchored =>
             s"${clock(a.at.value)} into recall → anchored nowhere in the source"
           case _: VoyageMark.Untimed => "no recall onset"
@@ -307,24 +331,22 @@ object VoyageView:
       u.lastWordOnset.fold("")(t => s"–${clock(t.value)}")
     val placement: Vector[HtmlElement] = anchor match
       case Some(a) =>
-        val node = scene.timeline.node(a.anchor)
-        val coded = a.at.pipe(scene.codedGroupAt)
+        val coded = scene.codedGroupAt(a.at)
         Vector(
           div(cls("k"), "placed at"),
           div(
             cls("v"),
-            s"${node.map(_.label).getOrElse(a.anchor.key)} · ${clock(a.span.start.value)}–${clock(a.span.end.value)} · ${groupLabel(scene, a.group)}"
+            s"${nodeLabel(scene, a.anchor)} · ${clock(a.span.start.value)}–${clock(a.span.end.value)} · " +
+              groupLabel(scene, a.group)
           ),
           div(cls("k"), "origin"),
           div(
             cls("v"),
-            a.origin.label + (if a.origin != AnchorOrigin.PosteriorArgmax then
-                                a.argmax
-                                  .map(r =>
-                                    s" · posterior argmax was ${scene.timeline.node(r).map(_.label).getOrElse(r.key)}"
-                                  )
-                                  .getOrElse("")
-                              else "")
+            a.origin.label + (
+              if a.origin != AnchorOrigin.PosteriorArgmax then
+                a.argmax.fold("")(r => s" · posterior argmax was ${nodeLabel(scene, r)}")
+              else ""
+            )
           ),
           div(cls("k"), "coding"),
           div(
@@ -334,6 +356,12 @@ object VoyageView:
                   if a.group.contains(g) then " · same group" else " · different group"
                 }"
             )
+          ),
+          div(cls("k"), "external"),
+          div(
+            cls("v"),
+            if a.externalDominant then "dominant: more mass outside the source than in it"
+            else "below the source mass"
           ),
           div(cls("k"), "localizability"),
           div(cls("v"), a.localizability.fold("—")(l => f"$l%.2f"))
@@ -350,26 +378,33 @@ object VoyageView:
             }
           )
         )
+    // The bar's segments are the masses the marks carry, nothing derived: the anchor, then each
+    // alternative in rank order, then the external mass. Widths are shares of what is shown.
     val posterior: Vector[HtmlElement] = anchor.toVector.flatMap { a =>
-      val best = alternatives.headOption.map(_.mass).getOrElse(0.0)
-      val other = math.max(0.0, a.sourceMass - a.mass - best)
-      val parts = Vector(
-        ("anchor", a.mass, "var(--model)"),
-        ("best alternative", best, "var(--model-soft)"),
-        ("other source", other, "var(--hair)"),
-        ("external", a.externalMass, "var(--external)")
-      )
+      val parts =
+        Vector(("anchor", a.mass, "var(--model)")) ++
+          alternatives.zipWithIndex.map((alt, i) =>
+            (
+              s"alternative ${alt.rank}",
+              alt.mass,
+              if i == 0 then "var(--model-soft)" else "var(--hair)"
+            )
+          ) :+ ("external", a.externalMass, "var(--external)")
+      val shown = parts.map(_._2).sum
+      val legendParts = (parts.take(2) :+ parts.last).distinct
       Vector(
         div(
           cls("post"),
           h2("Posterior mass"),
           div(
             cls("bar"),
-            parts.map((_, v, c) => span(width := f"${100 * v}%.1f%%", backgroundColor := c))
+            parts.map((_, v, c) =>
+              span(width := f"${100 * v / math.max(shown, 1e-9)}%.1f%%", backgroundColor := c)
+            )
           ),
           div(
             cls("legend"),
-            parts.map((k, v, c) =>
+            legendParts.map((k, v, c) =>
               span(i(backgroundColor := c), s"$k ", span(cls("num"), f"$v%.2f"))
             )
           )
@@ -383,16 +418,13 @@ object VoyageView:
             tbody(
               tr(
                 td(cls("num"), f"${a.mass}%.3f"),
-                td(
-                  b(scene.timeline.node(a.anchor).map(_.label).getOrElse(a.anchor.key)),
-                  " · drawn"
-                ),
+                td(b(nodeLabel(scene, a.anchor)), " · drawn"),
                 td(groupLabel(scene, a.group))
               ),
               alternatives.map(alt =>
                 tr(
                   td(cls("num"), f"${alt.mass}%.3f"),
-                  td(scene.timeline.node(alt.anchor).map(_.label).getOrElse(alt.anchor.key)),
+                  td(nodeLabel(scene, alt.anchor)),
                   td(groupLabel(scene, alt.group))
                 )
               )
@@ -409,5 +441,3 @@ object VoyageView:
       div(cls("kv"), placement),
       posterior
     )
-
-  extension [A](a: A) private def pipe[B](f: A => B): B = f(a)

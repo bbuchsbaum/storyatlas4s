@@ -6,8 +6,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.{Files, Path}
 import storyatlas4s.edition.{Pins, VoyagePage}
 import storyatlas4s.intaglio.{GraphicsNames, VoyageLowering}
-import storymodel4s.codec.Canonical
-import storymodel4s.codec.VoyageCodecs.given
+import storymodel4s.codec.VoyageCodecs
 import storymodel4s.core.Checksum
 import storymodel4s.view.*
 
@@ -86,8 +85,8 @@ object VoyageEdition:
   def read(path: Path): Either[String, (RecallVoyageDocument, String)] =
     for
       text <- ModelInput.slurp(path)
-      doc <- Canonical
-        .decode[RecallVoyageDocument](text)
+      doc <- VoyageCodecs
+        .decode(text)
         .left
         .map(e => s"$path is not a readable voyage document: ${e.message}")
     yield (doc, text)
