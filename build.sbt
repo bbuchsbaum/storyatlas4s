@@ -26,10 +26,14 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
 )
 
 // storymodel4s (the scientific compilers; ADR 0002) is consumed as an immutable source pin of its
-// `view` and `fixtures` modules. Its own build pins grakern by ProjectRef and, until grakern has a
-// remote, REQUIRES `-Dstorymodel4s.grakern.build=/path/to/grakern` on every command line that
-// loads it. The local override below points at a checkout for coordinated development.
-lazy val storymodel4sRevision = "5ca2f7993817aab7576eba21aafa1af61bdc55b8"
+// `view`, `fixtures`, and `codec` modules. Its own build pins grakern by ProjectRef and, until
+// grakern has a remote, REQUIRES `-Dstorymodel4s.grakern.build=/path/to/grakern` on every command
+// line that loads it. The local override below points at a checkout for coordinated development.
+//
+// The pin moves with the change (docs/plans/2026-09-03-visualization-recovery-plan.md §5): any
+// storymodel4s `view` change bumps this revision in the same slice, so the viewer can never again
+// drift behind the model it draws.
+lazy val storymodel4sRevision = "353f9f3da61e486130aadda24850847b40ff4f7f"
 lazy val storymodel4sBuild =
   sys.props
     .get("storyatlas4s.storymodel4s.build")
@@ -40,6 +44,10 @@ lazy val storymodel4sViewJVM = ProjectRef(storymodel4sBuild, "viewJVM")
 lazy val storymodel4sViewJS = ProjectRef(storymodel4sBuild, "viewJS")
 lazy val storymodel4sFixturesJVM = ProjectRef(storymodel4sBuild, "fixturesJVM")
 lazy val storymodel4sFixturesJS = ProjectRef(storymodel4sBuild, "fixturesJS")
+// `codec` is the canonical JSON of every artifact, and the only supported way to read back a
+// `storymodel.json` the pipeline wrote. JVM only: the static edition reads a file, the browser
+// shell links the fixture (V0; a fetched model in the shell is a later slice).
+lazy val storymodel4sCodecJVM = ProjectRef(storymodel4sBuild, "codecJVM")
 
 // Intaglio (renderer-neutral scene + SVG backend) is consumed as an immutable source pin.
 lazy val intaglioRevision = "52dddee0be9706b4c9ce02ae214f771343d150fb"
@@ -74,11 +82,14 @@ lazy val commonSettings = Seq(
 //   storymodel4s view ──┐         │
 //   intaglio core/svg ──┴─────────┴─▶ intaglio (JVM, JS)  pure lowering: view artifacts and
 //                                 │                        paginated codices → intaglio scenes
-//   storymodel4s fixtures ────────┴─▶ cli (JVM)   `edition`: WOG fixture → SVG + HTML + twins + receipt
+//   storymodel4s fixtures ────────┤
+//   storymodel4s codec ───────────┴─▶ cli (JVM)   `edition`: the WOG fixture, or a storymodel.json
+//                                 │               read off disk → SVG + HTML + twins + receipt
 //                                 └─▶ app (JS)    Laminar shell: the same compilers, paginator, and
 //                                                 lowerings run in the browser over the WOG fixture
 //
 // Nothing here compiles a story or infers a claim: every artifact is compiled in storymodel4s.
+// `codec` is likewise storymodel4s's: `cli` decodes a model, it never parses one.
 // `layout` is the one place that lays out a page, and it does so as a pure function of the flow
 // and measured text metrics (ADR 0002 D3/D13), receipted.
 
@@ -159,7 +170,9 @@ lazy val edition = crossProject(JVMPlatform, JSPlatform)
     Compile / sourceGenerators += pinsGenerator("storyatlas4s.edition").taskValue
   )
 
-/** JVM command line: `edition --out <dir>` writes the War of the Ghosts static edition. */
+/** JVM command line: `edition --out <dir>` writes a static edition, from the linked War of the
+  * Ghosts fixture or, with `--model <storymodel.json>`, from a model the pipeline built.
+  */
 lazy val cli = project
   .in(file("cli"))
   .settings(commonSettings)
@@ -175,6 +188,7 @@ lazy val cli = project
     intaglio.jvm,
     layout.jvm % "compile->compile;test->test",
     storymodel4sFixturesJVM,
+    storymodel4sCodecJVM,
     intaglioSvgJVM
   )
 

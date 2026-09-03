@@ -26,11 +26,18 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   relation layers, thread budget, lenses, both zoom axes, SVG boxes) and the
   generated `Pins`; the one place an edition constant lives, consumed by both
   `cli` and `app`.
-- `cli`: JVM only, package `storyatlas4s.cli`. `edition --out <dir>` compiles
-  the War of the Ghosts fixture (from storymodel4s `fixtures`) to atlas SVGs,
-  Codex overlays, paginated `codex-<lens>.html` documents (`CodexHtml`, a pure
-  `PaginatedCodex → String`; DOM text rail + inline SVG overlay per page),
-  textual twins, and `receipt.json` with the `LayoutReceipt` folded in.
+- `cli`: JVM only, package `storyatlas4s.cli`. `edition --out <dir>` compiles a
+  model to atlas SVGs, Codex overlays, paginated `codex-<lens>.html` documents
+  (`CodexHtml`, a pure `PaginatedCodex → String`; DOM text rail + inline SVG
+  overlay per page), textual twins, and `receipt.json` with the
+  `LayoutReceipt` folded in. Without `--model` the model is the War of the
+  Ghosts fixture (storymodel4s `fixtures`), the fast case and no longer the
+  only one; `--model <storymodel.json>` reads a model the storymodel4s
+  pipeline wrote through `ModelInput`, which decodes it with storymodel4s
+  `codec` and puts it to `StoryValidator`. `cli` never promotes a model and
+  never parses one itself: `Validated` comes only from the validator, and a
+  model with no build receipt or no promotion is refused with its reason
+  rather than relabelled or forced through the validated compilers.
 - `app`: Scala.js only (`ModuleKind.NoModule`, Laminar 17.2.1, scalajs-dom
   2.8.1), package `storyatlas4s.app`. `AppCompiler` is the pure step from a
   `ViewChoice` (lens, exact `ZoomLevel`, horizon, focus, selection, measurer) to

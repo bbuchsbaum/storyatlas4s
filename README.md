@@ -17,7 +17,7 @@ Status: prototype, slice 1 (static and live War of the Ghosts edition). Unpublis
 | `storyatlas4s-layout` | JVM, JS | storymodel4s `view` (SHA pin) | `Paginator.paginate(flow, page, metrics)`: pure pagination of a `CodexFlow` into pages, lines, and annotation fragments with V-I2 ids; `Measurer` seam with metrics-as-data (`TextMetrics`), the fixed `MonospaceMeasurer` (publication), an optional AWT measurer (JVM), a DOM measurer stub (JS); `PaginatedCodex` twin and `LayoutReceipt` |
 | `storyatlas4s-intaglio` | JVM, JS | `layout`, storymodel4s `view` (SHA pin), intaglio `core`/`svg` (SHA pin) | pure lowering `NarrativeScene → intaglio.Scene`, `CodexFlow → intaglio.Scene`, and `PaginatedCodex → Vector[intaglio.Scene]` (one page overlay per page); `GraphicsName` = `MarkId` / `AnnotationId` / `FragmentId` |
 | `storyatlas4s-edition` | JVM, JS | `layout` | `EditionSpec`: the edition's fixed configuration (page box, font, relation layers, thread budget, lenses, zoom levels, SVG boxes) and `Pins` (sibling revisions, generated from `build.sbt`), shared by `cli` and `app` so both compile the same artifacts |
-| `storyatlas4s-cli` | JVM | `edition` + above + storymodel4s `fixtures` | `edition --out <dir>`: atlas SVGs at every configured NarrativeLevel × SurfaceDetail state, Codex overlays and paginated `codex-<lens>.html` pages for the Reading and Overview lenses, textual twins, `receipt.json` |
+| `storyatlas4s-cli` | JVM | `edition` + above + storymodel4s `fixtures` and `codec` (SHA pin) | `edition --out <dir> [--model <storymodel.json>]`: atlas SVGs at every configured NarrativeLevel × SurfaceDetail state, Codex overlays and paginated `codex-<lens>.html` pages for the Reading and Overview lenses, textual twins, `receipt.json`. Without `--model` the model is the linked War of the Ghosts fixture; with it, a `storymodel.json` the storymodel4s pipeline wrote, decoded through `codec` and put to `StoryValidator` before anything is drawn |
 | `storyatlas4s-app` | JS | `edition`, `intaglio`, `layout`, storymodel4s `fixtures` (SHA pin), intaglio `svg`, Laminar 17.2.1, scalajs-dom 2.8.1 | the browser shell: the same compilers, paginator, and lowerings run in the browser over the War of the Ghosts fixture; DOM text rail + Intaglio SVG overlay per page, Reading/Overview lenses, independent continuous narrative/surface zoom controls that commit exact typed states with hysteresis, the epistemic playhead (`ReaderAt` horizon), semantic focus plus selection as addresses shared by Codex and Atlas, last-intent-wins compilation, textual twins and receipts as text; the live `DomMeasurer` |
 
 ## Identity and the renderer protocol
@@ -78,10 +78,24 @@ the grakern override stays required until grakern is pushed.
 
 ```sh
 sbt <overrides> "cli/run edition --out target/edition"
+sbt <overrides> "cli/run edition --out target/edition --model /path/to/storymodel.json"
 ```
 
-writes (relative paths resolve against the repository root), for the
-researcher-reviewed *War of the Ghosts* fixture:
+Without `--model` the model is the researcher-reviewed *War of the Ghosts*
+fixture linked into this build; the fixture is the fast case and is no longer
+the only one. With `--model` the model is a `storymodel.json` the storymodel4s
+pipeline wrote: it is decoded through storymodel4s `codec`, put to
+`StoryValidator`, and its violation counts are printed before anything is
+drawn. A model the validator promotes renders through exactly the path the
+fixture takes, on `ViewBasis.ValidatedBuild` rather than
+`ResearcherReviewedFixture`, so the receipt never calls a machine build a
+reviewed fixture. A model it does not promote is refused with its violations
+per law: `AtlasCompiler.compile` takes `StoryModel[Validated]`, and drawing a
+partial model as a complete one is the one thing the recovery plan forbids.
+The draft compiler that can draw it is not in this pin yet.
+
+Either way, `edition --out <dir>` writes (relative paths resolve against the
+repository root):
 
 - `atlas-<story|episode|scene>-<hidden|sentences|tokens>.svg` and their `.txt`
   twins (the full configured two-axis semantic-zoom cross product; surface
