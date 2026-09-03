@@ -35,14 +35,49 @@ final case class Edition(
     sourceChecksum: Checksum,
     modelReceiptChecksum: Option[Checksum],
     state: CommonViewState,
-    files: Vector[EditionFile]
+    files: Vector[EditionFile],
+    /** Present exactly when this is a draft edition; `None` says the model was promoted. */
+    promotion: Option[DraftPromotion] = None
 ):
+  /** What the draft compilers were told about derivation.
+    *
+    * `gapCount` is `Some(n)` only when a derivation record was supplied and reported `n` gaps.
+    * `None` means no record reached the view at all, and it is emitted as its own string rather
+    * than as zero: a scene that says "0 gaps" claims the compiler derived everything, and a scene
+    * with no record knows nothing about derivation either way. Those two must never share a
+    * receipt.
+    */
+  private def derivationJson: Json = promotion match
+    case None    => Json.Null
+    case Some(p) =>
+      Json.Obj(
+        Vector(
+          "promoted" -> Json.Str(p.promoted.toString),
+          "unsatisfiedLawCount" -> Json.Num(p.violationCount.toLong),
+          "gaps" -> p.gapCount.fold[Json](Json.Str(ModelInput.derivationRecordNote))(n =>
+            Json.Num(n.toLong)
+          ),
+          "laws" -> Json.arr(
+            p.unsatisfiedLaws.map(l =>
+              Json.Obj(
+                Vector(
+                  "law" -> Json.Str(l.law),
+                  "severity" -> Json.Str(l.severity.toString),
+                  "count" -> Json.Num(l.count.value.toLong)
+                )
+              )
+            )
+          )
+        )
+      )
+
   def receipt: String =
     Json
       .obj(
         "edition" -> Json.Str("storyatlas4s"),
         "model" -> Json.Str(model),
         "basis" -> Json.Str(provenanceBasis.label),
+        "draft" -> derivationJson,
         "sourceChecksum" -> Json.Str(sourceChecksum.hex),
         "modelReceiptChecksum" -> modelReceiptChecksum.fold[Json](Json.Null)(c => Json.Str(c.hex)),
         "compilerVersion" -> Json.Str(EditionSpec.compilerVersion),
@@ -98,22 +133,11 @@ object Edition:
     * early, rather than quietly relabelled: `ResearcherReviewedFixture` is the one basis that needs
     * no receipt, and it is not true of a file this process did not review.
     *
-    * A model the validator did not promote has no path here yet, and this refuses rather than
-    * inventing one. `AtlasCompiler.compile` takes `StoryModel[Validated]` by design; forcing a
-    * draft through it would draw a partial model as a complete one, which is the single thing the
-    * recovery plan forbids. The draft compiler being added in storymodel4s (`viz/v0-draft-atlas`)
-    * lands in this branch: it becomes `draftEdition(read)`, calling the draft compile in place of
-    * `AtlasCompiler(...).compile` and folding the gap marks into the same `EditionFile` vector.
-    *
-    * One fact that branch will need, measured on the War of the Ghosts model `storyBuild replay`
-    * produced at pin 353f9f3d: **the derivation gaps are not in `storymodel.json`.** The pipeline
-    * reports 70 gaps and 135 violations, but 69 of those violations are `compiler.required-
-    * derivation`, raised by the narrative compiler and recorded only in the sibling
-    * `compilation-report.json`. Re-validating the decoded model here finds 66, all of them
-    * hierarchy laws, from one root cause: the story summary was never derived, so there are no
-    * segments, so all 65 situations are unreachable from a primary root. Drawing the gaps as marks
-    * therefore needs the compilation report as a second edition input, or the gaps must reach the
-    * model; `StoryModel` carries no record of them today.
+    * A model the validator did not promote goes to the draft compilers, which draw it *as partial*:
+    * its unsatisfied laws, and whatever gaps and abstentions its derivation record reports, become
+    * marks rather than holes in the ink. That is more truthful than making a model validate to
+    * satisfy a renderer, and it is what a researcher needs when the pipeline is imperfect, which is
+    * always.
     */
   def fromRead(read: ReadModel): Either[String, Edition] =
     read.validated match
@@ -125,11 +149,80 @@ object Edition:
       case Some(model) =>
         build(model, read.path.getFileName.toString, ViewBasis.ValidatedBuild)
       case None =>
-        Left(
-          s"${read.path} decoded but does not validate: ${read.report.errors.length} errors, " +
-            s"${read.report.warnings.length} warnings. The validated compilers may not draw it, " +
-            "and the draft compiler that can is not in this pin yet."
-        )
+        draft(read)
+
+  /** The draft edition: atlases only.
+    *
+    * There is no draft Codex compiler in this pin — `CodexCompiler.compile` still takes a
+    * `StoryModel[Validated]` — so a draft edition writes atlas SVGs and their twins and no
+    * `codex-*` files. Emitting an empty Codex would claim the reading view had been compiled and
+    * had nothing to say.
+    */
+  private def draft(read: ReadModel): Either[String, Edition] =
+    val model = read.draftModel
+    for
+      state <- CommonViewState
+        .of(relationLayers = EditionSpec.relationLayers)
+        .left
+        .map(_.message)
+      threads <- PositiveInt
+        .from(EditionSpec.threadMax)
+        .map(ThreadPolicy.All.apply)
+        .left
+        .map(_.message)
+      files <- atlasZooms.flatTraverse(zoom => draftAtlasFiles(model, state, zoom, threads))
+    yield Edition(
+      read.path.getFileName.toString,
+      ViewBasis.DraftBuild,
+      model.model.source.canonicalChecksum,
+      model.model.receipt.map(_.contentChecksum),
+      state,
+      files,
+      Some(model.promotion)
+    )
+
+  private def draftAtlasFiles(
+      model: DraftModel,
+      state: CommonViewState,
+      zoom: ZoomLevel,
+      threads: ThreadPolicy
+  ): Either[String, Vector[EditionFile]] =
+    val spec = AtlasSpec(zoom, threads)
+    val config = AtlasCompiler.configurationChecksum(state, spec)
+    val stem =
+      s"atlas-${zoom.narrative.toString.toLowerCase}-${zoom.surface.toString.toLowerCase}"
+    val detail = s"zoom ${zoom.narrative}/${zoom.surface}, box ${EditionSpec.atlasBox}"
+    for
+      // `draftBuild` is the only honest way to build this receipt: it binds the promotion of this
+      // exact bundle, and `compileDraft` refuses a receipt that describes any other.
+      provenance <- ViewProvenance
+        .draftBuild(model, EditionSpec.compilerVersion, config)
+        .left
+        .map(_.message)
+      scene <- AtlasCompiler(provenance).compileDraft(model, state, spec).left.map(_.message)
+      lowered <- AtlasLowering
+        .lower(scene, model.model.source.canonicalText.length)
+        .left
+        .map(_.message)
+      names = GraphicsNames.collect(lowered).length
+      options <- SvgOptions(
+        EditionSpec.atlasWidthPx,
+        EditionSpec.atlasHeightPx,
+        Some(s"Narrative Atlas (draft) — $detail")
+      ).left.map(_.message)
+      svg <- SvgRenderer.render(lowered, options).left.map(_.message)
+    yield Vector(
+      EditionFile(s"$stem.svg", "atlas-draft", detail, config, names, svg.value, None),
+      EditionFile(
+        s"$stem.txt",
+        "atlas-draft-twin",
+        detail,
+        config,
+        scene.marks.length,
+        scene.textualTwin,
+        None
+      )
+    )
 
   /** `basis` is a fact about where the model came from, never a default: `ValidatedBuild` and
     * `HumanAdjudicated` both require the model to carry a build receipt, and `ViewProvenance`

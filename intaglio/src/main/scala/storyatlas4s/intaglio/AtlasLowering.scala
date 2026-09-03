@@ -3,6 +3,7 @@ package storyatlas4s.intaglio
 import _root_.intaglio as ig
 import _root_.intaglio.GraphicsError
 import cats.syntax.all.*
+import storymodel4s.acquire.ClaimFamily
 import storymodel4s.core.SurfaceUnitKind
 import storymodel4s.view.*
 
@@ -23,7 +24,7 @@ import storymodel4s.view.*
 object AtlasLowering:
 
   def lower(scene: NarrativeScene, discourseLength: Int): Either[GraphicsError, ig.Scene] =
-    val (surfaceMarks, narrativeMarks) = partitionMarks(scene.marks)
+    val Marks(surfaceMarks, narrativeMarks, epistemicMarks) = partitionMarks(scene.marks)
     for
       style <- Style.params
       laneCount = narrativeMarks.flatMap(maxContextLane).maxOption.fold(1)(_ + 1)
@@ -32,39 +33,69 @@ object AtlasLowering:
       surface <- surfaceRail(surfaceMarks, discourseLength, style)
       marks <- orderedNarrative(narrativeMarks).traverse(m => markGroup(m, style))
       plot = ig.Grob.group(marks, viewport = Some(viewport))
-    yield ig.Scene(Vector(header) ++ surface.toVector ++ Vector(plot))
+      epistemic <- epistemicRail(epistemicMarks, discourseLength, style)
+    yield ig.Scene(Vector(header) ++ surface.toVector ++ Vector(plot) ++ epistemic.toVector)
 
-  /** Draw order only (regions under everything, landmarks on top); never an inference. */
+  /** Draw order only (bands and regions under everything, landmarks on top); never an inference.
+    *
+    * Context bands sit at the bottom of the stack because they are the ground the rest is read
+    * against: a landmark inside the survivor's retelling must be legible as sitting on that band.
+    */
   private def orderedNarrative(marks: Vector[VisualPrimitive]): Vector[VisualPrimitive] =
     val rank: VisualPrimitive => Int =
-      case _: VisualPrimitive.SurfaceUnit => 0
-      case _: VisualPrimitive.Region      => 1
-      case _: VisualPrimitive.Thread      => 2
-      case _: VisualPrimitive.Route       => 3
-      case _: VisualPrimitive.Portal      => 4
-      case _: VisualPrimitive.Landmark    => 5
+      case _: VisualPrimitive.SurfaceUnit    => 0
+      case _: VisualPrimitive.ContextBand    => 1
+      case _: VisualPrimitive.Region         => 2
+      case _: VisualPrimitive.Thread         => 3
+      case _: VisualPrimitive.Route          => 4
+      case _: VisualPrimitive.Portal         => 5
+      case _: VisualPrimitive.Landmark       => 6
+      case _: VisualPrimitive.Gap            => 7
+      case _: VisualPrimitive.Abstention     => 7
+      case _: VisualPrimitive.UnsatisfiedLaw => 7
     marks.zipWithIndex.sortBy((m, i) => (rank(m), i)).map(_._1)
 
-  /** Preserve exhaustivity at the public sibling ADT boundary: a new case must be classified. */
-  private def partitionMarks(
-      marks: Vector[VisualPrimitive]
-  ): (Vector[VisualPrimitive.SurfaceUnit], Vector[VisualPrimitive]) =
-    marks.partitionMap {
-      case mark: VisualPrimitive.SurfaceUnit => Left(mark)
-      case mark: VisualPrimitive.Region      => Right(mark)
-      case mark: VisualPrimitive.Landmark    => Right(mark)
-      case mark: VisualPrimitive.Thread      => Right(mark)
-      case mark: VisualPrimitive.Portal      => Right(mark)
-      case mark: VisualPrimitive.Route       => Right(mark)
+  /** The three rails a scene draws into: the layout-only surface rail, the projection's own
+    * context-lane plot, and the layout-only epistemic rail.
+    */
+  private final case class Marks(
+      surface: Vector[VisualPrimitive.SurfaceUnit],
+      narrative: Vector[VisualPrimitive],
+      epistemic: Vector[VisualPrimitive]
+  )
+
+  /** Preserve exhaustivity at the public sibling ADT boundary: a new case must be classified.
+    *
+    * The three absence marks are separated out because they carry no context lane at all (ADR 0002
+    * D9): their geometry is an `EpistemicPlacement` over exact spans, or the stated absence of any
+    * honest discourse position. Putting them in the lane plot would invent a lane for them.
+    */
+  private def partitionMarks(marks: Vector[VisualPrimitive]): Marks =
+    marks.foldLeft(Marks(Vector.empty, Vector.empty, Vector.empty)) { (acc, mark) =>
+      mark match
+        case m: VisualPrimitive.SurfaceUnit    => acc.copy(surface = acc.surface :+ m)
+        case m: VisualPrimitive.Region         => acc.copy(narrative = acc.narrative :+ m)
+        case m: VisualPrimitive.Landmark       => acc.copy(narrative = acc.narrative :+ m)
+        case m: VisualPrimitive.Thread         => acc.copy(narrative = acc.narrative :+ m)
+        case m: VisualPrimitive.Portal         => acc.copy(narrative = acc.narrative :+ m)
+        case m: VisualPrimitive.Route          => acc.copy(narrative = acc.narrative :+ m)
+        case m: VisualPrimitive.ContextBand    => acc.copy(narrative = acc.narrative :+ m)
+        case m: VisualPrimitive.Gap            => acc.copy(epistemic = acc.epistemic :+ m)
+        case m: VisualPrimitive.Abstention     => acc.copy(epistemic = acc.epistemic :+ m)
+        case m: VisualPrimitive.UnsatisfiedLaw => acc.copy(epistemic = acc.epistemic :+ m)
     }
 
   private def maxContextLane(mark: VisualPrimitive): Option[Int] = mark match
-    case _: VisualPrimitive.SurfaceUnit           => None
-    case VisualPrimitive.Region(_, extent, _, _)  => Some(extent.lane1)
-    case VisualPrimitive.Landmark(_, at, _, _)    => Some(at.lane)
-    case VisualPrimitive.Thread(_, _, points)     => points.map(_.lane).maxOption
-    case VisualPrimitive.Portal(_, from, to, _)   => Some(math.max(from.lane, to.lane))
-    case VisualPrimitive.Route(_, from, to, _, _) => Some(math.max(from.lane, to.lane))
+    case _: VisualPrimitive.SurfaceUnit                => None
+    case VisualPrimitive.Region(_, extent, _, _)       => Some(extent.lane1)
+    case VisualPrimitive.Landmark(_, at, _, _, _)      => Some(at.lane)
+    case VisualPrimitive.Thread(_, _, points)          => points.map(_.lane).maxOption
+    case VisualPrimitive.Portal(_, from, to, _)        => Some(math.max(from.lane, to.lane))
+    case VisualPrimitive.Route(_, from, to, _, _)      => Some(math.max(from.lane, to.lane))
+    case VisualPrimitive.ContextBand(_, _, _, e, _, _) => Some(e.toVector.map(_.lane1).max)
+    case _: VisualPrimitive.Gap                        => None
+    case _: VisualPrimitive.Abstention                 => None
+    case _: VisualPrimitive.UnsatisfiedLaw             => None
 
   private def surfaceKindRank(kind: SurfaceUnitKind): Int = kind match
     case SurfaceUnitKind.Paragraph => 0
@@ -159,18 +190,23 @@ object AtlasLowering:
       grob <- ig.Grob.text(text, at, Style.labelAnchor, gp = style.label)
     yield grob
 
+  /** `slot` is the layout-only vertical position an absence mark with no discourse position takes
+    * in the epistemic rail's margin row; every other mark ignores it.
+    */
   private def markGroup(
       mark: VisualPrimitive,
-      style: Style.Params
+      style: Style.Params,
+      slot: Double = 0.5
   ): Either[GraphicsError, ig.Grob] =
     for
       name <- GraphicsNames.ofMark(mark.identity.mark)
-      children <- shape(mark, style)
+      children <- shape(mark, style, slot)
     yield ig.Grob.group(children, name = Some(name))
 
   private def shape(
       mark: VisualPrimitive,
-      style: Style.Params
+      style: Style.Params,
+      slot: Double
   ): Either[GraphicsError, Vector[ig.Grob]] = mark match
     case VisualPrimitive.SurfaceUnit(_, span, kind, _, _) =>
       val (y0, y1) = surfaceBand(kind)
@@ -196,7 +232,7 @@ object AtlasLowering:
         text <- labelAt(e.x0, e.lane0.toDouble, 2.0, 5.0, label, style)
       yield Vector(polygon, text)
 
-    case VisualPrimitive.Landmark(_, at, label, kind) =>
+    case VisualPrimitive.Landmark(_, at, label, kind, _) =>
       val shape = kind match
         case LandmarkKind.Event => ig.PointShape.Circle
         case LandmarkKind.State => ig.PointShape.Square
@@ -219,6 +255,166 @@ object AtlasLowering:
 
     case VisualPrimitive.Route(_, from, to, layer, status) =>
       edge(from, to, s"$layer $status", style.route, style)
+
+    // One filled rectangle per extent, never a hull over the gaps between them (ADR 0002 D4 row 6).
+    // The narrated world of the War of the Ghosts is 281 separate extents precisely so the five
+    // speech frames inside it are not swallowed; hulling would redraw the fabricated battle as
+    // narration. Kind is the label and the lane, never a colour (V-U5).
+    case VisualPrimitive.ContextBand(_, kind, lane, extents, _, basis) =>
+      val label = s"${kind.label} · ${extents.length} extents · ${bandBasis(basis)}"
+      for
+        boxes <- extents.toVector.traverse { e =>
+          Vector(
+            native(e.x0, e.lane0.toDouble + 0.08),
+            native(e.x1Exclusive, e.lane0.toDouble + 0.08),
+            native(e.x1Exclusive, e.lane1 + 0.92),
+            native(e.x0, e.lane1 + 0.92)
+          ).sequence.flatMap(corners => ig.Grob.polygon(corners, gp = style.contextBand))
+        }
+        text <- labelAt(extents.head.x0, lane + 0.5, 2.0, 0.0, label, style)
+      yield boxes :+ text
+
+    case mark @ VisualPrimitive.Gap(_, family, target, reason, _, placement) =>
+      absence(
+        mark,
+        s"gap ${claimFamily(family)} ${target.render}: ${reason.render}",
+        placement,
+        slot,
+        style
+      )
+
+    case mark @ VisualPrimitive.Abstention(_, unit, reason, placement) =>
+      absence(mark, s"abstention ${unit.value}: ${reason.render}", placement, slot, style)
+
+    case mark @ VisualPrimitive.UnsatisfiedLaw(_, violation, placement) =>
+      absence(
+        mark,
+        s"unsatisfied ${violation.law} @ ${violation.path}: ${violation.reason}",
+        placement,
+        slot,
+        style
+      )
+
+  /** `ClaimFamily.Custom` renders as a Scala product string upstream; name it ourselves so the twin
+    * and the picture read the same and no compiler-generated text reaches a label.
+    */
+  private def claimFamily(family: ClaimFamily): String = family match
+    case ClaimFamily.Custom(namespace, name) => s"$namespace/$name"
+    case other                               => other.toString
+
+  private def bandBasis(basis: ContextBandBasis): String = basis match
+    case ContextBandBasis.ExactScopeEvidence => "exact scope evidence"
+
+  /** The non-colour channel each epistemic state is drawn in (ADR 0002 D9, V-U5). Four states, four
+    * shapes: the state is readable in monochrome and at a glance, and never from a hue.
+    */
+  private def channelShape(channel: EpistemicChannel): ig.PointShape = channel match
+    case EpistemicChannel.OpenHatch   => ig.PointShape.Square
+    case EpistemicChannel.Fan         => ig.PointShape.Triangle
+    case EpistemicChannel.Placeholder => ig.PointShape.Circle
+    case EpistemicChannel.Bracket     => ig.PointShape.Cross
+
+  private def channelName(channel: EpistemicChannel): String = channel match
+    case EpistemicChannel.OpenHatch   => "open-hatch"
+    case EpistemicChannel.Fan         => "fan"
+    case EpistemicChannel.Placeholder => "placeholder"
+    case EpistemicChannel.Bracket     => "bracket"
+
+  /** Absence is drawn, never left as a hole in the ink (recovery plan §2.3).
+    *
+    * A mark that cites spans is drawn at exactly those spans, one glyph per span with a rule under
+    * its extent: it may not be summarised into a hull, because the absence is about that material
+    * and no other. A mark with no honest discourse position is drawn in a margin row at x = 0 with
+    * the stated reason in its label, so it is visible without being placed somewhere it does not
+    * belong. `slot` spreads those margin marks vertically; that spacing is device layout and means
+    * nothing.
+    */
+  private def absence(
+      mark: VisualPrimitive,
+      label: String,
+      placement: EpistemicPlacement,
+      slot: Double,
+      style: Style.Params
+  ): Either[GraphicsError, Vector[ig.Grob]] =
+    val channel = mark.epistemicChannel.getOrElse(EpistemicChannel.Bracket)
+    val shape = channelShape(channel)
+    val text = s"[${channelName(channel)}] $label"
+    placement match
+      case EpistemicPlacement.AtSpans(spans) =>
+        val extents = spans.spans.toVector
+        for
+          size <- ig.ExtentExpr.points(4.0)
+          glyphs <- extents.traverse { span =>
+            for
+              at <- native((span.start + span.endExclusive) / 2, Style.epistemicSpanRow)
+              grob <- ig.Grob.points(Vector(at), size, shape, gp = style.epistemic)
+            yield grob
+          }
+          rules <- extents.traverse { span =>
+            for
+              a <- native(span.start, Style.epistemicSpanRule)
+              b <- native(span.endExclusive, Style.epistemicSpanRule)
+              grob <- ig.Grob.lines(Vector(a, b), gp = style.epistemicRule)
+            yield grob
+          }
+          caption <- labelAt(
+            extents.head.start,
+            Style.epistemicSpanRow,
+            4.0,
+            -5.0,
+            text,
+            style
+          )
+        yield glyphs ++ rules :+ caption
+
+      case EpistemicPlacement.NoDiscoursePosition(reason) =>
+        for
+          size <- ig.ExtentExpr.points(4.0)
+          at <- native(0, slot)
+          glyph <- ig.Grob.points(Vector(at), size, shape, gp = style.epistemic)
+          caption <- labelAt(
+            0,
+            slot,
+            4.0,
+            0.0,
+            s"$text · no discourse position: ${reason.render}",
+            style
+          )
+        yield Vector(glyph, caption)
+
+  /** A layout-only rail for the marks that carry no context lane. Its y coordinate is device
+    * placement and carries no meaning, exactly as the surface rail's does.
+    */
+  private def epistemicRail(
+      marks: Vector[VisualPrimitive],
+      discourseLength: Int,
+      style: Style.Params
+  ): Either[GraphicsError, Option[ig.Grob]] =
+    if marks.isEmpty then Right(None)
+    else
+      val ordered = marks.sortBy(m => (epistemicSortKey(m), m.identity.mark.value))
+      val margin = ordered.filter(_.epistemicPlacement.forall(_.spanSet.isEmpty))
+      val slots =
+        margin.zipWithIndex.map((m, i) => m.identity.mark.value -> slotFor(i, margin.length)).toMap
+      for
+        viewport <- Style.epistemicViewport(discourseLength)
+        children <- ordered.traverse(m =>
+          markGroup(m, style, slots.getOrElse(m.identity.mark.value, 0.5))
+        )
+      yield Some(ig.Grob.group(children, viewport = Some(viewport)))
+
+  /** Evenly spread within the margin row; device layout only. */
+  private def slotFor(index: Int, total: Int): Double =
+    Style.epistemicMarginTop +
+      (index + 0.5) / math.max(total, 1) * (Style.epistemicMarginBottom - Style.epistemicMarginTop)
+
+  /** Spanned marks first, then the margin, so a reader meets the placed evidence before the
+    * unplaceable; within each, discourse order. Draw order only.
+    */
+  private def epistemicSortKey(mark: VisualPrimitive): (Int, Int) =
+    mark.epistemicPlacement.flatMap(_.spanSet) match
+      case Some(spans) => (0, spans.minSpan.start)
+      case None        => (1, 0)
 
   private def edge(
       from: Anchor,
