@@ -27,8 +27,14 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   `VoyageScene` (ADR 0002 §14, the Recall Voyage) into five layers — ground
   and axes, coding bands, links, marks, group-index track — in one pixel
   viewport; every mark's `data-name` is its `MarkId`, coding bands carry no
-  name, a unit's origin is its shape (circle, diamond, hollow dashed diamond),
-  and the posterior column is drawn only for the units the shell names.
+  name, a unit's origin is its shape (circle, diamond, hollow dashed diamond;
+  the diamond has the circle's area for the same mass), the posterior column
+  is drawn only for the units the shell names, and the ghosts of moved
+  argmaxes unless the shell withholds them. Every mark is annotated (intaglio
+  `GrobMeta`): a title restating the mark for native tooltips, a class per
+  kind and origin (`VoyageLowering.Classes`) so a stylesheet restyles by
+  meaning, the unit ordinal as `data-unit`. The metadata never adds a fact the
+  mark does not carry.
 - `layout`: `crossProject(JVM, JS)`, `CrossType.Pure`, package
   `storyatlas4s.layout`. Pure `Paginator` over metrics-as-data (`TextMetrics`
   from a `Measurer`), `PaginatedCodex` with V-I2 fragment ids, its textual

@@ -126,10 +126,16 @@ through storymodel4s `VoyageCompiler`, so the evidence law runs here, lowers it
 through `VoyageLowering`, and writes `voyage.svg`, its twin `voyage.txt`, the
 standalone `voyage.html`, and `voyage-receipt.json`. Put `app.js` beside
 `voyage.html` (`app/editionBundle` writes it to `target/edition/`) and the
-page mounts the interactive pane over the same document: hover a mark for the
-unit's words and the row's numbers, click or walk with the arrow keys to
-inspect a unit and see its whole posterior column, area by mass. Without
-`app.js` the page shows the static plate.
+page mounts the interactive pane over the same document, replacing the static
+plate: hover a mark for the unit's words and the row's numbers, click or walk
+with the arrow keys to inspect a unit and see its whole posterior column, area
+by mass, and where in its group the anchor sits; two toggles show the ghosts
+of the argmaxes a decode moved away from and the posterior columns of every
+unit at once; the plate is lowered again to the width its panel affords, so
+nothing scrolls sideways. Without `app.js` the page shows the static plate,
+whose marks still carry native tooltips: every mark is annotated (intaglio
+`GrobMeta`) with a title stating the unit's words and the row's numbers, a
+class naming its kind and origin, and its unit ordinal as `data-unit`.
 
 Either way, `edition --out <dir>` writes (relative paths resolve against the
 repository root):

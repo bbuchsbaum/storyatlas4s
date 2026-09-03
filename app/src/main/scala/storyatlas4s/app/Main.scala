@@ -19,6 +19,11 @@ object Main:
     val mount = dom.document.getElementById("app")
     Option(dom.document.getElementById(storyatlas4s.edition.VoyagePage.DocumentElementId)) match
       case Some(script) =>
-        renderOnDomContentLoaded(mount, VoyageView.fromDocumentText(script.textContent))
+        // The page carries the static plate as its no-script fallback; the pane replaces it rather
+        // than stacking under it.
+        renderOnDomContentLoaded(
+          { mount.innerHTML = ""; mount.removeAttribute("class"); mount },
+          VoyageView.fromDocumentText(script.textContent)
+        )
       case None =>
         renderOnDomContentLoaded(mount, AppView(WarOfTheGhostsModel.model, DomMeasurer.canvas()))

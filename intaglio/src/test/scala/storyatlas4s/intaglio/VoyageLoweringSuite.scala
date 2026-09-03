@@ -149,3 +149,92 @@ class VoyageLoweringSuite extends FunSuite:
     assertEquals(VoyageLowering.clock(0.0), "0:00")
     assertEquals(VoyageLowering.clock(65.4), "1:05")
     assertEquals(VoyageLowering.clock(1426.0), "23:46")
+
+  test("every mark carries a title, a class naming its kind, and its unit as data") {
+    val x = render(ok(VoyageLowering.lower(scene)))
+    val titles = x.sliding("<title>".length).count(_ == "<title>")
+    val expected = scene.marks.count(!_.isInstanceOf[VoyageMark.Alternative]) + 1
+    assert(titles >= expected, s"$titles titles for $expected named marks and bands")
+    assert(x.contains("one"), "the unit's words are in its title")
+    assert(x.contains("anchor mass 0.00"), "the row's numbers are in its title")
+    assert(x.contains(VoyageLowering.Classes.anchor), "anchors are classed")
+    assert(x.contains("origin-filled"), "the origin is a class")
+    assert(x.contains("data-unit=\"0\""), "the unit ordinal is data")
+    assert(x.contains(VoyageLowering.Classes.coding), "coded bands are classed")
+  }
+
+  test("ghosts of moved argmaxes are drawn by default and withheld on request") {
+    val on = render(ok(VoyageLowering.lower(scene)))
+    val off = render(ok(VoyageLowering.lower(scene, ghosts = false)))
+    assert(on.contains(VoyageLowering.Classes.ghost), "the moved anchor u1 leaves a ghost")
+    assert(!off.contains(VoyageLowering.Classes.ghost), "no ghost when the shell withholds them")
+  }
+
+  test("context columns are drawn faint and classed as context; focused ones are not") {
+    val focused = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u1))))
+    val context = render(ok(VoyageLowering.lower(scene, contextFor = Set(u1))))
+    assert(focused.contains(VoyageLowering.Classes.alternative), "u1's column is drawn")
+    assert(!focused.contains("voyage-alt context"), "a focused column is not classed context")
+    assert(context.contains("voyage-alt context"), "a context column says so")
+  }
+
+  test("a point's size is the device radius: u1's mass-0.5 alternative ring has r = radius(0.5)") {
+    val x = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u1))))
+    val radii = """ r="([0-9.]+)"""".r.findAllMatchIn(x).map(_.group(1).toDouble).toVector
+    val want = VoyageLowering.radius(0.5)
+    assert(radii.exists(r => math.abs(r - want) < 1e-3), s"expected r=$want among $radii")
+    assert(
+      !radii.exists(r => math.abs(r - 2 * want) < 1e-3),
+      "twice the radius is the size-as-diameter bug"
+    )
+  }
+
+  test("every drawn mark carries its data-name exactly once in the rendered SVG") {
+    val x = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u1))))
+    scene.marks.foreach { m =>
+      val needle = s"""data-name="${m.identity.mark.value}""""
+      val n = x.sliding(needle.length).count(_ == needle)
+      m match
+        case a: VoyageMark.Alternative if a.unit != u1 => assertEquals(n, 0, needle)
+        case _                                         => assertEquals(n, 1, needle)
+    }
+  }
+
+  private def sceneWithText(text: String): VoyageScene =
+    val renamed = units.map(u => if u.id == u1 then u.copy(text = text) else u)
+    ok(
+      VoyageCompiler.compile(
+        ok(RecallVoyageInput.of(renamed, matrix, timeline, decisions, Some(coding), secs(12.0))),
+        Set.empty,
+        provenance
+      )
+    )
+
+  test("a unit's words are escaped once on the way into a title, never by the lowering") {
+    val x = render(ok(VoyageLowering.lower(sceneWithText("a < b & c"))))
+    assert(x.contains("a &lt; b &amp; c"), "the renderer escapes the title text")
+    assert(!x.contains("a < b"), "raw markup characters never reach the SVG text")
+    assert(!x.contains("&amp;lt;"), "the lowering does not pre-escape")
+  }
+
+  test("a control character in a unit's words is dropped from the title, not fatal") {
+    val tab = 9.toChar.toString
+    val illegal = 1.toChar.toString
+    val x = render(ok(VoyageLowering.lower(sceneWithText("bad" + illegal + "word" + tab + "tab"))))
+    assert(
+      x.contains("badword" + tab + "tab"),
+      "the illegal code point is gone and the tab is kept"
+    )
+  }
+
+  test("a unit named as both focused and context is drawn once, focused") {
+    val x = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u1), contextFor = Set(u1))))
+    val alts = scene.marks.count {
+      case a: VoyageMark.Alternative => a.unit == u1
+      case _                         => false
+    }
+    val marker = "voyage-mark voyage-alt"
+    val drawn = x.sliding(marker.length).count(_ == marker)
+    assertEquals(drawn, alts, "one column per alternative")
+    assert(!x.contains("voyage-alt context"), "focus wins over context")
+  }

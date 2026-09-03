@@ -85,6 +85,11 @@ object VoyagePage:
       |.scroller { overflow-x: auto; overflow-y: hidden; position: relative; padding: 0 0 8px; }
       |.scroller svg { display: block; }
       |.scroller svg [data-name] { cursor: pointer; }
+      |.plate svg { display: block; max-width: 100%; }
+      |.controls input { accent-color: var(--model); }
+      |.legend-row span { display: inline-flex; align-items: center; gap: 7px; }
+      |.legend-row .glyph { flex: none; }
+      |.strip { display: grid; gap: 4px; }
       |.scroller svg .selected { stroke: var(--ink); stroke-width: 2px; }
       |.scroller svg .focused { stroke: var(--ink); stroke-width: 2.5px; }
       |.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--ground); padding: 6px 9px; border-radius: 6px; font-size: 12px; max-width: 320px; line-height: 1.35; z-index: 2; }

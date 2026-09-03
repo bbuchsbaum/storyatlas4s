@@ -53,7 +53,7 @@ lazy val storymodel4sCodecJVM = ProjectRef(storymodel4sBuild, "codecJVM")
 lazy val storymodel4sCodecJS = ProjectRef(storymodel4sBuild, "codecJS")
 
 // Intaglio (renderer-neutral scene + SVG backend) is consumed as an immutable source pin.
-lazy val intaglioRevision = "52dddee0be9706b4c9ce02ae214f771343d150fb"
+lazy val intaglioRevision = "4eb566d9208f474d64d61e778e084dee2ddbaa76"
 lazy val intaglioBuild =
   sys.props
     .get("storyatlas4s.intaglio.build")
