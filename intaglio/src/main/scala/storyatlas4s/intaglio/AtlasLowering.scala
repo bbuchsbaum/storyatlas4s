@@ -795,8 +795,9 @@ object AtlasLowering:
       yield ties ++ ribbon ++ caption
 
     // A region's hull is drawn where the model puts it — across the lanes of its visible children —
-    // with its label inside, elided to the region's own width rather than allowed to run over its
-    // neighbours.
+    // with its summary inside, elided to the region's own width rather than allowed to run over its
+    // neighbours. A region whose summary the model did not derive (RegionLabel.Unsummarized, ADR
+    // 0002 §15) gets the hull and no words: any words here would be the plate's, not the model's.
     case VisualPrimitive.Region(_, e, label, _) =>
       val widthPx = plan.xOf(e.x1Exclusive.toDouble) - plan.xOf(e.x0.toDouble)
       for
@@ -809,16 +810,19 @@ object AtlasLowering:
           ),
           gp = style.region
         )
-        text <- Measure
-          .elideMiddle(label, widthPx - 16.0, Typeface.labelPt)
-          .traverse(t =>
-            ig.Grob.text(
-              t,
-              at(e.x0.toDouble, e.lane0.toDouble, 15.0, 7.0),
-              Style.labelAnchor,
-              gp = style.label
-            )
-          )
+        text <- label match
+          case RegionLabel.Unsummarized(_) => Right(None)
+          case RegionLabel.Summary(words)  =>
+            Measure
+              .elideMiddle(words, widthPx - 16.0, Typeface.labelPt)
+              .traverse(t =>
+                ig.Grob.text(
+                  t,
+                  at(e.x0.toDouble, e.lane0.toDouble, 15.0, 7.0),
+                  Style.labelAnchor,
+                  gp = style.label
+                )
+              )
       yield polygon +: text.toVector
 
     case VisualPrimitive.Landmark(id, anchor, _, kind, _, _) =>

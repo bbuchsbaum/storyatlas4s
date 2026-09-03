@@ -91,6 +91,50 @@ class DraftLoweringSuite extends FunSuite:
       "a speech frame sits on its own lane, not on the narrated world's"
     )
 
+  /** ADR 0002 §15. A region whose summary the model did not derive is lowered as its hull and no
+    * words; a region with a stated summary carries that summary. Words on an unsummarized region
+    * would be the plate's, not the model's.
+    */
+  test("an unsummarized region is a hull with no words; a stated one carries its summary"):
+    val g = Wog.draft.graph
+    val target = g.segments(Wog.G.sc1a)
+    val unsummarized = StoryModel.draft(
+      Wog.draft.source,
+      Wog.draft.atlas,
+      g.copy(segments =
+        g.segments.updated(
+          Wog.G.sc1a,
+          target.copy(summary = SegmentSummary.Unsummarized(SummaryGap.NotProposed))
+        )
+      ),
+      Wog.draft.hierarchy,
+      Wog.draft.trajectory,
+      receipt = Wog.draft.receipt
+    )
+    val draft = DraftModel.of(
+      unsummarized,
+      ValidationOutcome(ValidationReport(Vector.empty), validated = None),
+      DerivationRecord.NotSupplied
+    )
+    val s = scene(draft)
+    val lowered = ok(AtlasLowering.lower(s, length))
+    val regions = s.marks.collect { case r: VisualPrimitive.Region => r }
+    val quiet = regions
+      .find(_.label == RegionLabel.Unsummarized(SummaryGap.NotProposed))
+      .getOrElse(fail("the unsummarized scene region is not in the scene"))
+    // The widest stated region: a narrow one elides its summary to nothing, which is the width
+    // budget speaking, not the model.
+    val spoken = regions
+      .filter(r => r.label.text.nonEmpty)
+      .maxByOption(r => r.extent.x1Exclusive - r.extent.x0)
+      .getOrElse(fail("no region with a stated summary"))
+    val quietGrobs = loweredFor(lowered, quiet)
+    assertEquals(quietGrobs.count(_.isInstanceOf[ig.Grob.Polygon]), 1)
+    assertEquals(quietGrobs.count(_.isInstanceOf[ig.Grob.Text]), 0)
+    val spokenGrobs = loweredFor(lowered, spoken)
+    assertEquals(spokenGrobs.count(_.isInstanceOf[ig.Grob.Polygon]), 1)
+    assert(spokenGrobs.exists(_.isInstanceOf[ig.Grob.Text]), "a stated summary is drawn")
+
   test("a context band's own lane is the only lane it is drawn on"):
     val s = scene(draftModel(Vector.empty))
     bands(s).foreach { band =>

@@ -303,7 +303,8 @@ private[intaglio] object AtlasPlate:
     val labels: Map[String, String] = scene.marks.collect {
       case l: VisualPrimitive.Landmark => l.identity.address.render -> l.label
       case t: VisualPrimitive.Thread   => t.identity.address.render -> t.label
-      case r: VisualPrimitive.Region   => r.identity.address.render -> r.label
+      // An unsummarized region has no word of its own; its typed absence is the honest note.
+      case r: VisualPrimitive.Region => r.identity.address.render -> r.label.render
     }.toMap
     val addresses = scene.state.selection.toVector.map(_.render).sorted
     if addresses.isEmpty then "no shared selection"
