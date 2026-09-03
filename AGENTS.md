@@ -14,7 +14,16 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   overlay), and `PaginatedCodex → Vector[intaglio.Scene]` (one page-framed
   overlay per page, `PagedCodexLowering`). `GraphicsName` is the `MarkId`
   (Atlas), `AnnotationId` (flow-level Codex), or `FragmentId` (paginated
-  Codex), never an `Address`.
+  Codex), never an `Address`. An Atlas scene lowers into three rails: the
+  projection's own context-lane plot, the layout-only surface rail, and the
+  layout-only epistemic rail for the marks that carry no lane. A
+  `ContextBand` draws one shape per extent and **never a hull** over the gaps
+  between them; hulling the narrated world would swallow the speech frames
+  inside it. `Gap`, `Abstention` and `UnsatisfiedLaw` are placed from their
+  `EpistemicPlacement`: on the exact spans they cite, or in a margin row
+  carrying the stated reason when the model gives them no honest discourse
+  position. Their epistemic state is a point shape, never a colour, so each
+  channel is legible in monochrome (V-U5, D9).
 - `layout`: `crossProject(JVM, JS)`, `CrossType.Pure`, package
   `storyatlas4s.layout`. Pure `Paginator` over metrics-as-data (`TextMetrics`
   from a `Measurer`), `PaginatedCodex` with V-I2 fragment ids, its textual
@@ -26,11 +35,25 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   relation layers, thread budget, lenses, both zoom axes, SVG boxes) and the
   generated `Pins`; the one place an edition constant lives, consumed by both
   `cli` and `app`.
-- `cli`: JVM only, package `storyatlas4s.cli`. `edition --out <dir>` compiles
-  the War of the Ghosts fixture (from storymodel4s `fixtures`) to atlas SVGs,
-  Codex overlays, paginated `codex-<lens>.html` documents (`CodexHtml`, a pure
-  `PaginatedCodex → String`; DOM text rail + inline SVG overlay per page),
-  textual twins, and `receipt.json` with the `LayoutReceipt` folded in.
+- `cli`: JVM only, package `storyatlas4s.cli`. `edition --out <dir>` compiles a
+  model to atlas SVGs, Codex overlays, paginated `codex-<lens>.html` documents
+  (`CodexHtml`, a pure `PaginatedCodex → String`; DOM text rail + inline SVG
+  overlay per page), textual twins, and `receipt.json` with the
+  `LayoutReceipt` folded in. Without `--model` the model is the War of the
+  Ghosts fixture (storymodel4s `fixtures`), the fast case and no longer the
+  only one; `--model <storymodel.json>` reads a model the storymodel4s
+  pipeline wrote through `ModelInput`, which decodes it with storymodel4s
+  `codec` and puts it to `StoryValidator`. `cli` never promotes a model and
+  never parses one itself: `Validated` comes only from the validator. A model
+  the validator promotes but that carries no build receipt is refused, since
+  no `ViewBasis` is true of it. A model it does not promote is compiled as a
+  draft (`ViewBasis.DraftBuild`, `AtlasCompiler.compileDraft`), atlases only,
+  with its unsatisfied laws as marks. `ReadModel` carries a `DerivationRecord`
+  that is always `NotSupplied` today, and the receipt prints that rather than
+  zero gaps; `ModelInput.derivationRecordNote` records why
+  `compilation-report.json` cannot supply one. Reconstructing a record from
+  that file would mean fabricating claim and evidence ids, which is the
+  out-claiming the recovery plan exists to prevent.
 - `app`: Scala.js only (`ModuleKind.NoModule`, Laminar 17.2.1, scalajs-dom
   2.8.1), package `storyatlas4s.app`. `AppCompiler` is the pure step from a
   `ViewChoice` (lens, exact `ZoomLevel`, horizon, focus, selection, measurer) to

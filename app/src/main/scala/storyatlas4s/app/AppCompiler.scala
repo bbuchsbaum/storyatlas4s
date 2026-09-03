@@ -4,7 +4,13 @@ import _root_.intaglio.value
 import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
 import storyatlas4s.edition.{EditionSpec, Pins}
-import storyatlas4s.intaglio.{AtlasLowering, CodexLowering, GraphicsNames, PagedCodexLowering}
+import storyatlas4s.intaglio.{
+  AtlasLowering,
+  CodexLowering,
+  GraphicsNames,
+  PagedCodexLowering,
+  PlateBox
+}
 import storyatlas4s.layout.{FragmentId, Measurer, PageSpec, PaginatedCodex, Paginator, TextStyle}
 import storymodel4s.core.*
 import storymodel4s.story.*
@@ -164,7 +170,11 @@ private[app] object AppCompiler:
           .toRight(s"Atlas compiler omitted placement for ${address.render}")
           .map(address -> _)
       )
-      lowered <- AtlasLowering.lower(scene, text.length).left.map(_.message)
+      atlasBox <- PlateBox
+        .of(EditionSpec.atlasWidthPx, EditionSpec.atlasHeightPx)
+        .left
+        .map(_.message)
+      lowered <- AtlasLowering.lower(scene, text.length, atlasBox).left.map(_.message)
       atlasOptions <- SvgOptions(
         EditionSpec.atlasWidthPx,
         EditionSpec.atlasHeightPx,

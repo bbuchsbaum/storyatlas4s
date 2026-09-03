@@ -4,6 +4,7 @@ import _root_.intaglio as ig
 import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import _root_.intaglio.value
 import munit.FunSuite
+import storyatlas4s.intaglio.AtlasLowering.Layer
 import storymodel4s.core.*
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel as Wog
 import storymodel4s.story.*
@@ -120,13 +121,17 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
         .sorted
     )
 
-    assertEquals(ok(AtlasLowering.lower(hidden, length)).grobs.length, 2)
-    val hiddenPlotViewport = ok(AtlasLowering.lower(hidden, length)).grobs.last.viewport
+    // Every plate has the same five layers in the same order, whatever the model contains, so a
+    // reader of the output addresses the lane plot by what it is rather than by what happened to
+    // be emitted.
+    assertEquals(ok(AtlasLowering.lower(hidden, length)).grobs.length, 5)
+    val hiddenPlotViewport =
+      AtlasLowering.layerOf(ok(AtlasLowering.lower(hidden, length)), Layer.LanePlot).viewport
     Vector(sentences, tokens).foreach { compiled =>
       val lowered = ok(AtlasLowering.lower(compiled, length))
-      assertEquals(lowered.grobs.length, 3)
-      val rail = lowered.grobs(1)
-      val plot = lowered.grobs(2)
+      assertEquals(lowered.grobs.length, 5)
+      val rail = AtlasLowering.layerOf(lowered, Layer.SurfaceRail)
+      val plot = AtlasLowering.layerOf(lowered, Layer.LanePlot)
       assert(rail.viewport.exists(_.clip == ig.Clip.On))
       assert(plot.viewport.exists(_.clip == ig.Clip.Off))
       assertNotEquals(rail.viewport, plot.viewport)
