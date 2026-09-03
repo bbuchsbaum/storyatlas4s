@@ -4,6 +4,7 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.{Files, Path}
 import munit.FunSuite
+import storyatlas4s.edition.EditionSpec
 import storymodel4s.codec.StoryModelCodec
 import storymodel4s.core.{BuildReceipt, Checksum, StageId}
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel
@@ -12,11 +13,12 @@ import storymodel4s.story.{
   Severity,
   StoryModel,
   StoryValidator,
+  ValidationOutcome,
   ValidationPolicy,
   ValidationReport,
   Violation
 }
-import storymodel4s.view.ViewBasis
+import storymodel4s.view.{DerivationRecord, ViewBasis}
 
 /** The V0 claim: the edition is compiled from a model read off disk, not only from the fixture
   * linked into this build. The route is storymodel4s `codec` and then `StoryValidator`; nothing in
@@ -74,6 +76,26 @@ class ModelInputSuite extends FunSuite:
   /** A `storymodel.json` on disk, written by the same codec the pipeline writes with. */
   private def writeModel(dir: Path, name: String, json: String): Path =
     Files.write(dir.resolve(name), json.getBytes(UTF_8))
+
+  /** A model the validator did not promote, under a stated derivation record. The violations are
+    * this suite's own, so the test exercises the draft edition rather than the validator.
+    */
+  private def unpromoted(dir: Path, derivation: DerivationRecord): ReadModel =
+    ReadModel(
+      dir.resolve("storymodel.json"),
+      WarOfTheGhostsModel.draft,
+      ValidationOutcome(
+        ValidationReport(
+          Vector(
+            Violation("S3", Severity.Error, "situations/s1", "no supporting span"),
+            Violation("S3", Severity.Error, "situations/s2", "no supporting span"),
+            Violation("S7", Severity.Warning, "atlas", "surface unit unused")
+          )
+        ),
+        validated = None
+      ),
+      derivation
+    )
 
   temp.test("a storymodel.json round-trips through codec into a validated model"): dir =>
     val path = writeModel(dir, "storymodel.json", StoryModelCodec.encode(WarOfTheGhostsModel.model))
@@ -146,28 +168,37 @@ class ModelInputSuite extends FunSuite:
       .getOrElse(fail("an unreceipted model must not be drawn as a validated build"))
     assert(problem.contains("no build receipt"), problem)
 
-  temp.test("a model that does not validate is refused, not drawn"): dir =>
-    // The path the machine-built War of the Ghosts takes today: it decodes, and it fails its laws.
-    // `AtlasCompiler.compile` takes `StoryModel[Validated]`; until the draft compiler lands there
-    // is no way to draw this, and inventing one would draw a partial model as a complete one.
-    val refusal = Edition.fromRead(
-      ReadModel(
-        dir.resolve("storymodel.json"),
-        WarOfTheGhostsModel.draft,
-        ValidationReport(
-          Vector(
-            Violation("S3", Severity.Error, "situations/s1", "no supporting span"),
-            Violation("S3", Severity.Error, "situations/s2", "no supporting span"),
-            Violation("S7", Severity.Warning, "atlas", "surface unit unused")
-          )
-        ),
-        validated = None
-      )
+  temp.test("a model that does not validate is drawn as a draft, not refused"): dir =>
+    // The path the machine-built War of the Ghosts takes: it decodes, and it fails its laws. The
+    // draft compilers draw it as partial rather than refusing it or pretending it is whole.
+    val edition = ok(Edition.fromRead(unpromoted(dir, DerivationRecord.NotSupplied)))
+    assertEquals(edition.provenanceBasis, ViewBasis.DraftBuild)
+    assertEquals(edition.promotion.map(_.promoted), Some(false))
+    assertEquals(edition.promotion.map(_.violationCount), Some(3))
+    // Atlases only: there is no draft Codex compiler, and an empty Codex would claim the reading
+    // view was compiled and had nothing to say.
+    assertEquals(
+      edition.files.map(_.artifact).distinct.sorted,
+      Vector("atlas-draft", "atlas-draft-twin")
     )
-    val problem = refusal.left.getOrElse(fail("a draft model must not compile an edition"))
-    assert(problem.contains("does not validate"), problem)
-    assert(problem.contains("2 errors"), problem)
-    assert(problem.contains("1 warnings"), problem)
+    assertEquals(edition.files.length, EditionSpec.zoomLevels.length * 2)
+    edition.files.foreach { f =>
+      assert(f.content.contains(ViewBasis.DraftBuild.label), f.name)
+    }
+
+  temp.test("no derivation record is never drawn or receipted as zero gaps"): dir =>
+    // `NotSupplied` and `Reported(no gaps)` are different states and must not share a fingerprint:
+    // one says nobody told the view anything, the other says the compiler derived everything.
+    val absent = ok(Edition.fromRead(unpromoted(dir, DerivationRecord.NotSupplied)))
+    val reported =
+      ok(Edition.fromRead(unpromoted(dir, DerivationRecord.Reported(Vector.empty, Vector.empty))))
+
+    assertEquals(absent.promotion.flatMap(_.gapCount), None)
+    assertEquals(reported.promotion.flatMap(_.gapCount), Some(0))
+    assert(absent.receipt.contains(ModelInput.derivationRecordNote), absent.receipt)
+    assert(reported.receipt.contains("\"gaps\": 0"), reported.receipt)
+    // The distinction reaches the drawn artifact, not only the receipt.
+    assertNotEquals(absent.files.map(_.checksum), reported.files.map(_.checksum))
 
   temp.test("a file that is not a storymodel.json is refused with the codec's reason"): dir =>
     val garbage = writeModel(dir, "storymodel.json", """{"schemaVersion":"0.1.0"}""")
@@ -188,14 +219,17 @@ class ModelInputSuite extends FunSuite:
     val read = ReadModel(
       dir.resolve("storymodel.json"),
       WarOfTheGhostsModel.draft,
-      ValidationReport(
-        Vector(
-          Violation("S3", Severity.Error, "situations/b", "second"),
-          Violation("S3", Severity.Error, "situations/a", "first"),
-          Violation("S1", Severity.Error, "entities/z", "only")
-        )
+      ValidationOutcome(
+        ValidationReport(
+          Vector(
+            Violation("S3", Severity.Error, "situations/b", "second"),
+            Violation("S3", Severity.Error, "situations/a", "first"),
+            Violation("S1", Severity.Error, "entities/z", "only")
+          )
+        ),
+        validated = None
       ),
-      validated = None
+      DerivationRecord.NotSupplied
     )
     assertEquals(read.violationsByLaw, Vector("S3" -> 2, "S1" -> 1))
     assertEquals(

@@ -89,10 +89,24 @@ pipeline wrote: it is decoded through storymodel4s `codec`, put to
 drawn. A model the validator promotes renders through exactly the path the
 fixture takes, on `ViewBasis.ValidatedBuild` rather than
 `ResearcherReviewedFixture`, so the receipt never calls a machine build a
-reviewed fixture. A model it does not promote is refused with its violations
-per law: `AtlasCompiler.compile` takes `StoryModel[Validated]`, and drawing a
-partial model as a complete one is the one thing the recovery plan forbids.
-The draft compiler that can draw it is not in this pin yet.
+reviewed fixture.
+
+A model the validator does **not** promote is drawn as a draft rather than
+refused, on `ViewBasis.DraftBuild`, through `AtlasCompiler.compileDraft`: its
+unsatisfied promotion laws become marks, so a partial model is legible as
+partial. A draft edition writes atlas SVGs and twins only, because
+`CodexCompiler.compile` still takes a validated model and an empty Codex would
+claim the reading view had been compiled and had nothing to say.
+
+The derivation record — the pipeline's gaps and its coverage ledger — is
+reported as **not supplied** for every model read from disk, and the receipt
+prints that rather than zero. Those are different states and
+`DerivationRecord` keeps them apart: a scene saying "0 gaps" claims the
+compiler derived everything, while a scene with no record knows nothing about
+derivation either way. The pipeline's `compilation-report.json` cannot supply
+one: it has no codecs, no parser inverting its rendered addresses and reasons,
+and it writes `upstreamClaims` and `evidence` as sizes rather than contents.
+Reading a real record needs a decodable artifact from storymodel4s.
 
 Either way, `edition --out <dir>` writes (relative paths resolve against the
 repository root):
