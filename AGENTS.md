@@ -23,7 +23,12 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   `EpistemicPlacement`: on the exact spans they cite, or in a margin row
   carrying the stated reason when the model gives them no honest discourse
   position. Their epistemic state is a point shape, never a colour, so each
-  channel is legible in monochrome (V-U5, D9).
+  channel is legible in monochrome (V-U5, D9). `VoyageLowering` lowers a
+  `VoyageScene` (ADR 0002 §14, the Recall Voyage) into five layers — ground
+  and axes, coding bands, links, marks, group-index track — in one pixel
+  viewport; every mark's `data-name` is its `MarkId`, coding bands carry no
+  name, a unit's origin is its shape (circle, diamond, hollow dashed diamond),
+  and the posterior column is drawn only for the units the shell names.
 - `layout`: `crossProject(JVM, JS)`, `CrossType.Pure`, package
   `storyatlas4s.layout`. Pure `Paginator` over metrics-as-data (`TextMetrics`
   from a `Measurer`), `PaginatedCodex` with V-I2 fragment ids, its textual
@@ -56,7 +61,15 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   than zero gaps. `compilation-report.json` is never read: it writes counts and
   one-way renders, and reconstructing a record from it would mean fabricating
   claim and evidence ids, which is the out-claiming the recovery plan exists to
-  prevent.
+  prevent. `voyage --document
+  <voyage.json> --out <dir>` compiles a Recall Voyage document the
+  storymodel4s pipeline wrote beside a recall-to-video report (ADR 0002 §14):
+  the document is decoded through storymodel4s `codec`, which re-proves its
+  join; the scene is compiled by storymodel4s `VoyageCompiler`, so the
+  evidence law runs here; `VoyageEdition` writes `voyage.svg`, its twin
+  `voyage.txt`, the standalone `voyage.html` (the document inline, the static
+  plate as no-script fallback, `app.js` loaded beside it) and
+  `voyage-receipt.json`, whose every figure is read from the scene's summary.
 - `app`: Scala.js only (`ModuleKind.NoModule`, Laminar 17.2.1, scalajs-dom
   2.8.1), package `storyatlas4s.app`. `AppCompiler` is the pure step from a
   `ViewChoice` (lens, exact `ZoomLevel`, horizon, focus, selection, measurer) to
@@ -70,6 +83,13 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   `fixtures`, linked into `app.js`; never a copy. `app/index.html` is the
   static shell; `app/editionBundle` copies it and `app.js` into
   `target/edition`; `app/smoke/smoke.cjs` is the Playwright browser smoke.
+  A page carrying `<script type="application/json" id="voyage-document">`
+  (the CLI's `voyage.html`) mounts `VoyageView` instead: the document is
+  decoded with storymodel4s `codec` (the shell's one JSON input, embedded,
+  never fetched), compiled under the live selection by `VoyageCompiler`,
+  lowered by `VoyageLowering`, drawn by intaglio, and decorated with the hover
+  card, click and keyboard selection through `data-name = MarkId`, and an
+  inspector that prints the scene's own numbers. It computes nothing.
 - Sibling sources are immutable git-SHA `ProjectRef` pins declared in
   `build.sbt` (`storymodel4sRevision`, `intaglioRevision`). No `../sibling`
   composite builds, no `-SNAPSHOT` dependencies.

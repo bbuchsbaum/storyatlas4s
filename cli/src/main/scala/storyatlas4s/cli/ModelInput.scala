@@ -126,6 +126,6 @@ object ModelInput:
             .map(_.record)
         }
 
-  private def slurp(path: Path): Either[String, String] =
+  private[cli] def slurp(path: Path): Either[String, String] =
     try Right(new String(Files.readAllBytes(path), UTF_8))
     catch case e: IOException => Left(s"cannot read $path: ${e.getMessage}")

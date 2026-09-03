@@ -48,6 +48,9 @@ lazy val storymodel4sFixturesJS = ProjectRef(storymodel4sBuild, "fixturesJS")
 // `storymodel.json` the pipeline wrote. JVM only: the static edition reads a file, the browser
 // shell links the fixture (V0; a fetched model in the shell is a later slice).
 lazy val storymodel4sCodecJVM = ProjectRef(storymodel4sBuild, "codecJVM")
+// The browser shell decodes exactly one artifact, the Recall Voyage document embedded in its own
+// page (ADR 0002 §14 D4). It still fetches nothing: the document is an inline script the CLI wrote.
+lazy val storymodel4sCodecJS = ProjectRef(storymodel4sBuild, "codecJS")
 
 // Intaglio (renderer-neutral scene + SVG backend) is consumed as an immutable source pin.
 lazy val intaglioRevision = "52dddee0be9706b4c9ce02ae214f771343d150fb"
@@ -228,7 +231,14 @@ lazy val app = project
       Seq(edition / "app.js", edition / "index.html")
     }
   )
-  .dependsOn(edition.js, intaglio.js, layout.js, storymodel4sFixturesJS, intaglioSvgJS)
+  .dependsOn(
+    edition.js,
+    intaglio.js,
+    layout.js,
+    storymodel4sFixturesJS,
+    storymodel4sCodecJS,
+    intaglioSvgJS
+  )
 
 // Command aliases. storymodel4s and intaglio, loaded here as external builds, register their own
 // `compileAll`/`testAll` aliases in the same global `onLoad` chain and the last registration wins,

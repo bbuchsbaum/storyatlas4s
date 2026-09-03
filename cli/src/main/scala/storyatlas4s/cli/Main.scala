@@ -16,6 +16,13 @@ object Main:
       |  --model   read the model from a storymodel.json the storymodel4s pipeline wrote. The file
       |            is decoded through storymodel4s codec and put to the validator; a model that
       |            does not validate is reported, with its violations, and not drawn.
+      |
+      |usage: storyatlas4s voyage --document <voyage.json> --out <dir>
+      |
+      |  voyage    compile a Recall Voyage document the storymodel4s pipeline wrote beside a
+      |            recall-to-video report (ADR 0002 §14) to voyage.svg, its textual twin
+      |            voyage.txt, the standalone page voyage.html (put app.js beside it for the
+      |            interactive pane), and voyage-receipt.json in <dir>.
       |""".stripMargin
 
   /** What `edition` was asked to draw. */
@@ -43,9 +50,57 @@ object Main:
             case Right(paths) =>
               paths.foreach(p => out.println(p.toString))
               0
+    case "voyage" :: rest =>
+      parseVoyage(rest) match
+        case Left(problem) =>
+          err.println(problem)
+          err.print(usage)
+          2
+        case Right((document, dir)) =>
+          val path = Paths.get(document)
+          val written =
+            for
+              read <- VoyageEdition.read(path)
+              (doc, text) = read
+              edition <- VoyageEdition.build(doc, text, path.toString)
+              paths <- VoyageEdition.write(edition, Paths.get(dir))
+            yield (edition, paths)
+          written match
+            case Left(problem) =>
+              err.println(s"voyage failed: $problem")
+              1
+            case Right((edition, paths)) =>
+              val s = edition.scene.summary
+              out.println(
+                s"voyage $path: ${s.units} units, ${s.anchored} anchored " +
+                  s"(${s.posteriorArgmax} argmax, ${s.decodeBound} decode-bound, " +
+                  s"${s.decodeFilled} decode-filled), ${s.unanchored} unanchored, " +
+                  s"${s.untimed} untimed" +
+                  s.codedAgreement.fold("")((a, t) => s"; coded group agreement $a/$t")
+              )
+              paths.foreach(p => out.println(p.toString))
+              0
     case _ =>
       err.print(usage)
       2
+
+  private def parseVoyage(args: List[String]): Either[String, (String, String)] =
+    def go(
+        rest: List[String],
+        document: Option[String],
+        dir: Option[String]
+    ): Either[String, (String, String)] = rest match
+      case "--document" :: value :: tail => go(tail, Some(value), dir)
+      case "--out" :: value :: tail      => go(tail, document, Some(value))
+      case "--document" :: Nil           => Left("missing path after --document")
+      case "--out" :: Nil                => Left("missing directory after --out")
+      case Nil                           =>
+        for
+          d <- document.toRight("missing --document <voyage.json>")
+          o <- dir.toRight("missing --out <dir>")
+        yield (d, o)
+      case other => Left(s"unrecognized arguments: ${other.mkString(" ")}")
+    go(args, None, None)
 
   /** Reading a model reports what the validator found before anything is drawn, so a partial model
     * is announced rather than discovered later inside a picture.
