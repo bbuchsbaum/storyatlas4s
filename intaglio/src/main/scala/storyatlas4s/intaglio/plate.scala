@@ -113,7 +113,7 @@ private[intaglio] object Metric:
   // Glyph radii, in points. `pointsUnsafe` on a positive finite literal is total; the checked
   // constructor would only move the same constants into an Either with no reader benefit.
   val glyph: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(2.6)
-  val glyphHalo: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(4.3)
+  val glyphHalo: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(3.4)
   val threadRing: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(1.9)
   val absenceGlyph: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(2.2)
   val focusRing: ig.ExtentExpr = ig.ExtentExpr.pointsUnsafe(5.6)
@@ -129,15 +129,15 @@ private[intaglio] object Metric:
     * extents and 53 situations on one line from reading as a single smear.
     */
   val bandFromLaneBottomPx: Double = 9.0
-  val situationFromLaneBottomPx: Double = 34.0
+  val situationFromLaneBottomPx: Double = 42.0
   val labelRowStepPx: Double = 16.0
 
   /** Situation sub-rows: how far apart, how many at most, and how much clear space a glyph wants
     * before it will share a row with its neighbour.
     */
-  val situationRowStepPx: Double = 9.0
-  val situationRowsMax: Int = 4
-  val situationClearPx: Double = 9.0
+  val situationRowStepPx: Double = 10.0
+  val situationRowsMax: Int = 3
+  val situationClearPx: Double = 14.0
   val labelRowLiftPx: Double = 14.0
   val maxLabelRows: Int = 4
 
@@ -155,7 +155,7 @@ private[intaglio] object Metric:
   val surfacePx: Double = 58.0
   val legendPx: Double = 66.0
   val bottomPadPx: Double = 16.0
-  val laneMinPx: Double = 68.0
+  val laneMinPx: Double = 44.0
 
   /** The absence rail's own stack. */
   val absenceCaptionPx: Double = 58.0

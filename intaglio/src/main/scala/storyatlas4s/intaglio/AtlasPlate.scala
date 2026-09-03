@@ -103,8 +103,28 @@ private[intaglio] object AtlasPlate:
     /** Centre of a lane's context-band ribbon, in pixels below the lane's own top edge. */
     def bandOffsetPx: Double = laneHeightPx - Metric.bandFromLaneBottomPx
 
+    /** How much of a lane the situation band may take.
+      *
+      * It adapts, because a plate with many lanes in a short box would otherwise ask for more
+      * height than the box has and run off the bottom. A squeezed lane loses sub-rows and then
+      * label rows; it never overflows, and the budget prints what it withheld.
+      */
+    def situationBandPx: Double =
+      math.min(Metric.situationFromLaneBottomPx, laneHeightPx * 0.55)
+
     /** The lane's situation row: landmark glyphs, thread rings, relation endpoints. */
-    def situationOffsetPx: Double = laneHeightPx - Metric.situationFromLaneBottomPx
+    def situationOffsetPx: Double = laneHeightPx - situationBandPx
+
+    /** Sub-rows this lane can hold without reaching the context-band ribbon below it. */
+    def situationRowsAvailable: Int =
+      math.max(
+        1,
+        math.min(
+          Metric.situationRowsMax,
+          ((situationBandPx - Metric.bandFromLaneBottomPx - 4.0) /
+            Metric.situationRowStepPx).toInt
+        )
+      )
 
     /** Baseline of label row `row`, counting up from the situation row. */
     def labelOffsetPx(row: Int): Double =
@@ -228,14 +248,15 @@ private[intaglio] object AtlasPlate:
       .toVector
       .sortBy(_._1)
       .foreach { (_, lane) =>
-        val rowEnd = Array.fill(Metric.situationRowsMax)(Double.NegativeInfinity)
+        val available = plan.situationRowsAvailable
+        val rowEnd = Array.fill(available)(Double.NegativeInfinity)
         lane
           .sortBy(l => (l.at.x, l.identity.mark.value))
           .zipWithIndex
           .foreach { (landmark, index) =>
             val x = plan.xOf(landmark.at.x.toDouble)
-            val free = (0 until Metric.situationRowsMax).find(r => x >= rowEnd(r) + clear)
-            val row = free.getOrElse(index % Metric.situationRowsMax)
+            val free = (0 until available).find(r => x >= rowEnd(r) + clear)
+            val row = free.getOrElse(index % available)
             rowEnd(row) = x
             deepest = math.max(deepest, row + 1)
             out += landmark.identity.mark.value -> row

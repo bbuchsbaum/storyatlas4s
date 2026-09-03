@@ -388,7 +388,10 @@ class PlateCraftSuite extends FunSuite:
     val small = AtlasPlate.plan(s, length, ok(PlateBox.of(1000, 700)))
     val large = AtlasPlate.plan(s, length, ok(PlateBox.of(2000, 1400)))
     assert(large.plotWidthPx > small.plotWidthPx)
-    assert(large.laneHeightPx > small.laneHeightPx)
+    assert(
+      large.laneHeightPx > small.laneHeightPx,
+      s"lane height ${large.laneHeightPx} at 2000x1400 vs ${small.laneHeightPx} at 1000x700"
+    )
     assert(
       large.labelsDrawn > small.labelsDrawn,
       s"${large.labelsDrawn} labels at 2000x1400 is no better than ${small.labelsDrawn} at 1000x700"
