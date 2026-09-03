@@ -104,6 +104,16 @@ object Edition:
     * recovery plan forbids. The draft compiler being added in storymodel4s (`viz/v0-draft-atlas`)
     * lands in this branch: it becomes `draftEdition(read)`, calling the draft compile in place of
     * `AtlasCompiler(...).compile` and folding the gap marks into the same `EditionFile` vector.
+    *
+    * One fact that branch will need, measured on the War of the Ghosts model `storyBuild replay`
+    * produced at pin 353f9f3d: **the derivation gaps are not in `storymodel.json`.** The pipeline
+    * reports 70 gaps and 135 violations, but 69 of those violations are `compiler.required-
+    * derivation`, raised by the narrative compiler and recorded only in the sibling
+    * `compilation-report.json`. Re-validating the decoded model here finds 66, all of them
+    * hierarchy laws, from one root cause: the story summary was never derived, so there are no
+    * segments, so all 65 situations are unreachable from a primary root. Drawing the gaps as marks
+    * therefore needs the compilation report as a second edition input, or the gaps must reach the
+    * model; `StoryModel` carries no record of them today.
     */
   def fromRead(read: ReadModel): Either[String, Edition] =
     read.validated match
