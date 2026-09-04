@@ -27,7 +27,8 @@ class EditionSuite extends FunSuite:
     "codex-overview.html",
     "codex-overview-pages.txt",
     "preview.html",
-    "preview.txt"
+    "preview.txt",
+    "features.html"
   )
 
   private val dataName = """data-name="([^"]*)"""".r
@@ -79,31 +80,32 @@ class EditionSuite extends FunSuite:
 
   test("each codex.html names every line and piece once, and its pages twin lists each piece"):
     val e = ok(Edition.warOfTheGhosts)
-    e.files.filter(_.name.endsWith(".html")).foreach { html =>
-      val names = dataName.findAllMatchIn(html.content).map(_.group(1)).toVector
-      assertEquals(names.distinct.length, names.length, html.name)
-      val (lines, pieces) = names.partition(_.startsWith("line/"))
-      assertEquals(pieces.length, html.names, html.name)
-      assert(lines.nonEmpty, html.name)
-      val layout = html.layout.getOrElse(fail(s"${html.name} has no layout receipt"))
-      assertEquals(lines.length, layout.lines, html.name)
-      assertEquals(pieces.length, layout.annotationFragments, html.name)
-      assertEquals(count(html.content, "<section class=\"page\""), layout.pages, html.name)
-      assert(layout.pages > 1, s"${html.name}: ${layout.pages} page(s)")
-      assertEquals(count(html.content, "<svg "), layout.pages, html.name)
-      assert(!html.content.contains("<script"), html.name)
-      val twinName =
-        if html.name == "preview.html" then "preview.txt"
-        else html.name.stripSuffix(".html") + "-pages.txt"
-      val twin = e.files
-        .find(_.name == twinName)
-        .getOrElse(fail("pages twin"))
-      assertEquals(twin.names, html.names, twin.name)
-      assertEquals(twin.layout, html.layout, twin.name)
-      pieces.foreach(n => assertEquals(count(twin.content, s"  $n "), 1, s"${twin.name}: $n"))
-      lines.foreach(n => assertEquals(count(twin.content, s"- $n "), 1, s"${twin.name}: $n"))
-      assert(twin.content.contains(layout.checksum.hex), twin.name)
-      assert(html.content.contains(layout.checksum.hex), html.name)
+    e.files.filter(f => f.artifact == "codex-pages" || f.artifact == "static-preview").foreach {
+      html =>
+        val names = dataName.findAllMatchIn(html.content).map(_.group(1)).toVector
+        assertEquals(names.distinct.length, names.length, html.name)
+        val (lines, pieces) = names.partition(_.startsWith("line/"))
+        assertEquals(pieces.length, html.names, html.name)
+        assert(lines.nonEmpty, html.name)
+        val layout = html.layout.getOrElse(fail(s"${html.name} has no layout receipt"))
+        assertEquals(lines.length, layout.lines, html.name)
+        assertEquals(pieces.length, layout.annotationFragments, html.name)
+        assertEquals(count(html.content, "<section class=\"page\""), layout.pages, html.name)
+        assert(layout.pages > 1, s"${html.name}: ${layout.pages} page(s)")
+        assertEquals(count(html.content, "<svg "), layout.pages, html.name)
+        assert(!html.content.contains("<script"), html.name)
+        val twinName =
+          if html.name == "preview.html" then "preview.txt"
+          else html.name.stripSuffix(".html") + "-pages.txt"
+        val twin = e.files
+          .find(_.name == twinName)
+          .getOrElse(fail("pages twin"))
+        assertEquals(twin.names, html.names, twin.name)
+        assertEquals(twin.layout, html.layout, twin.name)
+        pieces.foreach(n => assertEquals(count(twin.content, s"  $n "), 1, s"${twin.name}: $n"))
+        lines.foreach(n => assertEquals(count(twin.content, s"- $n "), 1, s"${twin.name}: $n"))
+        assert(twin.content.contains(layout.checksum.hex), twin.name)
+        assert(html.content.contains(layout.checksum.hex), html.name)
     }
 
   test("each SVG's data-name count equals the receipt's name count and the twin lists each name"):

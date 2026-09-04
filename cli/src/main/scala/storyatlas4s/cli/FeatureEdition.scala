@@ -95,7 +95,7 @@ object FeatureEdition:
                       .left
                       .map(_.message)
                   )
-            minimum <- PlateBox.of(1200, 900).left.map(_.message)
+            minimum <- PlateBox.of(1200, 1800).left.map(_.message)
             box <- AtlasLowering
               .fitFeatureBox(scene, read.draft.source.canonicalText.length, minimum)
               .left
@@ -156,25 +156,27 @@ object FeatureEdition:
           val state =
             if tracks.isEmpty then "The pipeline supplied a record with no measured tracks."
             else s"${choices.size} measured tracks available at Token, Sentence or Situation grain."
+          val config = Checksum.ofText(state)
           pages :+ EditionFile(
             "features.html",
             "feature-index",
             "measured tracks",
-            Checksum.ofText(state),
+            config,
             0,
-            s"<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Measured features</title><body><h1>Measured features</h1><p>${esc(basis)}</p><p>${esc(state)}</p><ul>$navigation</ul><a href=\"codex-reading.html\">Read story</a></body></html>",
+            s"<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"configuration-checksum\" content=\"${config.hex}\"><title>Measured features</title><body><h1>Measured features</h1><p>${esc(basis)}</p><p>${esc(state)}</p><ul>$navigation</ul><a href=\"codex-reading.html\">Read story</a></body></html>",
             None
           )
         }
 
   def notSupplied(basis: ViewBasis, source: Checksum): EditionFile =
+    val config = Checksum.ofText(s"feature-index/v1:${basis.label}:${source.hex}")
     EditionFile(
       "features.html",
       "feature-index",
       "not supplied",
-      Checksum.ofText(s"feature-index/v1:${basis.label}:${source.hex}"),
+      config,
       0,
-      s"<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Measured features</title><body><h1>Measured features</h1><p>${esc(basis.label)}</p><p>No feature record was supplied. This does not establish that nothing was measured.</p><a href=\"codex-reading.html\">Read story</a></body></html>",
+      s"<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"configuration-checksum\" content=\"${config.hex}\"><title>Measured features</title><body><h1>Measured features</h1><p>${esc(basis.label)}</p><p>No feature record was supplied. This does not establish that nothing was measured.</p><a href=\"codex-reading.html\">Read story</a></body></html>",
       None
     )
 
@@ -245,7 +247,9 @@ object FeatureEdition:
       .excluded{border-bottom:2px dotted #374b45!important}.situation{padding:9px 0;border-bottom:1px solid #bfc6bd}.gap{color:#666;font-size:13px}
       .plate svg{width:100%;height:auto}.inspector{padding:30px 5vw}details{border-top:1px solid #bfc6bd;padding:10px 0}details:target{outline:2px solid #005a4c}details p{overflow-wrap:anywhere}code{font-size:12px;overflow-wrap:anywhere}
       @media(max-width:850px){nav{grid-template-columns:1fr}main{display:block}.plate{margin-top:30px}}@media print{nav{display:none}main{display:block}}
-      </style></head><body><header><a href="features.html">Measured features</a> · <a href="codex-reading.html">Read story</a><h1>${esc(
+      </style></head><body><header><a href="features.html">Measured features</a> · <a href="codex-reading.html">Read story</a> · <a href="${esc(
+        current.stripSuffix(".html")
+      )}.svg">Open Atlas SVG</a><h1>${esc(
         title
       )}</h1>
       <p>${esc(scene.featureLayer.scale.label)} · ${esc(
