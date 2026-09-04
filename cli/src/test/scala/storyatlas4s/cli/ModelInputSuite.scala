@@ -5,8 +5,9 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.{Files, Path}
 import munit.FunSuite
 import storyatlas4s.edition.EditionSpec
-import storymodel4s.codec.StoryModelCodec
-import storymodel4s.core.{BuildReceipt, Checksum, StageId}
+import storymodel4s.codec.{FeaturesArtifact, FeaturesRecordCodec, StoryModelCodec}
+import storymodel4s.core.{BuildReceipt, Checksum, FeatureSpaceId, StageId}
+import storymodel4s.features.{FeatureTarget, FeatureTrack}
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel
 import storymodel4s.story.{
   ModelStatus,
@@ -45,7 +46,7 @@ class ModelInputSuite extends FunSuite:
     * receipt — it was never built — and `ViewBasis.ValidatedBuild` may not be claimed without one,
     * which is the distinction these tests are about.
     */
-  private val receiptedModel: StoryModel[ModelStatus.Validated] =
+  private val receiptedDraft: StoryModel[ModelStatus.Draft] =
     val m = WarOfTheGhostsModel.model
     val receipt = BuildReceipt(
       m.source.id,
@@ -68,8 +69,11 @@ class ModelInputSuite extends FunSuite:
       m.sensoryProfiles,
       Some(receipt)
     )
+    draft
+
+  private val receiptedModel: StoryModel[ModelStatus.Validated] =
     StoryValidator
-      .validate(draft, ValidationPolicy.default)
+      .validate(receiptedDraft, ValidationPolicy.default)
       .validated
       .getOrElse(fail("the receipted fixture content must still validate"))
 
@@ -94,7 +98,8 @@ class ModelInputSuite extends FunSuite:
         ),
         validated = None
       ),
-      derivation
+      derivation,
+      FeatureRecord.NotSupplied
     )
 
   temp.test("a storymodel.json round-trips through codec into a validated model"): dir =>
@@ -276,6 +281,138 @@ class ModelInputSuite extends FunSuite:
     assertEquals(read.derivation, DerivationRecord.NotSupplied)
     assertEquals(read.derivation.gapCount, None)
 
+  /** A feature record for `draft` in the shape the pipeline writes: the token-length measure over
+    * the fixture's surface and its mean per sentence, materialized onto the model as sidecars. The
+    * record binds to the model that carries the manifests, so that is the model a bundle must
+    * write, not the one before materialization.
+    */
+  private def measured(draft: StoryModel[ModelStatus.Draft]): Measured =
+    import storymodel4s.codec.FeatureMaterializer
+    import storymodel4s.core.SurfaceSequence
+    import storymodel4s.features.{TokenLength, TokenTracks}
+    val sequence = SurfaceSequence(draft.atlas)
+    val raw = ok(TokenTracks.measure(sequence, TokenLength))
+    val sentences = ok(TokenTracks.perSentence(raw, sequence))
+    val materialized = ok(FeatureMaterializer.materialize(draft, Vector(raw, sentences)))
+    val artifact = ok(FeaturesArtifact.of(materialized.model, materialized.tracks))
+    Measured(materialized.model, artifact, materialized.sidecars, raw)
+
+  private final case class Measured(
+      model: StoryModel[ModelStatus.Draft],
+      artifact: FeaturesArtifact,
+      sidecars: Map[FeatureSpaceId, Array[Byte]],
+      raw: FeatureTrack[FeatureTarget.Token, Double]
+  )
+
+  /** `storymodel.json`, `features.json` and every sidecar the record names, as the pipeline lays
+    * them out; returns the model path.
+    */
+  private def writeBundle(
+      dir: Path,
+      model: StoryModel[?],
+      artifact: FeaturesArtifact,
+      sidecars: Map[FeatureSpaceId, Array[Byte]]
+  ): Path =
+    val path = writeModel(dir, "storymodel.json", StoryModelCodec.encode(model))
+    writeModel(dir, ModelInput.FeaturesFile, FeaturesRecordCodec.encode(artifact))
+    artifact.tracks.foreach { entry =>
+      val file = dir.resolve(entry.file)
+      Files.createDirectories(file.getParent)
+      Files.write(file, sidecars(entry.track.space.id))
+    }
+    path
+
+  temp.test("no features.json beside the model is not supplied, and says so"): dir =>
+    val path = writeModel(dir, "storymodel.json", StoryModelCodec.encode(receiptedModel))
+    val read = ok(ModelInput.read(path))
+    assertEquals(read.features, FeatureRecord.NotSupplied)
+    assertEquals(read.features.trackCount, None)
+    val edition = ok(Edition.fromRead(read))
+    assert(edition.receipt.contains(ModelInput.featureRecordNote), edition.receipt)
+
+  temp.test("an empty feature record is supplied with no tracks, which is not 'not supplied'"):
+    dir =>
+      val path = writeModel(dir, "storymodel.json", StoryModelCodec.encode(receiptedModel))
+      val empty = ok(FeaturesArtifact.of(receiptedModel, Vector.empty))
+      writeModel(dir, ModelInput.FeaturesFile, FeaturesRecordCodec.encode(empty))
+      val read = ok(ModelInput.read(path))
+      assertEquals(read.features.trackCount, Some(0))
+      val supplied = ok(Edition.fromRead(read))
+      val absent = ok(Edition.fromRead(read.copy(features = FeatureRecord.NotSupplied)))
+      assert(supplied.receipt.contains("\"tracks\": 0"), supplied.receipt)
+      assert(!supplied.receipt.contains(ModelInput.featureRecordNote), supplied.receipt)
+      assertNotEquals(supplied.receipt, absent.receipt)
+
+  temp.test("features.json and its sidecars beside the model are bound, verified and materialized"):
+    dir =>
+      val m = measured(receiptedDraft)
+      val path = writeBundle(dir, m.model, m.artifact, m.sidecars)
+      val read = ok(ModelInput.read(path))
+      assert(read.isValidated, read.report.render)
+      read.features match
+        case FeatureRecord.Supplied(record, tracks) =>
+          assertEquals(record, m.artifact)
+          assertEquals(tracks.map(_.space.id), m.artifact.tracks.map(_.track.space.id))
+          // The values are the measure's own, back from the bytes, not the record's references.
+          assert(m.raw.observed.nonEmpty)
+          assertEquals(tracks(0).observed.map(_._2), m.raw.observed.map(_._2))
+          assertEquals(tracks(1).size, m.model.atlas.sentences.size)
+        case other => fail(s"expected a supplied record, got ${other.render}")
+      val edition = ok(Edition.fromRead(read))
+      assert(edition.receipt.contains("\"tracks\": 2"), edition.receipt)
+      assert(edition.receipt.contains("measure:token-length/v1"), edition.receipt)
+      assert(edition.receipt.contains(m.artifact.tracks.head.file), edition.receipt)
+
+  temp.test("a features.json written for another model is refused, never paired"): dir =>
+    val m = measured(receiptedDraft)
+    // The record binds to the materialized model; the model on disk is the one before it, same
+    // story and source, different content.
+    val path = writeBundle(dir, receiptedModel, m.artifact, m.sidecars)
+    ModelInput.read(path) match
+      case Left(message) =>
+        assert(message.contains("modelChecksum"), message)
+        assert(message.contains("is not the feature record of"), message)
+      case Right(read) => fail(s"paired a foreign feature record: ${read.features.render}")
+
+  temp.test("a track whose manifest is not the model's sidecar for its space is refused"): dir =>
+    val m = measured(receiptedDraft)
+    val path = writeBundle(dir, m.model, m.artifact, m.sidecars)
+    // Rewrite one track's manifest checksum and, consistently, the file it names, so the record
+    // still decodes and still binds to this model, and put bytes under the new name: the only
+    // thing wrong is that the model never declared this manifest.
+    val entry = m.artifact.tracks.head
+    val foreign = Checksum.ofText("a manifest the model never declared")
+    val recordFile = dir.resolve(ModelInput.FeaturesFile)
+    val renamed = entry.file.replace(entry.track.manifest.checksum.short(24), foreign.short(24))
+    val text = new String(Files.readAllBytes(recordFile), UTF_8)
+      .replace(entry.track.manifest.checksum.hex, foreign.hex)
+      .replace(entry.file, renamed)
+    Files.write(recordFile, text.getBytes(UTF_8))
+    Files.write(dir.resolve(renamed), m.sidecars(entry.track.space.id))
+    ModelInput.read(path) match
+      case Left(message) => assert(message.contains("is not the model's sidecar"), message)
+      case Right(_)      => fail("paired a track under a manifest the model does not carry")
+
+  temp.test("a sidecar the record names but the bundle lacks is refused"): dir =>
+    val m = measured(receiptedDraft)
+    val path = writeBundle(dir, m.model, m.artifact, m.sidecars)
+    Files.delete(dir.resolve(m.artifact.tracks.head.file))
+    ModelInput.read(path) match
+      case Left(message) => assert(message.contains("is not beside the model"), message)
+      case Right(_)      => fail("read a record whose sidecar is missing")
+
+  temp.test("sidecar bytes that do not verify against their manifest are refused"): dir =>
+    val m = measured(receiptedDraft)
+    val path = writeBundle(dir, m.model, m.artifact, m.sidecars)
+    val file = dir.resolve(m.artifact.tracks.head.file)
+    val bytes = Files.readAllBytes(file)
+    bytes(bytes.length - 1) = (bytes(bytes.length - 1) ^ 0x01).toByte
+    Files.write(file, bytes)
+    ModelInput.read(path) match
+      case Left(message) =>
+        assert(message.contains("is not the sidecar its record describes"), message)
+      case Right(_) => fail("materialized sidecar bytes that do not match their manifest")
+
   temp.test("a file that is not a storymodel.json is refused with the codec's reason"): dir =>
     val garbage = writeModel(dir, "storymodel.json", """{"schemaVersion":"0.1.0"}""")
     val problem = ModelInput
@@ -305,7 +442,8 @@ class ModelInputSuite extends FunSuite:
         ),
         validated = None
       ),
-      DerivationRecord.NotSupplied
+      DerivationRecord.NotSupplied,
+      FeatureRecord.NotSupplied
     )
     assertEquals(read.violationsByLaw, Vector("S3" -> 2, "S1" -> 1))
     assertEquals(

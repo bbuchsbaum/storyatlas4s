@@ -110,6 +110,21 @@ with no record knows nothing about derivation either way. The pipeline's
 `evidence` as sizes rather than contents and every address as a one-way
 render.
 
+The feature record — every measured track in its sidecar-backed form
+(storymodel4s ADR 0011) — is read from `features.json` beside the model the
+same way, through the decoder bound to the model's content checksum, and each
+sidecar it names is read from `features/` beside it and verified block by
+block against the manifest the model itself carries before its values are
+materialized. A track under a manifest the model does not carry, a sidecar
+the record names but the bundle lacks, and bytes that do not verify are each
+refused rather than paired. Three states reach the receipt and never share a
+line: **not supplied** (no file), a supplied record with no tracks (the
+pipeline's own statement that nothing was measured), and a supplied record
+with its tracks, listed by space and sidecar file. This is the reading half of
+the feature slice: nothing drawn consumes the values yet, because the
+value-bearing mark of ADR 0002 D11 has not been minted, and the receipt is
+where the record is visible until it is.
+
 ### The Recall Voyage
 
 ```sh
@@ -162,9 +177,11 @@ repository root):
   U+0000 is refused rather than written with a substitution, since neither
   survives UTF-8 encoding and HTML parsing (V-T2 on disk). The `-pages.txt`
   twin is `PaginatedCodex.textualTwin`;
-- `receipt.json`: basis, source checksum, sibling pins, the Atlas, Codex
-  overlay, and page boxes (`EditionSpec`), and per-file configuration checksums, mark counts, SHA-256 of the written text, and — for
-  the paginated files — the `LayoutReceipt` fields (V-D3).
+- `receipt.json`: basis, source checksum, sibling pins, the derivation and
+  feature records as read (or **not supplied**), the Atlas, Codex overlay, and
+  page boxes (`EditionSpec`), and per-file configuration checksums, mark
+  counts, SHA-256 of the written text, and — for the paginated files — the
+  `LayoutReceipt` fields (V-D3).
 
 The edition is byte-identical across runs (the suite writes it twice and
 compares).

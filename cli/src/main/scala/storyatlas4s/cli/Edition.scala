@@ -36,6 +36,8 @@ final case class Edition(
     modelReceiptChecksum: Option[Checksum],
     state: CommonViewState,
     files: Vector[EditionFile],
+    /** What sat beside the model about measurement, read and verified; see [[FeatureRecord]]. */
+    features: FeatureRecord,
     /** Present exactly when this is a draft edition; `None` says the model was promoted. */
     promotion: Option[DraftPromotion] = None
 ):
@@ -71,6 +73,22 @@ final case class Edition(
         )
       )
 
+  /** What was read beside the model about measurement. `NotSupplied` is its own string, never a
+    * zero: a record with no tracks is the pipeline saying nothing was measured (storymodel4s ADR
+    * 0011), and a missing record says nothing either way. Those two must never share a receipt.
+    * Nothing drawn reads this yet; the receipt is where the reading half of the slice is visible.
+    */
+  private def featuresJson: Json = features match
+    case FeatureRecord.NotSupplied                => Json.Str(ModelInput.featureRecordNote)
+    case FeatureRecord.Supplied(artifact, tracks) =>
+      Json.Obj(
+        Vector(
+          "tracks" -> Json.Num(tracks.size.toLong),
+          "spaces" -> Json.strings(tracks.map(_.space.id.value)),
+          "sidecars" -> Json.strings(artifact.tracks.map(_.file))
+        )
+      )
+
   def receipt: String =
     Json
       .obj(
@@ -78,6 +96,7 @@ final case class Edition(
         "model" -> Json.Str(model),
         "basis" -> Json.Str(provenanceBasis.label),
         "draft" -> derivationJson,
+        "features" -> featuresJson,
         "sourceChecksum" -> Json.Str(sourceChecksum.hex),
         "modelReceiptChecksum" -> modelReceiptChecksum.fold[Json](Json.Null)(c => Json.Str(c.hex)),
         "compilerVersion" -> Json.Str(EditionSpec.compilerVersion),
@@ -122,7 +141,12 @@ object Edition:
     * output from V0 onward (docs/plans/2026-09-03-visualization-recovery-plan.md §5).
     */
   def warOfTheGhosts: Either[String, Edition] =
-    build(WarOfTheGhostsModel.model, "war-of-the-ghosts", ViewBasis.ResearcherReviewedFixture)
+    build(
+      WarOfTheGhostsModel.model,
+      "war-of-the-ghosts",
+      ViewBasis.ResearcherReviewedFixture,
+      FeatureRecord.NotSupplied
+    )
 
   /** A model read from a `storymodel.json` the pipeline wrote.
     *
@@ -147,7 +171,7 @@ object Edition:
             "it: a validated build must be receipted, and it is not a reviewed fixture."
         )
       case Some(model) =>
-        build(model, read.path.getFileName.toString, ViewBasis.ValidatedBuild)
+        build(model, read.path.getFileName.toString, ViewBasis.ValidatedBuild, read.features)
       case None =>
         draft(read)
 
@@ -193,6 +217,7 @@ object Edition:
       model.model.receipt.map(_.contentChecksum),
       state,
       atlases ++ codices ++ workspace,
+      read.features,
       Some(model.promotion)
     )
 
@@ -402,7 +427,8 @@ object Edition:
   def build(
       model: StoryModel[ModelStatus.Validated],
       name: String,
-      basis: ViewBasis
+      basis: ViewBasis,
+      features: FeatureRecord
   ): Either[String, Edition] =
     val receiptChecksum = model.receipt.map(_.contentChecksum)
     for
@@ -427,7 +453,8 @@ object Edition:
       model.source.canonicalChecksum,
       receiptChecksum,
       state,
-      atlas ++ codex
+      atlas ++ codex,
+      features
     )
 
   private def atlasFiles(

@@ -112,7 +112,8 @@ object Main:
         ModelInput.read(path).flatMap { read =>
           out.println(
             s"model $path: ${read.report.errors.length} errors, " +
-              s"${read.report.warnings.length} warnings, validated=${read.isValidated}"
+              s"${read.report.warnings.length} warnings, validated=${read.isValidated}, " +
+              s"features=${read.features.render}"
           )
           if !read.isValidated then read.violationSummary.foreach(err.println)
           Edition.fromRead(read)
