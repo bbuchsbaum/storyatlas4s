@@ -164,7 +164,7 @@ object Edition:
     * always.
     */
   def fromRead(read: ReadModel): Either[String, Edition] =
-    read.validated match
+    val base = read.validated match
       case Some(model) if model.receipt.isEmpty =>
         Left(
           s"${read.path} validates but carries no build receipt, so no view basis is true of " +
@@ -174,6 +174,7 @@ object Edition:
         build(model, read.path.getFileName.toString, ViewBasis.ValidatedBuild, read.features)
       case None =>
         draft(read)
+    base.flatMap(edition => FeatureEdition.files(read).map(files => edition.copy(files = edition.files ++ files)))
 
   /** The draft edition: the plates, the reading surface, and the workspace that joins them.
     *

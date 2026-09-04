@@ -31,12 +31,12 @@ import storymodel4s.view.*
   */
 object AtlasLowering:
 
-  /** The plate's fixed layer order. A scene always has all five, in this order, whatever the model
+  /** The plate's fixed layer order. A scene always has all six, in this order, whatever the model
     * contains: a layer with nothing to draw is empty, never absent, so a caller can address the
     * lane plot's geometry without counting what happened to be emitted.
     */
   enum Layer:
-    case Ground, Chrome, SurfaceRail, LanePlot, EpistemicRail
+    case Ground, Chrome, SurfaceRail, LanePlot, EpistemicRail, FeatureRail
 
   def layerOf(scene: ig.Scene, layer: Layer): ig.Grob = scene.grobs(layer.ordinal)
 
@@ -54,7 +54,8 @@ object AtlasLowering:
       surface <- surfaceRail(surfaceMarks, plan, style)
       plot <- lanePlot(narrativeMarks, plan, style)
       epistemic <- epistemicRail(epistemicMarks, plan, style)
-    yield ig.Scene(Vector(ground, chrome, surface, plot, epistemic))
+      feature <- featureRail(scene, plan, style)
+    yield ig.Scene(Vector(ground, chrome, surface, plot, epistemic, feature))
 
   // ------------------------------------------------------------------ mark classification
 
@@ -76,6 +77,7 @@ object AtlasLowering:
   private def partitionMarks(marks: Vector[VisualPrimitive]): Marks =
     marks.foldLeft(Marks(Vector.empty, Vector.empty, Vector.empty)) { (acc, mark) =>
       mark match
+        case _: VisualPrimitive.Feature       => acc
         case m: VisualPrimitive.SurfaceUnit    => acc.copy(surface = acc.surface :+ m)
         case m: VisualPrimitive.Region         => acc.copy(narrative = acc.narrative :+ m)
         case m: VisualPrimitive.Landmark       => acc.copy(narrative = acc.narrative :+ m)
@@ -95,6 +97,7 @@ object AtlasLowering:
     */
   private def orderedNarrative(marks: Vector[VisualPrimitive]): Vector[VisualPrimitive] =
     val rank: VisualPrimitive => Int =
+      case _: VisualPrimitive.Feature        => 0
       case _: VisualPrimitive.SurfaceUnit    => 0
       case _: VisualPrimitive.ContextBand    => 1
       case _: VisualPrimitive.Region         => 2
@@ -744,6 +747,7 @@ object AtlasLowering:
     // speech frames inside it are not swallowed; hulling would redraw the fabricated battle as
     // narration. A frame that is not the narrated world is hatched as well as drawn on its own
     // lane, so "this is not narration" reads in monochrome and never from opacity (V-U5).
+    case _: VisualPrimitive.Feature => Right(Vector.empty)
     case VisualPrimitive.ContextBand(_, kind, _, extents, _, basis) =>
       val narrated = AtlasPlate.isNarrated(kind)
       val gp = if narrated then style.contextBand else style.speechFill
@@ -1192,3 +1196,53 @@ object AtlasLowering:
     mark.epistemicPlacement.flatMap(_.spanSet) match
       case Some(spans) => (0, spans.minSpan.start)
       case None        => (1, 0)
+
+
+  /** Values, missingness and coverage occupy separate visual channels over exact support. */
+  private def featureRail(scene: NarrativeScene, plan: AtlasPlate.Plan, style: Style.Params): Either[GraphicsError, ig.Grob] =
+    val marks = scene.marks.collect { case f: VisualPrimitive.Feature => f }
+    val title = marks.headOption.toVector.flatMap { f =>
+      val v = f.value
+      val domain = v.domain.fold("no observed values")(d => s"${d.minimum} – ${d.maximum}")
+      Vector(s"${v.space.description} · ${scene.featureLayer.scale.label}",
+        s"$domain ${v.space.units.getOrElse("units unspecified")} · × missing · dotted excluded · lower bar coverage · ${v.circularity}")
+    }
+    for
+      labels <- title.zipWithIndex.traverse((t, i) => pageText(plan, plan.plotLeftPx, plan.featureTopPx + 12 + i * 13, t, style.fine))
+      children <- marks.traverse { mark =>
+        val v = mark.value
+        val y = plan.featureTopPx + 34 + plan.featureRows(mark.identity.mark.value) * 18.0
+        val fraction = v.estimate.toOption.flatMap(n => v.domain.map(_.fraction(n)))
+        val intensity = fraction.fold(245)(f => (235.0 - 150.0 * f).round.toInt)
+        val missing = v.estimate match
+          case storymodel4s.features.Estimate.Missing(r) => Some(r)
+          case _ => None
+        for
+          colour <- ig.Rgba(intensity, intensity, intensity)
+          ink <- ig.Rgba(45, 55, 52)
+          gp <- ig.GraphicParams.checked(stroke = Some(ink), fill = Some(colour),
+            lineType = if missing.contains(storymodel4s.features.MissingReason.Excluded) then ig.LineType.Dotted else ig.LineType.Solid)
+          pieces <- v.support.spans.toVector.traverse { span =>
+            val x0 = plan.xOf(span.start.toDouble)
+            val x1 = plan.xOf(span.endExclusive.toDouble)
+            for
+              box <- pageBox(plan, x0, y, x1, y + 10, gp)
+              mask <- if missing.isDefined && !missing.contains(storymodel4s.features.MissingReason.Excluded) then
+                Vector((x0, y, x1, y + 10), (x0, y + 10, x1, y)).traverse { (a, b, c, d) =>
+                  for
+                    from <- ig.Point.npc(plan.x(a), plan.y(b))
+                    to <- ig.Point.npc(plan.x(c), plan.y(d))
+                    line <- ig.Grob.lines(Vector(from, to), gp = style.axisRule)
+                  yield line
+                }
+                else Right(Vector.empty)
+              coverage <- v.coverage.toVector.traverse { c =>
+                val width = if c.eligible > 0 then c.observed.toDouble / c.eligible else 0.0
+                pageRule(plan, x0, x0 + (x1 - x0) * width, y + 13, style.axisRule)
+              }
+            yield Vector(box) ++ mask ++ coverage
+          }
+          name <- GraphicsNames.ofMark(mark.identity.mark)
+        yield ig.Grob.annotated(ig.Grob.group(pieces.flatten, name = Some(name)), ig.GrobMeta(title = Some(v.description)))
+      }
+    yield ig.Grob.group(labels ++ children)

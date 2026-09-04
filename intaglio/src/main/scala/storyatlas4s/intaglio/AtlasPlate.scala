@@ -84,6 +84,8 @@ private[intaglio] object AtlasPlate:
       axisTopPx: Double,
       surfaceTopPx: Double,
       surfaceHeightPx: Double,
+      featureRows: Map[String, Int],
+      featureHeightPx: Double,
       absenceTopPx: Double,
       absenceHeightPx: Double,
       absence: Vector[AbsenceGroup],
@@ -110,6 +112,7 @@ private[intaglio] object AtlasPlate:
       /** The epistemic channels the contract declares, and which of them occur here. */
       channelNote: String
   ):
+    def featureTopPx: Double = surfaceTopPx + surfaceHeightPx
     def laneCount: Int = lanes.length
 
     /** Centre of a lane's context-band ribbon, in pixels below the lane's own top edge. */
@@ -191,11 +194,22 @@ private[intaglio] object AtlasPlate:
     val absenceHeightPx =
       groups.lastOption.fold(Metric.absenceCaptionPx)(g => g.topPx + g.heightPx)
 
+    val features = marks.collect { case f: VisualPrimitive.Feature => f }
+    val ends = scala.collection.mutable.ArrayBuffer.empty[Int]
+    val featureRows = features.sortBy(f => (f.value.support.spans.head.start, f.identity.mark.value)).map { f =>
+      val start = f.value.support.spans.head.start
+      val end = f.value.support.spans.toVector.last.endExclusive
+      val available = ends.indexWhere(_ <= start)
+      val row = if available < 0 then { ends += end; ends.size - 1 }
+                else { ends(available) = end; available }
+      f.identity.mark.value -> row
+    }.toMap
+    val featureHeightPx = if features.isEmpty then 0.0 else 44.0 + ends.size * 18.0
     val headerTopPx = Metric.topPadPx
     val contractTopPx = headerTopPx + Metric.headerPx
     val laneTopPx = contractTopPx + Metric.contractPx
     val fixedBelow =
-      Metric.axisPx + Metric.surfacePx + absenceHeightPx + Metric.legendPx + Metric.bottomPadPx
+      Metric.axisPx + Metric.surfacePx + featureHeightPx + absenceHeightPx + Metric.legendPx + Metric.bottomPadPx
     val lanesHeightPx = math.max(
       Metric.laneMinPx * laneCount,
       box.heightPx - laneTopPx - fixedBelow
@@ -212,7 +226,7 @@ private[intaglio] object AtlasPlate:
     )
     val axisTopPx = laneTopPx + lanesHeightPx
     val surfaceTopPx = axisTopPx + Metric.axisPx
-    val absenceTopPx = surfaceTopPx + Metric.surfacePx
+    val absenceTopPx = surfaceTopPx + Metric.surfacePx + featureHeightPx
     val legendTopPx = absenceTopPx + absenceHeightPx
 
     val partial = Plan(
@@ -230,6 +244,8 @@ private[intaglio] object AtlasPlate:
       axisTopPx = axisTopPx,
       surfaceTopPx = surfaceTopPx,
       surfaceHeightPx = Metric.surfacePx,
+      featureRows = featureRows,
+      featureHeightPx = featureHeightPx,
       absenceTopPx = absenceTopPx,
       absenceHeightPx = absenceHeightPx,
       absence = groups,
@@ -382,6 +398,7 @@ private[intaglio] object AtlasPlate:
     else s"epistemic channels in use: $counts$why$perMark"
 
   private def maxContextLane(mark: VisualPrimitive): Option[Int] = mark match
+    case _: VisualPrimitive.Feature                    => None
     case _: VisualPrimitive.SurfaceUnit                => None
     case VisualPrimitive.Region(_, extent, _, _)       => Some(extent.lane1)
     case VisualPrimitive.Landmark(_, at, _, _, _, _)   => Some(at.lane)
