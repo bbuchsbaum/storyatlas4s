@@ -47,7 +47,10 @@ object AtlasLowering:
       minimum: PlateBox
   ): Either[GraphicsError, PlateBox] =
     val plan = AtlasPlate.plan(scene, discourseLength, minimum)
-    val needed = math.ceil(plan.legendTopPx + Metric.legendPx + Metric.bottomPadPx)
+    // The general plate's compressed lanes can fit glyphs but not the multi-line holder labels.
+    // Feature editions grow vertically, so reserve readable lane space before adding absences.
+    val labelRoom = math.max(0.0, 120.0 - plan.laneHeightPx) * plan.laneCount
+    val needed = math.ceil(plan.legendTopPx + Metric.legendPx + Metric.bottomPadPx + labelRoom)
     PlateBox.of(minimum.widthPx.toInt, math.max(minimum.heightPx, needed).toInt)
 
   def lower(
