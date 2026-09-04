@@ -49,6 +49,12 @@ final case class ReadModel(
   /** True when the validator promoted the model, so the validated compilers can draw it. */
   def isValidated: Boolean = validated.isDefined
 
+  /** Structural promotion does not establish complete derivation. Retain the draft view whenever
+    * the supplied record reports gaps or abstentions, even if the remaining graph validates.
+    */
+  def needsDraftView: Boolean =
+    !isValidated || draftModel.gaps.nonEmpty || draftModel.abstentions.nonEmpty
+
   /** The bundle the draft compilers take: the model, what validation said, and what the derivation
     * record does or does not report. `DraftModel.of` derives the promotion, which cannot be forged.
     */

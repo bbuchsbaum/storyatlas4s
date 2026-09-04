@@ -147,7 +147,7 @@ class ModelInputSuite extends FunSuite:
     )
     assertEquals(code, 0, err.toString(UTF_8))
     assert(
-      out.toString(UTF_8).contains("0 errors, 0 warnings, validated=true"),
+      out.toString(UTF_8).contains("0 errors, 0 warnings, structurally-validated=true"),
       out.toString(UTF_8)
     )
     assert(Files.exists(outDir.resolve(Edition.ReceiptFile)))
@@ -191,12 +191,13 @@ class ModelInputSuite extends FunSuite:
         "codex-draft-pages",
         "codex-draft-pages-twin",
         "codex-draft-twin",
+        "feature-index",
         "workspace"
       )
     )
     assertEquals(
       edition.files.length,
-      EditionSpec.zoomLevels.length * 2 + EditionSpec.lenses.length * 4 + 1
+      EditionSpec.zoomLevels.length * 2 + EditionSpec.lenses.length * 4 + 2
     )
     edition.files.foreach { f =>
       assert(f.content.contains(ViewBasis.DraftBuild.label), f.name)
@@ -258,8 +259,11 @@ class ModelInputSuite extends FunSuite:
     val read = ok(ModelInput.read(path))
     assertEquals(read.derivation.gapCount, Some(1))
     // The record reaches the receipt and the drawn files as one gap, not as "not supplied".
-    val edition =
-      ok(Edition.fromRead(read.copy(outcome = unpromoted(dir, read.derivation).outcome)))
+    assert(read.isValidated)
+    assert(read.needsDraftView)
+    val edition = ok(Edition.fromRead(read))
+    assertEquals(edition.provenanceBasis, ViewBasis.DraftBuild)
+    assert(edition.promotion.exists(_.promoted))
     assertEquals(edition.promotion.flatMap(_.gapCount), Some(1))
     assert(!edition.receipt.contains(ModelInput.derivationRecordNote), edition.receipt)
     assert(edition.receipt.contains("\"gaps\": 1"), edition.receipt)
@@ -360,6 +364,43 @@ class ModelInputSuite extends FunSuite:
         case other => fail(s"expected a supplied record, got ${other.render}")
       val edition = ok(Edition.fromRead(read))
       assert(edition.receipt.contains("\"tracks\": 2"), edition.receipt)
+      val featurePages = edition.files.filter(_.artifact == "feature-reading")
+      assertEquals(featurePages.size, 2)
+      assert(featurePages.forall(_.content.contains("aria-label=\"Measure and grain\"")))
+      assert(featurePages.exists(_.content.contains("missing=Excluded")))
+      assert(featurePages.exists(_.content.contains("circularity=NotAssessed")))
+      val twins = edition.files.filter(_.artifact == "feature-twin")
+      assertEquals(twins.size, 2)
+      assert(twins.forall(_.content.contains("materialized:outcomes=")))
+      val observed = m.raw.observed.head._2
+      assert(
+        twins.exists(_.content.contains(s"value=$observed")),
+        "actual sidecar values never reached the twin"
+      )
+      val featureSvgs = edition.files.filter(_.artifact == "feature-atlas")
+      assertEquals(featureSvgs.size, 2)
+      assert(featureSvgs.forall(_.content.contains("sidecar=")))
+      assert(featureSvgs.exists(_.content.contains(s"value=$observed")))
+      assertEquals(
+        featureSvgs.map(f => "sidecar=".r.findAllIn(f.content).size).sum,
+        m.artifact.tracks.map(_.track.observations.size).sum
+      )
+
+      writeModel(dir, ModelInput.DerivationFile, derivationFor(m.model))
+      val partial = ok(ModelInput.read(path))
+      assert(partial.isValidated)
+      assert(partial.needsDraftView)
+      val draftEdition = ok(Edition.fromRead(partial))
+      assertEquals(draftEdition.provenanceBasis, ViewBasis.DraftBuild)
+      assertEquals(draftEdition.promotion.flatMap(_.gapCount), Some(1))
+      val draftFeatures = draftEdition.files.filter(_.artifact.startsWith("feature-"))
+      assert(
+        draftFeatures.filter(_.artifact == "feature-twin").forall(_.content.contains("draft build"))
+      )
+      assert(
+        draftFeatures.find(_.name == "features.html").exists(_.content.contains("draft build"))
+      )
+
       assert(edition.receipt.contains("measure:token-length/v1"), edition.receipt)
       assert(edition.receipt.contains(m.artifact.tracks.head.file), edition.receipt)
 
@@ -453,3 +494,28 @@ class ModelInputSuite extends FunSuite:
         "  S1: 1 (e.g. entities/z: only)"
       )
     )
+
+  temp.test("an abstention retains the draft view independently of gaps and structural validation"):
+    dir =>
+      import storymodel4s.document.SentenceCoverage
+      val path = writeModel(dir, "storymodel.json", StoryModelCodec.encode(receiptedModel))
+      val read = ok(ModelInput.read(path))
+      val empty = read.copy(derivation = DerivationRecord.Reported(Vector.empty, Vector.empty))
+      assert(!read.needsDraftView)
+      assert(!empty.needsDraftView)
+      val partial = read.copy(derivation =
+        DerivationRecord.Reported(
+          Vector.empty,
+          Vector(SentenceCoverage.EmptyChart(read.draft.atlas.sentences.head.id))
+        )
+      )
+      assert(partial.isValidated)
+      assert(partial.needsDraftView)
+      val edition = ok(Edition.fromRead(partial))
+      assertEquals(edition.provenanceBasis, ViewBasis.DraftBuild)
+      assertEquals(edition.promotion.flatMap(_.gapCount), Some(0))
+      assert(
+        edition.files
+          .filter(_.artifact == "atlas-draft-twin")
+          .exists(_.content.contains("empty-chart"))
+      )

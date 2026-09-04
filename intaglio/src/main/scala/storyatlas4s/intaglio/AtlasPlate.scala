@@ -196,15 +196,18 @@ private[intaglio] object AtlasPlate:
 
     val features = marks.collect { case f: VisualPrimitive.Feature => f }
     val ends = scala.collection.mutable.ArrayBuffer.empty[Int]
-    val featureRows = features.sortBy(f => (f.value.support.spans.head.start, f.identity.mark.value)).map { f =>
-      val start = f.value.support.spans.head.start
-      val end = f.value.support.spans.toVector.last.endExclusive
-      val available = ends.indexWhere(_ <= start)
-      val row = if available < 0 then { ends += end; ends.size - 1 }
-                else { ends(available) = end; available }
-      f.identity.mark.value -> row
-    }.toMap
-    val featureHeightPx = if features.isEmpty then 0.0 else 44.0 + ends.size * 18.0
+    val featureRows = features
+      .sortBy(f => (f.value.support.spans.head.start, f.identity.mark.value))
+      .map { f =>
+        val start = f.value.support.spans.head.start
+        val end = f.value.support.spans.toVector.last.endExclusive
+        val available = ends.indexWhere(_ <= start)
+        val row = if available < 0 then { ends += end; ends.size - 1 }
+        else { ends(available) = end; available }
+        f.identity.mark.value -> row
+      }
+      .toMap
+    val featureHeightPx = if features.isEmpty then 0.0 else 62.0 + ends.size * 18.0
     val headerTopPx = Metric.topPadPx
     val contractTopPx = headerTopPx + Metric.headerPx
     val laneTopPx = contractTopPx + Metric.contractPx

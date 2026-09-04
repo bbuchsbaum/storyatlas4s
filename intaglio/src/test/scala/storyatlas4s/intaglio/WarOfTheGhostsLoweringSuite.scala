@@ -121,15 +121,15 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
         .sorted
     )
 
-    // Every plate has the same five layers in the same order, whatever the model contains, so a
+    // Every plate has the same six layers in the same order, whatever the model contains, so a
     // reader of the output addresses the lane plot by what it is rather than by what happened to
     // be emitted.
-    assertEquals(ok(AtlasLowering.lower(hidden, length)).grobs.length, 5)
+    assertEquals(ok(AtlasLowering.lower(hidden, length)).grobs.length, 6)
     val hiddenPlotViewport =
       AtlasLowering.layerOf(ok(AtlasLowering.lower(hidden, length)), Layer.LanePlot).viewport
     Vector(sentences, tokens).foreach { compiled =>
       val lowered = ok(AtlasLowering.lower(compiled, length))
-      assertEquals(lowered.grobs.length, 5)
+      assertEquals(lowered.grobs.length, 6)
       val rail = AtlasLowering.layerOf(lowered, Layer.SurfaceRail)
       val plot = AtlasLowering.layerOf(lowered, Layer.LanePlot)
       assert(rail.viewport.exists(_.clip == ig.Clip.On))

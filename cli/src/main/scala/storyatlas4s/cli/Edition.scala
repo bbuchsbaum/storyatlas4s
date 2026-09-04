@@ -75,8 +75,8 @@ final case class Edition(
 
   /** What was read beside the model about measurement. `NotSupplied` is its own string, never a
     * zero: a record with no tracks is the pipeline saying nothing was measured (storymodel4s ADR
-    * 0011), and a missing record says nothing either way. Those two must never share a receipt.
-    * Nothing drawn reads this yet; the receipt is where the reading half of the slice is visible.
+    * 0011), and a missing record says nothing either way. Those two must never share a receipt. The
+    * feature pages render these checked tracks; the receipt records their input state.
     */
   private def featuresJson: Json = features match
     case FeatureRecord.NotSupplied                => Json.Str(ModelInput.featureRecordNote)
@@ -95,6 +95,9 @@ final case class Edition(
         "edition" -> Json.Str("storyatlas4s"),
         "model" -> Json.Str(model),
         "basis" -> Json.Str(provenanceBasis.label),
+        "validationScope" -> Json.Str(
+          "Local graph validation; original compiler promotion policy is not replayed. Derivation gaps and abstentions retain the draft view."
+        ),
         "draft" -> derivationJson,
         "features" -> featuresJson,
         "sourceChecksum" -> Json.Str(sourceChecksum.hex),
@@ -157,11 +160,11 @@ object Edition:
     * early, rather than quietly relabelled: `ResearcherReviewedFixture` is the one basis that needs
     * no receipt, and it is not true of a file this process did not review.
     *
-    * A model the validator did not promote goes to the draft compilers, which draw it *as partial*:
-    * its unsatisfied laws, and whatever gaps and abstentions its derivation record reports, become
-    * marks rather than holes in the ink. That is more truthful than making a model validate to
-    * satisfy a renderer, and it is what a researcher needs when the pipeline is imperfect, which is
-    * always.
+    * A model the validator did not promote, or whose record reports gaps or abstentions, goes to
+    * the draft compilers, which draw it *as partial*: its unsatisfied laws, and whatever gaps and
+    * abstentions its derivation record reports, become marks rather than holes in the ink. That is
+    * more truthful than making a model validate to satisfy a renderer, and it is what a researcher
+    * needs when the pipeline is imperfect, which is always.
     */
   def fromRead(read: ReadModel): Either[String, Edition] =
     val base = read.validated match
@@ -170,11 +173,17 @@ object Edition:
           s"${read.path} validates but carries no build receipt, so no view basis is true of " +
             "it: a validated build must be receipted, and it is not a reviewed fixture."
         )
-      case Some(model) =>
+      case Some(model) if !read.needsDraftView =>
         build(model, read.path.getFileName.toString, ViewBasis.ValidatedBuild, read.features)
-      case None =>
+      case _ =>
         draft(read)
-    base.flatMap(edition => FeatureEdition.files(read).map(files => edition.copy(files = edition.files ++ files)))
+    base.flatMap(edition =>
+      FeatureEdition
+        .files(read)
+        .map(files =>
+          edition.copy(files = edition.files.filterNot(_.name == "features.html") ++ files)
+        )
+    )
 
   /** The draft edition: the plates, the reading surface, and the workspace that joins them.
     *
@@ -454,7 +463,9 @@ object Edition:
       model.source.canonicalChecksum,
       receiptChecksum,
       state,
-      atlas ++ codex,
+      atlas ++ codex ++ (if features == FeatureRecord.NotSupplied then
+                           Vector(FeatureEdition.notSupplied(basis, model.source.canonicalChecksum))
+                         else Vector.empty),
       features
     )
 

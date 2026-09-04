@@ -91,12 +91,11 @@ fixture takes, on `ViewBasis.ValidatedBuild` rather than
 `ResearcherReviewedFixture`, so the receipt never calls a machine build a
 reviewed fixture.
 
-A model the validator does **not** promote is drawn as a draft rather than
-refused, on `ViewBasis.DraftBuild`, through `AtlasCompiler.compileDraft`: its
-unsatisfied promotion laws become marks, so a partial model is legible as
-partial. A draft edition writes atlas SVGs and twins only, because
-`CodexCompiler.compile` still takes a validated model and an empty Codex would
-claim the reading view had been compiled and had nothing to say.
+A model the validator does **not** promote is drawn as a draft. The same is
+true when its supplied derivation record reports gaps or abstentions, even
+if the remaining graph validates structurally. Atlas and Codex retain these
+absences, and the receipt distinguishes local graph validation from the
+original compiler's promotion policy, which the reader does not replay.
 
 The derivation record — the pipeline's gaps and its coverage ledger — is read
 from `derivation.json` beside the model when the pipeline wrote one, through a
@@ -120,10 +119,34 @@ the record names but the bundle lacks, and bytes that do not verify are each
 refused rather than paired. Three states reach the receipt and never share a
 line: **not supplied** (no file), a supplied record with no tracks (the
 pipeline's own statement that nothing was measured), and a supplied record
-with its tracks, listed by space and sidecar file. This is the reading half of
-the feature slice: nothing drawn consumes the values yet, because the
-value-bearing mark of ADR 0002 D11 has not been minted, and the receipt is
-where the record is visible until it is.
+with its tracks, listed by space and sidecar file.
+
+Open `features.html` in the generated edition to choose a measure and Token,
+Sentence, or Situation grain. Each choice has a reading page, an Atlas SVG,
+and a textual twin. Recorded values shade their exact support; missing values
+and exclusions have separate masks. Coverage has its own outlined bar, with
+distinct marks for unrecorded coverage and no eligible units. Select words to
+inspect the value, units, support, coverage, recipe, basis, and sidecar checksum.
+Situation supports remain separate pieces, with gaps visible between them.
+
+Each measure and grain uses its own observed display range. These pages use an
+omniscient horizon: whole-story frequency cannot honestly be shown as a
+reader-so-far measurement. Aggregate circularity is explicitly **not assessed**,
+since the feature record supplies no feature-use ledger. The browser shell's
+fixture remains a separate entry point; measured pages are static, portable
+editions with no service required.
+
+After generating an edition from a measured bundle, check its source text,
+support geometry, coverage masks, and inspector links with the pinned browser:
+
+```sh
+npm --prefix e2e/static ci
+node e2e/static/features.cjs /path/to/bundle target/edition
+```
+
+The renderer contract is storymodel4s ADR 0002 §16: feature values occupy the
+sixth lowering layer, and overlapping situations receive separate rows whose
+vertical position is layout only.
 
 ### The Recall Voyage
 
