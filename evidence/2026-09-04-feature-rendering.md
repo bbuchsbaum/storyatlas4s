@@ -72,5 +72,18 @@ TEST TOTALS are bound in `feature-values-model-checkAll-final.log`. Local HEAD,
 tracking main and live GitHub main were equal after the non-force push.
 
 The viewer pins that exact model revision and intaglio
-`4eb566d9208f474d64d61e778e084dee2ddbaa76`. Viewer gate receipts follow after
-execution.
+`4eb566d9208f474d64d61e778e084dee2ddbaa76`.
+
+On viewer candidate `80d8253`, the unmutated baseline passed 21 ModelInput tests
+and all nine browser pages (1,896 outcomes, six exact-source recoveries, 195
+discontinuous supports). All five compiling mutations were then caught by their
+named Scala assertion or browser geometry assertion. The replay receipt reads
+`draft build`, 84 gaps, and local structural promotion; it does not claim the
+original compiler promoted the build.
+
+The final landing gate is `sbt <exact dependency overrides> compileAll testAll
+scalafmtCheckAll app/fastLinkJS` on a clean merge-result checkout. Its bound HEAD,
+command, exit and TEST TOTALS are saved in
+`target/feature-rendering-evidence/gate.log`; mutation receipts and the final
+browser receipt are retained alongside it. These generated logs are local
+artifacts, while this note and the executable courts are committed.
