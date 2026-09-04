@@ -91,7 +91,7 @@ object Workspace:
     out.append(CodexHtml.escapeText(p.basis.label))
     p.draft.foreach { d =>
       out.append(" · ")
-      out.append(if d.promoted then "promotable" else "does not promote")
+      out.append(if d.promoted then "structurally promotable" else "does not structurally promote")
       out.append(" · ")
       out.append(d.violationCount).append(" unsatisfied laws")
       out.append(" · ")
@@ -347,7 +347,7 @@ object Workspace:
       out.append(CodexHtml.escapeText(s"Codex $lens"))
       out.append("</a>")
     }
-    out.append("\n<span class=\"navnote\">")
+    out.append("<a href=\"features.html\">Measured features</a>\n<span class=\"navnote\">")
     out.append(
       CodexHtml.escapeText(
         "This workspace shows one projection; the edition built the rest beside it."
