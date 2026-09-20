@@ -110,7 +110,7 @@ class DraftLoweringSuite extends FunSuite:
       Wog.draft.hierarchy,
       Wog.draft.trajectory,
       receipt = Wog.draft.receipt
-    )
+    ).fold(error => fail(error.message), identity)
     val draft = DraftModel.of(
       unsummarized,
       ValidationOutcome(ValidationReport(Vector.empty), validated = None),

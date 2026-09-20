@@ -68,7 +68,7 @@ class ModelInputSuite extends FunSuite:
       m.hypotheses,
       m.sensoryProfiles,
       Some(receipt)
-    )
+    ).fold(error => fail(error.message), identity)
     draft
 
   private val receiptedModel: StoryModel[ModelStatus.Validated] =
