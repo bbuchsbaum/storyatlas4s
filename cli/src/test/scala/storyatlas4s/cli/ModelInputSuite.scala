@@ -55,20 +55,22 @@ class ModelInputSuite extends FunSuite:
       Vector(StageId.unsafe("test/rebuild") -> Checksum.ofText("model-input-suite")),
       createdAtEpochMillis = 0L
     )
-    val draft = StoryModel.draft(
-      m.source,
-      m.atlas,
-      m.graph,
-      m.hierarchy,
-      m.trajectory,
-      m.featureSpaces,
-      m.sidecars,
-      m.featureRefs,
-      m.descriptors,
-      m.hypotheses,
-      m.sensoryProfiles,
-      Some(receipt)
-    ).fold(error => fail(error.message), identity)
+    val draft = StoryModel
+      .draft(
+        m.source,
+        m.atlas,
+        m.graph,
+        m.hierarchy,
+        m.trajectory,
+        m.featureSpaces,
+        m.sidecars,
+        m.featureRefs,
+        m.descriptors,
+        m.hypotheses,
+        m.sensoryProfiles,
+        Some(receipt)
+      )
+      .fold(error => fail(error.message), identity)
     draft
 
   private val receiptedModel: StoryModel[ModelStatus.Validated] =

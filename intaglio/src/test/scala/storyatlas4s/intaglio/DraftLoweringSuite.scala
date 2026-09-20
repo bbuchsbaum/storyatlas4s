@@ -98,19 +98,21 @@ class DraftLoweringSuite extends FunSuite:
   test("an unsummarized region is a hull with no words; a stated one carries its summary"):
     val g = Wog.draft.graph
     val target = g.segments(Wog.G.sc1a)
-    val unsummarized = StoryModel.draft(
-      Wog.draft.source,
-      Wog.draft.atlas,
-      g.copy(segments =
-        g.segments.updated(
-          Wog.G.sc1a,
-          target.copy(summary = SegmentSummary.Unsummarized(SummaryGap.NotProposed))
-        )
-      ),
-      Wog.draft.hierarchy,
-      Wog.draft.trajectory,
-      receipt = Wog.draft.receipt
-    ).fold(error => fail(error.message), identity)
+    val unsummarized = StoryModel
+      .draft(
+        Wog.draft.source,
+        Wog.draft.atlas,
+        g.copy(segments =
+          g.segments.updated(
+            Wog.G.sc1a,
+            target.copy(summary = SegmentSummary.Unsummarized(SummaryGap.NotProposed))
+          )
+        ),
+        Wog.draft.hierarchy,
+        Wog.draft.trajectory,
+        receipt = Wog.draft.receipt
+      )
+      .fold(error => fail(error.message), identity)
     val draft = DraftModel.of(
       unsummarized,
       ValidationOutcome(ValidationReport(Vector.empty), validated = None),
