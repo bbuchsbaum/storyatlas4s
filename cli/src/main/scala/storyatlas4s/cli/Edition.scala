@@ -435,7 +435,7 @@ object Edition:
     * refuses them without one.
     */
   def build(
-      model: StoryModel[ModelStatus.Validated],
+      model: TextModel[ModelStatus.Validated],
       name: String,
       basis: ViewBasis,
       features: FeatureRecord
@@ -470,7 +470,7 @@ object Edition:
     )
 
   private def atlasFiles(
-      model: StoryModel[ModelStatus.Validated],
+      model: TextModel[ModelStatus.Validated],
       receiptChecksum: Option[Checksum],
       basis: ViewBasis,
       state: CommonViewState,
@@ -523,7 +523,7 @@ object Edition:
     )
 
   private def codexFiles(
-      model: StoryModel[ModelStatus.Validated],
+      model: TextModel[ModelStatus.Validated],
       receiptChecksum: Option[Checksum],
       basis: ViewBasis,
       state: CommonViewState,

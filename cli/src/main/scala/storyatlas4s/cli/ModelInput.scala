@@ -13,9 +13,9 @@ import storymodel4s.codec.{
 import storymodel4s.features.{FeatureTarget, FeatureTrack}
 import storymodel4s.story.{
   ModelStatus,
-  StoryModel,
+  TextModel,
   StoryValidator,
-  ValidationOutcome,
+  TextValidationOutcome,
   ValidationPolicy,
   ValidationReport,
   Violation
@@ -25,7 +25,7 @@ import storymodel4s.view.{DerivationRecord, DraftModel}
 /** A `storymodel.json` the storymodel4s pipeline wrote, read back through storymodel4s `codec`, put
   * to the validator, and bound to whatever derivation record accompanied it.
   *
-  * The wire carries no status: `StoryModelCodec.decode` returns a `StoryModel[ModelStatus.Draft]`,
+  * The wire carries no status: `StoryModelCodec.decode` returns a `TextModel[ModelStatus.Draft]`,
   * and `Validated` is reachable only through `StoryValidator`, which is the point. A model the
   * pipeline built out of a real text is normally *not* validated, so this record keeps the draft,
   * the whole validation outcome, and the derivation record, and lets the caller decide which path
@@ -37,14 +37,14 @@ import storymodel4s.view.{DerivationRecord, DraftModel}
   */
 final case class ReadModel(
     path: Path,
-    draft: StoryModel[ModelStatus.Draft],
-    outcome: ValidationOutcome,
+    draft: TextModel[ModelStatus.Draft],
+    outcome: TextValidationOutcome,
     derivation: DerivationRecord,
     features: FeatureRecord
 ):
   def report: ValidationReport = outcome.report
 
-  def validated: Option[StoryModel[ModelStatus.Validated]] = outcome.validated
+  def validated: Option[TextModel[ModelStatus.Validated]] = outcome.validated
 
   /** True when the validator promoted the model, so the validated compilers can draw it. */
   def isValidated: Boolean = validated.isDefined
@@ -77,7 +77,7 @@ final case class ReadModel(
       s"  $law: $n (e.g. ${e.path}: ${e.reason})"
     }
 
-/** Reads a model from disk. The only supported route from a `storymodel.json` to a `StoryModel`. */
+/** Reads a model from disk. The only supported route from a `storymodel.json` to a `TextModel`. */
 object ModelInput:
 
   /** The file the pipeline writes its derivation record to, beside `storymodel.json` (storymodel4s
@@ -142,7 +142,7 @@ object ModelInput:
   /** `derivation.json` beside `modelPath`, bound to `draft`; `NotSupplied` when absent. */
   def readDerivation(
       modelPath: Path,
-      draft: StoryModel[ModelStatus.Draft]
+      draft: TextModel[ModelStatus.Draft]
   ): Either[String, DerivationRecord] =
     val sidecar = Option(modelPath.toAbsolutePath.getParent).map(_.resolve(DerivationFile))
     sidecar.filter(Files.isRegularFile(_)) match
@@ -169,7 +169,7 @@ object ModelInput:
     */
   def readFeatures(
       modelPath: Path,
-      draft: StoryModel[ModelStatus.Draft]
+      draft: TextModel[ModelStatus.Draft]
   ): Either[String, FeatureRecord] =
     Option(modelPath.toAbsolutePath.getParent) match
       case None      => Right(FeatureRecord.NotSupplied)
@@ -194,7 +194,7 @@ object ModelInput:
   private def materialize(
       record: Path,
       dir: Path,
-      draft: StoryModel[ModelStatus.Draft],
+      draft: TextModel[ModelStatus.Draft],
       entry: FeaturesArtifact.Entry
   ): Either[String, FeatureTrack[FeatureTarget, Double]] =
     val space = entry.track.space.id

@@ -5,7 +5,7 @@ import org.scalajs.dom
 import storyatlas4s.edition.EditionSpec
 import storyatlas4s.layout.{FragmentId, LayoutError, Measurer, MonospaceMeasurer}
 import storymodel4s.core.Address
-import storymodel4s.story.{ModelStatus, StoryModel}
+import storymodel4s.story.{ModelStatus, TextModel}
 import storymodel4s.view.*
 
 /** The Laminar shell: one exact `Var[ViewChoice]`, a last-intent-wins compilation runtime, and
@@ -17,7 +17,7 @@ import storymodel4s.view.*
 object AppView:
 
   def apply(
-      model: StoryModel[ModelStatus.Validated],
+      model: TextModel[ModelStatus.Validated],
       domMeasurer: Either[LayoutError, Measurer]
   ): HtmlElement =
     val text = model.source.canonicalText

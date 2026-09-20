@@ -33,7 +33,7 @@ class DraftLoweringSuite extends FunSuite:
   ): DraftModel =
     DraftModel.of(
       Wog.draft,
-      ValidationOutcome(ValidationReport(violations), validated = None),
+      TextValidationOutcome(ValidationReport(violations), validated = None),
       derivation
     )
 
@@ -99,8 +99,7 @@ class DraftLoweringSuite extends FunSuite:
     val g = Wog.draft.graph
     val target = g.segments(Wog.G.sc1a)
     val unsummarized = StoryModel
-      .draft(
-        Wog.draft.source,
+      .draftText(
         Wog.draft.atlas,
         g.copy(segments =
           g.segments.updated(
@@ -115,7 +114,7 @@ class DraftLoweringSuite extends FunSuite:
       .fold(error => fail(error.message), identity)
     val draft = DraftModel.of(
       unsummarized,
-      ValidationOutcome(ValidationReport(Vector.empty), validated = None),
+      TextValidationOutcome(ValidationReport(Vector.empty), validated = None),
       DerivationRecord.NotSupplied
     )
     val s = scene(draft)

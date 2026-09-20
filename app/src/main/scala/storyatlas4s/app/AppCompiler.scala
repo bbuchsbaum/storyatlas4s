@@ -105,7 +105,7 @@ private[app] final case class Compiled(
 private[app] object AppCompiler:
 
   def compile(
-      model: StoryModel[ModelStatus.Validated],
+      model: TextModel[ModelStatus.Validated],
       choice: ViewChoice,
       measurer: Measurer
   ): Either[String, Compiled] =
@@ -485,7 +485,7 @@ private[app] object AppCompiler:
 
   /** The receipt as ordered text pairs: what a saved view must record (V-D3). */
   private def receipts(
-      model: StoryModel[ModelStatus.Validated],
+      model: TextModel[ModelStatus.Validated],
       state: CommonViewState,
       flow: CodexFlow,
       placed: PaginatedCodex,

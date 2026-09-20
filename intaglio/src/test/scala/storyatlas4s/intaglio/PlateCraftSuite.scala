@@ -45,7 +45,7 @@ class PlateCraftSuite extends FunSuite:
   private def draftScene(violations: Vector[Violation]): NarrativeScene =
     val draft = DraftModel.of(
       Wog.draft,
-      ValidationOutcome(ValidationReport(violations), validated = None),
+      TextValidationOutcome(ValidationReport(violations), validated = None),
       DerivationRecord.NotSupplied
     )
     val spec = AtlasSpec(

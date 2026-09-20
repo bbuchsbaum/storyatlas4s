@@ -27,7 +27,7 @@ class WorkspaceSuite extends FunSuite:
   private def bundle(violations: Vector[Violation]): DraftModel =
     DraftModel.of(
       Wog.draft,
-      ValidationOutcome(ValidationReport(violations), validated = None),
+      TextValidationOutcome(ValidationReport(violations), validated = None),
       DerivationRecord.NotSupplied
     )
 

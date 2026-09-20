@@ -13,8 +13,9 @@ import storymodel4s.story.{
   ModelStatus,
   Severity,
   StoryModel,
+  TextModel,
   StoryValidator,
-  ValidationOutcome,
+  TextValidationOutcome,
   ValidationPolicy,
   ValidationReport,
   Violation
@@ -46,7 +47,7 @@ class ModelInputSuite extends FunSuite:
     * receipt — it was never built — and `ViewBasis.ValidatedBuild` may not be claimed without one,
     * which is the distinction these tests are about.
     */
-  private val receiptedDraft: StoryModel[ModelStatus.Draft] =
+  private val receiptedDraft: TextModel[ModelStatus.Draft] =
     val m = WarOfTheGhostsModel.model
     val receipt = BuildReceipt(
       m.source.id,
@@ -56,8 +57,7 @@ class ModelInputSuite extends FunSuite:
       createdAtEpochMillis = 0L
     )
     val draft = StoryModel
-      .draft(
-        m.source,
+      .draftText(
         m.atlas,
         m.graph,
         m.hierarchy,
@@ -73,7 +73,7 @@ class ModelInputSuite extends FunSuite:
       .fold(error => fail(error.message), identity)
     draft
 
-  private val receiptedModel: StoryModel[ModelStatus.Validated] =
+  private val receiptedModel: TextModel[ModelStatus.Validated] =
     StoryValidator
       .validate(receiptedDraft, ValidationPolicy.default)
       .validated
@@ -90,7 +90,7 @@ class ModelInputSuite extends FunSuite:
     ReadModel(
       dir.resolve("storymodel.json"),
       WarOfTheGhostsModel.draft,
-      ValidationOutcome(
+      TextValidationOutcome(
         ValidationReport(
           Vector(
             Violation("S3", Severity.Error, "situations/s1", "no supporting span"),
@@ -222,7 +222,7 @@ class ModelInputSuite extends FunSuite:
   /** A derivation record for `model`, in the shape the pipeline writes: one attempted summary that
     * was not emitted, so the record reports exactly one gap.
     */
-  private def derivationFor(model: StoryModel[?]): String =
+  private def derivationFor(model: TextModel[?]): String =
     import storymodel4s.acquire.{ClaimFamily, ResolutionFailure}
     import storymodel4s.codec.{DerivationArtifact, DerivationRecordCodec, StoryModelCodec}
     import storymodel4s.core.{Checksum, StageId}
@@ -292,7 +292,7 @@ class ModelInputSuite extends FunSuite:
     * record binds to the model that carries the manifests, so that is the model a bundle must
     * write, not the one before materialization.
     */
-  private def measured(draft: StoryModel[ModelStatus.Draft]): Measured =
+  private def measured(draft: TextModel[ModelStatus.Draft]): Measured =
     import storymodel4s.codec.FeatureMaterializer
     import storymodel4s.core.SurfaceSequence
     import storymodel4s.features.{TokenLength, TokenTracks}
@@ -304,7 +304,7 @@ class ModelInputSuite extends FunSuite:
     Measured(materialized.model, artifact, materialized.sidecars, raw)
 
   private final case class Measured(
-      model: StoryModel[ModelStatus.Draft],
+      model: TextModel[ModelStatus.Draft],
       artifact: FeaturesArtifact,
       sidecars: Map[FeatureSpaceId, Array[Byte]],
       raw: FeatureTrack[FeatureTarget.Token, Double]
@@ -315,7 +315,7 @@ class ModelInputSuite extends FunSuite:
     */
   private def writeBundle(
       dir: Path,
-      model: StoryModel[?],
+      model: TextModel[?],
       artifact: FeaturesArtifact,
       sidecars: Map[FeatureSpaceId, Array[Byte]]
   ): Path =
@@ -475,7 +475,7 @@ class ModelInputSuite extends FunSuite:
     val read = ReadModel(
       dir.resolve("storymodel.json"),
       WarOfTheGhostsModel.draft,
-      ValidationOutcome(
+      TextValidationOutcome(
         ValidationReport(
           Vector(
             Violation("S3", Severity.Error, "situations/b", "second"),
