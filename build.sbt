@@ -33,7 +33,7 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
 // The pin moves with the change (docs/plans/2026-09-03-visualization-recovery-plan.md §5): any
 // storymodel4s `view` change bumps this revision in the same slice, so the viewer can never again
 // drift behind the model it draws.
-lazy val storymodel4sRevision = "844b680c086906dba48458b8eddd5588d51a9cf3"
+lazy val storymodel4sRevision = "9a7caf45829e737e9638a23cd9176f30002a0187"
 lazy val storymodel4sBuild =
   sys.props
     .get("storyatlas4s.storymodel4s.build")
