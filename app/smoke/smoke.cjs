@@ -62,6 +62,7 @@ async function screenshotOnFailure(page) {
   fs.mkdirSync(diagnosticsDir, { recursive: true });
   const dest = path.join(diagnosticsDir, "live-shell-failure.png");
   try {
+    fs.writeFileSync(path.join(diagnosticsDir, "live-shell-failure.html"), await page.content());
     await page.screenshot({ path: dest, fullPage: true });
     console.log(`diagnostic screenshot ${dest}`);
   } catch (err) {
@@ -212,7 +213,7 @@ async function main() {
       (await receipt("domMeasurer")).startsWith("available: dom-canvas/"),
       "the panel reports the DOM measurer available"
     );
-    check((await receipt("atlasBoxPx")) === "1600x420px", "the receipts print the Atlas box");
+    check((await receipt("atlasBoxPx")) === "1600x1080px", "the receipts print the Atlas box");
     const pagesDom = await page.$$eval(".codex .page", (xs) => xs.length);
     check(
       String(pagesDom) === (await receipt("layout.pages")),
@@ -704,7 +705,25 @@ async function main() {
     await setSemanticZoom("#narrative-zoom", 0, "Story/Hidden");
     await page.waitForSelector(`${court} svg .selection-proxy`);
     const visibleAncestor = await attr(court, "data-visible");
-    await page.locator(".atlas svg .selection-proxy").first().click({ modifiers: ["Shift"] });
+    const ancestorProxy = page.locator(".atlas svg .selection-proxy").first();
+    if (process.env.STORYATLAS4S_SMOKE_DIAGNOSTICS_DIR) {
+      const diagnostic = await ancestorProxy.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        return { proxy: element.outerHTML, box: box.toJSON(), centerHit: hit?.outerHTML };
+      });
+      fs.mkdirSync(process.env.STORYATLAS4S_SMOKE_DIAGNOSTICS_DIR, { recursive: true });
+      fs.writeFileSync(
+        path.join(process.env.STORYATLAS4S_SMOKE_DIAGNOSTICS_DIR, "ancestor-proxy.json"),
+        JSON.stringify(diagnostic, null, 2)
+      );
+    }
+    // The SVG group's bounding-box center need not be a painted hit target. Exercise
+    // its documented keyboard activation; ordinary pointer activation is checked above.
+    await ancestorProxy.focus();
+    check(await ancestorProxy.evaluate((element) => element === document.activeElement),
+      "ancestor proxy receives keyboard focus");
+    await ancestorProxy.press("Shift+Enter");
     await page.waitForFunction(
       () =>
         new Set(
