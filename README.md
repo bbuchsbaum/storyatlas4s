@@ -10,6 +10,8 @@ nothing.
 
 Status: prototype, slice 1 (static and live War of the Ghosts edition). Unpublished.
 
+Next product milestone: [M1 — one reproducible source-plus-recall investigation](docs/delivery/workspace-m1.md). The live Mote chain defines its scope and acceptance.
+
 ## Modules
 
 | Module | Platforms | Depends on | Owns |
