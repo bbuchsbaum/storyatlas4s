@@ -64,7 +64,7 @@ Follow AGENTS.md browser ownership/lifecycle rules. Preserve warnings/skips and 
 warning policy. The 245-test current-pin archive and earlier 260-check smoke are useful baselines,
 not completion evidence for M1. No runtime courts ran during this ticket formalization.
 
-The next overall implementation is StoryModel support honesty. No active implementation claim,
+The next overall implementation is the active StoryModel G1 records slice; completed prerequisites remain evidence. Live Mote supersedes this dated queue statement. No active implementation claim,
 agent assignment, publication, push or deployment is created by this planning work.
 
 ```sh
@@ -72,3 +72,26 @@ mote ls --tag workspace-m1 --tag execution
 mote ls --tag workspace-m1 --tag execution --ready
 mote show bd-01M34JJ6QAW89VD68MNJKEWTMB
 ```
+
+
+## Post-M1 temporal analysis and uncertainty inspection
+
+The [recall-to-encoding workflow](../../../storymodel4s/docs/plans/2026-09-22-recall-encoding-workflow.md)
+extends this workspace in StoryAtlas. Temporal consumer `bd-01M354JNKNKJ15N4T5MGQTRSET` is a sibling
+under the broader delivery epic, not an extra M1 child. It waits locally for M1 final
+acceptance and remains explicitly blocked until StoryModel temporal producer
+`bd-01M3549Q5W5KQFSY3ZH81FARM0` supplies an exact revision, schemas/query versions, fixture digests,
+expected answers and receipts. No foreign-store dependency edge is created.
+
+StoryModel owns temporal measures, uncertainty semantics, scanner transforms,
+scientific queries and view compilation. StoryAtlas owns linked timelines, heatmaps,
+time series, accessible inspection, playback/navigation and saved investigations.
+CLI, independent reader and viewer must agree on the same quantities. AV acquisition,
+fine-time calibration, general chronology and neural analysis are separate gates.
+
+Portable HTML recall reporting belongs to existing bundle ticket
+`bd-01M19JQRMYBTYJN7V9HPN7DYKQ`, using static mechanics
+`bd-01M1C2TTHJRV7BWMQMPS7ENR1D`; M1 selected-view export remains unchanged.
+The old StoryModel pin issue is superseded by this store's existing adoption ticket,
+which retains exact declared-pin versus override qualification. Benchmark migration
+and legacy-arm retirement remain in StoryModel.
