@@ -1,23 +1,18 @@
 package storyatlas4s.app
 
-import cats.syntax.all.*
 import org.scalajs.dom
+import storyatlas4s.shell.{
+  InteractionDecoration,
+  InteractionError,
+  InteractionPresentation,
+  RenderedTargetIndex
+}
 import storymodel4s.core.Address
 
-/** Pure DOM-facing attributes keep direct and proxy semantics testable without a browser. */
-private[app] final case class InteractionPresentation(
-    label: String,
-    directlySelected: Boolean,
-    directlyFocused: Boolean,
-    selectionProxyFor: Vector[String],
-    focusProxyFor: Vector[String]
-):
-  def selectionIsComposite: Boolean = directlySelected && selectionProxyFor.nonEmpty
-  def focusIsComposite: Boolean = directlyFocused && focusProxyFor.nonEmpty
-
 /** The DOM side of the renderer protocol: an Intaglio SVG string goes into a container, its named
-  * groups become keyboard-reachable, and direct interaction remains distinct from ancestor proxy
-  * treatment. A name resolves to an address only through the caller's compiled navigation index.
+  * groups become keyboard-reachable, and each carries the shell's host-neutral
+  * [[InteractionPresentation]] as ARIA state and CSS classes. A name resolves to an address only
+  * through the caller's compiled navigation index.
   */
 private[app] object SvgDom:
   val SelectedClass: String = "selected"
@@ -39,27 +34,12 @@ private[app] object SvgDom:
     val actualNames = Vector.tabulate(named.length)(index => named(index).getAttribute("data-name"))
     for
       _ <- targets.validateRendered(actualNames)
-      checked <- interactions.traverse(targets.validate)
-      renderedInteractions <- checked.traverse(value =>
-        targets
-          .rendered(value.target)
-          .toRight(
-            InteractionError.PhantomRenderedTarget(
-              targets.surface,
-              value.target.toString
-            )
-          )
-          .map(_ -> value)
-      )
+      presentations <- InteractionPresentation.forTargets(targets, interactions, label)
     yield
-      val interactionsByName = renderedInteractions.groupMap(_._1)(_._2)
       var index = 0
       while index < named.length do
         val element = named(index)
-        val renderedName = element.getAttribute("data-name")
-        targets.resolve(renderedName).foreach { (name, address) =>
-          val states = interactionsByName.getOrElse(renderedName, Vector.empty)
-          val presentation = presentationFor(label(name, address), states)
+        presentations.get(element.getAttribute("data-name")).foreach { presentation =>
           element.setAttribute("tabindex", "0")
           element.setAttribute("role", "button")
           element.setAttribute("aria-label", presentation.label)
@@ -86,65 +66,3 @@ private[app] object SvgDom:
     case element: dom.Element =>
       Option(element.closest("[data-name]")).flatMap(e => Option(e.getAttribute("data-name")))
     case _ => None
-
-  private[app] def presentationFor[Name](
-      base: String,
-      states: Vector[InteractionDecoration[Name, Address]]
-  ): InteractionPresentation =
-    InteractionPresentation(
-      accessibleLabel(base, states),
-      hasDirect(states, InteractionRole.Selection),
-      hasDirect(states, InteractionRole.Focus),
-      proxyOrigins(states, InteractionRole.Selection),
-      proxyOrigins(states, InteractionRole.Focus)
-    )
-
-  private def hasDirect[Name](
-      states: Vector[InteractionDecoration[Name, Address]],
-      role: InteractionRole
-  ): Boolean =
-    states.exists {
-      case InteractionDecoration(_, `role`, SemanticRepresentation.Direct(_)) => true
-      case _                                                                  => false
-    }
-
-  private def proxyOrigins[Name](
-      states: Vector[InteractionDecoration[Name, Address]],
-      role: InteractionRole
-  ): Vector[String] =
-    states
-      .collect { case InteractionDecoration(_, `role`, SemanticRepresentation.Proxy(original, _)) =>
-        original.render
-      }
-      .distinct
-      .sorted
-
-  private def accessibleLabel[Name](
-      base: String,
-      states: Vector[InteractionDecoration[Name, Address]]
-  ): String =
-    val descriptions = states
-      .sortBy(value => InteractionDecoration.sortKey(value, _.toString, _.render))
-      .map {
-        case InteractionDecoration(
-              _,
-              InteractionRole.Selection,
-              SemanticRepresentation.Direct(at)
-            ) =>
-          s"directly selected ${at.render}"
-        case InteractionDecoration(_, InteractionRole.Focus, SemanticRepresentation.Direct(at)) =>
-          s"semantic focus ${at.render}"
-        case InteractionDecoration(
-              _,
-              InteractionRole.Selection,
-              SemanticRepresentation.Proxy(original, visible)
-            ) =>
-          s"selection proxy for ${original.render} via ${visible.render}"
-        case InteractionDecoration(
-              _,
-              InteractionRole.Focus,
-              SemanticRepresentation.Proxy(original, visible)
-            ) =>
-          s"focus proxy for ${original.render} via ${visible.render}"
-      }
-    (base +: descriptions).mkString(". ")

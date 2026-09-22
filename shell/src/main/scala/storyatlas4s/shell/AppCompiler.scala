@@ -1,7 +1,6 @@
-package storyatlas4s.app
+package storyatlas4s.shell
 
 import _root_.intaglio.value
-import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import cats.syntax.all.*
 import storyatlas4s.edition.{EditionSpec, Pins}
 import storyatlas4s.intaglio.{
@@ -17,7 +16,7 @@ import storymodel4s.story.*
 import storymodel4s.view.*
 
 /** One placed line of the text rail with direct and proxy interaction presence kept distinct. */
-private[app] final case class CodexLine(
+final case class CodexLine(
     id: String,
     text: String,
     selected: Boolean,
@@ -26,19 +25,19 @@ private[app] final case class CodexLine(
     focusProxy: Boolean
 )
 
-/** One page of the Codex: the rail lines and the page's overlay SVG (V-I2 names inside). */
-private[app] final case class CodexPage(
+/** One page of the Codex: the rail lines and the page's overlay plate (V-I2 names inside). */
+final case class CodexPage(
     index: Int,
     lines: Vector[CodexLine],
-    overlay: String,
+    overlay: Plate,
     targets: RenderedTargetIndex[FragmentId]
 )
 
 /** An explicitly diagnostic Codex plate proving the otherwise absent ViaAncestor DOM capacity. */
-private[app] final case class CodexProxyCourt(
+final case class CodexProxyCourt(
     original: Address,
     visible: Address,
-    overlay: String,
+    overlay: Plate,
     targets: RenderedTargetIndex[FragmentId],
     interactions: Vector[InteractionDecoration[FragmentId, Address]]
 )
@@ -48,7 +47,7 @@ private[app] final case class CodexProxyCourt(
   * focus's placements in both, and the receipts. Nothing here is inferred: every field is read off
   * a compiled artifact or a receipt.
   */
-private[app] final case class Compiled(
+final case class Compiled(
     choice: ViewChoice,
     state: CommonViewState,
     flow: CodexFlow,
@@ -56,7 +55,7 @@ private[app] final case class Compiled(
     rows: Vector[PagedCodexLowering.Row],
     pages: Vector[CodexPage],
     scene: NarrativeScene,
-    atlasSvg: String,
+    atlas: Plate,
     atlasNames: Int,
     atlasTargets: RenderedTargetIndex[MarkId],
     atlasInteractions: Vector[InteractionDecoration[MarkId, Address]],
@@ -102,7 +101,7 @@ private[app] final case class Compiled(
 /** The pure step from a choice to what is drawn: the same calls `cli/Edition` makes, in the
   * browser.
   */
-private[app] object AppCompiler:
+object AppCompiler:
 
   def compile(
       model: TextModel[ModelStatus.Validated],
@@ -138,13 +137,13 @@ private[app] object AppCompiler:
       placed <- Paginator.layout(flow, page, style, measurer).left.map(_.message)
       rows <- PagedCodexLowering.rows(placed).left.map(_.message)
       overlayScenes <- CodexLowering.lower(placed).left.map(_.message)
-      overlayOptions <- SvgOptions(
-        page.widthPx,
-        page.heightPx,
-        Some(s"Narrative Codex overlay — lens ${choice.lens}")
-      ).left.map(_.message)
-      overlays <- overlayScenes.traverse(scene =>
-        SvgRenderer.render(scene, overlayOptions).bimap(_.message, _.value)
+      overlays = overlayScenes.map(scene =>
+        Plate(
+          scene,
+          page.widthPx,
+          page.heightPx,
+          s"Narrative Codex overlay — lens ${choice.lens}"
+        )
       )
       _ <-
         if overlays.length == placed.pages.length then Right(())
@@ -175,12 +174,12 @@ private[app] object AppCompiler:
         .left
         .map(_.message)
       lowered <- AtlasLowering.lower(scene, text.length, atlasBox).left.map(_.message)
-      atlasOptions <- SvgOptions(
+      atlas = Plate(
+        lowered,
         EditionSpec.atlasWidthPx,
         EditionSpec.atlasHeightPx,
-        Some(s"Narrative Atlas — zoom ${choice.zoom.narrative}/${choice.zoom.surface}")
-      ).left.map(_.message)
-      atlasSvg <- SvgRenderer.render(lowered, atlasOptions).bimap(_.message, _.value)
+        s"Narrative Atlas — zoom ${choice.zoom.narrative}/${choice.zoom.surface}"
+      )
       fragmentEntries <- placed.annotationFragments
         .traverse(fragment =>
           flow.navigation
@@ -313,7 +312,7 @@ private[app] object AppCompiler:
         rows,
         pages,
         scene,
-        atlasSvg,
+        atlas,
         atlasTargets.size,
         atlasTargets,
         atlasInteractions,
@@ -325,7 +324,7 @@ private[app] object AppCompiler:
         receipts(model, state, flow, placed, scene, measurer, codexConfig, atlasConfig)
       )
 
-  private[app] def interactionsFor[Mark, Name](
+  private[shell] def interactionsFor[Mark, Name](
       choice: ViewChoice,
       placements: Map[Address, SelectionPlacement[Mark]],
       directTargets: Mark => Vector[Name],
@@ -409,7 +408,7 @@ private[app] object AppCompiler:
       fragmentsByAnnotation: Map[AnnotationId, Vector[FragmentId]],
       fragmentTargets: RenderedTargetIndex[FragmentId],
       pageTargets: Vector[(Int, RenderedTargetIndex[FragmentId])],
-      overlays: Vector[String]
+      overlays: Vector[Plate]
   ): Either[InteractionError, Option[CodexProxyCourt]] =
     atlasPlacements.collectFirst { case (original, SelectionPlacement.ViaAncestor(visible)) =>
       original -> visible
@@ -438,7 +437,7 @@ private[app] object AppCompiler:
               val pageByFragment = placed.annotationFragments.map(f => f.id -> f.page).toMap
               val targetsByPage = pageTargets.toMap
               val overlaysByPage =
-                placed.pages.zip(overlays).map((page, svg) => page.index -> svg).toMap
+                placed.pages.zip(overlays).map((page, plate) => page.index -> plate).toMap
               val court = for
                 page <- pageByFragment.get(firstTarget)
                 targets <- targetsByPage.get(page)

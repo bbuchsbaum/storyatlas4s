@@ -1,4 +1,4 @@
-package storyatlas4s.app
+package storyatlas4s.shell
 
 import munit.FunSuite
 import scala.collection.mutable

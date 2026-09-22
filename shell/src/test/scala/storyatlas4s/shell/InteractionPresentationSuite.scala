@@ -1,10 +1,11 @@
-package storyatlas4s.app
+package storyatlas4s.shell
 
 import munit.FunSuite
 import storymodel4s.core.Address
 
-/** Direct and proxy interaction states must produce distinct, truthful DOM attributes. */
-class SvgDomSuite extends FunSuite:
+/** Direct and proxy interaction states must produce distinct, truthful presentations in any host.
+  */
+class InteractionPresentationSuite extends FunSuite:
   private def address(value: String): Address =
     Address.parse(value).fold(error => fail(error.message), identity)
 
@@ -12,7 +13,7 @@ class SvgDomSuite extends FunSuite:
   private val visible = address("story/segment/wog:seg:sc2c-journey-battle")
 
   test("direct selection and focus claim the directly represented address"):
-    val presentation = SvgDom.presentationFor(
+    val presentation = InteractionPresentation.of(
       "battle mark",
       Vector(
         InteractionDecoration(
@@ -36,7 +37,7 @@ class SvgDomSuite extends FunSuite:
     assert(presentation.label.contains(s"semantic focus ${original.render}"))
 
   test("an ancestor proxy explains the preserved address without claiming direct state"):
-    val presentation = SvgDom.presentationFor(
+    val presentation = InteractionPresentation.of(
       "scene mark",
       Vector(
         InteractionDecoration(
@@ -66,7 +67,7 @@ class SvgDomSuite extends FunSuite:
     )
 
   test("one visible target may truthfully be direct for one address and proxy for another"):
-    val presentation = SvgDom.presentationFor(
+    val presentation = InteractionPresentation.of(
       "shared mark",
       Vector(
         InteractionDecoration(

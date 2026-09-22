@@ -1,9 +1,9 @@
-package storyatlas4s.app
+package storyatlas4s.shell
 
 import storymodel4s.core.Address
 
 /** The independently validated renderer face to which an interaction target belongs. */
-private[app] enum InteractionSurface:
+enum InteractionSurface:
   case Atlas
   case Codex
 
@@ -12,7 +12,7 @@ private[app] enum InteractionSurface:
     case Codex => "Codex"
 
 /** A closed failure vocabulary for semantic interaction decoration and renderer closure. */
-private[app] enum InteractionError:
+enum InteractionError:
   case MissingPlacement(address: Address)
   case MissingPlacementMemberTarget(address: Address, member: String)
   case MissingProxyTarget(original: Address, visible: Address)
@@ -52,7 +52,7 @@ private[app] enum InteractionError:
       s"${surface.label} target $name resolves to ${actual.render}, expected ${expected.render}"
 
 /** A typed, one-to-one index proving which semantic address every rendered name represents. */
-private[app] final case class RenderedTargetIndex[Name] private (
+final case class RenderedTargetIndex[Name] private (
     surface: InteractionSurface,
     private val targets: Map[Name, Address],
     private val renderedByTarget: Map[Name, String],
@@ -107,7 +107,7 @@ private[app] final case class RenderedTargetIndex[Name] private (
             Left(InteractionError.TargetIdentityMismatch(surface, name, expected, actual))
           case Some(_) => Right(decoration)
 
-private[app] object RenderedTargetIndex:
+object RenderedTargetIndex:
 
   /** Builds an index only when expected typed identities and actual renderer names agree exactly.
     */
@@ -162,12 +162,12 @@ private[app] object RenderedTargetIndex:
           case (None, None)    => Right(())
 
 /** Distinguishes the two persistent interaction states a rendered object may communicate. */
-private[app] enum InteractionRole:
+enum InteractionRole:
   case Selection
   case Focus
 
 /** Declares whether a rendered object is the semantic object itself or only its visible proxy. */
-private[app] enum SemanticRepresentation[+Key]:
+enum SemanticRepresentation[+Key]:
   case Direct(address: Key)
   case Proxy(original: Key, visible: Key)
 
@@ -182,13 +182,13 @@ private[app] enum SemanticRepresentation[+Key]:
     case Proxy(_, target) => target
 
 /** Carries semantic interaction state to a typed renderer target without changing its identity. */
-private[app] final case class InteractionDecoration[+Name, +Key](
+final case class InteractionDecoration[+Name, +Key](
     target: Name,
     role: InteractionRole,
     representation: SemanticRepresentation[Key]
 )
 
-private[app] object InteractionDecoration:
+object InteractionDecoration:
 
   /** Gives compiled decorations one stable order for tests, labels, and reproducible snapshots. */
   def sortKey[Name, Key](

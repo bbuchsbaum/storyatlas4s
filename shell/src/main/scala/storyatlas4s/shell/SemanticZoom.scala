@@ -1,4 +1,4 @@
-package storyatlas4s.app
+package storyatlas4s.shell
 
 import storyatlas4s.edition.EditionSpec
 import scala.annotation.tailrec
@@ -105,7 +105,7 @@ object SemanticZoom:
 opaque type IntentRevision = Long
 
 object IntentRevision:
-  private[app] def unsafe(value: Long): IntentRevision = value
+  private[shell] def unsafe(value: Long): IntentRevision = value
   extension (revision: IntentRevision) def value: Long = revision
 
 /** One immutable request binding a revision to the complete choice it must compile. */

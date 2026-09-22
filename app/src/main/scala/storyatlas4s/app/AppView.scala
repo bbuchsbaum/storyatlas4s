@@ -4,6 +4,7 @@ import com.raquo.laminar.api.L.*
 import org.scalajs.dom
 import storyatlas4s.edition.EditionSpec
 import storyatlas4s.layout.{FragmentId, LayoutError, Measurer, MonospaceMeasurer}
+import storyatlas4s.shell.*
 import storymodel4s.core.Address
 import storymodel4s.story.{ModelStatus, TextModel}
 import storymodel4s.view.*
@@ -55,16 +56,6 @@ object AppView:
         gesture => controls(text, choice, domMeasurer, gesture)
       )
 
-    /** Click or keyboard activation of a named element: resolve to an address, then select. */
-    def select(address: Address, extend: Boolean): Unit =
-      choice.update { c =>
-        val next =
-          if !extend then Set(address)
-          else if c.selection.contains(address) then c.selection - address
-          else c.selection + address
-        c.copy(selection = next, focus = Some(address))
-      }
-
     div(
       cls("shell"),
       onMountCallback(ctx => (choice.signal.foreach(runtime.request)(using ctx.owner): Unit)),
@@ -99,10 +90,10 @@ object AppView:
             case Right(c) =>
               div(
                 cls("workspace"),
-                codexSection(c, select),
-                atlasSection(c, select),
+                codexSection(c, choice),
+                atlasSection(c, choice),
                 panel(c, choice, domMeasurer, value.intent.revision),
-                diagnosticCourt(c, select)
+                diagnosticCourt(c, choice)
               )
       }
     )
@@ -254,18 +245,14 @@ object AppView:
       )
     )
 
-  private def codexSection(c: Compiled, select: (Address, Boolean) => Unit): HtmlElement =
+  private def codexSection(c: Compiled, choice: Var[ViewChoice]): HtmlElement =
     val receipt = c.placed.receipt
     val fragmentIds = c.placed.annotationFragments.map(_.id.value).sorted
     val resolvedFragmentIds = c.fragmentTargets.names.toVector.map(_.value).sorted
     val lineHeightPx = receipt.lineHeight.toDouble / receipt.unitsPerPixel
     val font = s"${receipt.style.sizePx}px/${lineHeightPx}px ${receipt.style.cssFamily}"
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
-      SvgDom
-        .nameAt(target)
-        .flatMap(c.fragmentTargets.resolve)
-        .map(_._2)
-        .foreach(select(_, extend))
+      activateAt(choice, c.fragmentTargets, target, extend)
     sectionTag(
       cls("codex"),
       aria.label("Narrative Codex"),
@@ -339,15 +326,11 @@ object AppView:
       )
     )
 
-  private def atlasSection(c: Compiled, select: (Address, Boolean) => Unit): HtmlElement =
+  private def atlasSection(c: Compiled, choice: Var[ViewChoice]): HtmlElement =
     val markIds = c.scene.marks.map(_.identity.mark.value).sorted
     val resolvedMarkIds = c.atlasTargets.names.map(_.value).toVector.sorted
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
-      SvgDom
-        .nameAt(target)
-        .flatMap(c.atlasTargets.resolve)
-        .map(_._2)
-        .foreach(select(_, extend))
+      activateAt(choice, c.atlasTargets, target, extend)
     sectionTag(
       cls("atlas"),
       aria.label("Narrative Atlas"),
@@ -372,7 +355,7 @@ object AppView:
         onMountCallback { ctx =>
           mountSvg(
             ctx.thisNode.ref,
-            c.atlasSvg,
+            c.atlas,
             c.atlasTargets,
             c.atlasInteractions,
             (name, address) => s"mark ${name.value} → ${address.render}"
@@ -381,7 +364,7 @@ object AppView:
       )
     )
 
-  private def diagnosticCourt(c: Compiled, select: (Address, Boolean) => Unit): HtmlElement =
+  private def diagnosticCourt(c: Compiled, choice: Var[ViewChoice]): HtmlElement =
     val enabled = dom.window.location.search.contains("interaction-court=1")
     if !enabled then div(cls("interaction-court-disabled"), display.none)
     else
@@ -394,11 +377,7 @@ object AppView:
         )
       ) { court =>
         def activate(target: dom.EventTarget, extend: Boolean): Unit =
-          SvgDom
-            .nameAt(target)
-            .flatMap(court.targets.resolve)
-            .map(_._2)
-            .foreach(select(_, extend))
+          activateAt(choice, court.targets, target, extend)
         sectionTag(
           cls("codex-interaction-court"),
           aria.label("Diagnostic Codex interaction court"),
@@ -426,20 +405,39 @@ object AppView:
         )
       }
 
+  /** The web host's hit-test (the nearest named DOM ancestor) handed to the shell's one activation
+    * route; a name the plate's index does not know changes nothing.
+    */
+  private def activateAt[Name](
+      choice: Var[ViewChoice],
+      targets: RenderedTargetIndex[Name],
+      target: dom.EventTarget,
+      extend: Boolean
+  ): Unit =
+    SvgDom
+      .nameAt(target)
+      .foreach(name => choice.update(c => Activation(c, targets, name, extend).getOrElse(c)))
+
+  /** The web host draws a shell plate as SVG; rendering and interaction failures are both shown. */
   private def mountSvg[Name](
       container: dom.Element,
-      svg: String,
+      plate: Plate,
       targets: RenderedTargetIndex[Name],
       interactions: Vector[InteractionDecoration[Name, Address]],
       label: (Name, Address) => String
   ): Unit =
-    SvgDom.inject(container, svg, targets, interactions, label) match
-      case Right(())   => ()
-      case Left(error) =>
-        container.innerHTML = ""
-        container.setAttribute("data-interaction-error", error.message)
-        container.setAttribute("role", "alert")
-        container.textContent = s"Interaction rendering failed: ${error.message}"
+    plate.svg.map(svg => SvgDom.inject(container, svg, targets, interactions, label)) match
+      case Right(Right(()))   => ()
+      case Right(Left(error)) =>
+        fail(container, "data-interaction-error", error.message, "Interaction rendering failed")
+      case Left(problem) =>
+        fail(container, "data-render-error", problem, "Rendering failed")
+
+  private def fail(container: dom.Element, attribute: String, reason: String, what: String): Unit =
+    container.innerHTML = ""
+    container.setAttribute(attribute, reason)
+    container.setAttribute("role", "alert")
+    container.textContent = s"$what: $reason"
 
   private def panel(
       c: Compiled,
@@ -478,7 +476,7 @@ object AppView:
           button(
             typ("button"),
             "Clear focus and selection",
-            onClick --> (_ => choice.update(_.copy(selection = Set.empty, focus = None)))
+            onClick --> (_ => choice.update(_.cleared))
           )
         ,
         if c.choice.selection.isEmpty then p("Selection set: empty.")

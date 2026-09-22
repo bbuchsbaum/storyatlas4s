@@ -1,15 +1,16 @@
-package storyatlas4s.app
+package storyatlas4s.shell
 
 import cats.data.NonEmptyVector
 import munit.FunSuite
 import storyatlas4s.edition.EditionSpec
+import storyatlas4s.intaglio.GraphicsNames
 import storyatlas4s.layout.MonospaceMeasurer
 import storymodel4s.core.{Addressable, SurfaceUnitKind}
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel as Wog
 import storymodel4s.story.StoryRef
 import storymodel4s.view.*
 
-/** The state → scene wiring under the publication measurer (no DOM under Node): what the shell
+/** The state → scene wiring under the publication measurer (no DOM; JVM and Node): what the shell
   * draws is a pure function of the choice, marks past the horizon do not exist, the rail always
   * tiles the text, and a selection resolves in both artifacts through the navigation indexes.
   */
@@ -20,10 +21,16 @@ class AppCompilerSuite extends FunSuite:
   private def ok[E, A](either: Either[E, A]): A =
     either.fold(e => fail(s"unexpected failure: $e"), identity)
 
+  /** Every compiled view must also be drawable: each plate renders as SVG, as the web host does. */
   private def compile(choice: ViewChoice): Compiled =
-    ok(AppCompiler.compile(model, choice, MonospaceMeasurer.instance))
+    val c = ok(AppCompiler.compile(model, choice, MonospaceMeasurer.instance))
+    (c.atlas +: (c.pages.map(_.overlay) ++ c.codexProxyCourt.map(_.overlay))).foreach(svg)
+    c
 
   private val omniscient = ViewChoice.initial.copy(measurer = MeasurerChoice.Monospace)
+
+  /** Every plate must render; the web host's backend is the witness used here. */
+  private def svg(plate: Plate): String = ok(plate.svg)
 
   private def rail(c: Compiled): String = c.pages.flatMap(_.lines).map(_.text).mkString
 
@@ -33,7 +40,8 @@ class AppCompilerSuite extends FunSuite:
     assert(c.pieces > 0)
     assertEquals(c.pages.length, c.placed.pages.length)
     assert(c.pages.length > 1)
-    c.pages.foreach(p => assert(p.overlay.startsWith("<svg "), s"page ${p.index}"))
+    c.pages.foreach(p => assert(svg(p.overlay).startsWith("<svg "), s"page ${p.index}"))
+    assert(svg(c.atlas).startsWith("<svg "))
     assertEquals(c.atlasNames, c.scene.marks.length)
     assertEquals(
       c.scene.marks.map(_.identity.mark).toSet,
@@ -81,8 +89,12 @@ class AppCompilerSuite extends FunSuite:
     assert(half.pieces < full.pieces)
     assert(none.receipts.toMap.apply("horizon").startsWith("reader at 0 of"))
     // The overlay of a horizon-empty codex names nothing; the atlas draws nothing.
-    none.pages.foreach(p => assert(!p.overlay.contains("data-name"), s"page ${p.index}"))
-    assert(!none.atlasSvg.contains("data-name"))
+    none.pages.foreach { p =>
+      assertEquals(GraphicsNames.collect(p.overlay.scene), Vector.empty, s"page ${p.index}")
+      assert(!svg(p.overlay).contains("data-name"), s"page ${p.index}")
+    }
+    assertEquals(GraphicsNames.collect(none.atlas.scene), Vector.empty)
+    assert(!svg(none.atlas).contains("data-name"))
 
   test("the Reading lens has no annotation channel and so no piece, but the same pages"):
     val reading = compile(omniscient.copy(lens = CodexLens.Reading))
@@ -430,7 +442,8 @@ class AppCompilerSuite extends FunSuite:
     val episodeZoom = omniscient.zoom.copy(narrative = NarrativeLevel.Episode)
     val a = compile(omniscient.copy(zoom = episodeZoom))
     val b = compile(omniscient.copy(zoom = episodeZoom))
-    assertEquals(a.atlasSvg, b.atlasSvg)
+    assertEquals(a.atlas, b.atlas)
+    assertEquals(svg(a.atlas), svg(b.atlas))
     assertEquals(a.pages, b.pages)
     assertEquals(a.receipts, b.receipts)
     assertEquals(a.scene.textualTwin, b.scene.textualTwin)

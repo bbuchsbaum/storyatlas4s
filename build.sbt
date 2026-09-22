@@ -88,15 +88,18 @@ lazy val commonSettings = Seq(
 //   storymodel4s fixtures ────────┤
 //   storymodel4s codec ───────────┴─▶ cli (JVM)   `edition`: the WOG fixture, or a storymodel.json
 //                                 │               read off disk → SVG + HTML + twins + receipt
-//                                 └─▶ app (JS)    Laminar shell: the same compilers, paginator, and
-//                                                 lowerings run in the browser over the WOG fixture
+//                                 └─▶ shell (JVM, JS)  host-neutral core (StoryAtlas ADR 0001):
+//                                          │        view choice and transitions, semantic zoom,
+//                                          │        intent gate, compile → renderer-neutral plates,
+//                                          │        interaction presentation
+//                                          └─▶ app (JS)  Laminar web host: DOM, SVG, hit-testing
 //
 // Nothing here compiles a story or infers a claim: every artifact is compiled in storymodel4s.
 // `codec` is likewise storymodel4s's: `cli` decodes a model, it never parses one.
 // `layout` is the one place that lays out a page, and it does so as a pure function of the flow
 // and measured text metrics (ADR 0002 D3/D13), receipted.
 
-lazy val root = tlCrossRootProject.aggregate(intaglio, layout, edition, cli, app)
+lazy val root = tlCrossRootProject.aggregate(intaglio, layout, edition, shell, cli, app)
 
 /** Pure lowering of `NarrativeScene`, `CodexFlow`, and `PaginatedCodex` to Intaglio scenes;
   * `GraphicsName` is the mark, annotation, or fragment identity (ADR 0002 §6).
@@ -203,6 +206,22 @@ lazy val edition = crossProject(JVMPlatform, JSPlatform)
   .jvmConfigure(_.dependsOn(storymodel4sCodecJVM))
   .jsConfigure(_.dependsOn(storymodel4sCodecJS))
 
+/** The host-neutral shell core (StoryAtlas ADR 0001): every decision the interactive shell makes
+  * that does not depend on a host — the view choice and its transitions, semantic-zoom hysteresis,
+  * the last-intent-wins compilation gate, the compile step (the same compilers, paginator, and
+  * lowerings as `cli/Edition`) producing renderer-neutral `Plate`s, the checked renderer-name
+  * index, and each target's interaction presentation. No DOM, toolkit, or file-system dependency;
+  * its suites run on the JVM and on Scala.js, which is the portability witness for any future host.
+  */
+lazy val shell = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("shell"))
+  .dependsOn(edition, intaglio, layout)
+  .settings(commonSettings)
+  .settings(name := "storyatlas4s-shell")
+  .jvmConfigure(_.dependsOn(storymodel4sFixturesJVM % Test))
+  .jsConfigure(_.dependsOn(storymodel4sFixturesJS % Test))
+
 /** JVM command line: `edition --out <dir>` writes a static edition, from the linked War of the
   * Ghosts fixture or, with `--model <storymodel.json>`, from a model the pipeline built.
   */
@@ -231,12 +250,13 @@ lazy val cli = project
 lazy val editionBundle =
   taskKey[Seq[File]]("Copy the fast-linked app and index.html into target/edition")
 
-/** Browser shell (Laminar): loads the War of the Ghosts fixture from storymodel4s `fixtures` (the
-  * same object `cli/Edition` compiles — compiled into the JS bundle at link time, never copied
-  * here), compiles Codex and Atlas in the browser, paginates under the live `DomMeasurer`, and
-  * draws the Intaglio overlays. Plain script output (`NoModule`), so the edition's `index.html`
-  * opens from `file://` as well as from a static server. Linking it after a full-repo compile and
-  * test run exceeds the sbt launcher's default 1g heap, hence `.jvmopts` (4g, G1) at the root.
+/** Browser host (Laminar) over `shell`: loads the War of the Ghosts fixture from storymodel4s
+  * `fixtures` (the same object `cli/Edition` compiles — compiled into the JS bundle at link time,
+  * never copied here), compiles Codex and Atlas in the browser through `shell`, paginates under the
+  * live `DomMeasurer`, and draws the Intaglio overlays. Plain script output (`NoModule`), so the
+  * edition's `index.html` opens from `file://` as well as from a static server. Linking it after a
+  * full-repo compile and test run exceeds the sbt launcher's default 1g heap, hence `.jvmopts` (4g,
+  * G1) at the root.
   */
 lazy val app = project
   .in(file("app"))
@@ -262,6 +282,7 @@ lazy val app = project
     }
   )
   .dependsOn(
+    shell.js,
     edition.js,
     intaglio.js,
     layout.js,
@@ -276,9 +297,9 @@ lazy val app = project
 // (re)registers this build's aliases after every external build has run its hooks.
 lazy val storyatlas4sAliases: Seq[(String, String)] = Seq(
   "compileAll" ->
-    ";layoutJVM/compile;layoutJS/compile;intaglioJVM/compile;intaglioJS/compile;editionJVM/compile;editionJS/compile;cli/compile;app/compile",
+    ";layoutJVM/compile;layoutJS/compile;intaglioJVM/compile;intaglioJS/compile;editionJVM/compile;editionJS/compile;shellJVM/compile;shellJS/compile;cli/compile;app/compile",
   "testAll" ->
-    ";layoutJVM/test;layoutJS/test;intaglioJVM/test;intaglioJS/test;editionJVM/test;editionJS/test;cli/test;app/test",
+    ";layoutJVM/test;layoutJS/test;intaglioJVM/test;intaglioJS/test;editionJVM/test;editionJS/test;shellJVM/test;shellJS/test;cli/test;app/test",
   "checkAll" -> ";scalafmtCheckAll;scalafmtSbtCheck;compileAll;testAll"
 )
 lazy val registerAliases = Command.command("storyatlas4sAliases") { state =>

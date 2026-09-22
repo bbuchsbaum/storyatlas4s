@@ -76,17 +76,31 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   `voyage.txt`, the standalone `voyage.html` (the document inline, the static
   plate as no-script fallback, `app.js` loaded beside it) and
   `voyage-receipt.json`, whose every figure is read from the scene's summary.
+- `shell`: `crossProject(JVM, JS)`, `CrossType.Pure`, package
+  `storyatlas4s.shell`, depends on `edition`, `intaglio`, `layout`. The
+  host-neutral shell core (StoryAtlas ADR 0001, `docs/adr/0001-host-neutral-shell.md`):
+  every decision the interactive shell makes that does not depend on a host.
+  `AppCompiler` is the pure step from a `ViewChoice` (lens, exact `ZoomLevel`,
+  horizon, focus, selection, measurer) to everything drawn — the same compiler,
+  paginator, and lowering calls `cli/Edition` makes, under one
+  `CommonViewState` — and returns renderer-neutral `Plate`s (Intaglio `Scene`,
+  pixel box, accessible title), never SVG strings. `ViewChoice.activate` /
+  `cleared` and `Activation` are the one route from a host's hit (a rendered
+  name) to a semantic change; `InteractionPresentation.forTargets` is what
+  every host draws for selection and focus. Continuous gesture positions
+  commit through deterministic hysteresis (`SemanticZoom`) and never enter the
+  receipt; a monotone intent revision (`CompilationRuntime`) rejects stale
+  compilation results. No DOM, toolkit, or file-system dependency; its suites
+  run on the JVM and Scala.js. A behaviour that belongs to more than one host
+  lives here, never in a host.
 - `app`: Scala.js only (`ModuleKind.NoModule`, Laminar 17.2.1, scalajs-dom
-  2.8.1), package `storyatlas4s.app`. `AppCompiler` is the pure step from a
-  `ViewChoice` (lens, exact `ZoomLevel`, horizon, focus, selection, measurer) to
-  everything drawn — the same compiler, paginator, and lowering calls
-  `cli/Edition` makes, under one `CommonViewState`; `AppView` binds it to the
-  DOM with one `Var[ViewChoice]`. Continuous gesture positions commit through
-  deterministic hysteresis and never enter the receipt; a monotone intent
-  revision rejects stale compilation results. Every edition constant comes
-  from `edition/EditionSpec`,
-  shared with `cli`. The model is `WarOfTheGhostsModel.model` from storymodel4s
-  `fixtures`, linked into `app.js`; never a copy. `app/index.html` is the
+  2.8.1), package `storyatlas4s.app`: the web host over `shell`. `AppView`
+  binds the shell to the DOM with one `Var[ViewChoice]`, renders each `Plate`
+  as SVG, hit-tests through the nearest `data-name` ancestor, and applies the
+  shell's presentations as ARIA state and CSS classes (`SvgDom`). Every edition
+  constant comes from `edition/EditionSpec`, shared with `cli`. The model is
+  `WarOfTheGhostsModel.model` from storymodel4s `fixtures`, linked into
+  `app.js`; never a copy. `app/index.html` is the
   static shell; `app/editionBundle` copies it and `app.js` into
   `target/edition`; `app/smoke/smoke.cjs` is the Playwright browser smoke.
   A page carrying `<script type="application/json" id="voyage-document">`
@@ -120,8 +134,9 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   `STORYATLAS4S_INTAGLIO_BUILD`, `STORYMODEL4S_GRAKERN_BUILD`.
 - Run `sbt <overrides> compileAll testAll scalafmtCheckAll app/fastLinkJS`
   before declaring work complete. Platform-independent tests live in
-  `intaglio/src/test` and `layout/src/test` and must pass on both JVM and
-  Scala.js; `app/test` and `layout/.js` tests run under Node (no DOM). For a
+  `intaglio/src/test`, `layout/src/test`, and `shell/src/test` and must pass
+  on both JVM and Scala.js; `layout/.js` tests (and any `app/test`) run under
+  Node (no DOM). For a
   change that touches the shell, also run the browser smoke:
   `sbt <overrides> "cli/run edition --out target/edition" app/editionBundle`
   then `node app/smoke/smoke.cjs target/edition/index.html`.

@@ -1,4 +1,4 @@
-package storyatlas4s.app
+package storyatlas4s.shell
 
 import storymodel4s.core.Address
 import storymodel4s.view.{CodexLens, EpistemicHorizon, NarrativeLevel, SurfaceDetail, ZoomLevel}
@@ -22,7 +22,37 @@ final case class ViewChoice(
     selection: Set[Address],
     focus: Option[Address],
     measurer: MeasurerChoice
-)
+):
+
+  /** Activate one address, the same way for every host and input device: a plain activation
+    * replaces the selection, an extending one toggles the address in it, and either makes it the
+    * semantic focus.
+    */
+  def activate(address: Address, extend: Boolean): ViewChoice =
+    val next =
+      if !extend then Set(address)
+      else if selection.contains(address) then selection - address
+      else selection + address
+    copy(selection = next, focus = Some(address))
+
+  /** No focus and an empty selection; every other choice is kept. */
+  def cleared: ViewChoice = copy(selection = Set.empty, focus = None)
+
+/** The one route from a host's hit to a semantic change.
+  *
+  * A host hit-tests in its own way (the DOM's nearest named ancestor, Intaglio picking on a canvas)
+  * and reports only the rendered name it found. The name resolves through the checked index of the
+  * plate it was drawn on; a name the index does not know changes nothing, so a host can never
+  * select an address by parsing or guessing a renderer identity.
+  */
+object Activation:
+  def apply[Name](
+      choice: ViewChoice,
+      targets: RenderedTargetIndex[Name],
+      renderedName: String,
+      extend: Boolean
+  ): Option[ViewChoice] =
+    targets.resolve(renderedName).map((_, address) => choice.activate(address, extend))
 
 object ViewChoice:
   val initial: ViewChoice =
