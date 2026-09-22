@@ -159,6 +159,33 @@ def pinsGenerator(pkg: String) = Def.task {
   Seq(file)
 }
 
+/** The same producer-written bytes are decoded by the external JVM and JavaScript consumers. */
+def workspaceTestData = Def.task {
+  val producer = (ProjectRef(storymodel4sBuild, "root") / baseDirectory).value
+  val directory = sys.props.get("storyatlas4s.workspace.fixtures").map(file).getOrElse(
+    producer / "docs" / "refactor" / "evidence" / "workspace-m1-packet-20260922" / "fixtures"
+  )
+  val fixtures = (directory ** "*.workspace.json").get.sortBy(_.getName)
+  require(fixtures.size == 2, "M1 requires both producer-written fixture archives")
+  def quoted(value: String): String = "\"" + value.flatMap {
+    case '\\' => "\\\\"
+    case '"' => "\\\""
+    case '\n' => "\\n"
+    case '\r' => "\\r"
+    case '\t' => "\\t"
+    case c if c < ' ' || c > '~' => f"\\u${c.toInt}%04x"
+    case c => c.toString
+  } + "\""
+  val values = fixtures.map { input =>
+    val parts = IO.read(input).grouped(8192).map(quoted).mkString(",\n")
+    quoted(input.getName.stripSuffix(".workspace.json")) + " -> Vector(" + parts + ").mkString"
+  }.mkString(",\n")
+  val output = (Test / sourceManaged).value / "storyatlas4s" / "edition" / "WorkspaceTestData.scala"
+  IO.write(output, "package storyatlas4s.edition\nprivate[edition] object WorkspaceTestData:\n" +
+    "  val archives: Map[String, String] = Map(\n" + values + "\n)\n")
+  Seq(output)
+}
+
 /** The edition's fixed configuration (`EditionSpec`: page box, font, relation layers, thread
   * budget, lenses, zoom levels, SVG boxes) and the sibling pins (`Pins`), shared by `cli` (JVM) and
   * `app` (JS) so the static edition and the browser compile the same artifacts.
@@ -170,8 +197,11 @@ lazy val edition = crossProject(JVMPlatform, JSPlatform)
   .settings(commonSettings)
   .settings(
     name := "storyatlas4s-edition",
-    Compile / sourceGenerators += pinsGenerator("storyatlas4s.edition").taskValue
+    Compile / sourceGenerators += pinsGenerator("storyatlas4s.edition").taskValue,
+    Test / sourceGenerators += workspaceTestData.taskValue
   )
+  .jvmConfigure(_.dependsOn(storymodel4sCodecJVM))
+  .jsConfigure(_.dependsOn(storymodel4sCodecJS))
 
 /** JVM command line: `edition --out <dir>` writes a static edition, from the linked War of the
   * Ghosts fixture or, with `--model <storymodel.json>`, from a model the pipeline built.
