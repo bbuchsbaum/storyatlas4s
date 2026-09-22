@@ -17,19 +17,49 @@ import storymodel4s.view.*
   */
 object AppView:
 
+  /** A read-through host binding. In a workspace the controller remains the only writable owner. */
+  private final case class ChoiceBinding(
+      signal: Signal[ViewChoice],
+      current: () => ViewChoice,
+      change: ViewChoice => Unit,
+      activate: (Address, Boolean) => Unit,
+      clear: () => Unit
+  ):
+    def update(f: ViewChoice => ViewChoice): Unit = change(f(current()))
+
   def apply(
       model: TextModel[ModelStatus.Validated],
       domMeasurer: Either[LayoutError, Measurer]
   ): HtmlElement =
-    val text = model.source.canonicalText
-    // The choice never names a measurer that does not exist: when the DOM measurer is unavailable
-    // the initial choice is the table and the Dom option is not offered; if it were chosen anyway,
-    // compilation fails with the measurer's own reason instead of substituting another metric.
     val initial = domMeasurer.fold(
       _ => ViewChoice.initial.copy(measurer = MeasurerChoice.Monospace),
-      _ => ViewChoice.initial
-    )
-    val choice = Var(initial)
+      _ => ViewChoice.initial)
+    val state = Var(initial)
+    val binding = ChoiceBinding(state.signal, () => state.now(), state.set,
+      (address, extend) => state.update(_.activate(address, extend)), () => state.update(_.cleared))
+    pane(model.source.canonicalText, binding, domMeasurer,
+      (choice, measurer) => AppCompiler.compile(model, choice, measurer))
+
+  def imported(
+      draft: DraftModel,
+      domMeasurer: Either[LayoutError, Measurer],
+      signal: Signal[ViewChoice],
+      current: () => ViewChoice,
+      onChoice: ViewChoice => Unit,
+      onActivate: (Address, Boolean) => Unit,
+      onClear: () => Unit
+  ): HtmlElement =
+    pane(draft.model.source.canonicalText,
+      ChoiceBinding(signal, current, onChoice, onActivate, onClear), domMeasurer,
+      (choice, measurer) => AppCompiler.compileDraft(draft, choice, measurer))
+
+  private def pane(
+      text: String,
+      choice: ChoiceBinding,
+      domMeasurer: Either[LayoutError, Measurer],
+      compile: (ViewChoice, Measurer) => Either[String, Compiled]
+  ): HtmlElement =
+    val initial = choice.current()
     def measurerFor(pick: MeasurerChoice): Either[String, Measurer] = pick match
       case MeasurerChoice.Monospace => Right(MonospaceMeasurer.instance)
       case MeasurerChoice.Dom       => domMeasurer.left.map(_.message)
@@ -44,7 +74,7 @@ object AppView:
         () =>
           complete(
             measurerFor(intent.request.measurer)
-              .flatMap(measurer => AppCompiler.compile(model, intent.request, measurer))
+              .flatMap(measurer => compile(intent.request, measurer))
           ),
         0
       )
@@ -100,7 +130,7 @@ object AppView:
 
   private def controls(
       text: String,
-      choice: Var[ViewChoice],
+      choice: ChoiceBinding,
       domMeasurer: Either[LayoutError, Measurer],
       initialGesture: SemanticZoom
   ): HtmlElement =
@@ -245,7 +275,7 @@ object AppView:
       )
     )
 
-  private def codexSection(c: Compiled, choice: Var[ViewChoice]): HtmlElement =
+  private def codexSection(c: Compiled, choice: ChoiceBinding): HtmlElement =
     val receipt = c.placed.receipt
     val fragmentIds = c.placed.annotationFragments.map(_.id.value).sorted
     val resolvedFragmentIds = c.fragmentTargets.names.toVector.map(_.value).sorted
@@ -326,7 +356,7 @@ object AppView:
       )
     )
 
-  private def atlasSection(c: Compiled, choice: Var[ViewChoice]): HtmlElement =
+  private def atlasSection(c: Compiled, choice: ChoiceBinding): HtmlElement =
     val markIds = c.scene.marks.map(_.identity.mark.value).sorted
     val resolvedMarkIds = c.atlasTargets.names.map(_.value).toVector.sorted
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
@@ -364,7 +394,7 @@ object AppView:
       )
     )
 
-  private def diagnosticCourt(c: Compiled, choice: Var[ViewChoice]): HtmlElement =
+  private def diagnosticCourt(c: Compiled, choice: ChoiceBinding): HtmlElement =
     val enabled = dom.window.location.search.contains("interaction-court=1")
     if !enabled then div(cls("interaction-court-disabled"), display.none)
     else
@@ -409,14 +439,15 @@ object AppView:
     * route; a name the plate's index does not know changes nothing.
     */
   private def activateAt[Name](
-      choice: Var[ViewChoice],
+      choice: ChoiceBinding,
       targets: RenderedTargetIndex[Name],
       target: dom.EventTarget,
       extend: Boolean
   ): Unit =
     SvgDom
       .nameAt(target)
-      .foreach(name => choice.update(c => Activation(c, targets, name, extend).getOrElse(c)))
+      .flatMap(targets.resolve)
+      .foreach((_, address) => choice.activate(address, extend))
 
   /** The web host draws a shell plate as SVG; rendering and interaction failures are both shown. */
   private def mountSvg[Name](
@@ -441,7 +472,7 @@ object AppView:
 
   private def panel(
       c: Compiled,
-      choice: Var[ViewChoice],
+      choice: ChoiceBinding,
       domMeasurer: Either[LayoutError, Measurer],
       revision: IntentRevision
   ): HtmlElement =
@@ -476,7 +507,7 @@ object AppView:
           button(
             typ("button"),
             "Clear focus and selection",
-            onClick --> (_ => choice.update(_.cleared))
+            onClick --> (_ => choice.clear())
           )
         ,
         if c.choice.selection.isEmpty then p("Selection set: empty.")

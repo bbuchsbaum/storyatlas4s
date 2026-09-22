@@ -3,14 +3,7 @@ package storyatlas4s.cli
 import java.io.IOException
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.{Files, Path}
-import storymodel4s.codec.{
-  DerivationRecordCodec,
-  FeaturesArtifact,
-  FeaturesRecordCodec,
-  SidecarCodec,
-  StoryModelCodec
-}
-import storymodel4s.features.{FeatureTarget, FeatureTrack}
+import storyatlas4s.edition.SourceInput
 import storymodel4s.story.{
   ModelStatus,
   TextModel,
@@ -131,10 +124,7 @@ object ModelInput:
   ): Either[String, ReadModel] =
     for
       text <- slurp(path)
-      draft <- StoryModelCodec
-        .decode(text)
-        .left
-        .map(e => s"$path is not a readable storymodel.json: ${e.message}")
+      draft <- SourceInput.decodeModel(text).left.map(e => s"$path is not a readable storymodel.json: $e")
       record <- derivation.fold(readDerivation(path, draft))(r => Right(r))
       measured <- features.fold(readFeatures(path, draft))(f => Right(f))
     yield ReadModel(path, draft, StoryValidator.validate(draft, policy), record, measured)
@@ -149,11 +139,8 @@ object ModelInput:
       case None       => Right(DerivationRecord.NotSupplied)
       case Some(file) =>
         slurp(file).flatMap { text =>
-          DerivationRecordCodec
-            .decode(draft, text)
-            .left
-            .map(e => s"$file is not the derivation record of $modelPath: ${e.message}")
-            .map(_.record)
+          SourceInput.decodeDerivation(draft, Some(text)).left
+            .map(e => s"$file is not the derivation record of $modelPath: $e")
         }
 
   /** `features.json` beside `modelPath`, bound to `draft`, with every sidecar it names read from
@@ -179,40 +166,12 @@ object ModelInput:
         else
           for
             text <- slurp(file)
-            artifact <- FeaturesRecordCodec
-              .decode(draft, text)
-              .left
-              .map(e => s"$file is not the feature record of $modelPath: ${e.message}")
-            tracks <- artifact.tracks
-              .foldLeft[Either[String, Vector[FeatureTrack[FeatureTarget, Double]]]](
-                Right(Vector.empty)
-              ) { (acc, entry) =>
-                acc.flatMap(done => materialize(file, dir, draft, entry).map(done :+ _))
-              }
-          yield FeatureRecord.Supplied(artifact, tracks)
-
-  private def materialize(
-      record: Path,
-      dir: Path,
-      draft: TextModel[ModelStatus.Draft],
-      entry: FeaturesArtifact.Entry
-  ): Either[String, FeatureTrack[FeatureTarget, Double]] =
-    val space = entry.track.space.id
-    val sidecar = dir.resolve(entry.file)
-    if !draft.sidecars.get(space).contains(entry.track.manifest) then
-      Left(s"$record: track ${space.value} is not the model's sidecar for that space")
-    else if !Files.isRegularFile(sidecar) then
-      Left(s"$record names $sidecar, which is not beside the model")
-    else
-      slurpBytes(sidecar).flatMap { bytes =>
-        SidecarCodec
-          .materializeScalarTrack(entry.track, bytes)
-          .left
-          .map(e =>
-            s"$sidecar is not the sidecar its record describes for ${space.value}: " +
-              e.message
-          )
-      }
+            result <- SourceInput.decodeFeatures(draft, Some(text), relative =>
+              val sidecar = dir.resolve(relative)
+              if !Files.isRegularFile(sidecar) then Left(s"$file names $sidecar, which is not beside the model")
+              else slurpBytes(sidecar)
+            ).left.map(e => s"$file is not the feature record of $modelPath: $e")
+          yield result
 
   private[cli] def slurp(path: Path): Either[String, String] =
     slurpBytes(path).map(bytes => new String(bytes, UTF_8))

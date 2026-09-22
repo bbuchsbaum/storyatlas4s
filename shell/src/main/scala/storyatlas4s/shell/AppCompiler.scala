@@ -107,8 +107,31 @@ object AppCompiler:
       model: TextModel[ModelStatus.Validated],
       choice: ViewChoice,
       measurer: Measurer
+  ): Either[String, Compiled] = compileSource(Right(model), choice, measurer)
+
+  /** Imported artifacts retain their checked draft/derivation disposition. Structural promotion
+    * alone never licenses the built-in fixture basis.
+    */
+  def compileDraft(
+      draft: DraftModel,
+      choice: ViewChoice,
+      measurer: Measurer
+  ): Either[String, Compiled] = compileSource(Left(draft), choice, measurer)
+
+  private def compileSource(
+      input: Either[DraftModel, TextModel[ModelStatus.Validated]],
+      choice: ViewChoice,
+      measurer: Measurer
   ): Either[String, Compiled] =
-    val text = model.source.canonicalText
+    val source = input.fold(_.model.source, _.source)
+    val receipt = input.fold(_.model.receipt, _.receipt)
+    val text = source.canonicalText
+    def provenance(config: Checksum): Either[String, ViewProvenance] = input match
+      case Left(draft) =>
+        ViewProvenance.draftBuild(draft, EditionSpec.compilerVersion, config).left.map(_.message)
+      case Right(model) =>
+        ViewProvenance.fixture(model.source.canonicalChecksum, EditionSpec.compilerVersion, config)
+          .left.map(_.message)
     for
       state <- CommonViewState
         .of(
@@ -127,11 +150,11 @@ object AppCompiler:
       // Codex: compile, paginate, lower one overlay per page.
       spec <- CodexSpec.forLens(choice.lens, ChannelBudget.All).left.map(_.message)
       codexConfig = CodexCompiler.configurationChecksum(state, spec)
-      codexProvenance <- ViewProvenance
-        .fixture(model.source.canonicalChecksum, EditionSpec.compilerVersion, codexConfig)
-        .left
-        .map(_.message)
-      flow <- CodexCompiler(codexProvenance).compile(model, state, spec).left.map(_.message)
+      codexProvenance <- provenance(codexConfig)
+      flow <- input.fold(
+        draft => CodexCompiler(codexProvenance).compileDraft(draft, state, spec),
+        model => CodexCompiler(codexProvenance).compile(model, state, spec)
+      ).left.map(_.message)
       page <- PageSpec.of(EditionSpec.pageWidthPx, EditionSpec.pageHeightPx).left.map(_.message)
       style <- TextStyle.of(EditionSpec.fontFamily, EditionSpec.fontSizePx).left.map(_.message)
       placed <- Paginator.layout(flow, page, style, measurer).left.map(_.message)
@@ -151,11 +174,11 @@ object AppCompiler:
       // Atlas: compile at the exact chosen two-axis zoom, lower, render.
       atlasSpec = AtlasSpec(choice.zoom, threads)
       atlasConfig = AtlasCompiler.configurationChecksum(state, atlasSpec)
-      atlasProvenance <- ViewProvenance
-        .fixture(model.source.canonicalChecksum, EditionSpec.compilerVersion, atlasConfig)
-        .left
-        .map(_.message)
-      scene <- AtlasCompiler(atlasProvenance).compile(model, state, atlasSpec).left.map(_.message)
+      atlasProvenance <- provenance(atlasConfig)
+      scene <- input.fold(
+        draft => AtlasCompiler(atlasProvenance).compileDraft(draft, state, atlasSpec),
+        model => AtlasCompiler(atlasProvenance).compile(model, state, atlasSpec)
+      ).left.map(_.message)
       trackedAddresses = (choice.selection ++ choice.focus).toVector.sortBy(_.render)
       codexPlacements <- trackedAddresses.traverse(address =>
         flow.selectionPlacements
@@ -321,7 +344,7 @@ object AppCompiler:
         codexProxyCourt,
         codexPlacements,
         atlasPlacements,
-        receipts(model, state, flow, placed, scene, measurer, codexConfig, atlasConfig)
+        receipts(receipt.map(_.contentChecksum), state, flow, placed, scene, measurer, codexConfig, atlasConfig)
       )
 
   private[shell] def interactionsFor[Mark, Name](
@@ -484,7 +507,7 @@ object AppCompiler:
 
   /** The receipt as ordered text pairs: what a saved view must record (V-D3). */
   private def receipts(
-      model: TextModel[ModelStatus.Validated],
+      modelReceipt: Option[Checksum],
       state: CommonViewState,
       flow: CodexFlow,
       placed: PaginatedCodex,
@@ -498,7 +521,7 @@ object AppCompiler:
       "story" -> flow.source.title.getOrElse(flow.source.id.value),
       "basis" -> p.basis.label,
       "sourceChecksum" -> p.sourceChecksum.hex,
-      "modelReceiptChecksum" -> model.receipt.fold("not available")(_.contentChecksum.hex),
+      "modelReceiptChecksum" -> modelReceipt.fold("not available")(_.hex),
       "compilerVersion" -> p.compilerVersion,
       "storymodel4sRevision" -> Pins.storymodel4sRevision,
       "intaglioRevision" -> Pins.intaglioRevision,

@@ -184,7 +184,7 @@ def workspaceTestData = Def.task {
     quoted(input.getName.stripSuffix(".workspace.json")) + " -> Vector(" + parts + ").mkString"
   }.mkString(",\n")
   val output = (Test / sourceManaged).value / "storyatlas4s" / "edition" / "WorkspaceTestData.scala"
-  IO.write(output, "package storyatlas4s.edition\nprivate[edition] object WorkspaceTestData:\n" +
+  IO.write(output, "package storyatlas4s.edition\nprivate[storyatlas4s] object WorkspaceTestData:\n" +
     "  val archives: Map[String, String] = Map(\n" + values + "\n)\n")
   Seq(output)
 }
@@ -216,7 +216,7 @@ lazy val edition = crossProject(JVMPlatform, JSPlatform)
 lazy val shell = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .in(file("shell"))
-  .dependsOn(edition, intaglio, layout)
+  .dependsOn(edition % "compile->compile;test->test", intaglio, layout)
   .settings(commonSettings)
   .settings(name := "storyatlas4s-shell")
   .jvmConfigure(_.dependsOn(storymodel4sFixturesJVM % Test))

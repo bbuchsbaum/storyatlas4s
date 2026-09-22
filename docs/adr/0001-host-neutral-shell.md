@@ -89,3 +89,33 @@ shell decision*. Additional hosts are allowed; duplicated decisions are not. The
 - `shell` is the host contract, so its types are public; it stays pre-release and may change.
 - Publication (the CLI edition) is unaffected: it never used the shell, and its bytes are pinned by
   existing courts.
+
+### M1 composition — 22 September 2026
+
+Accepted: the portable `edition.SourceInput` owns the existing canonical model,
+derivation and feature admission policy; the CLI remains its filesystem adapter.
+`ImportedSource` retains the validation outcome and draft record. `shell.AppCompiler`
+adds a draft entry point using the existing producer compilers and `DraftBuild`
+provenance, without changing the explicit built-in fixture route.
+
+`WorkspaceController` owns one artifact-qualified `WorkspaceState`. Source,
+recall, matrix and Voyage hosts send `WorkspaceAction`s; they do not synchronize
+independent selection stores. Display horizons, cursors and viewport coordinates
+remain separate. `Correspondence` retains the active row while inspecting its
+source target. Mapping changes select an already checked artifact with the same
+fixed universe; the controller never executes an estimator. `WorkspaceSave`
+serializes a canonical, versioned descriptor bound to every manifest member and
+the fixed cut. Reopening requires the exact admitted artifacts and revalidation;
+the saved descriptor carries neither narrative payloads nor permission grants.
+
+Rejected: putting these policies in Laminar components or duplicating the CLI's
+reader in the browser. Both would permit hosts to disagree about admission and
+semantic identity. No new module or dependency is introduced by this composition.
+
+`edition.ArtifactInput` dispatches canonical local workspace/source/Voyage inputs
+under explicit byte/file limits with content-free refusals. Source-only groups
+accept only their declared companions/sidecars, so an incompatible or denied
+workspace cannot silently fall back to a source route. `shell.WorkspaceOpen`
+reuses `LatestIntent` for atomic last-request-wins admission and cancellation;
+failed or obsolete reads retain the previous admitted artifact. It stores no
+unadmitted bytes in published snapshots.

@@ -131,6 +131,9 @@ final class LatestIntent[Request, Result] private (
     val intent = CompileIntent(IntentRevision.unsafe(nextRevision), value)
     new LatestIntent(nextRevision + 1L, Some(intent)) -> intent
 
+  /** Invalidate outstanding work without reusing its revision. */
+  def cancel: LatestIntent[Request, Result] = new LatestIntent(nextRevision, None)
+
   /** Accept a result only when it belongs to the latest requested revision. */
   def complete(
       revision: IntentRevision,
