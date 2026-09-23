@@ -348,7 +348,7 @@ object WorkspaceView:
       div(cls("investigation-body"),
         mainTag(cls("investigation-main"),
           sectionTag(cls("matrix-pane"), h2("Recall correspondence"), matrix, compactList,
-            p(cls("matrix-key"), span(cls("legend-decision")), "Supplied decision", span(cls("legend-fill")), "Zero-mass fill", " · Selection uses an outline; values stay unchanged.")
+            p(cls("matrix-key"), span(cls("legend-decision")), "Supplied decision", span(cls("legend-fill")), "Gap fill", " · Selection uses an outline; values stay unchanged.")
           ),
           sourcePane,
           sectionTag(idAttr("workspace-voyage"), h2("Time Voyage"),

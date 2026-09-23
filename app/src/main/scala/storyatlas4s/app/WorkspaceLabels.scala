@@ -31,7 +31,7 @@ private[app] object WorkspaceLabels:
   def origin(value: DecisionOrigin): String = value match
     case DecisionOrigin.RawArgmax                  => "Supplied argmax"
     case DecisionOrigin.StructuredDecode(policy)   => s"Reconstruction · ${policy.value}"
-    case DecisionOrigin.GapFill(policy)            => s"Zero-mass fill · ${policy.value}"
+    case DecisionOrigin.GapFill(policy)            => s"Gap fill · ${policy.value}"
     case DecisionOrigin.Abstention(reason)          => s"Abstention · $reason"
 
   def destination(value: Destination): String = value match
