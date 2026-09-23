@@ -42,6 +42,12 @@ function mappingMember(a,id) {
     page.on('request',r=>{if(/^https?:/.test(r.url()))report.requests.push(r.url());});
     await page.goto(pathToFileURL(entry).href);
     await page.locator('.shell[data-state=ready]').waitFor();
+    // v7 keeps recall navigation and the horizon in a disclosure; the court opens it once per workspace.
+    const openNavigation = async()=>page.evaluate(()=>{
+      const d=[...document.querySelectorAll('details')].find(e=>e.querySelector('#workspace-recall'));
+      if(d) d.open=true;
+    });
+    const settle = async()=>page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(r)))));
     const state = async()=>JSON.parse(await page.locator('#workspace-state').textContent());
     const open = async(files, status='Opened')=>{
       await page.locator('#workspace-open').setInputFiles(files);
@@ -72,14 +78,15 @@ function mappingMember(a,id) {
     });
     for(const name of ['bell','wog']) {
       await open(input('arbitrary-input',load(`${name}.workspace.json`)));
-      await page.locator('[data-workspace-ready=true] .shell[data-state=ready]').waitFor();
+      await page.locator('[data-workspace-ready=true] .shell[data-state=ready]').waitFor({state:'attached'});
+      await openNavigation();
       check(await page.locator('.mapping-matrix tbody tr').count()===4,`${name}: all four outcomes rendered`);
       check(await page.locator('#fixture-header').getAttribute('hidden')!==null,`${name}: old fixture authority removed`);
       for(let ordinal=0;ordinal<4;ordinal++) {
-        await page.getByRole('button',{name:'Next recall',exact:true}).click();
+        await page.locator('.inspector-navigation').getByRole('button',{name:'Next recall',exact:true}).click();
         check((await state()).activeRecall===`m1:u${ordinal}`,`${name}: canonical walk reaches ordinal${ordinal}`);
       }
-      await page.locator('#workspace-recall').selectOption('m1:u0');
+      await (await openNavigation(), page.locator('#workspace-recall')).selectOption('m1:u0');
       const metadata=page.locator('[data-inspection-metadata]');
       await page.waitForFunction(()=>document.querySelectorAll('[data-inspection-metadata]').length>0);
       const metadataText=()=>metadata.allTextContents().then(parts=>parts.join('\n'));
@@ -126,7 +133,7 @@ function mappingMember(a,id) {
       },inverseUnit);
       await page.waitForFunction(unit=>document.activeElement?.getAttribute('data-inverse-unit')===unit,inverseUnit);
       check(true,`${name}: keyboard inverse activation restores its semantic control`);
-      await page.locator('#workspace-recall').selectOption('m1:u0');
+      await (await openNavigation(), page.locator('#workspace-recall')).selectOption('m1:u0');
       const support=page.locator('.joined-recall small').filter({hasText:'Exact support:'}).first();
       const supportText=await support.textContent();
       const supportMatch=/Exact support: (\d+)–(\d+)/.exec(supportText||'');
@@ -139,9 +146,9 @@ function mappingMember(a,id) {
       await page.waitForFunction(text=>document.querySelector('.joined-recall')?.textContent?.includes(text),supportText);
       check(true,`${name}: recall horizon exposes whole producer fragments only at their exact boundary`);
       const selected=(await state()).selection;
-      await page.getByRole('button',{name:'Source',exact:true}).click();
+      await page.getByRole('button',{name:'Source reading',exact:true}).click();
       assert.deepEqual((await state()).selection,selected); check(true,`${name}: source projection retains selection`);
-      await page.getByRole('button',{name:'Recall',exact:true}).click();
+      await page.getByRole('button',{name:'Story + recall',exact:true}).click();
       const first = await page.locator('[data-matrix-cell="0-0"]').innerText();
       await page.locator('#workspace-policy').selectOption('authored-b');
       check((await state()).policy==='authored-b',`${name}: checked policy switched`);
@@ -156,7 +163,9 @@ function mappingMember(a,id) {
       check(true,`${name}: independent producer subset/twin/receipt byte parity and export hashes`);
       let viewportWitness;
       if(name==='wog') {
+        await page.getByRole('button',{name:'Source reading',exact:true}).click(); // v7: one task pane at a time
         const sourceScroll=page.locator('#workspace-source-scroll');
+        await sourceScroll.locator('[data-source-offset]').first().waitFor(); await settle(); // mode switch restores on the next frames
         await sourceScroll.evaluate(pane=>{
           const anchors=[...pane.querySelectorAll('[data-source-offset]')];
           const target=anchors[Math.floor(anchors.length/2)];
@@ -170,7 +179,9 @@ function mappingMember(a,id) {
             .find(anchor=>anchor.getBoundingClientRect().bottom>pane.getBoundingClientRect().top+1);
           return pane.scrollTop>0 && first && state.viewport.sourceOffset===Number(first.getAttribute('data-source-offset'));
         });
+        await page.getByRole('button',{name:'Story + recall',exact:true}).click();
         const matrixScroll=page.locator('#workspace-matrix-scroll');
+        await matrixScroll.locator('[data-matrix-cell]').first().waitFor(); await settle();
         await matrixScroll.evaluate(pane=>{
           const cells=[...pane.querySelectorAll('[data-matrix-cell]')];
           const rows=Math.max(...cells.map(cell=>Number(cell.getAttribute('data-matrix-cell').split('-')[0])))+1;
@@ -197,19 +208,23 @@ function mappingMember(a,id) {
       const saved=await download('#workspace-save',`${name}-investigation.json`);
       await page.getByRole('button',{name:'Clear selection',exact:true}).click();
       await open(input('saved-state',saved)); assert.deepEqual(await state(),beforeSave);
-      if(viewportWitness) await page.waitForFunction(viewport=>{
-        const intersects=(pane,selector)=>{
-          const anchor=pane.querySelector(selector), a=anchor.getBoundingClientRect(), b=pane.getBoundingClientRect();
-          return a.bottom>b.top && a.top<b.bottom && a.right>b.left && a.left<b.right;
-        };
-        const source=document.querySelector('#workspace-source-scroll');
-        const matrix=document.querySelector('#workspace-matrix-scroll');
+      // v7 shows one task pane at a time: verify each restored viewport in its own mode.
+      const restored = async(selectorOf, viewport)=>page.waitForFunction(([selectorOf,viewport])=>{
+        const [paneId,anchor]=selectorOf==='matrix'
+          ? ['#workspace-matrix-scroll',`[data-matrix-cell='${viewport.matrixRow}-${viewport.matrixColumn}']`]
+          : ['#workspace-source-scroll',`[data-source-offset='${viewport.sourceOffset}']`];
+        const pane=document.querySelector(paneId), a=pane.querySelector(anchor).getBoundingClientRect(), b=pane.getBoundingClientRect();
         const state=JSON.parse(document.querySelector('#workspace-state').textContent);
         return state.viewport.sourceOffset===viewport.sourceOffset &&
           state.viewport.matrixRow===viewport.matrixRow && state.viewport.matrixColumn===viewport.matrixColumn &&
-          intersects(source,`[data-source-offset='${viewport.sourceOffset}']`) &&
-          intersects(matrix,`[data-matrix-cell='${viewport.matrixRow}-${viewport.matrixColumn}']`);
-      },viewportWitness.viewport);
+          b.width>0 && a.bottom>b.top && a.top<b.bottom && a.right>b.left && a.left<b.right;
+      },[selectorOf,viewport]);
+      if(viewportWitness) {
+        await restored('matrix',viewportWitness.viewport);
+        await page.getByRole('button',{name:'Source reading',exact:true}).click();
+        await restored('source',viewportWitness.viewport);
+        await page.getByRole('button',{name:'Story + recall',exact:true}).click();
+      }
       check(true,`${name}: save and exact-artifact reopen reproduces full state including viewport`);
       await page.locator('#workspace-policy').selectOption('authored-a');
       assert.equal(await page.locator('[data-matrix-cell="0-0"]').innerText(),first);
@@ -217,7 +232,7 @@ function mappingMember(a,id) {
       await page.screenshot({path:path.join(output,`${name}-desktop.png`),fullPage:true});
     }
     await open(input('bell',load('bell.workspace.json')));
-    await page.locator('#workspace-recall').selectOption('m1:u0');
+    await (await openNavigation(), page.locator('#workspace-recall')).selectOption('m1:u0');
     await page.locator('[data-matrix-cell="0-0"]').focus();
     await page.keyboard.press('ArrowDown');
     check((await state()).activeRecall==='m1:u1','matrix arrow key changes canonical row');
@@ -282,12 +297,12 @@ function mappingMember(a,id) {
     assert.deepEqual(await state(),beforeCancel);
     check(true,'cancelled delayed FileReader response preserves the prior view');
     await restoreReaders();
-    await page.locator('#workspace-recall').selectOption('m1:u0');
+    await (await openNavigation(), page.locator('#workspace-recall')).selectOption('m1:u0');
     await page.locator('#workspace-policy').selectOption('historical-lexical');
-    await page.getByRole('button',{name:'Voyage',exact:true}).click();
+    await page.getByRole('button',{name:'Time Voyage',exact:true}).click();
     await page.locator('#workspace-voyage .plate svg').waitFor(); // The source plate cannot satisfy the controlled Voyage witness.
     check(await page.locator('#workspace-voyage .plate svg').count()===1,'Voyage has one controlled SVG projection');
-    await page.locator('#workspace-recall').selectOption('m1:u1');
+    await (await openNavigation(), page.locator('#workspace-recall')).selectOption('m1:u1');
     await page.locator('#workspace-voyage .voyage-anchor').first().click();
     const anchorTarget=(await state()).correspondence?.target;
     assert.ok(anchorTarget,'Voyage anchor establishes exact source correspondence');
@@ -309,7 +324,7 @@ function mappingMember(a,id) {
     assert.equal((await state()).activeRecall,'m1:u1');
     check(true,'cropped Voyage selection remains identified as OffProjection');
 
-    await page.locator('#workspace-recall').selectOption('m1:u3');
+    await (await openNavigation(), page.locator('#workspace-recall')).selectOption('m1:u3');
     check((await state()).activeRecall==='m1:u3','untimed unit stays reachable in Voyage');
     await page.locator('#voyage-source-cursor').fill('0:20');
     await page.getByRole('button',{name:'Set source cursor',exact:true}).click();
@@ -331,7 +346,7 @@ function mappingMember(a,id) {
     assert.deepEqual(await state(),clockState);
     check(true,'independent clocks and recall window survive policy projection and saved-state replay');
 
-    await page.getByRole('button',{name:'Recall',exact:true}).click();
+    await page.getByRole('button',{name:'Story + recall',exact:true}).click();
     for(const [label,width,zoom] of [['mobile',390,1],['zoom200',1600,2]]) {
       await page.setViewportSize({width,height:1000});
       await page.evaluate(z=>document.body.style.zoom=String(z),zoom);
@@ -367,8 +382,8 @@ function mappingMember(a,id) {
       return l.bottom>p.top && l.top<p.bottom;
     },sourceOffset);
     check(true,'compatible recall attachment preserves the exact source reading position');
-    await page.getByRole('button',{name:'Recall',exact:true}).click();
-    await page.locator('#workspace-recall').selectOption('m1:u0');
+    await page.getByRole('button',{name:'Story + recall',exact:true}).click();
+    await (await openNavigation(), page.locator('#workspace-recall')).selectOption('m1:u0');
     const scrollMatrix=async(column)=>{
       await page.waitForTimeout(50);
       await page.locator('#workspace-matrix-scroll').evaluate((pane,column)=>{
@@ -391,7 +406,7 @@ function mappingMember(a,id) {
     },expected);
     await scrollMatrix(Math.floor((await page.locator('.mapping-matrix thead th').count()-1)/2));
     const historyA=await state();
-    await page.locator('#workspace-recall').selectOption('m1:u1');
+    await (await openNavigation(), page.locator('#workspace-recall')).selectOption('m1:u1');
     await scrollMatrix(0);
     const historyB=await state();
     assert.notEqual(historyA.viewport.matrixColumn,historyB.viewport.matrixColumn,'history witness uses distinct matrix positions');
@@ -428,7 +443,7 @@ function mappingMember(a,id) {
     check(await page.evaluate(()=>devicePixelRatio===2 && document.activeElement?.matches('[data-matrix-cell="1-0"]')),'DPR2 keyboard focus retains qualified matrix identity');
     const focusStyle=await page.evaluate(()=>{const s=getComputedStyle(document.activeElement);return {width:s.outlineWidth,style:s.outlineStyle};});
     check(parseFloat(focusStyle.width)>0 && focusStyle.style!=='none','DPR2 keyboard focus has a visible non-color-only outline');
-    const contrast=await page.locator('.joined-workspace > h1').evaluate(element=>{
+    const contrast=await page.locator('.joined-workspace h1').first().evaluate(element=>{
       const rgb=s=>(s.match(/[\d.]+/g)||[]).slice(0,3).map(Number);
       const luminance=a=>a.map(v=>v/255).map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4)).reduce((sum,v,i)=>sum+v*[0.2126,0.7152,0.0722][i],0);
       const fg=rgb(getComputedStyle(element).color);let parent=element,bg='rgba(0, 0, 0, 0)';
