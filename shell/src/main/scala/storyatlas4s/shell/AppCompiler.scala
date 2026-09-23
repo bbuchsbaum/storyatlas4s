@@ -29,18 +29,18 @@ final case class CodexLine(
 final case class CodexPage(
     index: Int,
     lines: Vector[CodexLine],
-    overlay: Plate,
-    targets: RenderedTargetIndex[FragmentId]
-)
+    overlay: TargetedPlate[FragmentId]
+):
+  def targets: RenderedTargetIndex[FragmentId] = overlay.targets
 
 /** An explicitly diagnostic Codex plate proving the otherwise absent ViaAncestor DOM capacity. */
 final case class CodexProxyCourt(
     original: Address,
     visible: Address,
-    overlay: Plate,
-    targets: RenderedTargetIndex[FragmentId],
+    overlay: TargetedPlate[FragmentId],
     interactions: Vector[InteractionDecoration[FragmentId, Address]]
-)
+):
+  def targets: RenderedTargetIndex[FragmentId] = overlay.targets
 
 /** Everything the shell draws for one [[ViewChoice]]: both artifacts compiled in storymodel4s under
   * one `CommonViewState`, the paginated Codex, the lowered overlays and Atlas, the selection's and
@@ -55,9 +55,8 @@ final case class Compiled(
     rows: Vector[PagedCodexLowering.Row],
     pages: Vector[CodexPage],
     scene: NarrativeScene,
-    atlas: Plate,
+    atlas: TargetedPlate[MarkId],
     atlasNames: Int,
-    atlasTargets: RenderedTargetIndex[MarkId],
     atlasInteractions: Vector[InteractionDecoration[MarkId, Address]],
     codexInteractions: Vector[InteractionDecoration[FragmentId, Address]],
     fragmentTargets: RenderedTargetIndex[FragmentId],
@@ -66,6 +65,7 @@ final case class Compiled(
     atlasPlacements: Vector[(Address, SelectionPlacement[MarkId])],
     receipts: Vector[(String, String)]
 ):
+  def atlasTargets: RenderedTargetIndex[MarkId] = atlas.targets
   def canonicalText: String = flow.source.canonicalText
   def pieces: Int = placed.annotationFragments.length
 
@@ -205,7 +205,7 @@ object AppCompiler:
         .left
         .map(_.message)
       lowered <- AtlasLowering.lower(scene, text.length, atlasBox).left.map(_.message)
-      atlas = Plate(
+      atlasPlate = Plate(
         lowered,
         EditionSpec.atlasWidthPx,
         EditionSpec.atlasHeightPx,
@@ -249,6 +249,11 @@ object AppCompiler:
         }
         .left
         .map(_.message)
+      pageOverlays <- overlays
+        .zip(pageTargets)
+        .traverse((plate, page) => TargetedPlate.of(plate, page._2))
+        .left
+        .map(_.message)
       atlasEntries <- scene.marks
         .traverse(mark =>
           scene.navigation.addressOf
@@ -272,6 +277,7 @@ object AppCompiler:
         )
         .left
         .map(_.message)
+      atlas <- TargetedPlate.of(atlasPlate, atlasTargets).left.map(_.message)
       fragmentsByAnnotation = placed.annotationFragments
         .groupMap(_.annotation)(_.id)
         .view
@@ -306,8 +312,7 @@ object AppCompiler:
         placed,
         fragmentsByAnnotation,
         fragmentTargets,
-        pageTargets,
-        overlays
+        placed.pages.map(_.index).zip(pageOverlays)
       ).left.map(_.message)
       selectedFragments = directTargets(codexInteractions, InteractionRole.Selection)
       focusedFragments = directTargets(codexInteractions, InteractionRole.Focus)
@@ -332,8 +337,8 @@ object AppCompiler:
         )
       )
     yield
-      val pages = placed.pages.zip(lines).zip(overlays).zip(pageTargets.map(_._2)).map {
-        case (((p, ls), overlay), targets) => CodexPage(p.index, ls, overlay, targets)
+      val pages = placed.pages.zip(lines).zip(pageOverlays).map { case ((p, ls), overlay) =>
+        CodexPage(p.index, ls, overlay)
       }
       Compiled(
         choice,
@@ -345,7 +350,6 @@ object AppCompiler:
         scene,
         atlas,
         atlasTargets.size,
-        atlasTargets,
         atlasInteractions,
         codexInteractions,
         fragmentTargets,
@@ -447,8 +451,7 @@ object AppCompiler:
       placed: PaginatedCodex,
       fragmentsByAnnotation: Map[AnnotationId, Vector[FragmentId]],
       fragmentTargets: RenderedTargetIndex[FragmentId],
-      pageTargets: Vector[(Int, RenderedTargetIndex[FragmentId])],
-      overlays: Vector[Plate]
+      pageOverlays: Vector[(Int, TargetedPlate[FragmentId])]
   ): Either[InteractionError, Option[CodexProxyCourt]] =
     atlasPlacements.collectFirst { case (original, SelectionPlacement.ViaAncestor(visible)) =>
       original -> visible
@@ -475,16 +478,14 @@ object AppCompiler:
               _.value
             ).flatMap { interactions =>
               val pageByFragment = placed.annotationFragments.map(f => f.id -> f.page).toMap
-              val targetsByPage = pageTargets.toMap
-              val overlaysByPage =
-                placed.pages.zip(overlays).map((page, plate) => page.index -> plate).toMap
+              val overlaysByPage = pageOverlays.toMap
               val court = for
                 page <- pageByFragment.get(firstTarget)
-                targets <- targetsByPage.get(page)
                 overlay <- overlaysByPage.get(page)
               yield
-                val pageInteractions = interactions.filter(value => targets.contains(value.target))
-                CodexProxyCourt(original, visible, overlay, targets, pageInteractions)
+                val pageInteractions =
+                  interactions.filter(value => overlay.targets.contains(value.target))
+                CodexProxyCourt(original, visible, overlay, pageInteractions)
               court match
                 case Some(value) if value.interactions.exists {
                       case InteractionDecoration(

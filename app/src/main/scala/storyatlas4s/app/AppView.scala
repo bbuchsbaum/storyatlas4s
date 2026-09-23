@@ -361,7 +361,6 @@ object AppView:
                 mountSvg(
                   ctx.thisNode.ref,
                   page.overlay,
-                  page.targets,
                   c.codexInteractions.filter(value => page.targets.contains(value.target)),
                   (name, address) => s"annotation piece ${name.value} → ${address.render}"
                 )
@@ -380,7 +379,7 @@ object AppView:
     val markIds = c.scene.marks.map(_.identity.mark.value).sorted
     val resolvedMarkIds = c.atlasTargets.names.map(_.value).toVector.sorted
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
-      activateAt(choice, c.atlasTargets, target, extend)
+      activateAt(choice, c.atlas.targets, target, extend)
     sectionTag(
       cls("atlas"),
       aria.label("Narrative Atlas"),
@@ -406,7 +405,6 @@ object AppView:
           mountSvg(
             ctx.thisNode.ref,
             c.atlas,
-            c.atlasTargets,
             c.atlasInteractions,
             (name, address) => s"mark ${name.value} → ${address.render}"
           )
@@ -427,7 +425,7 @@ object AppView:
         )
       ) { court =>
         def activate(target: dom.EventTarget, extend: Boolean): Unit =
-          activateAt(choice, court.targets, target, extend)
+          activateAt(choice, court.overlay.targets, target, extend)
         sectionTag(
           cls("codex-interaction-court"),
           aria.label("Diagnostic Codex interaction court"),
@@ -445,7 +443,6 @@ object AppView:
               mountSvg(
                 ctx.thisNode.ref,
                 court.overlay,
-                court.targets,
                 court.interactions,
                 (name: FragmentId, address: Address) =>
                   s"diagnostic annotation piece ${name.value} → ${address.render}"
@@ -472,12 +469,13 @@ object AppView:
   /** The web host draws a shell plate as SVG; rendering and interaction failures are both shown. */
   private def mountSvg[Name](
       container: dom.Element,
-      plate: Plate,
-      targets: RenderedTargetIndex[Name],
+      targeted: TargetedPlate[Name],
       interactions: Vector[InteractionDecoration[Name, Address]],
       label: (Name, Address) => String
   ): Unit =
-    plate.svg.map(svg => SvgDom.inject(container, svg, targets, interactions, label)) match
+    targeted.plate.svg.map(svg =>
+      SvgDom.inject(container, svg, targeted.targets, interactions, label)
+    ) match
       case Right(Right(()))   => ()
       case Right(Left(error)) =>
         fail(container, "data-interaction-error", error.message, "Interaction rendering failed")

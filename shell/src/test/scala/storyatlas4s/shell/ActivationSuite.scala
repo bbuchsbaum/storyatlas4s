@@ -105,3 +105,22 @@ class ActivationSuite extends FunSuite:
         )
       )
     )
+
+  test("a plate pairs only with the index of exactly the names drawn on it"):
+    val c = compiled
+    assertEquals(TargetedPlate.of(c.atlas.plate, c.atlas.targets), Right(c.atlas))
+    c.pages.headOption.foreach { page =>
+      val mismatch = TargetedPlate.of(c.atlas.plate, page.targets)
+      assert(mismatch.isLeft, "a Codex page index cannot be paired with the Atlas plate")
+    }
+
+  test("a hit resolves through the plate it landed on, never another plate's index"):
+    val rendered = compiled.atlas.targets.renderedNames.toVector.sorted.head
+    val expected = compiled.atlas.targets.resolve(rendered).map(_._2)
+    assertEquals(
+      Activation(start, compiled.atlas, rendered, extend = false).flatMap(_.focus),
+      expected
+    )
+    compiled.pages.headOption.foreach { page =>
+      assertEquals(Activation(start, page.overlay, rendered, extend = false), None)
+    }

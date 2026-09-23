@@ -24,7 +24,9 @@ class AppCompilerSuite extends FunSuite:
   /** Every compiled view must also be drawable: each plate renders as SVG, as the web host does. */
   private def compile(choice: ViewChoice): Compiled =
     val c = ok(AppCompiler.compile(model, choice, MonospaceMeasurer.instance))
-    (c.atlas +: (c.pages.map(_.overlay) ++ c.codexProxyCourt.map(_.overlay))).foreach(svg)
+    (c.atlas +: (c.pages.map(_.overlay) ++ c.codexProxyCourt.map(_.overlay)))
+      .map(_.plate)
+      .foreach(svg)
     c
 
   private val omniscient = ViewChoice.initial.copy(measurer = MeasurerChoice.Monospace)
@@ -40,8 +42,8 @@ class AppCompilerSuite extends FunSuite:
     assert(c.pieces > 0)
     assertEquals(c.pages.length, c.placed.pages.length)
     assert(c.pages.length > 1)
-    c.pages.foreach(p => assert(svg(p.overlay).startsWith("<svg "), s"page ${p.index}"))
-    assert(svg(c.atlas).startsWith("<svg "))
+    c.pages.foreach(p => assert(svg(p.overlay.plate).startsWith("<svg "), s"page ${p.index}"))
+    assert(svg(c.atlas.plate).startsWith("<svg "))
     assertEquals(c.atlasNames, c.scene.marks.length)
     assertEquals(
       c.scene.marks.map(_.identity.mark).toSet,
@@ -90,11 +92,11 @@ class AppCompilerSuite extends FunSuite:
     assert(none.receipts.toMap.apply("horizon").startsWith("reader at 0 of"))
     // The overlay of a horizon-empty codex names nothing; the atlas draws nothing.
     none.pages.foreach { p =>
-      assertEquals(GraphicsNames.collect(p.overlay.scene), Vector.empty, s"page ${p.index}")
-      assert(!svg(p.overlay).contains("data-name"), s"page ${p.index}")
+      assertEquals(GraphicsNames.collect(p.overlay.plate.scene), Vector.empty, s"page ${p.index}")
+      assert(!svg(p.overlay.plate).contains("data-name"), s"page ${p.index}")
     }
-    assertEquals(GraphicsNames.collect(none.atlas.scene), Vector.empty)
-    assert(!svg(none.atlas).contains("data-name"))
+    assertEquals(GraphicsNames.collect(none.atlas.plate.scene), Vector.empty)
+    assert(!svg(none.atlas.plate).contains("data-name"))
 
   test("the Reading lens has no annotation channel and so no piece, but the same pages"):
     val reading = compile(omniscient.copy(lens = CodexLens.Reading))
@@ -443,7 +445,7 @@ class AppCompilerSuite extends FunSuite:
     val a = compile(omniscient.copy(zoom = episodeZoom))
     val b = compile(omniscient.copy(zoom = episodeZoom))
     assertEquals(a.atlas, b.atlas)
-    assertEquals(svg(a.atlas), svg(b.atlas))
+    assertEquals(svg(a.atlas.plate), svg(b.atlas.plate))
     assertEquals(a.pages, b.pages)
     assertEquals(a.receipts, b.receipts)
     assertEquals(a.scene.textualTwin, b.scene.textualTwin)

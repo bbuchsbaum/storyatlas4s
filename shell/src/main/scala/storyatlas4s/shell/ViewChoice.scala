@@ -54,6 +54,17 @@ object Activation:
   ): Option[ViewChoice] =
     targets.resolve(renderedName).map((_, address) => choice.activate(address, extend))
 
+  /** A hit on one plate, resolved through that plate's own index. Hosts prefer this form: the
+    * pairing makes resolving a name against another plate's index unrepresentable.
+    */
+  def apply[Name](
+      choice: ViewChoice,
+      plate: TargetedPlate[Name],
+      renderedName: String,
+      extend: Boolean
+  ): Option[ViewChoice] =
+    apply(choice, plate.targets, renderedName, extend)
+
 object ViewChoice:
   val initial: ViewChoice =
     ViewChoice(
