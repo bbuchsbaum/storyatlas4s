@@ -2,7 +2,6 @@ package storyatlas4s.app
 
 import com.raquo.laminar.api.L.*
 import org.scalajs.dom
-import storyatlas4s.intaglio.MatrixLowering
 import storyatlas4s.layout.DomMeasurer
 import storyatlas4s.shell.*
 import storymodel4s.align.*
@@ -18,6 +17,13 @@ object WorkspaceView:
     val restorations = new EventBus[Unit]
     val controller = history.signal.map(_.current)
     val notice = Var("")
+    val narrowSurface = Var("list")
+    val measure = Var(
+      if initial.policy.matrix.rows.exists(_.cells.exists(_.normalized.nonEmpty))
+      then WorkspaceLabels.Measure.Normalized
+      else WorkspaceLabels.Measure.All
+    )
+    val displayed = controller.combineWith(measure.signal)
     val workspace = initial.workspace
     def dispatch(action: WorkspaceAction): Unit = history.now().dispatch(action) match
       case Left(reason) => notice.set(s"Action refused: $reason")
@@ -73,169 +79,176 @@ object WorkspaceView:
           Option(dom.document.querySelector(s"[data-matrix-cell='$r-$c']"))
             .foreach(_.asInstanceOf[dom.html.Element].focus())
       }
+    def exactRecall(c: WorkspaceController, unit: RecallUnitId): Vector[HtmlElement] =
+      c.recallEvidence(unit) match
+        case Left(reason) => Vector(span(cls("evidence-absence"), s"Evidence unavailable: $reason"))
+        case Right(pieces) if pieces.isEmpty =>
+          Vector(span(cls("evidence-absence"), "No complete fragment at this horizon"))
+        case Right(pieces) => pieces.map((_, text) => span(cls("recall-fragment"), text))
+
     val matrix = WorkspaceScroll.bind(
       div(
-        idAttr("workspace-matrix-scroll"),
-        cls("mapping-scroll"),
-        role("region"),
-        aria.label("Alignment matrix; scroll horizontally for all destinations"),
+        idAttr("workspace-matrix-scroll"), cls("mapping-scroll"), role("region"),
+        aria.label("Recall by supplied target cut; scroll for all destinations"),
         table(
           cls("mapping-matrix"),
           caption(
-            "Complete target cut. Missing measures remain Not supplied; selection never renormalizes values."
+            child.text <-- displayed.map { (c, m) =>
+              if m == WorkspaceLabels.Measure.Normalized then
+                MatrixCells.fillLegend(c.policy.matrix) + " Blank measure: Not supplied."
+              else s"${m.label} · exact supplied values; incomparable quantities stay separate."
+            }
           ),
-          thead(tr(th("Recall unit / outcome"), destinations.map(d => th(d.key)))),
+          thead(tr(
+            th(cls("recall-heading"), "Recall", span("in transcript order")),
+            destinations.map { destination =>
+              th(
+                cls(if destination.isInstanceOf[Destination.External] then "external-column" else "target-column"),
+                title(destination.key),
+                WorkspaceLabels.destination(destination)
+              )
+            },
+            th(cls("processing-column"), "Processing")
+          )),
           tbody(workspace.inventory.units.zipWithIndex.map { (unit, rowIndex) =>
             tr(
               dataAttr("recall-unit")(unit.id.value),
+              dataAttr("row-selected") <-- controller.map(_.state.activeRecall.contains(unit.id).toString),
+              dataAttr("row-processing") <-- controller.map(c =>
+                c.policy.matrix.row(unit.id).fold("Unknown")(r => WorkspaceLabels.processing(r.outcome.processing))
+              ),
               th(
+                cls("recall-heading"),
                 button(
-                  typ("button"),
-                  s"${unit.ordinal + 1}. ${unit.id.value}",
+                  typ("button"), cls("recall-row-button"),
+                  span(cls("recall-ordinal"), s"R${unit.ordinal + 1}"),
+                  span(cls("recall-exact"), children <-- controller.map(exactRecall(_, unit.id))),
+                  title(unit.id.value),
                   onClick --> (_ => dispatch(WorkspaceAction.Jump(unit.id))),
-                  aria.pressed <-- controller.map(
-                    _.state.activeRecall.contains(unit.id).toString
-                  )
-                ),
-                div(
-                  cls("row-status"),
-                  child.text <-- controller.map(c =>
-                    c.policy.matrix
-                      .row(unit.id)
-                      .fold("Outcome not supplied")(r =>
-                        s"${r.outcome.processing} · ${r.outcome.localization}"
-                      )
-                  )
+                  aria.pressed <-- controller.map(_.state.activeRecall.contains(unit.id).toString)
                 )
               ),
               destinations.zipWithIndex.map { (destination, columnIndex) =>
                 td(
+                  cls(if destination.isInstanceOf[Destination.External] then "external-column" else "target-column"),
                   button(
                     typ("button"),
-                    cls("matrix-cell"),
+                    cls <-- displayed.map { (c, m) =>
+                      val cell = c.policy.matrix.row(unit.id).flatMap(_.cell(destination))
+                      val fill = c.policy.matrix.row(unit.id).flatMap(_.outcome.decision).exists(_.origin match
+                        case DecisionOrigin.GapFill(_) => true
+                        case _                         => false)
+                      s"matrix-cell ${cell.fold("")(WorkspaceLabels.tone(c.policy.matrix, _, m))}${if fill then " fill-origin" else ""}"
+                    },
                     dataAttr("matrix-cell")(s"$rowIndex-$columnIndex"),
-                    aria.label(s"Inspect recall ${unit.ordinal + 1}, ${destination.key}"),
+                    aria.label <-- controller.map { c =>
+                      val cell = c.policy.matrix.row(unit.id).flatMap(_.cell(destination))
+                      s"Inspect recall ${unit.ordinal + 1}, ${WorkspaceLabels.destination(destination)}; ${MatrixCells.of(c.policy.matrix, cell).spoken}"
+                    },
                     tabIndex <-- controller.map { c =>
-                      val activeRow =
-                        c.state.activeRecall.getOrElse(workspace.inventory.units.head.id)
-                      val activeColumn = c.state.correspondence
-                        .map(x => Destination.Target(x.target))
-                        .getOrElse(destinations.head)
+                      val activeRow = c.state.activeRecall.getOrElse(workspace.inventory.units.head.id)
+                      val activeColumn = c.state.correspondence.map(x => Destination.Target(x.target)).getOrElse(destinations.head)
                       if activeRow == unit.id && activeColumn == destination then 0 else -1
                     },
                     aria.pressed <-- controller.map(c =>
-                      val selected = c.state.activeRecall.contains(unit.id) && (destination match
-                        case Destination.Target(target) =>
-                          c.state.correspondence.contains(Correspondence(unit.id, target))
-                        case Destination.External(_) => false)
-                      selected.toString
+                      (c.state.activeRecall.contains(unit.id) && (destination match
+                        case Destination.Target(target) => c.state.correspondence.contains(Correspondence(unit.id, target))
+                        case Destination.External(_) => false)).toString
                     ),
-                    children <-- controller.map { c =>
+                    children <-- displayed.map { (c, m) =>
                       c.policy.matrix.row(unit.id).flatMap(_.cell(destination)) match
-                        case None       => Vector(div("Not supplied in this result"))
+                        case None => Vector(span(cls("measure-absent"), "Not supplied"))
                         case Some(cell) =>
-                          MatrixLowering
-                            .values(cell)
-                            .map((kind, value) =>
-                              div(span(cls("measure-kind"), kind), strong(value))
-                            ) ++
-                            Option
-                              .when(cell.chosen)(div(cls("chosen-label"), "◇ Chosen destination"))
-                              .toVector
+                          WorkspaceLabels.values(cell, m).map { (kind, value) =>
+                            div(
+                              cls(if value == "Not supplied" then "measure-absent" else "cell-measure"),
+                              span(cls(if m == WorkspaceLabels.Measure.Normalized then "visually-hidden" else "measure-kind"), kind),
+                              strong(value)
+                            )
+                          } ++ Option.when(cell.chosen)(span(cls("decision-mark"), title("Supplied decision"), span(cls("visually-hidden"), "Decision"))).toVector
                     },
                     onClick --> (_ => activate(unit.id, destination)),
                     onKeyDown --> (event => move(event, rowIndex, columnIndex))
                   )
                 )
-              }
+              },
+              td(cls("processing-column"), child.text <-- controller.map(c =>
+                c.policy.matrix.row(unit.id).fold("Not supplied")(r => WorkspaceLabels.processing(r.outcome.processing))
+              ))
             )
           })
         )
       ),
-      false,
-      () => history.now().current,
-      controller,
-      dispatch,
-      restorations.events
+      false, () => history.now().current, controller, dispatch, restorations.events
     )
     val sourcePane = WorkspaceScroll.bind(
-      sectionTag(idAttr("workspace-source-scroll"), cls("joined-source"), h2("Source"), source),
-      true,
-      () => history.now().current,
-      controller,
-      dispatch,
-      restorations.events
+      sectionTag(idAttr("workspace-source-scroll"), cls("joined-source"), h2("Source reading"), source),
+      true, () => history.now().current, controller, dispatch, restorations.events
+    )
+    val compactList = ol(
+      cls("compact-recall-list"), aria.label("Recall units in transcript order"),
+      workspace.inventory.units.map { unit =>
+        li(
+          dataAttr("row-selected") <-- controller.map(_.state.activeRecall.contains(unit.id).toString),
+          button(
+            typ("button"), cls("compact-recall-button"),
+            span(cls("recall-ordinal"), s"R${unit.ordinal + 1}"),
+            span(cls("recall-exact"), children <-- controller.map(exactRecall(_, unit.id))),
+            onClick --> { _ =>
+              dispatch(WorkspaceAction.Jump(unit.id))
+              narrowSurface.set("evidence")
+              val _ = dom.window.requestAnimationFrame(_ =>
+                Option(dom.document.getElementById("workspace-inspector-title"))
+                  .foreach(_.asInstanceOf[dom.html.Element].focus())
+              )
+            }
+          ),
+          p(cls("compact-outcome"), child.text <-- controller.map(c =>
+            c.policy.matrix.row(unit.id).fold("Outcome not supplied")(row =>
+              s"${WorkspaceLabels.processing(row.outcome.processing)} · ${row.outcome.decision.fold("No decision supplied")(d => d.chosen.fold("Abstain")(WorkspaceLabels.destination))}"
+            )
+          ))
+        )
+      }
     )
     div(
-      cls("joined-workspace"),
+      cls("joined-workspace design-workspace"),
       dataAttr("workspace-ready")("true"),
+      dataAttr("mode") <-- controller.map(_.state.mode.toString.toLowerCase),
+      dataAttr("narrow-surface") <-- narrowSurface.signal,
       dataAttr("policy") <-- controller.map(_.state.policy.value),
       dataAttr("active-recall") <-- controller.map(_.state.activeRecall.fold("")(_.value)),
-      dataAttr("selection") <-- controller.map(
-        _.state.selection.toVector.sorted.map(_.render).mkString(" ")
+      dataAttr("selection") <-- controller.map(_.state.selection.toVector.sorted.map(_.render).mkString(" ")),
+      headerTag(
+        cls("investigation-bar"),
+        div(cls("investigation-title"), h1("Story + recall"), span(s"${workspace.inventory.units.size} recall units · checked investigation")),
+        div(cls("task-switch"), role("group"), aria.label("Task"),
+          Vector(WorkspaceMode.Recall -> "Story + recall", WorkspaceMode.Source -> "Source reading", WorkspaceMode.Voyage -> "Time Voyage").map { (mode, label) =>
+            button(typ("button"), label, aria.pressed <-- controller.map(c => (c.state.mode == mode).toString),
+              onClick --> (_ => dispatch(WorkspaceAction.Mode(mode))))
+          }
+        ),
+        div(cls("workspace-actions"),
+          button(typ("button"), idAttr("workspace-back"), "Back", disabled <-- history.signal.map(!_.canBack), onClick --> (_ => navigate(false))),
+          button(typ("button"), idAttr("workspace-return"), "Return", disabled <-- history.signal.map(!_.canReturn), onClick --> (_ => navigate(true))),
+          button(typ("button"), idAttr("workspace-save"), "Save view", onClick --> (_ => WorkspaceHost.download("investigation.json", WorkspaceSave.encode(history.now().current)))),
+          button(typ("button"), idAttr("workspace-export"), cls("primary-action"), "Export evidence", onClick --> (_ => exportEvidence()))
+        )
       ),
-      h1("Source + recall investigation"),
-      p(
-        cls("basis-note"),
-        s"${workspace.origin} · imported draft source · ${workspace.inventory.units.size} recall units"
+      div(cls("view-controls"),
+        label("Display ", select(idAttr("workspace-measure"),
+          WorkspaceLabels.Measure.values.toVector.map(m => option(value(m.toString), m.label)),
+          controlled(value <-- measure.signal.map(_.toString), onChange.mapToValue --> (v => WorkspaceLabels.Measure.values.find(_.toString == v).foreach(measure.set)))
+        )),
+        label("Result ", select(idAttr("workspace-policy"),
+          workspace.policies.map(p => option(value(p.id.value), p.id.value)),
+          controlled(value <-- controller.map(_.state.policy.value), onChange.mapToValue --> (v => workspace.policies.find(_.id.value == v).foreach(p => dispatch(WorkspaceAction.Policy(p.id)))))
+        )),
+        span(cls("view-scope"), s"${initial.policy.matrix.targets.size} source targets · supplied cut · equal widths"),
+        span(cls("view-scope"), "Decisions shown · route off")
       ),
-      div(
-        cls("workspace-actions"),
-        button(
-          typ("button"),
-          idAttr("workspace-back"),
-          "Back",
-          disabled <-- history.signal.map(!_.canBack),
-          onClick --> (_ => navigate(false))
-        ),
-        button(
-          typ("button"),
-          idAttr("workspace-return"),
-          "Return",
-          disabled <-- history.signal.map(!_.canReturn),
-          onClick --> (_ => navigate(true))
-        ),
-        label(
-          "Mapping result ",
-          select(
-            idAttr("workspace-policy"),
-            workspace.policies.map(p => option(value(p.id.value), p.id.value)),
-            controlled(
-              value <-- controller.map(_.state.policy.value),
-              onChange.mapToValue --> (v =>
-                workspace.policies
-                  .find(_.id.value == v)
-                  .foreach(p => dispatch(WorkspaceAction.Policy(p.id)))
-              )
-            )
-          )
-        ),
-        WorkspaceMode.values.toVector.map(mode =>
-          button(
-            typ("button"),
-            mode.toString,
-            aria.pressed <-- controller.map(c => (c.state.mode == mode).toString),
-            onClick --> (_ => dispatch(WorkspaceAction.Mode(mode)))
-          )
-        ),
-        button(
-          typ("button"),
-          "Save investigation",
-          idAttr("workspace-save"),
-          onClick --> (_ =>
-            WorkspaceHost
-              .download("investigation.json", WorkspaceSave.encode(history.now().current))
-          )
-        ),
-        button(
-          typ("button"),
-          "Export evidence",
-          idAttr("workspace-export"),
-          onClick --> (_ => exportEvidence())
-        ),
-        button(typ("button"), "Clear selection", onClick --> (_ => dispatch(WorkspaceAction.Clear)))
-      ),
-      p(role("status"), aria.live("polite"), child.text <-- notice.signal),
+      p(cls("workspace-notice"), role("status"), aria.live("polite"), child.text <-- notice.signal),
+      detailsTag(cls("inspection-controls"), summaryTag("Recall navigation and evidence horizon"),
       div(
         cls("recall-navigation"),
         button(
@@ -325,202 +338,46 @@ object WorkspaceView:
             )
           )
         )
+      )
       ),
-      div(
-        cls("joined-columns"),
-        sourcePane,
-        sectionTag(
-          cls("joined-recall"),
-          h2("Recall and exact evidence"),
-          inspector(controller, dispatch)
-        )
-      ),
-      sectionTag(
-        display <-- controller.map(c =>
-          if c.state.mode == WorkspaceMode.Recall then "block" else "none"
-        ),
-        h2("Alignment matrix"),
-        matrix
-      ),
-      sectionTag(
-        display <-- controller.map(c =>
-          if c.state.mode == WorkspaceMode.Voyage then "block" else "none"
-        ),
-        idAttr("workspace-voyage"),
-        h2("Recall Voyage"),
-        child <-- controller.map(_.state.policy).distinct.map { id =>
-          WorkspaceVoyage.from(workspace, id) match
-            case Left(reason)      => p(s"Voyage unavailable: $reason")
-            case Right(projection) =>
-              VoyageView.controlled(projection, controller, () => history.now().current, dispatch)
+      div(cls("narrow-switch"), role("group"), aria.label("Presentation"),
+        Vector("list" -> "List", "map" -> "Map", "evidence" -> "Evidence").map { (id, label) =>
+          button(typ("button"), label, aria.pressed <-- narrowSurface.signal.map(v => (v == id).toString), onClick --> (_ => narrowSurface.set(id)))
         }
       ),
-      detailsTag(
-        summaryTag("Artifact identities and view state"),
+      div(cls("investigation-body"),
+        mainTag(cls("investigation-main"),
+          sectionTag(cls("matrix-pane"), h2("Recall correspondence"), matrix, compactList,
+            p(cls("matrix-key"), span(cls("legend-decision")), "Supplied decision", span(cls("legend-fill")), "Zero-mass fill", " · Selection uses an outline; values stay unchanged.")
+          ),
+          sourcePane,
+          sectionTag(idAttr("workspace-voyage"), h2("Time Voyage"),
+            child <-- controller.map(_.state.policy).distinct.map { id =>
+              WorkspaceVoyage.from(workspace, id) match
+                case Left(reason) => p(s"Voyage unavailable: $reason")
+                case Right(projection) => VoyageView.controlled(projection, controller, () => history.now().current, dispatch)
+            }
+          )
+        ),
+        asideTag(cls("joined-recall workspace-inspector"), idAttr("workspace-inspector"),
+          h2(idAttr("workspace-inspector-title"), tabIndex(-1), "Evidence inspector"),
+          div(cls("inspector-navigation"),
+            button(typ("button"), "Previous recall", disabled(workspace.inventory.units.isEmpty), onClick --> (_ => dispatch(WorkspaceAction.Walk(-1)))),
+            button(typ("button"), "Next recall", disabled(workspace.inventory.units.isEmpty), onClick --> (_ => dispatch(WorkspaceAction.Walk(1))))
+          ),
+          WorkspaceInspector(controller, dispatch),
+          button(typ("button"), cls("read-source-action"), "Read selected source", disabled <-- controller.map(_.state.correspondence.isEmpty), onClick --> (_ => dispatch(WorkspaceAction.Mode(WorkspaceMode.Source))))
+        )
+      ),
+      footerTag(cls("investigation-status"),
+        span(child.text <-- controller.map(c => c.state.activeRecall.fold("No recall selected")(u => s"Selected ${u.value}"))),
+        span(child.text <-- controller.map(c => c.state.correspondence.fold("No source alternative in focus")(r => s"Focus ${r.target.key}"))),
+        button(typ("button"), "Clear selection", onClick --> (_ => dispatch(WorkspaceAction.Clear)))
+      ),
+      detailsTag(cls("workspace-receipts"), summaryTag("Artifact identities, horizons and saved view state"),
+        p(s"${workspace.origin} · imported draft source"),
         p(s"Source SHA-256: ${workspace.modelArtifact.hex}"),
         p(s"Recall SHA-256: ${workspace.recallArtifact.hex}"),
         pre(idAttr("workspace-state"), child.text <-- controller.map(WorkspaceSave.encode))
       )
     )
-
-  private def inspector(
-      signal: Signal[WorkspaceController],
-      dispatch: WorkspaceAction => Unit
-  ): HtmlElement =
-    def activate(attribute: String, key: String, action: WorkspaceAction): Unit =
-      val active = Option(dom.document.activeElement).exists(_.getAttribute(attribute) == key)
-      dispatch(action)
-      if active then
-        val _ = dom.window.requestAnimationFrame { _ =>
-          val controls = dom.document.querySelectorAll(s"[$attribute]")
-          Vector
-            .tabulate(controls.length)(i => controls(i).asInstanceOf[dom.html.Element])
-            .find(_.getAttribute(attribute) == key)
-            .foreach(_.focus())
-        }
-    div(child <-- signal.map { c =>
-      def pieces(values: Vector[(SpanRef, String)]): HtmlElement =
-        if values.isEmpty then p("No complete evidence fragment is visible at this horizon.")
-        else
-          div(
-            values.map((ref, text) =>
-              blockQuote(
-                p(text),
-                small(s"Exact support: ${ref.span.start}–${ref.span.endExclusive}")
-              )
-            )
-          )
-      val target = c.state.correspondence
-        .map(_.target)
-        .orElse(c.state.focus.flatMap(c.workspace.sourceAddresses.get))
-      div(
-        c.state.activeRecall.toVector.map { unit =>
-          val row = c.policy.matrix.row(unit).get
-          div(
-            h3(s"Recall ${row.unit.ordinal + 1}: ${unit.value}"),
-            p(
-              s"${row.outcome.processing} · ${row.outcome.localization} · ${c.workspace.timing(unit)}"
-            ),
-            c.recallEvidence(unit).fold(reason => p(s"Evidence unavailable: $reason"), pieces),
-            p(
-              row.outcome.decision.fold("Decision not supplied")(d =>
-                s"Decision: ${d.chosen.fold("abstain")(_.key)} · origin ${d.origin} · ${d.basis.kind}"
-              )
-            ),
-            div(
-              dataAttr("inspection-metadata")("true"),
-              p(s"Inference policy: ${c.policy.record.policies.inference}"),
-              p(s"Candidate coverage: ${c.policy.record.policies.candidate}"),
-              p(c.policy.record.policies.candidate match
-                case CandidatePolicy.Declared(_, CandidateCoverage.Complete) =>
-                  "The producer declares complete candidate coverage."
-                case _ => "Omitted-candidate probability: unknown; this is not known hidden mass."),
-              p(s"Fixed target universe: ${c.policy.record.policies.universe.id.digest.hex}"),
-              row.outcome.measures.normalized.fold(p("Normalized score mass: not supplied"))(m =>
-                p(
-                  s"Normalization universe: ${m.universe.digest.hex}; prior: ${m.prior}; temperature: ${m.temperature}; stage: ${m.stage.digest.hex}"
-                )
-              ),
-              row.outcome.measures.transport.fold(p("Transport row budget: not supplied"))(m =>
-                p(s"Transport row budget: ${m.rowBudget}; stage: ${m.stage.digest.hex}")
-              ),
-              p(
-                row.outcome.decision.fold("Calibration: no decision supplied")(d =>
-                  d.calibration match
-                    case unavailable: DecisionCalibration.Unavailable =>
-                      s"Calibrated correctness probability: unavailable (${unavailable.reason})"
-                    case calibrated: DecisionCalibration.Calibrated =>
-                      s"Calibrated correctness probability: ${calibrated.probability.probability.value}; artifact: ${calibrated.probability.artifact}"
-                )
-              )
-            ),
-            h3("Every candidate and external alternative"),
-            ul(row.cells.map { cell =>
-              li(
-                button(
-                  typ("button"),
-                  cell.destination.key,
-                  dataAttr("inspect-destination")(cell.destination.key),
-                  onClick --> (_ =>
-                    cell.destination match
-                      case Destination.Target(ref) =>
-                        activate(
-                          "data-inspect-destination",
-                          cell.destination.key,
-                          WorkspaceAction.Inspect(unit, ref)
-                        )
-                      case Destination.External(_) =>
-                        activate(
-                          "data-inspect-destination",
-                          cell.destination.key,
-                          WorkspaceAction.Jump(unit)
-                        )
-                  )
-                ),
-                span(
-                  MatrixLowering.values(cell).map((kind, value) => s"$kind: $value").mkString(" · ")
-                ),
-                div(
-                  dataAttr("inspection-metadata")("true"),
-                  if cell.links.isEmpty then Vector(p("Link support: not supplied"))
-                  else
-                    cell.links.map { link =>
-                      val support = link.termSupport match
-                        case absent: TermSupportStatus.NotComputed =>
-                          s"Not computed (${absent.reason})"
-                        case evaluated: TermSupportStatus.Evaluated => evaluated.assessment.toString
-                      div(
-                        p(s"Term support: $support"),
-                        p(
-                          s"Candidate set: ${link.candidateSet.digest.hex}; inference stage: ${link.inferenceStage.digest.hex}"
-                        ),
-                        p(link.gate match
-                          case GateOutcome.NotGated => "Contradiction gate: not evaluated"
-                          case _: GateOutcome.NoContradictionDetected =>
-                            "Contradiction gate: no contradiction detected"
-                          case contradicted: GateOutcome.Contradicted =>
-                            s"Contradiction gate: ${contradicted.facets}"),
-                        p(link.fidelity match
-                          case absent: FidelityStatus.NotAssessed =>
-                            s"Fidelity: not assessed (${absent.reason})"
-                          case FidelityStatus.NotApplicable      => "Fidelity: not applicable"
-                          case assessed: FidelityStatus.Assessed => s"Fidelity: ${assessed.report}")
-                      )
-                    }
-                )
-              )
-            })
-          )
-        },
-        Option.when(c.state.activeRecall.isEmpty)(
-          p("Choose any recall unit to inspect its complete outcome and alternatives.")
-        ),
-        target.toVector.map { ref =>
-          val references = c.workspace.inverse(c.state.policy, ref) match
-            case Left(reason) => p(s"Inverse references unavailable: $reason")
-            case Right(units) =>
-              ul(units.map { unit =>
-                li(
-                  button(
-                    typ("button"),
-                    unit.value,
-                    dataAttr("inverse-unit")(unit.value),
-                    onClick --> (_ =>
-                      activate("data-inverse-unit", unit.value, WorkspaceAction.Inspect(unit, ref))
-                    )
-                  )
-                )
-              })
-          div(
-            h3(s"Source evidence: ${ref.key}"),
-            c.sourceEvidence(ref)
-              .fold(
-                reason => p(s"Evidence unavailable: $reason"),
-                _.fold(p("Source support unlocated"))(pieces)
-              ),
-            h3("All supplied references to this source"),
-            references
-          )
-        }
-      )
-    })
