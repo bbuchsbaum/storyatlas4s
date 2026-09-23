@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reveal and return</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#F7F5F0;font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;color:#1C2622}
+button{font:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1440px; height: 620px; box-sizing: border-box; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; background: #F7F5F0; color: #1C2622; font-family: -apple-system, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;">
+<div style="display: flex; align-items: baseline; gap: 14px;">
+<h1 style="margin: 0; font-size: 20px; font-weight: 650;">Reveal and return · R36 in the ordinal matrix</h1>
+<span style="font-size: 13px; color: #4F5B55;">Selection and every value stay fixed; only the column window moves</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;">
+<sc-for list="{{frames}}" as="f" hint-placeholder-count="3">
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<div style="display: flex; align-items: baseline; gap: 8px;">
+<span style="font-size: 15px; font-weight: 650;">{{f.title}}</span>
+<span style="font-size: 13px; color: #4F5B55;">{{f.window}}</span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; min-height: 32px;">
+<span style="{{f.chipStyle}}">{{f.chip}}</span>
+</div>
+<div style="border: 1px solid #DCD8CE; background: #FCFBF8; display: flex; flex-direction: column;">
+<div style="display: flex; height: 28px; border-bottom: 1px solid #CFCAC0; font-size: 12px; font-variant-numeric: tabular-nums;">
+<div style="width: 58px; box-sizing: border-box; padding-left: 8px; display: flex; align-items: center; color: #4F5B55;">Unit</div>
+<div style="width: 38px; box-sizing: border-box; border-left: 2px solid #9A9589; display: flex; align-items: center; justify-content: center; font-weight: 600;">{{f.leftLabel}}</div>
+<sc-for list="{{f.cols}}" as="c" hint-placeholder-count="12">
+<div style="width: 23px; box-sizing: border-box; border-left: 1px solid #E3DFD5; display: flex; align-items: center; justify-content: center; font-weight: 600;">{{c.label}}</div>
+</sc-for>
+<div style="width: 38px; box-sizing: border-box; border-left: 2px solid #9A9589; display: flex; align-items: center; justify-content: center; font-weight: 600;">{{f.rightLabel}}</div>
+<div style="width: 34px; box-sizing: border-box; border-left: 2px solid #9A9589; display: flex; align-items: center; justify-content: center; font-weight: 600;">NS</div>
+</div>
+<sc-for list="{{f.rows}}" as="row" hint-placeholder-count="5">
+<div style="{{row.style}}">
+<div style="width: 58px; box-sizing: border-box; padding-left: 8px; display: flex; align-items: center; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;">{{row.id}}</div>
+<sc-for list="{{row.cells}}" as="cell" hint-placeholder-count="15">
+<div style="{{cell.style}}">
+<sc-if value="{{cell.dec}}" hint-placeholder-val="{{false}}">
+<svg aria-label="Decision" width="8" height="8" viewBox="0 0 10 10"><path d="M5 0.9 L9.1 5 L5 9.1 L0.9 5 Z" fill="{{cell.glyphFill}}" stroke="{{cell.glyphStroke}}" stroke-width="1.3"></path></svg>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 4px; font-size: 13px;">
+<span style="color: #4F5B55;">Selected</span><span>R36 · decision S2 0.41</span>
+<span style="color: #4F5B55;">Row window</span><span>R31–R42 (unchanged)</span>
+<span style="color: #4F5B55;">Column window</span><span style="font-weight: 600;">{{f.window}}</span>
+<span style="color: #4F5B55;">Return target</span><span>{{f.returnTarget}}</span>
+</div>
+<span style="font-size: 13px; color: #3F4A45; line-height: 1.4;">{{f.note}}</span>
+</section>
+</sc-for>
+</div>
+<span style="font-size: 12px; color: #4F5B55; margin-top: auto;">Design state board · synthetic values · shows rows R34–R38 of the R31–R42 detail window</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":620}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var INK = '#1C2622', N = 173;
+    function clamp(x) { return Math.max(0, Math.min(49, x)); }
+    function unit(i) {
+      var base = clamp(Math.floor(i * 50 / N));
+      var col = clamp(base + ((i * 7) % 3) - 1);
+      var ret = i % 19 === 16;
+      if (ret) col = clamp(base - 9);
+      return { i: i, base: base, col: col, ret: ret, ns: i % 23 === 13 };
+    }
+    function shade(v) {
+      if (!v) return { bg: 'transparent', dark: false };
+      if (v <= 0.1) return { bg: '#E6F1EE', dark: false };
+      if (v <= 0.25) return { bg: '#C4E0D8', dark: false };
+      if (v <= 0.5) return { bg: '#8CC3B6', dark: false };
+      if (v <= 0.75) return { bg: '#4C9E8E', dark: true };
+      return { bg: '#1F7568', dark: true };
+    }
+    function masses(u) {
+      var m = {}, ns;
+      if (u.ns) { m[u.col] = 0.07; ns = 0.93; }
+      else if (u.ret) { m[u.col] = 0.41; m[u.base] = 0.22; ns = 0.37; }
+      else { m[u.col] = 0.58; m[u.col - 1] = 0.14; m[u.col + 1] = 0.09; ns = 0.19; }
+      return { m: m, ns: ns };
+    }
+    function cell(v, w, extra, dec) {
+      var s = shade(v);
+      return { dec: dec, glyphFill: s.dark ? '#FFFFFF' : INK, glyphStroke: s.dark ? INK : '#FFFFFF',
+        style: 'width: ' + w + 'px; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; ' + extra + ' background: ' + s.bg + ';' };
+    }
+    function frame(title, w0, chip, chipStyle, returnTarget, note) {
+      var w1 = w0 + 11;
+      var cols = [];
+      for (var k = w0; k <= w1; k++) cols.push({ label: String(k + 1) });
+      var rows = [33, 34, 35, 36, 37].map(function (i) {
+        var u = unit(i), mm = masses(u);
+        var left = 0, right = 0, ld = false, rd = false;
+        Object.keys(mm.m).forEach(function (key) {
+          var c = Number(key);
+          if (c < w0) { left += mm.m[key]; if (!u.ns && c === u.col) ld = true; }
+          if (c > w1) { right += mm.m[key]; if (!u.ns && c === u.col) rd = true; }
+        });
+        var cells = [cell(left, 38, 'border-left: 2px solid #9A9589;', ld)];
+        for (var c = w0; c <= w1; c++) cells.push(cell(mm.m[c], 23, 'border-left: 1px solid #ECE8DF;', !u.ns && c === u.col));
+        cells.push(cell(right, 38, 'border-left: 2px solid #9A9589;', rd));
+        cells.push(cell(mm.ns, 34, 'border-left: 2px solid #9A9589;', !!u.ns));
+        var sel = i === 35;
+        return { id: 'R' + (i + 1), cells: cells,
+          style: 'display: flex; height: 30px; border-bottom: 1px solid #ECE8DF; position: relative;' + (sel ? ' outline: 2px solid ' + INK + '; outline-offset: -1px; z-index: 1;' : '') };
+      });
+      return { title: title, window: 'Scenes ' + (w0 + 1) + '–' + (w1 + 1), cols: cols, rows: rows,
+        leftLabel: w0 === 0 ? '—' : '◀' + w0, rightLabel: (w1 + 2) + '▶',
+        chip: chip, chipStyle: chipStyle, returnTarget: returnTarget, note: note };
+    }
+    var btn = 'height: 32px; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid #1C2622; border-radius: 6px; background: #FFFFFF; font-size: 13px; font-weight: 600;';
+    var muted = 'font-size: 13px; color: #4F5B55;';
+    return {
+      frames: [
+        frame('1 · Before', 4, 'Inspector offers “Reveal S2”', muted, 'none', 'R36’s decision S2 lies left of the window; its 0.41 is counted in the ◀ outside rail, never dropped.'),
+        frame('2 · After Reveal S2', 0, '← Return to scenes 5–16', btn, 'Scenes 5–16', 'Only the column window moved so S2 is in view. The row, the selection and every value are unchanged.'),
+        frame('3 · After Return', 4, 'Back where the investigation was', muted, 'none', 'The previous column window is restored exactly; Reveal did not rewrite the saved view.')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

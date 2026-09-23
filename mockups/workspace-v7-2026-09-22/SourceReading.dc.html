@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Source reading</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#F7F5F0;font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;color:#1C2622}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:#1F4D43}a:hover{color:#123229}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; display: flex; flex-direction: column; background: #F7F5F0; color: #1C2622; font-family: -apple-system, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;">
+
+<header style="height: 52px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; gap: 20px; padding: 0 20px; border-bottom: 1px solid #DCD8CE; background: #FBFAF6;">
+<div style="display: flex; align-items: center; gap: 8px;">
+<div style="width: 14px; height: 14px; background: #1F4D43; border-radius: 3px;"></div>
+<span style="font-size: 15px; font-weight: 650; letter-spacing: 0.01em;">storyatlas</span>
+</div>
+<div style="width: 1px; height: 22px; background: #DCD8CE;"></div>
+<div style="display: flex; align-items: baseline; gap: 10px;">
+<span style="font-family: 'Iowan Old Style', Charter, 'Source Serif Pro', Georgia, serif; font-size: 18px;">The forgotten bag</span>
+<span style="font-size: 13px; color: #4F5B55;">Text story · Recall P01 · Reconstruction · soft order</span>
+</div>
+<div style="flex-grow: 1;"></div>
+<div role="group" aria-label="Task" style="display: flex; border: 1px solid #C9C4B8; border-radius: 6px; overflow: hidden;">
+<a href="Main.dc.html" style="height: 34px; padding: 0 16px; display: flex; align-items: center; background: #FBFAF6; color: #1C2622; font-size: 14px; text-decoration: none;">Story + recall</a>
+<button aria-pressed="true" style="height: 34px; padding: 0 16px; border: none; border-left: 1px solid #C9C4B8; background: #1C2622; color: #FFFFFF; font-size: 14px; font-weight: 600;">Source reading</button>
+</div>
+<div style="flex-grow: 1;"></div>
+<button style="height: 34px; padding: 0 12px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FBFAF6; font-size: 14px;">Open</button>
+<button style="height: 34px; padding: 0 12px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FBFAF6; font-size: 14px;">Save view</button>
+<button style="height: 34px; padding: 0 12px; border: 1px solid #1F4D43; border-radius: 6px; background: #1F4D43; color: #FFFFFF; font-size: 14px; font-weight: 600;">Export</button>
+</header>
+
+<div style="flex-grow: 1; display: flex; min-height: 0;">
+
+<nav aria-label="Source outline" style="width: 200px; flex-shrink: 0; box-sizing: border-box; border-right: 1px solid #DCD8CE; padding: 18px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 14px;">
+<span style="font-size: 12px; color: #4F5B55; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">Outline</span>
+<a href="#s1" style="display: flex; gap: 8px; align-items: center; min-height: 36px; padding: 0 8px; border-radius: 6px; background: #ECE9E1; color: #1C2622; text-decoration: none; font-weight: 600;"><span style="color: #4F5B55; font-variant-numeric: tabular-nums;">01</span>Departure</a>
+<a href="#s2" style="display: flex; gap: 8px; align-items: center; min-height: 36px; padding: 0 8px; border-radius: 6px; color: #1C2622; text-decoration: none;"><span style="color: #4F5B55; font-variant-numeric: tabular-nums;">02</span>Discovery &amp; return</a>
+<a href="#s3" style="display: flex; gap: 8px; align-items: center; min-height: 36px; padding: 0 8px; border-radius: 6px; color: #1C2622; text-decoration: none;"><span style="color: #4F5B55; font-variant-numeric: tabular-nums;">03</span>At the theatre</a>
+<div style="height: 1px; background: #DCD8CE; margin: 12px 0;"></div>
+<span style="font-size: 12px; color: #4F5B55; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">Projection</span>
+<button aria-pressed="true" style="height: 34px; text-align: left; padding: 0 10px; border: 2px solid #1C2622; border-radius: 6px; background: #FFFFFF; font-size: 13px; font-weight: 600;">Codex reading</button>
+<button style="height: 34px; text-align: left; padding: 0 10px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF; font-size: 13px;">Discourse Atlas</button>
+<div style="flex-grow: 1;"></div>
+<span style="font-size: 12px; color: #4F5B55; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Reading horizon</span>
+<button style="height: 34px; text-align: left; padding: 0 10px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF; font-size: 13px;">Whole story ▾</button>
+</nav>
+
+<main style="flex-grow: 1; box-sizing: border-box; padding: 16px 28px; display: flex; flex-direction: column; gap: 14px; min-width: 0;">
+
+<div style="display: flex; align-items: center; gap: 12px;">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border: 1px solid #1C2622; border-radius: 6px; font-size: 13px; font-weight: 600; color: #1C2622; text-decoration: none;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#1C2622" stroke-width="1.6"><path d="M12 7 H2.5"></path><path d="M6.5 3 L2.5 7 L6.5 11"></path></svg>Return to R05</a>
+<span style="font-size: 13px; color: #4F5B55;">Arrived from R05 → E02 · recall row, cut and viewport are kept</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<div style="display: flex; align-items: baseline; gap: 10px;">
+<span style="font-size: 13px; font-weight: 650;">Whole story · 12 events</span>
+<span style="font-size: 12px; color: #4F5B55;">presentation order · widths are categorical, not duration</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+<div style="border: 2px solid #1C2622; background: #FFFFFF; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 13px; font-weight: 600;">01 Departure</span>
+<div style="display: flex; justify-content: space-around; font-size: 12px; font-variant-numeric: tabular-nums;">
+<span style="color: #4F5B55;">E01</span><span style="font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px;">E02</span><span style="color: #4F5B55;">E03</span>
+</div>
+</div>
+<div style="border: 1px solid #DCD8CE; background: #FCFBF8; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 13px; font-weight: 600;">02 Discovery &amp; return</span>
+<div style="display: flex; justify-content: space-around; font-size: 12px; color: #4F5B55; font-variant-numeric: tabular-nums;">
+<span>E04</span><span>E05</span><span>E06</span><span>E07</span><span>E08</span>
+</div>
+</div>
+<div style="border: 1px solid #DCD8CE; background: #FCFBF8; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 13px; font-weight: 600;">03 At the theatre</span>
+<div style="display: flex; justify-content: space-around; font-size: 12px; color: #4F5B55; font-variant-numeric: tabular-nums;">
+<span>E09</span><span>E10</span><span>E11</span><span>E12</span>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 12px; border-top: 1px solid #DCD8CE; padding-top: 10px; font-size: 13px;">
+<button aria-expanded="false" style="height: 32px; padding: 0 10px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#1C2622" stroke-width="1.4" stroke-dasharray="2 1.5"><rect x="1" y="1" width="10" height="10"></rect></svg>Findings without a text position · 1 ▸</button>
+<span style="color: #4F5B55;">1 gap · listed, never attached to a sentence</span>
+</div>
+<div style="display: flex; gap: 28px; flex-grow: 1; min-height: 0; padding-top: 4px;">
+<article aria-label="Narrative Codex" style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px; font-family: 'Iowan Old Style', Charter, 'Source Serif Pro', Georgia, serif; font-size: 18px; line-height: 1.5; max-width: 760px;">
+<h2 id="s1" style="margin: 0 0 4px 68px; font-size: 19px; font-weight: 600;">01 · Departure</h2>
+<sc-for list="{{s1}}" as="l" hint-placeholder-count="3">
+<div style="{{l.row}}"><div style="{{l.rail}}"></div><span style="width: 36px; flex-shrink: 0; font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 12px; color: #4F5B55; font-variant-numeric: tabular-nums; padding-top: 5px;">{{l.id}}</span><div style="{{l.ctx}}"></div><span style="{{l.textStyle}}">{{l.text}}</span></div>
+</sc-for>
+<h2 id="s2" style="margin: 14px 0 4px 68px; font-size: 19px; font-weight: 600;">02 · Discovery &amp; return</h2>
+<sc-for list="{{s2}}" as="l" hint-placeholder-count="5">
+<div style="{{l.row}}"><div style="{{l.rail}}"></div><span style="width: 36px; flex-shrink: 0; font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 12px; color: #4F5B55; font-variant-numeric: tabular-nums; padding-top: 5px;">{{l.id}}</span><div style="{{l.ctx}}"></div><span style="{{l.textStyle}}">{{l.text}}</span></div>
+</sc-for>
+<h2 id="s3" style="margin: 14px 0 4px 68px; font-size: 19px; font-weight: 600;">03 · At the theatre</h2>
+<sc-for list="{{s3}}" as="l" hint-placeholder-count="4">
+<div style="{{l.row}}"><div style="{{l.rail}}"></div><span style="width: 36px; flex-shrink: 0; font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 12px; color: #4F5B55; font-variant-numeric: tabular-nums; padding-top: 5px;">{{l.id}}</span><div style="{{l.ctx}}"></div><span style="{{l.textStyle}}">{{l.text}}</span></div>
+</sc-for>
+<div style="margin: 10px 0 0 68px; display: flex; align-items: center; gap: 8px; font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 12px; color: #3F4A45;">
+<div style="width: 6px; height: 14px; border: 2px solid #1C2622; border-right: none;"></div>
+<span>Reported speech (supplied context) · unmarked lines are the narrated world</span>
+</div>
+</article>
+
+
+</div>
+</main>
+
+<aside aria-label="Inspector" style="width: 364px; flex-shrink: 0; box-sizing: border-box; border-left: 1px solid #DCD8CE; background: #FBFAF6; padding: 18px 20px; display: flex; flex-direction: column; gap: 16px;">
+<div style="display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 12px; color: #4F5B55; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Source event E02</span>
+<span style="font-family: 'Iowan Old Style', Charter, 'Source Serif Pro', Georgia, serif; font-size: 24px;">Door / out</span>
+</div>
+<p style="margin: 0; font-family: 'Iowan Old Style', Charter, 'Source Serif Pro', Georgia, serif; font-size: 18px; line-height: 1.45;">“<span style="text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;">Nora opens the front door</span> and leaves the house.”</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 5px; font-size: 13px;">
+<span style="color: #4F5B55;">Scene</span><span>01 Departure</span>
+<span style="color: #4F5B55;">Participant</span><span>Nora</span>
+<span style="color: #4F5B55;">Context</span><span>Narrated world</span>
+<span style="color: #4F5B55;">Support</span><span>Exact text · 1 fragment</span>
+</div>
+<div style="font-size: 13px; line-height: 1.4;">Same wording also supports <a href="#e07" style="font-weight: 600;">E07 Door / back</a>; the two are distinct occurrences.</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #DCD8CE; padding-top: 12px;">
+<h2 style="margin: 0; font-size: 14px; font-weight: 650;">Recall references · 2 <span style="font-weight: 400; font-size: 12px; color: #4F5B55;">all supplied rows, transcript order</span></h2>
+<a href="Main.dc.html" style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid #DCD8CE; border-radius: 6px; background: #FFFFFF; color: #1C2622; text-decoration: none;">
+<span style="display: flex; gap: 8px; font-size: 13px;"><b>R02</b><span style="font-variant-numeric: tabular-nums;">0.10</span><span style="color: #4F5B55;">alternative · decision was E03</span></span>
+<span style="font-family: 'Iowan Old Style', Charter, 'Source Serif Pro', Georgia, serif; font-size: 16px;">She got on the bus.</span>
+</a>
+<a href="Main.dc.html" style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 2px solid #1C2622; border-radius: 6px; background: #FFFFFF; color: #1C2622; text-decoration: none;">
+<span style="display: flex; gap: 8px; font-size: 13px;"><b>R05</b><span style="font-variant-numeric: tabular-nums;">0.45</span><span style="color: #4F5B55;">alternative · decision was E07 · you came from here</span></span>
+<span style="font-family: 'Iowan Old Style', Charter, 'Source Serif Pro', Georgia, serif; font-size: 16px;">She opened the front door.</span>
+</a>
+<span style="font-size: 12px; color: #4F5B55; line-height: 1.4;">Lists every supplied recall row that names this event. It is not a distribution over recall units.</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #DCD8CE; padding-top: 12px; font-size: 13px;">
+<h2 style="margin: 0; font-size: 14px; font-weight: 650;">Relations · 2 supplied</h2>
+<span>E01 <span style="color: #4F5B55;">precedes</span> E02</span>
+<span>E02 <span style="color: #4F5B55;">precedes</span> E03</span>
+<span style="font-size: 12px; color: #4F5B55;">Presentation order; no causal claim.</span>
+</div>
+<div style="flex-grow: 1;"></div>
+<button aria-expanded="false" style="align-self: flex-start; height: 32px; padding: 0; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #1F4D43;">Provenance, receipts and checksums ▸</button>
+</aside>
+</div>
+
+<footer style="height: 30px; flex-shrink: 0; box-sizing: border-box; border-top: 1px solid #DCD8CE; background: #FBFAF6; display: flex; align-items: center; gap: 14px; padding: 0 20px; font-size: 12px; color: #3F4A45;">
+<span><b>E02</b> in focus</span>
+<span>Recall context R05 kept</span>
+<span>Exact support shown</span>
+<span>Reading horizon: whole story</span>
+<div style="flex-grow: 1;"></div>
+<span style="color: #4F5B55;">Design concept · synthetic story, recall and values</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var INK = '#1C2622';
+    function line(id, text, opts) {
+      opts = opts || {};
+      var sel = !!opts.sel;
+      return {
+        id: id, text: text,
+        row: 'display: flex; align-items: flex-start; gap: 8px;' + (sel ? ' background: #FFFFFF;' : ''),
+        rail: 'width: 4px; flex-shrink: 0; align-self: stretch; background: ' + (sel ? INK : 'transparent') + ';',
+        ctx: opts.reported
+          ? 'width: 6px; flex-shrink: 0; align-self: stretch; margin: 5px 0; border: 2px solid ' + INK + '; border-right: none;'
+          : 'width: 6px; flex-shrink: 0;',
+        textStyle: sel ? 'text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px;' : ''
+      };
+    }
+    return {
+      s1: [
+        line('E01', 'Nora puts her ticket in the blue bag and leaves the bag on the hall table.'),
+        line('E02', 'Nora opens the front door and leaves the house.', { sel: true }),
+        line('E03', 'Nora boards the bus to the theatre.')
+      ],
+      s2: [
+        line('E04', 'Eli notices the blue bag still on the hall table.'),
+        line('E05', 'Eli calls Nora and tells her she has forgotten the bag.', { reported: true }),
+        line('E06', 'Nora gets off the bus and walks home.'),
+        line('E07', 'Nora opens the front door when she gets back to the house.'),
+        line('E08', 'Nora takes the blue bag from the hall table.')
+      ],
+      s3: [
+        line('E09', 'Nora takes a taxi to the theatre.'),
+        line('E10', 'Eli waits outside the theatre.'),
+        line('E11', 'Nora arrives at the theatre with the blue bag.'),
+        line('E12', 'Nora and Eli enter the theatre together.')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

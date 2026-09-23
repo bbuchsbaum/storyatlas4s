@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Film-scale matrix</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#F7F5F0;font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;color:#1C2622}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:#1F4D43}a:hover{color:#123229}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; display: flex; flex-direction: column; background: #F7F5F0; color: #1C2622; font-family: -apple-system, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;">
+
+<header style="height: 52px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; gap: 20px; padding: 0 20px; border-bottom: 1px solid #DCD8CE; background: #FBFAF6;">
+<div style="display: flex; align-items: center; gap: 8px;">
+<div style="width: 14px; height: 14px; background: #1F4D43; border-radius: 3px;"></div>
+<span style="font-size: 15px; font-weight: 650; letter-spacing: 0.01em;">storyatlas</span>
+</div>
+<div style="width: 1px; height: 22px; background: #DCD8CE;"></div>
+<div style="display: flex; align-items: baseline; gap: 10px;">
+<span style="font-family: 'Iowan Old Style', Charter, 'Source Serif Pro', Georgia, serif; font-size: 18px;">The Silent River</span>
+<span style="font-size: 13px; color: #4F5B55;">Film · Recall P01 · Reconstruction · soft order</span>
+</div>
+<div style="flex-grow: 1;"></div>
+<div role="group" aria-label="Task" style="display: flex; border: 1px solid #C9C4B8; border-radius: 6px; overflow: hidden;">
+<button aria-pressed="true" style="height: 34px; padding: 0 16px; border: none; background: #1C2622; color: #FFFFFF; font-size: 14px; font-weight: 600;">Story + recall</button>
+<button style="height: 34px; padding: 0 16px; border: none; border-left: 1px solid #C9C4B8; background: #FBFAF6; font-size: 14px;">Source reading</button>
+</div>
+<div style="flex-grow: 1;"></div>
+<button style="height: 34px; padding: 0 12px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FBFAF6; font-size: 14px;">Open</button>
+<button style="height: 34px; padding: 0 12px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FBFAF6; font-size: 14px;">Save view</button>
+<button style="height: 34px; padding: 0 12px; border: 1px solid #1F4D43; border-radius: 6px; background: #1F4D43; color: #FFFFFF; font-size: 14px; font-weight: 600;">Export</button>
+</header>
+
+<div style="flex-grow: 1; display: flex; min-height: 0;">
+
+<nav aria-label="Decision navigator" style="width: 200px; flex-shrink: 0; box-sizing: border-box; border-right: 1px solid #DCD8CE; padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 8px;">
+<div style="display: flex; align-items: flex-start; gap: 6px;">
+<div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+<h2 style="margin: 0; font-size: 14px; font-weight: 650;">Decision navigator</h2>
+<span style="font-size: 12px; color: #4F5B55; line-height: 1.35;">Reconstruction · soft order · decisions only, one mark per unit</span>
+</div>
+<button aria-label="Collapse navigator" style="width: 32px; height: 32px; flex-shrink: 0; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#1C2622" stroke-width="1.6"><path d="M8 2 L4 6 L8 10"></path></svg></button>
+</div>
+<div style="display: flex; gap: 6px;">
+<div style="width: 34px; position: relative; font-size: 12px; color: #4F5B55; font-variant-numeric: tabular-nums;">
+<span style="position: absolute; top: -2px; right: 0;">R1</span>
+<span style="position: absolute; top: 94px; right: 0; color: #1C2622; font-weight: 700;">R31</span>
+<span style="position: absolute; top: 508px; right: 0;">R173</span>
+</div>
+<div style="position: relative; width: 116px; border-top: 1px solid #DCD8CE; border-bottom: 1px solid #DCD8CE; background: #FCFBF8;">
+<div style="position: absolute; left: 104px; top: 0; bottom: 0; width: 1px; background: #9A9589;"></div>
+<sc-for list="{{overview}}" as="o" hint-placeholder-count="173">
+<div style="position: relative; height: 3px;"><div style="{{o.mark}}"></div></div>
+</sc-for>
+<div aria-label="Column window scenes 5 to 16" style="position: absolute; left: 7px; top: 0; bottom: 0; width: 26px; box-sizing: border-box; border-left: 1px dashed #1C2622; border-right: 1px dashed #1C2622;"></div>
+<div aria-label="Row window R31 to R42" style="position: absolute; left: -3px; top: 88px; width: 122px; height: 40px; box-sizing: border-box; border: 2px solid #1C2622;"></div>
+</div>
+</div>
+<div style="position: relative; height: 16px; margin-left: 40px; font-size: 12px; color: #4F5B55; font-variant-numeric: tabular-nums;">
+<span style="position: absolute; left: 0;">S1</span>
+<span style="position: absolute; left: 40px;">S25</span>
+<span style="position: absolute; left: 84px;">S50</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #3F4A45;">
+<span style="display: flex; align-items: center; gap: 6px;"><span style="width: 8px; height: 3px; background: #1C2622;"></span>Supplied decision</span>
+<span style="display: flex; align-items: center; gap: 6px;"><span style="width: 8px; height: 3px; background: #6F7772;"></span>Non-source decision (right lane)</span>
+<span style="display: flex; align-items: center; gap: 6px;"><span style="width: 18px; height: 1px; background: #9A9589;"></span>Failed unit</span>
+<span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 8px; border: 2px solid #1C2622; box-sizing: border-box;"></span>Row window</span>
+<span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 8px; border-left: 1px dashed #1C2622; border-right: 1px dashed #1C2622; box-sizing: border-box;"></span>Column window</span>
+</div>
+</nav>
+
+<main style="flex-grow: 1; box-sizing: border-box; padding: 14px 20px 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0;">
+<div style="display: flex; align-items: center; gap: 12px;">
+<h1 style="margin: 0; font-size: 20px; font-weight: 650;">P01 recall · 50 scenes</h1>
+<div style="flex-grow: 1;"></div>
+<div role="group" aria-label="Projection" style="display: flex; border: 1px solid #C9C4B8; border-radius: 6px; overflow: hidden;">
+<button aria-pressed="true" style="height: 32px; padding: 0 12px; border: none; background: #1C2622; color: #FFFFFF; font-size: 13px; font-weight: 600;">Ordinal matrix</button>
+<a href="TimeVoyage.dc.html" style="height: 32px; padding: 0 12px; display: flex; align-items: center; border-left: 1px solid #C9C4B8; background: #FFFFFF; color: #1C2622; font-size: 13px; text-decoration: none;">Time voyage</a>
+</div>
+<button style="height: 32px; padding: 0 10px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF; font-size: 13px;">Decision route: Off ▾</button>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4F5B55;">
+<span>{{summary}}</span>
+<button aria-expanded="false" style="height: 28px; padding: 0 6px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #1F4D43;">Outcome detail ▸</button>
+</div>
+
+<div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+<span style="font-weight: 650;">Rows R31–R42</span><span style="color: #4F5B55;">of 173</span>
+<button aria-label="Previous rows" style="width: 32px; height: 32px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF;">▲</button>
+<button aria-label="Next rows" style="width: 32px; height: 32px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF;">▼</button>
+<div style="width: 1px; height: 22px; background: #DCD8CE; margin: 0 6px;"></div>
+<span style="font-weight: 650;">Scenes 5–16</span><span style="color: #4F5B55;">of 50</span>
+<button aria-label="Previous scenes" style="width: 32px; height: 32px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF;">◀</button>
+<button aria-label="Next scenes" style="width: 32px; height: 32px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF;">▶</button>
+<div style="flex-grow: 1;"></div>
+<button style="height: 32px; padding: 0 10px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF; font-size: 13px;">Jump to unit or scene…</button>
+</div>
+
+<div role="grid" aria-label="Recall units R31 to R42 by scenes 5 to 16" style="border: 1px solid #DCD8CE; background: #FCFBF8; width: 846px;">
+<div style="display: flex; height: 36px; border-bottom: 1px solid #CFCAC0; font-size: 12px;">
+<div style="width: 240px; box-sizing: border-box; padding: 0 10px; display: flex; align-items: center; color: #4F5B55;">Recall ↓ · Scenes →</div>
+<div style="width: 52px; box-sizing: border-box; border-left: 2px solid #9A9589; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;"><span style="font-weight: 600;">◀ S1–4</span><span style="color: #4F5B55;">outside</span></div>
+<sc-for list="{{cols}}" as="c" hint-placeholder-count="12">
+<div style="width: 32px; box-sizing: border-box; border-left: 1px solid #E3DFD5; display: flex; align-items: center; justify-content: center; font-weight: 600; font-variant-numeric: tabular-nums;">{{c.label}}</div>
+</sc-for>
+<div style="width: 52px; box-sizing: border-box; border-left: 2px solid #9A9589; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;"><span style="font-weight: 600;">S17–50 ▶</span><span style="color: #4F5B55;">outside</span></div>
+<div style="width: 52px; box-sizing: border-box; border-left: 2px solid #9A9589; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;"><span style="font-weight: 600;">Non-</span><span style="color: #4F5B55;">source</span></div>
+<div style="width: 64px; box-sizing: border-box; border-left: 2px solid #9A9589; display: flex; align-items: center; padding-left: 8px; color: #4F5B55;">Status</div>
+</div>
+<sc-for list="{{detail}}" as="row" hint-placeholder-count="12">
+<div role="row" style="{{row.style}}">
+<div style="width: 240px; box-sizing: border-box; padding-right: 10px; display: flex; align-items: center; gap: 8px;">
+<div style="{{row.rail}}"></div>
+<span style="width: 32px; flex-shrink: 0; font-size: 12px; font-weight: 600; color: #4F5B55; font-variant-numeric: tabular-nums;">{{row.id}}</span>
+<span style="font-family: 'Iowan Old Style', Charter, 'Source Serif Pro', Georgia, serif; font-size: 14px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{row.text}}</span>
+</div>
+<sc-if value="{{row.ok}}" hint-placeholder-val="{{true}}">
+<sc-for list="{{row.cells}}" as="cell" hint-placeholder-count="16">
+<div role="gridcell" style="{{cell.style}}">
+<span>{{cell.label}}</span>
+<sc-if value="{{cell.dec}}" hint-placeholder-val="{{false}}">
+<svg aria-label="Decision" style="position: absolute; top: 3px; right: 3px;" width="9" height="9" viewBox="0 0 10 10"><path d="M5 0.9 L9.1 5 L5 9.1 L0.9 5 Z" fill="{{cell.glyphFill}}" stroke="{{cell.glyphStroke}}" stroke-width="1.3"></path></svg>
+</sc-if>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{row.failed}}" hint-placeholder-val="{{false}}">
+<div style="width: 540px; box-sizing: border-box; border-left: 2px solid #9A9589; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #3F4A45; background: repeating-linear-gradient(135deg, #E8E4DA 0px, #E8E4DA 3px, #F8F6F1 3px, #F8F6F1 8px);"><span style="background: #F8F6F1; padding: 2px 8px;">No candidates supplied — processing failed</span></div>
+</sc-if>
+<div style="{{row.statusStyle}}">{{row.status}}</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #3F4A45; width: 846px; flex-wrap: wrap;">
+<div style="display: flex; align-items: center; gap: 6px;">
+<span>Supplied mass 0</span>
+<div style="display: flex;">
+<div style="width: 16px; height: 12px; background: #E6F1EE; border: 1px solid #D5E3DF;"></div>
+<div style="width: 16px; height: 12px; background: #C4E0D8;"></div>
+<div style="width: 16px; height: 12px; background: #8CC3B6;"></div>
+<div style="width: 16px; height: 12px; background: #4C9E8E;"></div>
+<div style="width: 16px; height: 12px; background: #1F7568;"></div>
+</div>
+<span>1 · fixed · not calibrated</span>
+</div>
+<span style="display: flex; align-items: center; gap: 6px;"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 0.9 L9.1 5 L5 9.1 L0.9 5 Z" fill="#1C2622"></path></svg>Decision</span>
+<span>Outside rails: known supplied mass beyond the column window</span>
+<span>Top-3 · rest unknown: candidate set truncated by the provider; the remaining mass has no known location and is not drawn</span>
+<span>Equal-width scenes: width is not duration</span>
+</div>
+</main>
+
+<aside aria-label="Inspector" style="width: 340px; flex-shrink: 0; box-sizing: border-box; border-left: 1px solid #DCD8CE; background: #FBFAF6; padding: 16px 18px; display: flex; flex-direction: column; gap: 14px;">
+<div style="display: flex; align-items: center; gap: 8px;">
+<div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+<span style="font-size: 12px; color: #4F5B55; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Recall unit</span>
+<span style="font-size: 20px; font-weight: 650;">R36 <span style="font-size: 13px; font-weight: 400; color: #4F5B55;">· 36 of 173 · timed</span></span>
+</div>
+<button aria-label="Previous unit" style="width: 36px; height: 36px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF;">‹</button>
+<button aria-label="Next unit" style="width: 36px; height: 36px; border: 1px solid #C9C4B8; border-radius: 6px; background: #FFFFFF;">›</button>
+</div>
+<p style="margin: 0; font-family: 'Iowan Old Style', Charter, 'Source Serif Pro', Georgia, serif; font-size: 22px; line-height: 1.3;">“Wait, before that she found the letter.”</p>
+
+<div style="display: flex; flex-direction: column; gap: 7px;">
+<div style="display: flex; align-items: baseline; gap: 8px;">
+<h2 style="margin: 0; font-size: 14px; font-weight: 650;">Supplied alternatives</h2>
+<span style="font-size: 12px; color: #4F5B55;">mass · fixed 0–1</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border: 1px solid #DCD8CE; border-radius: 6px; background: #FFFFFF;">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+<span style="width: 110px;"><b>S2</b> The mill</span>
+<div style="width: 90px; height: 10px; background: #EFECE4;"><div style="width: 36.9px; height: 10px; background: #8CC3B6;"></div></div>
+<span style="font-variant-numeric: tabular-nums;">0.41</span>
+<svg width="9" height="9" viewBox="0 0 10 10" aria-label="Decision"><path d="M5 0.9 L9.1 5 L5 9.1 L0.9 5 Z" fill="#1C2622"></path></svg>
+</div>
+<div style="display: flex; align-items: center; gap: 8px;">
+<span style="font-size: 12px; color: #4F5B55; flex-grow: 1;">Decision · outside column window</span>
+<button style="height: 30px; padding: 0 10px; border: 1px solid #1C2622; border-radius: 6px; background: #FFFFFF; font-size: 12px; font-weight: 600;">Reveal S2</button>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid #DCD8CE; border-radius: 6px; background: #FFFFFF; font-size: 13px;">
+<span style="width: 110px;"><b>S11</b> The letter</span>
+<div style="width: 90px; height: 10px; background: #EFECE4;"><div style="width: 19.8px; height: 10px; background: #C4E0D8;"></div></div>
+<span style="font-variant-numeric: tabular-nums;">0.22</span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px dashed #B8B2A5; border-radius: 6px; font-size: 13px;">
+<span style="width: 110px;">Non-source</span>
+<div style="width: 90px; height: 10px; background: #EFECE4;"><div style="width: 33.3px; height: 10px; background: #6F7772;"></div></div>
+<span style="font-variant-numeric: tabular-nums;">0.37</span>
+</div>
+<span style="font-size: 12px; color: #4F5B55;">Supplied total 1.00 · candidate coverage complete</span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 4px; font-size: 13px; border-top: 1px solid #DCD8CE; padding-top: 10px;">
+<span style="color: #4F5B55;">Decision origin</span><span>Reconstruction</span>
+<span style="color: #4F5B55;">Grain</span><span>Scene</span>
+<span style="color: #4F5B55;">Source evidence</span><span>Scene annotation</span>
+<span style="color: #4F5B55;">Media</span><span>Not bound</span>
+<span style="color: #4F5B55;">Time voyage</span><span>Placed</span>
+</div>
+<a href="#evidence" style="font-size: 13px; font-weight: 600;">Read S2 annotation →</a>
+<a href="#fulltext" style="font-size: 13px; font-weight: 600;">Read full recall context →</a>
+<div style="flex-grow: 1;"></div>
+<button aria-expanded="false" style="align-self: flex-start; height: 32px; padding: 0; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #1F4D43;">Provenance, receipts and checksums ▸</button>
+</aside>
+</div>
+
+<footer style="height: 30px; flex-shrink: 0; box-sizing: border-box; border-top: 1px solid #DCD8CE; background: #FBFAF6; display: flex; align-items: center; gap: 14px; padding: 0 20px; font-size: 12px; color: #3F4A45;">
+<span><b>R36</b> selected</span>
+<span>Its decision S2 is outside the column window</span>
+<span>Reveal keeps the row; Return restores scenes 5–16</span>
+<span>All 173 units loaded</span>
+<div style="flex-grow: 1;"></div>
+<span style="color: #4F5B55;">Design stress case · synthetic film, recall and values</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var INK = '#1C2622';
+    var N = 173;
+    var W0 = 4, W1 = 15;
+    function clamp(x) { return Math.max(0, Math.min(49, x)); }
+    function unit(i) {
+      var base = clamp(Math.floor(i * 50 / N));
+      var col = clamp(base + ((i * 7) % 3) - 1);
+      var ret = i % 19 === 16;
+      if (ret) col = clamp(base - 9);
+      return { base: base, col: col, ret: ret, ns: i % 23 === 13, failed: i % 41 === 39, trunc: i === 40 };
+    }
+    var units = [];
+    for (var i = 0; i < N; i++) units.push(unit(i));
+    var failedCount = units.filter(function (u) { return u.failed; }).length;
+    var nsCount = units.filter(function (u) { return u.ns && !u.failed; }).length;
+    var overview = units.map(function (u) {
+      if (u.failed) return { mark: 'position: absolute; left: 0; top: 1px; width: 116px; height: 1px; background: #9A9589;' };
+      if (u.ns) return { mark: 'position: absolute; left: 107px; top: 0; width: 8px; height: 3px; background: #6F7772;' };
+      return { mark: 'position: absolute; left: ' + (u.col * 2) + 'px; top: 0; width: 3px; height: 3px; background: ' + INK + ';' };
+    });
+    function shade(v) {
+      if (!v) return { bg: 'transparent', fg: INK };
+      if (v <= 0.1) return { bg: '#E6F1EE', fg: INK };
+      if (v <= 0.25) return { bg: '#C4E0D8', fg: INK };
+      if (v <= 0.5) return { bg: '#8CC3B6', fg: INK };
+      if (v <= 0.75) return { bg: '#4C9E8E', fg: '#FFFFFF' };
+      return { bg: '#1F7568', fg: '#FFFFFF' };
+    }
+    var cols = [];
+    for (var k = W0; k <= W1; k++) cols.push({ label: String(k + 1) });
+    var texts = [
+      'She walked down to the water again, all the way to the old jetty.',
+      'There was a mill with a big wheel.',
+      'Somebody was already inside.',
+      'The man said he knew her father.',
+      'They argued about a key.',
+      'Wait, before that she found the letter.',
+      'I think I had seen that actor before.',
+      'She read it by the window.',
+      'Then they went through a corridor.',
+      'And then something with the power.',
+      'It was dark, I remember the sound.',
+      'The screens came on all at once.'
+    ];
+    function cell(v, w, extra, dec, unknown) {
+      var s = shade(v);
+      var dark = s.fg === '#FFFFFF';
+      var label = unknown ? '?' : (v && v >= 0.05 ? v.toFixed(2) : '');
+      return {
+        label: label, dec: dec,
+        glyphFill: dark ? '#FFFFFF' : INK, glyphStroke: dark ? INK : '#FFFFFF',
+        style: 'width: ' + w + 'px; height: 100%; box-sizing: border-box; position: relative; ' + extra + ' display: flex; align-items: center; justify-content: center; font-size: 12px; font-variant-numeric: tabular-nums; background: ' + s.bg + '; color: ' + s.fg + ';' + (unknown ? ' font-weight: 700;' : '')
+      };
+    }
+    var detail = texts.map(function (t, j) {
+      var i = 30 + j;
+      var u = units[i];
+      var m = {};
+      var nsv;
+      if (u.ns) { m[u.col] = 0.07; nsv = 0.93; }
+      else if (u.ret) { m[u.col] = 0.41; m[u.base] = 0.22; nsv = 0.37; }
+      else if (u.trunc) { m[u.col] = 0.58; m[u.col - 1] = 0.14; nsv = 0.12; }
+      else { m[u.col] = 0.58; m[u.col - 1] = 0.14; m[u.col + 1] = 0.09; nsv = 0.19; }
+      var left = 0, right = 0, leftDec = false, rightDec = false;
+      Object.keys(m).forEach(function (key) {
+        var c = Number(key);
+        if (c < W0) { left += m[key]; if (!u.ns && c === u.col) leftDec = true; }
+        if (c > W1) { right += m[key]; if (!u.ns && c === u.col) rightDec = true; }
+      });
+      var cells = [cell(left, 52, 'border-left: 2px solid #9A9589;', leftDec, false)];
+      for (var c = W0; c <= W1; c++) cells.push(cell(m[c], 32, 'border-left: 1px solid #ECE8DF;', !u.ns && c === u.col, false));
+      cells.push(cell(right, 52, 'border-left: 2px solid #9A9589;', rightDec, false));
+      cells.push(cell(nsv, 52, 'border-left: 2px solid #9A9589;', !!u.ns, false));
+      var sel = u.ret;
+      return {
+        id: 'R' + (i + 1), text: t, cells: cells, ok: !u.failed, failed: u.failed,
+        status: u.failed ? 'Failed' : (u.trunc ? 'Top-3 · rest unknown' : 'Mapped'),
+        statusStyle: 'width: 64px; box-sizing: border-box; border-left: 2px solid #9A9589; display: flex; align-items: center; padding-left: 8px; font-size: 12px; line-height: 1.2; ' + (u.failed || u.trunc ? 'font-weight: 700; color: #1C2622;' : 'color: #4F5B55;'),
+        style: 'display: flex; height: 42px; border-bottom: 1px solid #ECE8DF; position: relative;' + (sel ? ' outline: 2px solid #1C2622; outline-offset: -1px; z-index: 1;' : ''),
+        rail: 'width: 4px; align-self: stretch; flex-shrink: 0; background: ' + (sel ? INK : 'transparent') + ';'
+      };
+    });
+    return {
+      overview: overview, cols: cols, detail: detail,
+      summary: '173 units, all loaded · ' + (N - failedCount - nsCount) + ' decided to scenes · ' + nsCount + ' non-source · ' + failedCount + ' failed'
+    };
+  }
+}
+</script>
+</body>
+</html>
