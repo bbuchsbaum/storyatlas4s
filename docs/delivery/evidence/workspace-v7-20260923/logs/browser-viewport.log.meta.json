@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-23T02:44:31.151733+00:00",
+  "finished_utc": "2026-09-23T02:44:43.863659+00:00",
+  "duration_seconds": 12.711702,
+  "command": [
+    "node",
+    "app/smoke/voyage-viewport.cjs",
+    "target/voyage-mass"
+  ],
+  "cwd": "/private/tmp/storyatlas4s-voyage-mass-20260923",
+  "log": "/private/tmp/voyage-mass-evidence-20260923/browser-viewport.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 300.0,
+  "log_bytes": 3278
+}

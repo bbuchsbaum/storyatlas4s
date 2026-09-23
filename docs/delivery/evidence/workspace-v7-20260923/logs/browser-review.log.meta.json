@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-23T02:40:31.872410+00:00",
+  "finished_utc": "2026-09-23T02:40:36.350988+00:00",
+  "duration_seconds": 4.478396,
+  "command": [
+    "node",
+    "app/smoke/voyage-review.cjs",
+    "target/voyage-mass",
+    "/Users/bbuchsbaum/code/scala/storyatlas4s/target/sherlock-voyage-viewport-20260922"
+  ],
+  "cwd": "/private/tmp/storyatlas4s-voyage-mass-20260923",
+  "log": "/private/tmp/voyage-mass-evidence-20260923/browser-review.log",
+  "exit_code": 1,
+  "child_returncode": 1,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 300.0,
+  "log_bytes": 1667
+}

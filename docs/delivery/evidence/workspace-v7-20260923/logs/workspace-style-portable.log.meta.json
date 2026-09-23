@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-23T02:49:37.900366+00:00",
+  "finished_utc": "2026-09-23T02:49:39.962209+00:00",
+  "duration_seconds": 2.061707,
+  "command": [
+    "node",
+    "/private/tmp/voyage-mass-evidence-20260923/workspace-style.cjs",
+    "/private/tmp/storyatlas4s-voyage-mass-20260923",
+    "/private/tmp/voyage-mass-deps-20260923/storymodel4s/docs/refactor/evidence/workspace-m1-packet-20260922/fixtures",
+    "/private/tmp/voyage-mass-evidence-20260923"
+  ],
+  "cwd": "/private/tmp/storyatlas4s-voyage-mass-20260923",
+  "log": "/private/tmp/voyage-mass-evidence-20260923/workspace-style-portable.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 120.0,
+  "log_bytes": 862
+}

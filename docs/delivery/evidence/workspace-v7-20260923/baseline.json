@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "nn03-full: byte-identical voyage.txt",
+    "nn03-full: byte-identical voyage.svg",
+    "nn03-full: unchanged scientific receipt with explicit expected producer revision change",
+    "nn03-content: byte-identical voyage.txt",
+    "nn03-content: byte-identical voyage.svg",
+    "nn03-content: unchanged scientific receipt with explicit expected producer revision change"
+  ]
+}

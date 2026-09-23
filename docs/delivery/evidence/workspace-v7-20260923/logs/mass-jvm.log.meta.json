@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-23T02:30:17.497140+00:00",
+  "finished_utc": "2026-09-23T02:30:47.194141+00:00",
+  "duration_seconds": 29.696371,
+  "command": [
+    "sbt",
+    "-batch",
+    "-J-Xms256m",
+    "-J-Xmx1G",
+    "-Dsbt.global.staging=/private/tmp/voyage-mass-sbt-staging-20260923",
+    "-Dstoryatlas4s.storymodel4s.build=/private/tmp/voyage-mass-deps-20260923/storymodel4s",
+    "-Dstorymodel4s.grakern.build=/private/tmp/voyage-mass-deps-20260923/grakern",
+    "-Dstoryatlas4s.intaglio.build=/private/tmp/voyage-mass-deps-20260923/intaglio",
+    "intaglioJVM/testOnly storyatlas4s.intaglio.VoyageLoweringSuite"
+  ],
+  "cwd": "/private/tmp/storyatlas4s-voyage-mass-20260923",
+  "log": "/private/tmp/voyage-mass-evidence-20260923/mass-jvm.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 600.0,
+  "log_bytes": 2272
+}

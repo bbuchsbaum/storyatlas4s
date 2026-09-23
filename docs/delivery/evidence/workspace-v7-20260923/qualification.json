@@ -1,0 +1,81 @@
+{
+  "scope": "Three-agent workspace presentation and supplied Voyage mass tracks; no new scientific inference",
+  "runtimeCandidate": "40b06ff2b75f5eb5615f7c1d1a14479474d525b5",
+  "base": "7b5d132",
+  "revisions": {
+    "storymodel4s": "7b2f076a57bde1ec540090c43debfec51c8d44d4",
+    "intaglio": "4eb566d9208f474d64d61e778e084dee2ddbaa76",
+    "grakern": "0329c43c88a0b71e9aa4456723bb16bac2fa3841"
+  },
+  "inputSha256": {
+    "/Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-full/recall-map-NN03_ANT_202231_final.tsv.voyage.json": "d2eeb592cf9ac562d174e2430aedff0d157afa36d5e7a1f505f13588d51cb2aa",
+    "/Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-content/recall-map-NN03_ANT_202231_final.tsv.voyage.json": "f11351f280616d9a4376ba56161c4f1dfd3572041c8a7a4ef03257849d287c37",
+    "bell.workspace.json": "a604b0062f7353cece27fe3c552efa8420f4de9a2a1e45a0f25d55b9debc1ef1",
+    "wog.workspace.json": "bfc99a70bdb0913fd194951b411b4981a1ebab2fc98a11d4d32f59fb46166088"
+  },
+  "sourceSha256": {
+    "app/index.html": "916ac1260e1d8962f34b91b9f5729c0e2d043540bb122ffa7763548838ef0ff3",
+    "app/src/main/scala/storyatlas4s/app/MatrixCells.scala": "6fc1cd3f908bea58042d203de087838fa8a12a2dcdd82af746e7c615bbf625d2",
+    "app/src/main/scala/storyatlas4s/app/WorkspaceInspector.scala": "cc368b05ccb8b6a6ed12088a57493dca454c4daa68067c9b53c68ce151eaa5a6",
+    "app/src/main/scala/storyatlas4s/app/WorkspaceLabels.scala": "e884970059546d8ec162dfc10c19d283a67fbc6eb182c62e449bfc163c7ba28d",
+    "app/src/main/scala/storyatlas4s/app/WorkspaceView.scala": "f82e89fd038a4501a89a5daa3bb9e1d912296e79467d45e8cd3090eafdec7f2a",
+    "app/src/main/scala/storyatlas4s/app/VoyageView.scala": "5fc75f168eab5c6f8790be1bee19e333cd5442661f9877bd32306277f7a3ea99",
+    "intaglio/src/main/scala/storyatlas4s/intaglio/VoyageLowering.scala": "f08b16179842c340f95d2c8cdeed0e2561ec2cb7141901aae0bb94be03b929bd"
+  },
+  "bundleSha256": "d73b0ff5a9245e8ccc1f7c8730ca921c2ff1c700cbb5084baa43aa5732a70661",
+  "scala": {
+    "fullGateTasks": [
+      "compileAll",
+      "testAll",
+      "scalafmtCheckAll",
+      "scalafmtSbtCheck",
+      "app/fastLinkJS"
+    ],
+    "fullGateTests": 387,
+    "taskTotals": [
+      22,
+      26,
+      77,
+      77,
+      13,
+      13,
+      49,
+      49,
+      58,
+      3
+    ],
+    "afterVisualSpacingRepair": {
+      "intaglioJVM": 30,
+      "intaglioJS": 30,
+      "app": 3,
+      "formatAndLink": "passed"
+    }
+  },
+  "browser": {
+    "playwright": "1.55.1",
+    "chromiumBuild": 1193,
+    "checks": {
+      "workspace": 83,
+      "legacy": 19,
+      "style": 8,
+      "display": 58,
+      "viewport": 61,
+      "mass": 69,
+      "baseline": 6
+    },
+    "originalShellSmoke": "passed",
+    "externalRequests": 0
+  },
+  "resolvedFailures": [
+    "Initial JVM/JS metadata Double.toString difference fixed using upstream Score.hexBits.",
+    "Old baseline producer revision differs; checked expected 774fb1e8 -> 7b2f076a, with byte-identical static SVG/text and otherwise unchanged scientific receipt.",
+    "Mass witness adjusted for CSS text capitalization; exact counts retained.",
+    "Visual QA found adjoining scale labels; increased inter-track gap while each fixed-scale numeric row remains 28px."
+  ],
+  "limits": [
+    "Static v7 artboards are synthetic design references, not scientific or interaction evidence.",
+    "Frozen Sherlock legacy display clock is retained; native media support and general film preparation are not established by this change.",
+    "Scope does not close the complete design roadmap or qualify arbitrary artifact sizes."
+  ],
+  "browserLifecycle": "All contexts closed in finally. Post-run guard audit found no automated top-level browsers."
+}
