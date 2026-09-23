@@ -6,7 +6,7 @@ import munit.FunSuite
 import storyatlas4s.edition.WorkspaceTestData
 import storymodel4s.codec.{Canonical, WorkspaceCodecs, WorkspaceSubsetCodec}
 import storymodel4s.core.Checksum
-import storymodel4s.view.WorkspaceRefusal
+import storymodel4s.view.{ArtifactId, WorkspaceRefusal}
 
 class WorkspaceExportSuite extends FunSuite:
   private def open(text: String) =
@@ -24,38 +24,42 @@ class WorkspaceExportSuite extends FunSuite:
       c.get[String]("name").toOption.get -> body
     }.toMap
 
-  test("export binds figure, accessible twin, replay state and untouched provider subset") {
-    val exported = WorkspaceExport.create(selected).toOption.get
-    val files = contents(exported)
-    val provider = WorkspaceSubsetCodec
-      .selected(selected.workspace, selected.state.policy, selected.state.selection)
-      .toOption
-      .get
-    assertEquals(
-      files.keySet,
-      Set(
-        "matrix.svg",
-        "matrix.txt",
-        "investigation.json",
-        "selection.json",
-        "selection.csv",
-        "selection.txt",
-        "selection-receipt.json"
+  for policy <- Vector("authored-a", "authored-b") do
+    test(
+      s"export binds figure, accessible twin, replay state and untouched provider subset: $policy"
+    ) {
+      val chosen = selected.dispatch(WorkspaceAction.Policy(ArtifactId.unsafe(policy))).toOption.get
+      val exported = WorkspaceExport.create(chosen).toOption.get
+      val files = contents(exported)
+      val provider = WorkspaceSubsetCodec
+        .selected(chosen.workspace, chosen.state.policy, chosen.state.selection)
+        .toOption
+        .get
+      assertEquals(
+        files.keySet,
+        Set(
+          "matrix.svg",
+          "matrix.txt",
+          "investigation.json",
+          "selection.json",
+          "selection.csv",
+          "selection.txt",
+          "selection-receipt.json"
+        )
       )
-    )
-    assertEquals(files("selection.json"), provider.dataJson)
-    assertEquals(files("selection.csv"), provider.tableCsv)
-    assertEquals(files("selection.txt"), provider.accessibleText)
-    assertEquals(files("selection-receipt.json"), provider.receiptJson)
-    assertEquals(
-      WorkspaceSave.decode(files("investigation.json"), selected.workspace).toOption.get.state,
-      selected.state
-    )
-    assert(files("matrix.svg").contains("<svg"))
-    assert(files("matrix.txt").contains("4. m1:u3"))
-    assert(files("matrix.txt").contains("Not supplied"))
-    assertEquals(WorkspaceExport.create(selected).toOption.get, exported)
-  }
+      assertEquals(files("selection.json"), provider.dataJson)
+      assertEquals(files("selection.csv"), provider.tableCsv)
+      assertEquals(files("selection.txt"), provider.accessibleText)
+      assertEquals(files("selection-receipt.json"), provider.receiptJson)
+      assertEquals(
+        WorkspaceSave.decode(files("investigation.json"), chosen.workspace).toOption.get.state,
+        chosen.state
+      )
+      assert(files("matrix.svg").contains("<svg"))
+      assert(files("matrix.txt").contains("4. m1:u3"))
+      assert(files("matrix.txt").contains("Not supplied"))
+      assertEquals(WorkspaceExport.create(chosen).toOption.get, exported)
+    }
 
   test("export permission is checked before constructing an evidence download") {
     val archive = Canonical.parse(WorkspaceTestData.archives("bell")).toOption.get

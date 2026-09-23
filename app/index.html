@@ -77,11 +77,16 @@ nav ul { margin: 0; padding-left: 1.2em; }
 .joined-source .controls { border-color: #dce4de; gap: 8px; }
 .joined-source .controls input[type=range] { max-width: 100%; width: 14em; }
 .joined-source .pages { max-width: 100%; overflow: auto; }
-.joined-source .panel { max-width: 100%; }
+.joined-source .panel, .joined-source .workspace > * { min-width: 0; max-width: 100%; }
+.joined-source fieldset { min-inline-size: 0; max-width: 100%; box-sizing: border-box; }
+.recall-navigation > * { min-width: 0; max-width: 100%; }
+.recall-navigation label { flex: 1 1 250px; }
+.recall-navigation select { width: 100%; min-width: 0; }
 .joined-recall ul { list-style: none; margin: 0; padding: 0; }
+.joined-recall p { overflow-wrap: anywhere; }
 .joined-recall li { border-top: 1px solid #dce4de; padding: 8px 0; overflow-wrap: anywhere; }
 .joined-recall li span { display: block; font-size: 13px; }
-.joined-recall blockquote { margin: 12px 0; padding: 8px 12px; border-left: 3px solid #176f5f; background: #f4f5f1; }
+.joined-recall blockquote { margin: 12px 0; padding: 8px 12px; border-left: 1px solid #176f5f; background: #f4f5f1; }
 .joined-recall blockquote p { white-space: pre-wrap; }
 .mapping-scroll { max-width: 100%; overflow: auto; max-height: 65vh; border: 1px solid #dce4de; margin-bottom: 24px; }
 .mapping-matrix { border-collapse: separate; border-spacing: 0; font-size: 13px; }
@@ -95,7 +100,7 @@ nav ul { margin: 0; padding-left: 1.2em; }
 .row-status { margin-top: 8px; font-weight: normal; }
 .joined-workspace details { border-top: 1px solid #dce4de; padding: 12px 0; }
 .joined-workspace details p, .joined-workspace details pre { overflow-wrap: anywhere; white-space: pre-wrap; font-size: 13px; }
-@media (max-width: 850px) { .joined-columns { grid-template-columns: minmax(0, 1fr); } .joined-source, .joined-recall { max-height: none; } .workspace-open-bar input { max-width: 100%; } .joined-workspace .workspace-actions label, .joined-workspace select { max-width: 100%; } }
+@media (max-width: 850px) { .joined-columns { grid-template-columns: minmax(0, 1fr); } .joined-source, .joined-recall { max-height: 70vh; } .workspace-open-bar input { max-width: 100%; } .joined-workspace .workspace-actions label, .joined-workspace select { max-width: 100%; } }
 
 #workspace-voyage .panes { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 16px; }
 #workspace-voyage .page { padding: 16px; width: auto; height: auto; box-shadow: none; }

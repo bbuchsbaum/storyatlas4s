@@ -15,7 +15,8 @@ private[app] object WorkspaceScroll:
       source: Boolean,
       current: () => WorkspaceController,
       signal: Signal[WorkspaceController],
-      dispatch: WorkspaceAction => Unit
+      dispatch: WorkspaceAction => Unit,
+      restorations: EventStream[Unit]
   ): HtmlElement =
     var observer = Option.empty[dom.MutationObserver]
     var restoring = false
@@ -77,15 +78,21 @@ private[app] object WorkspaceScroll:
       onMountCallback { ctx =>
         mounted = true
         val watch = new dom.MutationObserver((_, _) => schedule())
-        watch.observe(
-          ctx.thisNode.ref,
-          new dom.MutationObserverInit {
-            childList = true
-            subtree = true
-          }
-        )
-        observer = Some(watch)
-        signal.map(_.state.mode).distinct.foreach(_ => schedule())(using ctx.owner)
+        if source then
+          watch.observe(
+            ctx.thisNode.ref,
+            new dom.MutationObserverInit {
+              childList = true
+              subtree = true
+            }
+          )
+          observer = Some(watch)
+        // Matrix cells are stable DOM. Their changing labels must not reset a user's scroll.
+        signal
+          .map(c => (c.state.mode, c.state.policy))
+          .distinct
+          .foreach(_ => schedule())(using ctx.owner)
+        restorations.foreach(_ => schedule())(using ctx.owner)
         schedule()
       },
       onUnmountCallback { _ =>

@@ -235,3 +235,31 @@ object WorkspaceController:
       ) || !cursorsValid || !matrixViewportValid
     then Left(WorkspaceRefusal.UnsupportedContent)
     else Right(new WorkspaceController(workspace, state))
+
+/** Bounded semantic navigation within one admitted investigation; viewport-only events do not erase
+  * the return path. History is ephemeral and is not part of saved scientific state.
+  */
+final class WorkspaceHistory private (
+    val current: WorkspaceController,
+    past: List[WorkspaceController],
+    future: List[WorkspaceController]
+):
+  def canBack: Boolean = past.nonEmpty
+  def canReturn: Boolean = future.nonEmpty
+  def dispatch(action: WorkspaceAction): Either[WorkspaceRefusal, WorkspaceHistory] =
+    current.dispatch(action).map { next =>
+      if next.state == current.state then this
+      else
+        action match
+          case WorkspaceAction.Viewport(_) => new WorkspaceHistory(next, past, future)
+          case _ => new WorkspaceHistory(next, (current :: past).take(100), Nil)
+    }
+  def back: WorkspaceHistory = past match
+    case head :: tail => new WorkspaceHistory(head, tail, current :: future)
+    case Nil          => this
+  def forward: WorkspaceHistory = future match
+    case head :: tail => new WorkspaceHistory(head, current :: past, tail)
+    case Nil          => this
+object WorkspaceHistory:
+  def open(controller: WorkspaceController): WorkspaceHistory =
+    new WorkspaceHistory(controller, Nil, Nil)

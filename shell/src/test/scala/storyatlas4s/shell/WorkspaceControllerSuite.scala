@@ -329,3 +329,18 @@ class WorkspaceControllerSuite extends FunSuite:
       )
     }
   }
+
+  test("Back and Return restore qualified state while viewport events retain the return path") {
+    val first = ok(WorkspaceHistory.open(initial).dispatch(WorkspaceAction.Walk(1)))
+    val second = ok(first.dispatch(WorkspaceAction.Walk(1)))
+    val back = second.back
+    assertEquals(back.current.state, first.current.state)
+    val scrolled = ok(
+      back.dispatch(WorkspaceAction.Viewport(back.current.state.viewport.copy(sourceOffset = 1)))
+    )
+    assert(scrolled.canReturn)
+    assertEquals(scrolled.forward.current.state, second.current.state)
+    val branched = ok(back.dispatch(WorkspaceAction.Policy(ArtifactId.unsafe("authored-b"))))
+    assert(!branched.canReturn)
+    assertEquals(WorkspaceHistory.open(initial).back.current.state, initial.state)
+  }

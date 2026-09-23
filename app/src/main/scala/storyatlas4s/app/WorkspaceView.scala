@@ -14,13 +14,18 @@ import storymodel4s.view.*
 /** Browser projections read one controller and dispatch intentions. No estimator runs here. */
 object WorkspaceView:
   def apply(initial: WorkspaceController): HtmlElement =
-    val controller = Var(initial)
+    val history = Var(WorkspaceHistory.open(initial))
+    val restorations = new EventBus[Unit]
+    val controller = history.signal.map(_.current)
     val notice = Var("")
     val workspace = initial.workspace
-    def dispatch(action: WorkspaceAction): Unit = controller.now().dispatch(action) match
+    def dispatch(action: WorkspaceAction): Unit = history.now().dispatch(action) match
       case Left(reason) => notice.set(s"Action refused: $reason")
-      case Right(next)  => controller.set(next); notice.set("")
-    def exportEvidence(): Unit = WorkspaceExport.create(controller.now()) match
+      case Right(next)  => history.set(next); notice.set("")
+    def navigate(forward: Boolean): Unit =
+      history.update(h => if forward then h.forward else h.back)
+      restorations.writer.onNext(())
+    def exportEvidence(): Unit = WorkspaceExport.create(history.now().current) match
       case Left(reason)   => notice.set(s"Export refused: $reason")
       case Right(content) =>
         WorkspaceHost.download("storyatlas-evidence.json", content)
@@ -28,12 +33,13 @@ object WorkspaceView:
     val source = AppView.imported(
       workspace.draft,
       DomMeasurer.canvas(),
-      controller.signal.map(_.sourceChoice).distinct,
-      () => controller.now().sourceChoice,
+      controller.map(_.sourceChoice).distinct,
+      () => history.now().current.sourceChoice,
       choice => dispatch(WorkspaceAction.SourcePresentation(choice)),
       (address, extend) =>
-        controller
+        history
           .now()
+          .current
           .sourceQualified(address)
           .foreach(a => dispatch(WorkspaceAction.Select(a, extend))),
       () => dispatch(WorkspaceAction.Clear)
@@ -87,13 +93,13 @@ object WorkspaceView:
                   typ("button"),
                   s"${unit.ordinal + 1}. ${unit.id.value}",
                   onClick --> (_ => dispatch(WorkspaceAction.Jump(unit.id))),
-                  aria.pressed <-- controller.signal.map(
+                  aria.pressed <-- controller.map(
                     _.state.activeRecall.contains(unit.id).toString
                   )
                 ),
                 div(
                   cls("row-status"),
-                  child.text <-- controller.signal.map(c =>
+                  child.text <-- controller.map(c =>
                     c.policy.matrix
                       .row(unit.id)
                       .fold("Outcome not supplied")(r =>
@@ -109,7 +115,7 @@ object WorkspaceView:
                     cls("matrix-cell"),
                     dataAttr("matrix-cell")(s"$rowIndex-$columnIndex"),
                     aria.label(s"Inspect recall ${unit.ordinal + 1}, ${destination.key}"),
-                    tabIndex <-- controller.signal.map { c =>
+                    tabIndex <-- controller.map { c =>
                       val activeRow =
                         c.state.activeRecall.getOrElse(workspace.inventory.units.head.id)
                       val activeColumn = c.state.correspondence
@@ -117,14 +123,14 @@ object WorkspaceView:
                         .getOrElse(destinations.head)
                       if activeRow == unit.id && activeColumn == destination then 0 else -1
                     },
-                    aria.pressed <-- controller.signal.map(c =>
+                    aria.pressed <-- controller.map(c =>
                       val selected = c.state.activeRecall.contains(unit.id) && (destination match
                         case Destination.Target(target) =>
                           c.state.correspondence.contains(Correspondence(unit.id, target))
                         case Destination.External(_) => false)
                       selected.toString
                     ),
-                    children <-- controller.signal.map { c =>
+                    children <-- controller.map { c =>
                       c.policy.matrix.row(unit.id).flatMap(_.cell(destination)) match
                         case None       => Vector(div("Not supplied in this result"))
                         case Some(cell) =>
@@ -147,23 +153,25 @@ object WorkspaceView:
         )
       ),
       false,
-      () => controller.now(),
-      controller.signal,
-      dispatch
+      () => history.now().current,
+      controller,
+      dispatch,
+      restorations.events
     )
     val sourcePane = WorkspaceScroll.bind(
       sectionTag(idAttr("workspace-source-scroll"), cls("joined-source"), h2("Source"), source),
       true,
-      () => controller.now(),
-      controller.signal,
-      dispatch
+      () => history.now().current,
+      controller,
+      dispatch,
+      restorations.events
     )
     div(
       cls("joined-workspace"),
       dataAttr("workspace-ready")("true"),
-      dataAttr("policy") <-- controller.signal.map(_.state.policy.value),
-      dataAttr("active-recall") <-- controller.signal.map(_.state.activeRecall.fold("")(_.value)),
-      dataAttr("selection") <-- controller.signal.map(
+      dataAttr("policy") <-- controller.map(_.state.policy.value),
+      dataAttr("active-recall") <-- controller.map(_.state.activeRecall.fold("")(_.value)),
+      dataAttr("selection") <-- controller.map(
         _.state.selection.toVector.sorted.map(_.render).mkString(" ")
       ),
       h1("Source + recall investigation"),
@@ -173,13 +181,27 @@ object WorkspaceView:
       ),
       div(
         cls("workspace-actions"),
+        button(
+          typ("button"),
+          idAttr("workspace-back"),
+          "Back",
+          disabled <-- history.signal.map(!_.canBack),
+          onClick --> (_ => navigate(false))
+        ),
+        button(
+          typ("button"),
+          idAttr("workspace-return"),
+          "Return",
+          disabled <-- history.signal.map(!_.canReturn),
+          onClick --> (_ => navigate(true))
+        ),
         label(
           "Mapping result ",
           select(
             idAttr("workspace-policy"),
             workspace.policies.map(p => option(value(p.id.value), p.id.value)),
             controlled(
-              value <-- controller.signal.map(_.state.policy.value),
+              value <-- controller.map(_.state.policy.value),
               onChange.mapToValue --> (v =>
                 workspace.policies
                   .find(_.id.value == v)
@@ -192,7 +214,7 @@ object WorkspaceView:
           button(
             typ("button"),
             mode.toString,
-            aria.pressed <-- controller.signal.map(c => (c.state.mode == mode).toString),
+            aria.pressed <-- controller.map(c => (c.state.mode == mode).toString),
             onClick --> (_ => dispatch(WorkspaceAction.Mode(mode)))
           )
         ),
@@ -201,7 +223,8 @@ object WorkspaceView:
           "Save investigation",
           idAttr("workspace-save"),
           onClick --> (_ =>
-            WorkspaceHost.download("investigation.json", WorkspaceSave.encode(controller.now()))
+            WorkspaceHost
+              .download("investigation.json", WorkspaceSave.encode(history.now().current))
           )
         ),
         button(
@@ -233,7 +256,7 @@ object WorkspaceView:
               )
             ),
             controlled(
-              value <-- controller.signal.map(_.state.activeRecall.fold("")(_.value)),
+              value <-- controller.map(_.state.activeRecall.fold("")(_.value)),
               onChange.mapToValue --> (v =>
                 workspace.inventory.units
                   .find(_.id.value == v)
@@ -252,7 +275,7 @@ object WorkspaceView:
           "Show all recall evidence ",
           input(
             typ("checkbox"),
-            checked <-- controller.signal.map(_.state.recallHorizon == EpistemicHorizon.Omniscient),
+            checked <-- controller.map(_.state.recallHorizon == EpistemicHorizon.Omniscient),
             onChange.mapToChecked --> (all =>
               dispatch(
                 WorkspaceAction.RecallHorizon(
@@ -261,7 +284,7 @@ object WorkspaceView:
                     EpistemicHorizon.ReaderAt(
                       Playhead.position(
                         workspace.recall.transcript.canonicalText,
-                        controller.now().state.recallHorizon
+                        history.now().current.state.recallHorizon
                       )
                     )
                 )
@@ -270,7 +293,7 @@ object WorkspaceView:
           )
         ),
         span(
-          child.text <-- controller.signal.map(c =>
+          child.text <-- controller.map(c =>
             Playhead.describe(workspace.recall.transcript.canonicalText, c.state.recallHorizon)
           )
         ),
@@ -283,7 +306,7 @@ object WorkspaceView:
             maxAttr(workspace.recall.transcript.canonicalText.length.toString),
             stepAttr("1"),
             controlled(
-              value <-- controller.signal.map(c =>
+              value <-- controller.map(c =>
                 Playhead
                   .position(workspace.recall.transcript.canonicalText, c.state.recallHorizon)
                   .toString
@@ -309,34 +332,34 @@ object WorkspaceView:
         sectionTag(
           cls("joined-recall"),
           h2("Recall and exact evidence"),
-          inspector(controller.signal, dispatch)
+          inspector(controller, dispatch)
         )
       ),
       sectionTag(
-        display <-- controller.signal.map(c =>
+        display <-- controller.map(c =>
           if c.state.mode == WorkspaceMode.Recall then "block" else "none"
         ),
         h2("Alignment matrix"),
         matrix
       ),
       sectionTag(
-        display <-- controller.signal.map(c =>
+        display <-- controller.map(c =>
           if c.state.mode == WorkspaceMode.Voyage then "block" else "none"
         ),
         idAttr("workspace-voyage"),
         h2("Recall Voyage"),
-        child <-- controller.signal.map(_.state.policy).distinct.map { id =>
+        child <-- controller.map(_.state.policy).distinct.map { id =>
           WorkspaceVoyage.from(workspace, id) match
             case Left(reason)      => p(s"Voyage unavailable: $reason")
             case Right(projection) =>
-              VoyageView.controlled(projection, controller.signal, () => controller.now(), dispatch)
+              VoyageView.controlled(projection, controller, () => history.now().current, dispatch)
         }
       ),
       detailsTag(
         summaryTag("Artifact identities and view state"),
         p(s"Source SHA-256: ${workspace.modelArtifact.hex}"),
         p(s"Recall SHA-256: ${workspace.recallArtifact.hex}"),
-        pre(idAttr("workspace-state"), child.text <-- controller.signal.map(WorkspaceSave.encode))
+        pre(idAttr("workspace-state"), child.text <-- controller.map(WorkspaceSave.encode))
       )
     )
 
@@ -395,11 +418,11 @@ object WorkspaceView:
               p(s"Fixed target universe: ${c.policy.record.policies.universe.id.digest.hex}"),
               row.outcome.measures.normalized.fold(p("Normalized score mass: not supplied"))(m =>
                 p(
-                  s"Normalization universe: ${m.universe.digest.hex}; prior: ${m.prior}; temperature: ${m.temperature}; stage: ${m.stage}"
+                  s"Normalization universe: ${m.universe.digest.hex}; prior: ${m.prior}; temperature: ${m.temperature}; stage: ${m.stage.digest.hex}"
                 )
               ),
               row.outcome.measures.transport.fold(p("Transport row budget: not supplied"))(m =>
-                p(s"Transport row budget: ${m.rowBudget}; stage: ${m.stage}")
+                p(s"Transport row budget: ${m.rowBudget}; stage: ${m.stage.digest.hex}")
               ),
               p(
                 row.outcome.decision.fold("Calibration: no decision supplied")(d =>
@@ -449,7 +472,7 @@ object WorkspaceView:
                       div(
                         p(s"Term support: $support"),
                         p(
-                          s"Candidate set: ${link.candidateSet.digest.hex}; inference stage: ${link.inferenceStage}"
+                          s"Candidate set: ${link.candidateSet.digest.hex}; inference stage: ${link.inferenceStage.digest.hex}"
                         ),
                         p(link.gate match
                           case GateOutcome.NotGated => "Contradiction gate: not evaluated"

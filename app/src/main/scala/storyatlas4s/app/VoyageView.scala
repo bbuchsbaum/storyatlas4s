@@ -516,7 +516,7 @@ object VoyageView:
       .map { case (s, g, all, w, r) => Lens(s, g, all, w, r) }
     val frames: Signal[Option[Either[String, Frame]]] =
       lens.map(l => l.width.map(w => compile(document, scene, l, w)))
-    val timed = scene.units.filter(_.onset.isDefined).sortBy(_.onset.map(_.value))
+    val ordered = scene.units.sortBy(_.ordinal)
 
     def unitAddress(id: RecallUnitId): Address = Addressable[RecallRef].address(RecallRef.Unit(id))
 
@@ -533,10 +533,10 @@ object VoyageView:
       }
 
     def walk(delta: Int): Unit =
-      if timed.nonEmpty then
-        val at = focus.now().map(id => timed.indexWhere(_.id == id)).getOrElse(-1)
-        val next = math.max(0, math.min(timed.size - 1, at + delta))
-        val id = timed(next).id
+      if ordered.nonEmpty then
+        val at = focus.now().map(id => ordered.indexWhere(_.id == id)).getOrElse(-1)
+        val next = math.max(0, math.min(ordered.size - 1, at + delta))
+        val id = ordered(next).id
         selection.set(Set(unitAddress(id)))
         focus.set(Some(id))
 
@@ -806,7 +806,7 @@ object VoyageView:
           div(
             cls("head"),
             h2("Recall time against source time"),
-            span(cls("hint"), "choose a unit · click to inspect · ← → timed units")
+            span(cls("hint"), "choose a unit · click to inspect · ← → all units")
           ),
           onClick --> (ev => activate(ev.target, ev.shiftKey)),
           onKeyDown --> { ev =>

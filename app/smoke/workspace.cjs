@@ -12,7 +12,7 @@ assert.equal(pkg.version, '1.55.1');
 const {chromium} = require(require.resolve('playwright', {paths:[modules]}));
 const [entry, fixtures, output, featureDir] = process.argv.slice(2).map(p => path.resolve(p));
 fs.mkdirSync(output, {recursive:true});
-const report = {checks:[], errors:[], requests:[], playwright:pkg.version};
+const report = {checks:[], errors:[], console:[], requests:[], playwright:pkg.version};
 const check = (ok, description) => { report.checks.push({ok, description}); assert.ok(ok, description); };
 const sha = x => createHash('sha256').update(x).digest('hex');
 const load = name => fs.readFileSync(path.join(fixtures, name), 'utf8');
@@ -38,7 +38,7 @@ function mappingMember(a,id) {
     context = await browser.newContext({viewport:{width:1600,height:1100},acceptDownloads:true});
     page = await context.newPage();
     page.on('pageerror',e=>report.errors.push(String(e)));
-    page.on('console',m=>{if(m.type()==='error')report.errors.push(m.text());});
+    page.on('console',m=>{report.console.push(m.text()); if(m.type()==='error')report.errors.push(m.text());});
     page.on('request',r=>{if(/^https?:/.test(r.url()))report.requests.push(r.url());});
     await page.goto(pathToFileURL(entry).href);
     await page.locator('.shell[data-state=ready]').waitFor();
@@ -92,6 +92,7 @@ function mappingMember(a,id) {
         check(initialMetadata.includes('Omitted-candidate probability: unknown'),`${name}: non-complete candidate coverage stays explicitly unknown`);
       if(initialFixture.includes('"status":"not-computed"'))
         check(initialMetadata.includes('Term support: Not computed'),`${name}: authored term support stays not computed`);
+      check(!/StageEntryId\s*[@({]|(?:inference|transport) stage\s*:\s*\{/.test(initialMetadata),`${name}: inspection metadata renders stage digests, not raw stage objects`);
       await page.locator('#workspace-policy').selectOption('historical-lexical');
       const historicalFixture=mappingMember(JSON.parse(load(`${name}.workspace.json`)),'historical-lexical');
       const historicalMetadata=await metadataText();
@@ -221,13 +222,38 @@ function mappingMember(a,id) {
     await page.keyboard.press('ArrowDown');
     check((await state()).activeRecall==='m1:u1','matrix arrow key changes canonical row');
     check(await page.evaluate(()=>document.activeElement?.matches('[data-matrix-cell="1-0"]')),'matrix keeps visible keyboard focus');
-    const stable=await state();
+    let stable=await state();
     const bell=JSON.parse(load('bell.workspace.json')), wog=JSON.parse(load('wog.workspace.json'));
+    const wogOnly=[...new Set(load('wog.workspace.json').match(/[A-Za-z][A-Za-z-]{7,}/g)||[])]
+      .find(token=>token==='hear-war-cries' && !load('bell.workspace.json').includes(token));
+    assert.ok(wogOnly,'fixtures provide a WOG-only denied-content sentinel');
+    await open(input('admitted-wog-sentinel',load('wog.workspace.json')));
+    check((await page.content()).includes(wogOnly),'admitted WOG control proves the denied-content sentinel detector');
+    await open(input('bell-after-sentinel-control',load('bell.workspace.json')));
+    stable=await state();
+    const bellBeforeDenial=await download('#workspace-export','bell-before-denied-wog.json');
+    check(!bellBeforeDenial.includes(wogOnly),'current admitted Bell export excludes the WOG-only sentinel');
     await open(input('foreign',canonical(replace(bell,'Recall',member(wog,'Recall')))),'Refused');
     assert.deepEqual(await state(),stable); check(true,'foreign recall refuses before replacing current investigation');
-    const caps=JSON.parse(member(bell,'Capabilities')); caps.inspection='Denied';
-    await open(input('denied',canonical(replace(bell,'Capabilities',canonical(caps)))),'Refused');
-    assert.deepEqual(await state(),stable); check(true,'re-signed inspection denial preserves current state');
+    const denialCaps=JSON.parse(member(wog,'Capabilities')); denialCaps.inspection='Denied';
+    const consoleBeforeDenied=report.console.length, errorsBeforeDenied=report.errors.length;
+    let deniedPacketDownload=false;
+    const deniedPacketDownloadListener=()=>{deniedPacketDownload=true;};
+    page.once('download',deniedPacketDownloadListener);
+    await open(input('inspection-denied-wog',canonical(replace(wog,'Capabilities',canonical(denialCaps)))),'Refused');
+    await page.waitForTimeout(100);
+    assert.deepEqual(await state(),stable); check(true,'re-signed inspection-denied WOG preserves the admitted Bell state');
+    check(!deniedPacketDownload,'inspection-denied WOG packet creates no download');
+    page.off('download',deniedPacketDownloadListener);
+    check(!(await page.content()).includes(wogOnly),'inspection-denied WOG sentinel is absent from DOM including SVG titles');
+    const accessibilitySurface=await page.evaluate(()=>[...document.querySelectorAll('*')].flatMap(element=>[
+      element.textContent||'', ...[...element.attributes].map(attribute=>attribute.value)
+    ]).join('\n'));
+    check(!accessibilitySurface.includes(wogOnly),'inspection-denied WOG sentinel is absent from accessible text and attributes');
+    check(!report.console.slice(consoleBeforeDenied).join('\n').includes(wogOnly) &&
+      !report.errors.slice(errorsBeforeDenied).join('\n').includes(wogOnly),'inspection-denied WOG sentinel is absent from browser console and error capture');
+    const bellAfterDenial=await download('#workspace-export','bell-after-denied-wog.json');
+    check(!bellAfterDenial.includes(wogOnly) && bellAfterDenial===bellBeforeDenial,'permitted Bell export after denied WOG remains byte-identical and sentinel-free');
     const savedForeign=fs.readFileSync(path.join(output,'wog-investigation.json'),'utf8');
     await open(input('stale-state',savedForeign),'Refused');
     assert.deepEqual(await state(),stable); check(true,'foreign saved state refuses');
@@ -312,6 +338,65 @@ function mappingMember(a,id) {
       check(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+2),`${label}: no document horizontal overflow`);
       await page.screenshot({path:path.join(output,`${label}.png`),fullPage:true});
     }
+    await page.evaluate(()=>document.body.style.zoom='1');
+    await page.setViewportSize({width:1600,height:1100});
+    await open(input('source-only',member(wog,'SourceModel')));
+    await page.locator('#workspace-source-only .shell[data-state=ready]').waitFor();
+    check(await page.locator('.mapping-matrix').count()===0,'source-only opening presents reading without an empty matrix');
+    const sourceOffset=await page.locator('#workspace-source-only').evaluate(pane=>{
+      pane.scrollTop= Math.max(0,(pane.scrollHeight-pane.clientHeight)/2);
+      const top=pane.getBoundingClientRect().top;
+      return Number([...pane.querySelectorAll('[data-source-offset]')].find(el=>el.getBoundingClientRect().bottom>top).dataset.sourceOffset);
+    });
+    assert.ok(sourceOffset>0,'attachment witness has a nonzero reading position');
+    await page.locator('#workspace-attach').setInputFiles(input('wrong-edition',load('bell.workspace.json')));
+    await page.waitForFunction(()=>document.querySelector('[data-open-status]').dataset.openStatus.startsWith('Refused'));
+    check(await page.locator('#workspace-source-only').count()===1 && await page.locator('.mapping-matrix').count()===0,'attaching a foreign edition refuses and keeps the current source');
+    await page.locator('#workspace-attach').setInputFiles(input('same-edition',load('wog.workspace.json')));
+    await page.locator('#workspace-state').waitFor();
+    assert.equal((await state()).viewport.sourceOffset,sourceOffset);
+    assert.equal((await state()).mode,'Source');
+    await page.waitForFunction(offset=>{
+      const pane=document.getElementById('workspace-source-scroll');
+      const line=pane?.querySelector(`[data-source-offset="${offset}"]`);
+      if(!line)return false;
+      const p=pane.getBoundingClientRect(),l=line.getBoundingClientRect();
+      return l.bottom>p.top && l.top<p.bottom;
+    },sourceOffset);
+    check(true,'compatible recall attachment preserves the exact source reading position');
+    await page.getByRole('button',{name:'Recall',exact:true}).click();
+    await page.locator('#workspace-recall').selectOption('m1:u0');
+    const scrollMatrix=async(row)=>{
+      await page.waitForTimeout(50);
+      await page.locator('#workspace-matrix-scroll').evaluate((pane,row)=>{
+        const cell=pane.querySelector(`[data-matrix-cell="${row}-0"]`);
+        pane.scrollTop+=cell.getBoundingClientRect().top-pane.getBoundingClientRect().top;
+        pane.dispatchEvent(new Event('scroll'));
+      },row);
+      await page.waitForFunction(()=>{
+        const pane=document.getElementById('workspace-matrix-scroll'),box=pane.getBoundingClientRect();
+        const first=[...pane.querySelectorAll('[data-matrix-cell]')].find(e=>e.getBoundingClientRect().bottom>box.top+1 && e.getBoundingClientRect().right>box.left+1);
+        const state=JSON.parse(document.getElementById('workspace-state').textContent);
+        return first.dataset.matrixCell===`${state.viewport.matrixRow}-${state.viewport.matrixColumn}`;
+      });
+    };
+    const restoredMatrix=async(expected)=>page.waitForFunction(expected=>{
+      const pane=document.getElementById('workspace-matrix-scroll'),box=pane.getBoundingClientRect();
+      const first=[...pane.querySelectorAll('[data-matrix-cell]')].find(e=>e.getBoundingClientRect().bottom>box.top+1 && e.getBoundingClientRect().right>box.left+1);
+      const s=JSON.parse(document.getElementById('workspace-state').textContent);
+      return s.activeRecall===expected.activeRecall && first.dataset.matrixCell===`${expected.viewport.matrixRow}-${expected.viewport.matrixColumn}`;
+    },expected);
+    await scrollMatrix(2);
+    const historyA=await state();
+    await page.locator('#workspace-recall').selectOption('m1:u1');
+    await scrollMatrix(0);
+    const historyB=await state();
+    assert.notEqual(historyA.viewport.matrixRow,historyB.viewport.matrixRow,'history witness uses distinct matrix positions');
+    await page.locator('#workspace-back').click();
+    await restoredMatrix(historyA);
+    await page.locator('#workspace-return').click();
+    await restoredMatrix(historyB);
+    check(true,'Back and Return restore qualified selection and actual matrix viewport');
     assert.ok(featureDir, 'pass the generated feature directory as argument4');
     const featureExpected=JSON.parse(fs.readFileSync(featureDir+'.expected.json','utf8'));
     await page.locator('#workspace-open-directory').setInputFiles(featureDir);
@@ -332,7 +417,7 @@ function mappingMember(a,id) {
     report.exit=0;
   } catch(error) {
     report.exit=1; report.failure=String(error.stack||error);
-    if(page) { await page.screenshot({path:path.join(output,'failure.png'),fullPage:true}).catch(()=>{}); fs.writeFileSync(path.join(output,'failure.html'),await page.content().catch(()=>'')); }
+    if(page) { report.viewportDebug=await page.evaluate(()=>({state:document.querySelector('#workspace-state')?.textContent,panes:['workspace-source-scroll','workspace-matrix-scroll'].map(id=>{const p=document.getElementById(id);return p&&{id,top:p.scrollTop,left:p.scrollLeft,width:p.clientWidth,height:p.clientHeight};})})).catch(()=>null); await page.screenshot({path:path.join(output,'failure.png'),fullPage:true}).catch(()=>{}); fs.writeFileSync(path.join(output,'failure.html'),await page.content().catch(()=>'')); }
     process.exitCode=1;
   } finally {
     if(context)await context.close(); if(browser)await browser.close();

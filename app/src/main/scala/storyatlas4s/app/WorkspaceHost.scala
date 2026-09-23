@@ -6,7 +6,7 @@ import scala.concurrent.{Future, Promise}
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.{ArrayBuffer, Int8Array}
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-import storyatlas4s.edition.ArtifactInput
+import storyatlas4s.edition.{ArtifactInput, ImportedSource}
 import storyatlas4s.layout.DomMeasurer
 import storyatlas4s.shell.*
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel
@@ -58,10 +58,17 @@ object WorkspaceHost:
   def apply(): HtmlElement =
     val snapshot = Var(OpenSnapshot[WorkspaceSession](None, OpenDisplay.Idle))
     val runtime = new WorkspaceOpen[WorkspaceSession](snapshot.set)
+    var sourceReading: Option[() => (ImportedSource, ViewChoice, Int)] = None
     def current: Option[WorkspaceController] = snapshot.now().current.collect {
       case WorkspaceSession.Investigation(controller) => controller
     }
-    def open(files: Vector[dom.File]): Unit =
+    def open(files: Vector[dom.File], attach: Boolean = false): Unit =
+      val reading = if attach && snapshot.now().current.exists {
+          case WorkspaceSession.Source(_) => true
+          case _                          => false
+        }
+      then sourceReading.map(_())
+      else None
       val revision = runtime.begin()
       val previous = current
       if files.isEmpty then runtime.cancel()
@@ -71,7 +78,15 @@ object WorkspaceHost:
         val _ = Future
           .traverse(files)(read)
           .map { loaded =>
-            runtime.complete(revision, WorkspaceImport.open(loaded, previous))
+            val admitted = WorkspaceImport.open(loaded, previous).flatMap { session =>
+              if !attach then Right(session)
+              else
+                reading.toRight(WorkspaceRefusal.SemanticJoinMismatch).flatMap {
+                  (source, choice, offset) =>
+                    WorkspaceImport.attachSource(source, choice, offset, session)
+                }
+            }
+            runtime.complete(revision, admitted)
           }
           // Errors are intentionally content-free; failed bytes never enter diagnostics or the DOM.
           .recover { case _ =>
@@ -82,6 +97,29 @@ object WorkspaceHost:
       div(
         cls("workspace-open-bar"),
         strong("StoryAtlas"),
+        label(
+          cls("open-files"),
+          display <-- snapshot.signal.map(s =>
+            if s.current.exists {
+                case WorkspaceSession.Source(_) => true
+                case _                          => false
+              }
+            then ""
+            else "none"
+          ),
+          "Add recall workspace ",
+          input(
+            idAttr("workspace-attach"),
+            typ("file"),
+            onChange --> { event =>
+              val element = event.target.asInstanceOf[dom.html.Input]
+              val files =
+                Option(element.files).toVector.flatMap(f => Vector.tabulate(f.length)(f(_)))
+              open(files, attach = true)
+              element.value = ""
+            }
+          )
+        ),
         label(
           cls("open-files"),
           "Open local artifacts ",
@@ -144,7 +182,23 @@ object WorkspaceHost:
             case WorkspaceSession.Voyage(document)          => VoyageView(document)
             case WorkspaceSession.Source(source)            =>
               val choice = Var(ViewChoice.initial.copy(measurer = MeasurerChoice.Monospace))
+              sourceReading = Some(() => {
+                val pane = dom.document.getElementById("workspace-source-only")
+                val offset = Option(pane)
+                  .flatMap { element =>
+                    val bounds = element.getBoundingClientRect()
+                    val lines = element.querySelectorAll("[data-source-offset]")
+                    (0 until lines.length).iterator
+                      .map(i => lines(i).asInstanceOf[dom.Element])
+                      .find(_.getBoundingClientRect().bottom > bounds.top)
+                      .flatMap(_.getAttribute("data-source-offset").toIntOption)
+                  }
+                  .getOrElse(0)
+                (source, choice.now(), offset)
+              })
               div(
+                idAttr("workspace-source-only"),
+                cls("joined-source"),
                 p("Imported source · draft authority · recall and mapping not supplied"),
                 p(
                   idAttr("source-features"),

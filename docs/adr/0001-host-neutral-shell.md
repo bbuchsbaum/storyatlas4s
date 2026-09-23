@@ -145,3 +145,12 @@ absent entry reveals no text. Reusing full legacy quotations in titles and hover
 cards was rejected because it bypassed the workspace horizon. The legacy entry
 retains its standalone behavior. Saved schema v2 adds checked matrix coordinates;
 source offsets and matrix anchors restore actual panes independently of clocks.
+
+M1 completion also adds explicit source attachment: `WorkspaceImport.attachSource`
+compares complete canonical model bytes before preserving source presentation,
+qualified focus and semantic reading offset. A label/text-only match is rejected.
+`WorkspaceHistory` owns bounded Back/Return within an admitted investigation;
+viewport-only events do not erase the return path. History is ephemeral, while
+saved state continues to bind only the current investigation. Host-only undo logic
+and implicit attachment on ordinary Open were rejected to keep transitions portable
+and replacement distinct from attachment.
