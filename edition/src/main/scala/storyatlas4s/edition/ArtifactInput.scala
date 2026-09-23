@@ -26,7 +26,7 @@ object ArtifactInput:
     val names = files.map(_._1)
     if files.isEmpty || files.size > MaxFiles || files.map(_._2.size.toLong).sum > MaxBytes then
       Left(WorkspaceRefusal.UnsupportedContent)
-    else if names.map(_.toLowerCase(java.util.Locale.ROOT)).distinct.size != names.size then
+    else if names.combinations(2).exists(pair => pair(0).equalsIgnoreCase(pair(1))) then
       Left(WorkspaceRefusal.DuplicatePath)
     else if files.size == 1 then
       utf8(files.head._2).flatMap { value =>

@@ -19,11 +19,12 @@ object WorkspaceImport:
       files: Vector[(String, Vector[Byte])],
       current: Option[WorkspaceController]
   ): Either[WorkspaceRefusal, WorkspaceSession] =
-    val names = files.map(_._1.toLowerCase(java.util.Locale.ROOT))
+    val names = files.map(_._1)
     if files.isEmpty || files.size > ArtifactInput.MaxFiles ||
       files.map(_._2.size.toLong).sum > ArtifactInput.MaxBytes
     then Left(WorkspaceRefusal.UnsupportedContent)
-    else if names.distinct.size != names.size then Left(WorkspaceRefusal.DuplicatePath)
+    else if names.combinations(2).exists(pair => pair(0).equalsIgnoreCase(pair(1))) then
+      Left(WorkspaceRefusal.DuplicatePath)
     else
       val descriptors = files.flatMap { case (name, bytes) =>
         val text = new String(bytes.toArray, UTF_8)

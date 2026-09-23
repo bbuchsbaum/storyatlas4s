@@ -339,6 +339,13 @@ object AppView:
                   cls(SvgDom.SelectionProxyClass) := line.selectionProxy,
                   cls(SvgDom.FocusProxyClass) := line.focusProxy,
                   dataAttr("name") := line.id,
+                  dataAttr("source-offset") := c.placed.lines
+                    .find(_.text.id.value == line.id)
+                    .get
+                    .text
+                    .span
+                    .start
+                    .toString,
                   dataAttr("selected") := line.selected.toString,
                   dataAttr("focused") := line.focused.toString,
                   dataAttr("selection-proxy") := line.selectionProxy.toString,

@@ -79,5 +79,11 @@ class ArtifactInputSuite extends FunSuite:
       ),
       Left(WorkspaceRefusal.UnsupportedVersion)
     )
+    Vector("I" -> "i", "À" -> "à").foreach { (upper, lower) =>
+      assertEquals(
+        ArtifactInput.open(Vector(upper -> source, lower -> source)),
+        Left(WorkspaceRefusal.DuplicatePath)
+      )
+    }
     assertEquals(ArtifactInput.open(Vector.empty), Left(WorkspaceRefusal.UnsupportedContent))
   }

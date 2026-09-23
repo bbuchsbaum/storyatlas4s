@@ -12,7 +12,7 @@ import storymodel4s.view.*
   * capabilities.
   */
 object WorkspaceSave:
-  val Version = "storyatlas-investigation/v1"
+  val Version = "storyatlas-investigation/v2"
   private type Result[A] = Either[WorkspaceRefusal, A]
   private def str(value: String): Json = Json.fromString(value)
   private def opt[A](value: Option[A])(f: A => Json): Json = value.fold(Json.Null)(f)
@@ -68,6 +68,8 @@ object WorkspaceSave:
       "viewport" -> Json.obj(
         "sourceOffset" -> Json.fromInt(v.sourceOffset),
         "recallOrdinal" -> Json.fromInt(v.recallOrdinal),
+        "matrixRow" -> Json.fromInt(v.matrixRow),
+        "matrixColumn" -> Json.fromInt(v.matrixColumn),
         "sourceCursor" -> opt(v.sourceCursor)(number),
         "recallCursor" -> opt(v.recallCursor)(number),
         "recallWindow" -> opt(v.recallWindow)(w =>
@@ -129,6 +131,8 @@ object WorkspaceSave:
       viewport <- read[Json](j, "viewport")
       sourceOffset <- read[Int](viewport, "sourceOffset")
       recallOrdinal <- read[Int](viewport, "recallOrdinal")
+      matrixRow <- read[Int](viewport, "matrixRow")
+      matrixColumn <- read[Int](viewport, "matrixColumn")
       sourceTime <- read[Option[Double]](viewport, "sourceCursor").flatMap(_.traverse(seconds))
       recallTime <- read[Option[Double]](viewport, "recallCursor").flatMap(_.traverse(seconds))
       windowJson <- read[Option[Json]](viewport, "recallWindow")
@@ -156,7 +160,15 @@ object WorkspaceSave:
           sourceHorizon,
           recallHorizon,
           measurer,
-          WorkspaceViewport(sourceOffset, recallOrdinal, sourceTime, recallTime, window)
+          WorkspaceViewport(
+            sourceOffset,
+            recallOrdinal,
+            sourceTime,
+            recallTime,
+            window,
+            matrixRow,
+            matrixColumn
+          )
         )
       )
       _ <- Either.cond(encode(restored) == text.trim, (), WorkspaceRefusal.UnsupportedContent)

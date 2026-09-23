@@ -72,6 +72,7 @@ class WarOfTheGhostsLoweringSuite extends FunSuite:
         case ig.DeviceElement.Group(Some(name), _, _, children) if name.value == wanted =>
           Some(children)
         case ig.DeviceElement.Group(_, _, _, children) => namedChildren(children, wanted)
+        case ig.DeviceElement.Annotated(_, children)   => namedChildren(children, wanted)
         case _: ig.DeviceElement.Mark                  => None
       }
       .collectFirst { case Some(children) => children }

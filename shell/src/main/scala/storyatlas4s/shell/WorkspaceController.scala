@@ -16,7 +16,9 @@ final case class WorkspaceViewport(
     recallOrdinal: Int = 0,
     sourceCursor: Option[Seconds] = None,
     recallCursor: Option[Seconds] = None,
-    recallWindow: Option[ClockSpan] = None
+    recallWindow: Option[ClockSpan] = None,
+    matrixRow: Int = 0,
+    matrixColumn: Int = 0
 )
 
 /** A correspondence keeps its row when the source becomes the subject of inspection. */
@@ -210,6 +212,11 @@ object WorkspaceController:
     val sourceExtent =
       workspace.clocks.flatMap(_.sourceTimeline.nodes.map(_.span.end.value).maxOption)
     val recallExtent = workspace.clocks.map(_.recallExtent.value)
+    val matrixColumns = workspace.policies.head.matrix.targets.size +
+      workspace.policies.flatMap(_.matrix.externals).distinct.size
+    val matrixViewportValid = v.matrixRow >= 0 &&
+      v.matrixRow < math.max(1, workspace.inventory.units.size) &&
+      v.matrixColumn >= 0 && v.matrixColumn < math.max(1, matrixColumns)
     val cursorsValid = v.sourceCursor.forall(t => sourceExtent.exists(t.value <= _)) &&
       v.recallCursor.forall(t => recallExtent.exists(t.value <= _)) &&
       v.recallWindow.forall(s =>
@@ -225,6 +232,6 @@ object WorkspaceController:
       v.recallOrdinal < 0 || v.recallOrdinal >= math.max(
         1,
         workspace.inventory.units.size
-      ) || !cursorsValid
+      ) || !cursorsValid || !matrixViewportValid
     then Left(WorkspaceRefusal.UnsupportedContent)
     else Right(new WorkspaceController(workspace, state))

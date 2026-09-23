@@ -154,7 +154,9 @@ class WorkspaceControllerSuite extends FunSuite:
         3,
         Some(ok(Seconds.of(20))),
         Some(ok(Seconds.of(2.5))),
-        Some(ok(ClockSpan.of(1, 5)))
+        Some(ok(ClockSpan.of(1, 5))),
+        matrixRow = 2,
+        matrixColumn = 1
       )
     )
     val controller = ok(WorkspaceController.restore(selected.workspace, desired))
@@ -311,4 +313,19 @@ class WorkspaceControllerSuite extends FunSuite:
       ok(WorkspaceSave.decode(WorkspaceSave.encode(controller), controller.workspace)).state,
       controller.state
     )
+  }
+
+  test("viewport replay refuses coordinates outside the admitted fixed matrix") {
+    val controller = ok(WorkspaceController.open(workspaces("bell")))
+    Vector(
+      WorkspaceViewport(matrixRow = -1),
+      WorkspaceViewport(matrixRow = 4),
+      WorkspaceViewport(matrixColumn = -1),
+      WorkspaceViewport(matrixColumn = Int.MaxValue)
+    ).foreach { viewport =>
+      assertEquals(
+        controller.dispatch(WorkspaceAction.Viewport(viewport)),
+        Left(WorkspaceRefusal.UnsupportedContent)
+      )
+    }
   }
