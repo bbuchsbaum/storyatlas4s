@@ -74,8 +74,8 @@ async function verify(page,doc,start,end,label) {
       const doc=JSON.parse(await page.locator('#voyage-document').textContent());
       await verify(page,doc,0,number(doc.recallLength),`${arm} whole`);
       const stats=await page.locator('.stats').innerText();
-      check(/zero-mass fills\s+44/.test(stats),`${arm}: fills have an explicit summary count`);
-      check(/unanchored\s+0/.test(stats),`${arm}: zero-count outcomes remain accounted for`);
+      check(/zero-mass fills\s+44/i.test(stats),`${arm}: fills have an explicit summary count`);
+      check(/unanchored\s+0/i.test(stats),`${arm}: zero-count outcomes remain accounted for`);
       await page.getByLabel('Inspect recall unit').selectOption(doc.units[5].id);
       const fill=await page.locator('.mass-anchor[data-unit="5"]').getAttribute('data-origin');
       check(fill==='filled',`${arm}: unit 5 keeps decode-filled origin with zero mass`);
