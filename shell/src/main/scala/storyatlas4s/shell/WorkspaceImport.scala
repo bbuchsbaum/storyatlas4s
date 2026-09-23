@@ -28,7 +28,9 @@ object WorkspaceImport:
       val descriptors = files.flatMap { case (name, bytes) =>
         val text = new String(bytes.toArray, UTF_8)
         Option.when(text.getBytes(UTF_8).toVector == bytes)(text).flatMap { value =>
-          Canonical.parse(value).toOption
+          Canonical
+            .parse(value)
+            .toOption
             .filter(_.hcursor.get[String]("schemaVersion").contains(WorkspaceSave.Version))
             .map(_ => name -> value)
         }
@@ -38,12 +40,14 @@ object WorkspaceImport:
         val artifacts = files.filterNot(f => descriptors.exists(_._1 == f._1))
         val admitted =
           if artifacts.isEmpty then
-            current.toRight(WorkspaceRefusal.MissingRequiredRole).map(WorkspaceSession.Investigation(_))
+            current
+              .toRight(WorkspaceRefusal.MissingRequiredRole)
+              .map(WorkspaceSession.Investigation(_))
           else
             ArtifactInput.open(artifacts).flatMap {
               case ImportedArtifact.Workspace(workspace) =>
                 WorkspaceController.open(workspace).map(WorkspaceSession.Investigation(_))
-              case ImportedArtifact.Source(source) => Right(WorkspaceSession.Source(source))
+              case ImportedArtifact.Source(source)   => Right(WorkspaceSession.Source(source))
               case ImportedArtifact.Voyage(document) => Right(WorkspaceSession.Voyage(document))
             }
         for
@@ -51,7 +55,9 @@ object WorkspaceImport:
           restored <- descriptors.headOption.traverse { case (_, text) =>
             session match
               case WorkspaceSession.Investigation(controller) =>
-                WorkspaceSave.decode(text, controller.workspace).map(WorkspaceSession.Investigation(_))
+                WorkspaceSave
+                  .decode(text, controller.workspace)
+                  .map(WorkspaceSession.Investigation(_))
               case _ => Left(WorkspaceRefusal.SemanticJoinMismatch)
           }
         yield restored.getOrElse(session)

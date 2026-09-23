@@ -52,28 +52,52 @@ class WorkspaceControllerSuite extends FunSuite:
     assertEquals(switched.state.activeRecall, Some(u0))
   }
 
-  test("switching to a compatible result with missing measures retains focus without stale values") {
+  test(
+    "switching to a compatible result with missing measures retains focus without stale values"
+  ) {
     val base = workspaces("bell")
     val original = base.policies.head.record
-    val failed = ok(MappingResult.checked(
-      base.inventory, base.source, original.policies, original.roles, original.ledger,
-      base.inventory.units.map(u => UnitOutcome.failed(u.id, ProcessingFailure.ProviderFailure("synthetic missing result")))
-    ))
+    val failed = ok(
+      MappingResult.checked(
+        base.inventory,
+        base.source,
+        original.policies,
+        original.roles,
+        original.ledger,
+        base.inventory.units.map(u =>
+          UnitOutcome.failed(u.id, ProcessingFailure.ProviderFailure("synthetic missing result"))
+        )
+      )
+    )
     val emptyId = ArtifactId.unsafe("missing-measures")
-    val workspace = ok(WorkspaceCodecs.create(
-      base.draft.model, base.recall, base.inventory, None,
-      Vector(WorkspaceMappingInput(base.policies.head.id, original, None), WorkspaceMappingInput(emptyId, failed, None)),
-      base.timing, WorkspaceOrigin.AuthoredFixture, "0" * 40,
-      WorkspaceContentGrant.Granted, WorkspaceContentGrant.Granted
-    ))
-    val before = ok(ok(WorkspaceController.open(workspace)).dispatch(WorkspaceAction.Inspect(u0, ring)))
+    val workspace = ok(
+      WorkspaceCodecs.create(
+        base.draft.model,
+        base.recall,
+        base.inventory,
+        None,
+        Vector(
+          WorkspaceMappingInput(base.policies.head.id, original, None),
+          WorkspaceMappingInput(emptyId, failed, None)
+        ),
+        base.timing,
+        WorkspaceOrigin.AuthoredFixture,
+        "0" * 40,
+        WorkspaceContentGrant.Granted,
+        WorkspaceContentGrant.Granted
+      )
+    )
+    val before =
+      ok(ok(WorkspaceController.open(workspace)).dispatch(WorkspaceAction.Inspect(u0, ring)))
     assert(before.policy.matrix.row(u0).get.cell(Destination.Target(ring)).get.normalized.nonEmpty)
     val after = ok(before.dispatch(WorkspaceAction.Policy(emptyId)))
     assertEquals(after.state.focus, before.state.focus)
     assertEquals(after.state.selection, before.state.selection)
     assertEquals(after.state.correspondence, before.state.correspondence)
     val cell = after.policy.matrix.row(u0).get.cell(Destination.Target(ring)).get
-    assert(cell.raw.isEmpty && cell.normalized.isEmpty && cell.transport.isEmpty && cell.posterior.isEmpty)
+    assert(
+      cell.raw.isEmpty && cell.normalized.isEmpty && cell.transport.isEmpty && cell.posterior.isEmpty
+    )
   }
 
   test("foreign identities and undeclared policies cannot activate even when local ids coincide") {

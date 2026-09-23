@@ -84,23 +84,38 @@ object MatrixLowering:
         yDirection = ig.YDirection.Down
       )
       headers <- columns.zipWithIndex.traverse { (destination, column) =>
-        destination.key.grouped(40).toVector.zipWithIndex.traverse { (label, line) =>
-          ig.Grob.text(label, point(left + column * cellWidth + 10, 24 + line * lineHeight),
-            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom), gp = textStyle)
-        }.map(ig.Grob.group(_))
+        destination.key
+          .grouped(40)
+          .toVector
+          .zipWithIndex
+          .traverse { (label, line) =>
+            ig.Grob.text(
+              label,
+              point(left + column * cellWidth + 10, 24 + line * lineHeight),
+              ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+              gp = textStyle
+            )
+          }
+          .map(ig.Grob.group(_))
       }
       rowLabels <- matrix.rows.zipWithIndex.traverse { (row, index) =>
         Vector(
           s"${row.unit.ordinal + 1}. ${row.unit.id.value}",
           row.outcome.processing match
-            case ProcessingStatus.Complete => "Processing: complete"
-            case ProcessingStatus.Failed(_) => "Processing: failed"
+            case ProcessingStatus.Complete                 => "Processing: complete"
+            case ProcessingStatus.Failed(_)                => "Processing: failed"
             case ProcessingStatus.ExcludedByInputPolicy(_) => "Processing: excluded",
           s"Localization: ${row.outcome.localization}"
-        ).zipWithIndex.traverse { (label, line) =>
-          ig.Grob.text(label, point(8, top + index * rowHeight + 28 + line * lineHeight),
-            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom), gp = textStyle)
-        }.map(ig.Grob.group(_))
+        ).zipWithIndex
+          .traverse { (label, line) =>
+            ig.Grob.text(
+              label,
+              point(8, top + index * rowHeight + 28 + line * lineHeight),
+              ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+              gp = textStyle
+            )
+          }
+          .map(ig.Grob.group(_))
       }
       cells <- matrix.rows.zipWithIndex
         .flatMap { (row, index) =>

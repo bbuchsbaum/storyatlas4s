@@ -16,21 +16,39 @@ object WorkspaceExport:
   def create(controller: WorkspaceController): Either[WorkspaceRefusal, String] =
     val workspace = controller.workspace
     for
-      subset <- WorkspaceSubsetCodec.selected(workspace, controller.state.policy, controller.state.selection)
-      drawing <- MatrixLowering.lower(
-        controller.policy.matrix,
-        controller.state.selection.flatMap(workspace.recallAddresses.get)
-      ).left.map(_ => WorkspaceRefusal.UnsupportedContent)
-      svg <- Plate(drawing.scene, drawing.width, drawing.height, "Complete fixed-cut mapping matrix")
-        .svg.left.map(_ => WorkspaceRefusal.UnsupportedContent)
-    yield
-      val matrixText = controller.policy.matrix.rows.map { row =>
-        val cells = row.cells.map(cell =>
-          s"${cell.destination.key}: " + MatrixLowering.values(cell).map((k, v) => s"$k: $v").mkString("; ") +
-            (if cell.chosen then "; Chosen destination" else "")
+      subset <- WorkspaceSubsetCodec.selected(
+        workspace,
+        controller.state.policy,
+        controller.state.selection
+      )
+      drawing <- MatrixLowering
+        .lower(
+          controller.policy.matrix,
+          controller.state.selection.flatMap(workspace.recallAddresses.get)
         )
-        (Vector(s"${row.unit.ordinal + 1}. ${row.unit.id.value}; ${row.outcome.processing}; ${row.outcome.localization}") ++ cells).mkString("\n")
-      }.mkString("\n\n")
+        .left
+        .map(_ => WorkspaceRefusal.UnsupportedContent)
+      svg <- Plate(
+        drawing.scene,
+        drawing.width,
+        drawing.height,
+        "Complete fixed-cut mapping matrix"
+      ).svg.left.map(_ => WorkspaceRefusal.UnsupportedContent)
+    yield
+      val matrixText = controller.policy.matrix.rows
+        .map { row =>
+          val cells = row.cells.map(cell =>
+            s"${cell.destination.key}: " + MatrixLowering
+              .values(cell)
+              .map((k, v) => s"$k: $v")
+              .mkString("; ") +
+              (if cell.chosen then "; Chosen destination" else "")
+          )
+          (Vector(
+            s"${row.unit.ordinal + 1}. ${row.unit.id.value}; ${row.outcome.processing}; ${row.outcome.localization}"
+          ) ++ cells).mkString("\n")
+        }
+        .mkString("\n\n")
       val files = Vector(
         "matrix.svg" -> svg,
         "matrix.txt" -> matrixText,
@@ -40,16 +58,20 @@ object WorkspaceExport:
         "selection.txt" -> subset.accessibleText,
         "selection-receipt.json" -> subset.receiptJson
       )
-      Canonical.print(Json.obj(
-        "schemaVersion" -> Json.fromString(Version),
-        "scope" -> Json.fromString("Complete fixed-cut matrix with selection outlines; scientific subset contains full permitted evidence for selected and inverse rows. Presentation horizons are recorded in investigation.json and do not change scientific values."),
-        "files" -> Json.fromValues(files.map { (name, content) =>
-          val bytes = content.getBytes(UTF_8)
-          Json.obj(
-            "name" -> Json.fromString(name),
-            "checksum" -> Json.fromString(Checksum.ofBytes(bytes).hex),
-            "byteLength" -> Json.fromInt(bytes.length),
-            "content" -> Json.fromString(content)
-          )
-        })
-      ))
+      Canonical.print(
+        Json.obj(
+          "schemaVersion" -> Json.fromString(Version),
+          "scope" -> Json.fromString(
+            "Complete fixed-cut matrix with selection outlines; scientific subset contains full permitted evidence for selected and inverse rows. Presentation horizons are recorded in investigation.json and do not change scientific values."
+          ),
+          "files" -> Json.fromValues(files.map { (name, content) =>
+            val bytes = content.getBytes(UTF_8)
+            Json.obj(
+              "name" -> Json.fromString(name),
+              "checksum" -> Json.fromString(Checksum.ofBytes(bytes).hex),
+              "byteLength" -> Json.fromInt(bytes.length),
+              "content" -> Json.fromString(content)
+            )
+          })
+        )
+      )

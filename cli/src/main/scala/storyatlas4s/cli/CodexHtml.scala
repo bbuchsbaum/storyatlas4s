@@ -246,7 +246,7 @@ object CodexHtml:
         val to = math.max(from, math.min(text.length, span.endExclusive - base))
         if from > cursor then out.append(escapeText(text.substring(cursor, from)))
         if to > from then
-          out
+          val _ = out
             .append("<span class=\"sel\">")
             .append(escapeText(text.substring(from, to)))
             .append("</span>")

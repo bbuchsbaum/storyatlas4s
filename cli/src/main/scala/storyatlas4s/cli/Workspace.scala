@@ -1,9 +1,6 @@
 package storyatlas4s.cli
 
-import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
-import cats.syntax.all.*
 import storyatlas4s.edition.{EditionSpec, Focus}
-import storyatlas4s.intaglio.PagedCodexLowering
 import storymodel4s.story.ContextKind
 import storymodel4s.view.*
 

@@ -4,7 +4,6 @@ import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import munit.FunSuite
 import storyatlas4s.edition.{EditionSpec, Focus}
 import storyatlas4s.intaglio.{AtlasLowering, PlateBox}
-import storyatlas4s.layout.*
 import storymodel4s.core.*
 import storymodel4s.fixtures.wog.WarOfTheGhostsModel as Wog
 import storymodel4s.story.*
