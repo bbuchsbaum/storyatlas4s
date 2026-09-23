@@ -1,0 +1,259 @@
+playwright pin 1.55.1; edition /private/tmp/storyatlas4s-workspace-m1-20260922/target/edition
+sourceChecksum 36c52efe94a9…
+ok   on disk preview.html: sha256 == receipt files[].sha256
+ok   on disk codex-reading.html: sha256 == receipt files[].sha256
+ok   on disk codex-overview.html: sha256 == receipt files[].sha256
+ok   file preview.html: rail has text (2180 code units)
+ok   file preview.html: sha256(rail) == receipt.sourceChecksum
+ok   file preview.html: sha256(rail) == layout.sourceChecksum
+ok   file preview.html: header Source checksum matches receipt
+ok   file preview.html: 46 lines == layout.lines
+ok   file preview.html: 2 pages == layout.pages
+ok   file preview.html: one overlay svg per page (2)
+ok   file preview.html: every line data-name starts with line/
+ok   file preview.html: line data-names are unique
+ok   file preview.html: 648 pieces == layout.annotationFragments
+ok   file preview.html: 648 pieces == receipt names
+ok   file preview.html: overlay data-names are piece ids, not line ids
+ok   file preview.html: piece data-names are unique
+ok   file preview.html: all data-name values unique
+ok   file preview.html: data-name count is lines + pieces
+ok   file preview.html: Overview lens has overlay pieces
+ok   file preview.html: no <script>
+ok   file preview.html: no <link>
+ok   file preview.html: no href/src/srcset 
+ok   file preview.html: no dependent request 
+ok   file preview.html: DOM read order is header, main, footer
+ok   file preview.html: header paginator == layout.paginator
+ok   file preview.html: header pageWidthPx == layout.pageWidthPx
+ok   file preview.html: header pageHeightPx == layout.pageHeightPx
+ok   file preview.html: header linesPerPage == layout.linesPerPage
+ok   file preview.html: header measurer == layout.measurer
+ok   file preview.html: header fontFamily == layout.fontFamily
+ok   file preview.html: header fontSizePx == layout.fontSizePx
+ok   file preview.html: header unitsPerPixel == layout.unitsPerPixel
+ok   file preview.html: header pages == layout.pages
+ok   file preview.html: header lines == layout.lines
+ok   file preview.html: header annotationFragments == layout.annotationFragments
+ok   file preview.html: header prints the researcher-reviewed basis
+ok   file preview.html: overlay meaning is stated in text, not colour alone
+ok   file preview.html: compact overlay legend is visible without opening the receipt
+ok   file preview.html: detailed receipt is initially collapsed
+ok   file preview.html: receipt disclosure has an explicit accessible label
+ok   file preview.html: devicePixelRatio is 2
+ok   file preview.html: 200% zoom preserves canonical DOM text
+ok   file preview.html: 200% zoom keeps header and preview visible
+ok   file preview.html: no page error 
+ok   file preview.html: no console error 
+ok   file codex-reading.html: rail has text (2180 code units)
+ok   file codex-reading.html: sha256(rail) == receipt.sourceChecksum
+ok   file codex-reading.html: sha256(rail) == layout.sourceChecksum
+ok   file codex-reading.html: header Source checksum matches receipt
+ok   file codex-reading.html: 46 lines == layout.lines
+ok   file codex-reading.html: 2 pages == layout.pages
+ok   file codex-reading.html: one overlay svg per page (2)
+ok   file codex-reading.html: every line data-name starts with line/
+ok   file codex-reading.html: line data-names are unique
+ok   file codex-reading.html: 0 pieces == layout.annotationFragments
+ok   file codex-reading.html: 0 pieces == receipt names
+ok   file codex-reading.html: overlay data-names are piece ids, not line ids
+ok   file codex-reading.html: piece data-names are unique
+ok   file codex-reading.html: all data-name values unique
+ok   file codex-reading.html: data-name count is lines + pieces
+ok   file codex-reading.html: Reading lens has no overlay piece
+ok   file codex-reading.html: no <script>
+ok   file codex-reading.html: no <link>
+ok   file codex-reading.html: no href/src/srcset 
+ok   file codex-reading.html: no dependent request 
+ok   file codex-reading.html: DOM read order is header, main, footer
+ok   file codex-reading.html: header paginator == layout.paginator
+ok   file codex-reading.html: header pageWidthPx == layout.pageWidthPx
+ok   file codex-reading.html: header pageHeightPx == layout.pageHeightPx
+ok   file codex-reading.html: header linesPerPage == layout.linesPerPage
+ok   file codex-reading.html: header measurer == layout.measurer
+ok   file codex-reading.html: header fontFamily == layout.fontFamily
+ok   file codex-reading.html: header fontSizePx == layout.fontSizePx
+ok   file codex-reading.html: header unitsPerPixel == layout.unitsPerPixel
+ok   file codex-reading.html: header pages == layout.pages
+ok   file codex-reading.html: header lines == layout.lines
+ok   file codex-reading.html: header annotationFragments == layout.annotationFragments
+ok   file codex-reading.html: header prints the researcher-reviewed basis
+ok   file codex-reading.html: overlay meaning is stated in text, not colour alone
+ok   file codex-reading.html: compact overlay legend is visible without opening the receipt
+ok   file codex-reading.html: detailed receipt is initially collapsed
+ok   file codex-reading.html: receipt disclosure has an explicit accessible label
+ok   file codex-reading.html: devicePixelRatio is 2
+ok   file codex-reading.html: 200% zoom preserves canonical DOM text
+ok   file codex-reading.html: 200% zoom keeps header and preview visible
+ok   file codex-reading.html: no page error 
+ok   file codex-reading.html: no console error 
+ok   file codex-overview.html: rail has text (2180 code units)
+ok   file codex-overview.html: sha256(rail) == receipt.sourceChecksum
+ok   file codex-overview.html: sha256(rail) == layout.sourceChecksum
+ok   file codex-overview.html: header Source checksum matches receipt
+ok   file codex-overview.html: 46 lines == layout.lines
+ok   file codex-overview.html: 2 pages == layout.pages
+ok   file codex-overview.html: one overlay svg per page (2)
+ok   file codex-overview.html: every line data-name starts with line/
+ok   file codex-overview.html: line data-names are unique
+ok   file codex-overview.html: 648 pieces == layout.annotationFragments
+ok   file codex-overview.html: 648 pieces == receipt names
+ok   file codex-overview.html: overlay data-names are piece ids, not line ids
+ok   file codex-overview.html: piece data-names are unique
+ok   file codex-overview.html: all data-name values unique
+ok   file codex-overview.html: data-name count is lines + pieces
+ok   file codex-overview.html: Overview lens has overlay pieces
+ok   file codex-overview.html: no <script>
+ok   file codex-overview.html: no <link>
+ok   file codex-overview.html: no href/src/srcset 
+ok   file codex-overview.html: no dependent request 
+ok   file codex-overview.html: DOM read order is header, main, footer
+ok   file codex-overview.html: header paginator == layout.paginator
+ok   file codex-overview.html: header pageWidthPx == layout.pageWidthPx
+ok   file codex-overview.html: header pageHeightPx == layout.pageHeightPx
+ok   file codex-overview.html: header linesPerPage == layout.linesPerPage
+ok   file codex-overview.html: header measurer == layout.measurer
+ok   file codex-overview.html: header fontFamily == layout.fontFamily
+ok   file codex-overview.html: header fontSizePx == layout.fontSizePx
+ok   file codex-overview.html: header unitsPerPixel == layout.unitsPerPixel
+ok   file codex-overview.html: header pages == layout.pages
+ok   file codex-overview.html: header lines == layout.lines
+ok   file codex-overview.html: header annotationFragments == layout.annotationFragments
+ok   file codex-overview.html: header prints the researcher-reviewed basis
+ok   file codex-overview.html: overlay meaning is stated in text, not colour alone
+ok   file codex-overview.html: compact overlay legend is visible without opening the receipt
+ok   file codex-overview.html: detailed receipt is initially collapsed
+ok   file codex-overview.html: receipt disclosure has an explicit accessible label
+ok   file codex-overview.html: devicePixelRatio is 2
+ok   file codex-overview.html: 200% zoom preserves canonical DOM text
+ok   file codex-overview.html: 200% zoom keeps header and preview visible
+ok   file codex-overview.html: no page error 
+ok   file codex-overview.html: no console error 
+ok   http preview.html: rail has text (2180 code units)
+ok   http preview.html: sha256(rail) == receipt.sourceChecksum
+ok   http preview.html: sha256(rail) == layout.sourceChecksum
+ok   http preview.html: header Source checksum matches receipt
+ok   http preview.html: 46 lines == layout.lines
+ok   http preview.html: 2 pages == layout.pages
+ok   http preview.html: one overlay svg per page (2)
+ok   http preview.html: every line data-name starts with line/
+ok   http preview.html: line data-names are unique
+ok   http preview.html: 648 pieces == layout.annotationFragments
+ok   http preview.html: 648 pieces == receipt names
+ok   http preview.html: overlay data-names are piece ids, not line ids
+ok   http preview.html: piece data-names are unique
+ok   http preview.html: all data-name values unique
+ok   http preview.html: data-name count is lines + pieces
+ok   http preview.html: Overview lens has overlay pieces
+ok   http preview.html: no <script>
+ok   http preview.html: no <link>
+ok   http preview.html: no href/src/srcset 
+ok   http preview.html: no dependent request 
+ok   http preview.html: DOM read order is header, main, footer
+ok   http preview.html: header paginator == layout.paginator
+ok   http preview.html: header pageWidthPx == layout.pageWidthPx
+ok   http preview.html: header pageHeightPx == layout.pageHeightPx
+ok   http preview.html: header linesPerPage == layout.linesPerPage
+ok   http preview.html: header measurer == layout.measurer
+ok   http preview.html: header fontFamily == layout.fontFamily
+ok   http preview.html: header fontSizePx == layout.fontSizePx
+ok   http preview.html: header unitsPerPixel == layout.unitsPerPixel
+ok   http preview.html: header pages == layout.pages
+ok   http preview.html: header lines == layout.lines
+ok   http preview.html: header annotationFragments == layout.annotationFragments
+ok   http preview.html: header prints the researcher-reviewed basis
+ok   http preview.html: overlay meaning is stated in text, not colour alone
+ok   http preview.html: compact overlay legend is visible without opening the receipt
+ok   http preview.html: detailed receipt is initially collapsed
+ok   http preview.html: receipt disclosure has an explicit accessible label
+ok   http preview.html: devicePixelRatio is 2
+ok   http preview.html: 200% zoom preserves canonical DOM text
+ok   http preview.html: 200% zoom keeps header and preview visible
+ok   http preview.html: no page error 
+ok   http preview.html: no console error 
+ok   http codex-reading.html: rail has text (2180 code units)
+ok   http codex-reading.html: sha256(rail) == receipt.sourceChecksum
+ok   http codex-reading.html: sha256(rail) == layout.sourceChecksum
+ok   http codex-reading.html: header Source checksum matches receipt
+ok   http codex-reading.html: 46 lines == layout.lines
+ok   http codex-reading.html: 2 pages == layout.pages
+ok   http codex-reading.html: one overlay svg per page (2)
+ok   http codex-reading.html: every line data-name starts with line/
+ok   http codex-reading.html: line data-names are unique
+ok   http codex-reading.html: 0 pieces == layout.annotationFragments
+ok   http codex-reading.html: 0 pieces == receipt names
+ok   http codex-reading.html: overlay data-names are piece ids, not line ids
+ok   http codex-reading.html: piece data-names are unique
+ok   http codex-reading.html: all data-name values unique
+ok   http codex-reading.html: data-name count is lines + pieces
+ok   http codex-reading.html: Reading lens has no overlay piece
+ok   http codex-reading.html: no <script>
+ok   http codex-reading.html: no <link>
+ok   http codex-reading.html: no href/src/srcset 
+ok   http codex-reading.html: no dependent request 
+ok   http codex-reading.html: DOM read order is header, main, footer
+ok   http codex-reading.html: header paginator == layout.paginator
+ok   http codex-reading.html: header pageWidthPx == layout.pageWidthPx
+ok   http codex-reading.html: header pageHeightPx == layout.pageHeightPx
+ok   http codex-reading.html: header linesPerPage == layout.linesPerPage
+ok   http codex-reading.html: header measurer == layout.measurer
+ok   http codex-reading.html: header fontFamily == layout.fontFamily
+ok   http codex-reading.html: header fontSizePx == layout.fontSizePx
+ok   http codex-reading.html: header unitsPerPixel == layout.unitsPerPixel
+ok   http codex-reading.html: header pages == layout.pages
+ok   http codex-reading.html: header lines == layout.lines
+ok   http codex-reading.html: header annotationFragments == layout.annotationFragments
+ok   http codex-reading.html: header prints the researcher-reviewed basis
+ok   http codex-reading.html: overlay meaning is stated in text, not colour alone
+ok   http codex-reading.html: compact overlay legend is visible without opening the receipt
+ok   http codex-reading.html: detailed receipt is initially collapsed
+ok   http codex-reading.html: receipt disclosure has an explicit accessible label
+ok   http codex-reading.html: devicePixelRatio is 2
+ok   http codex-reading.html: 200% zoom preserves canonical DOM text
+ok   http codex-reading.html: 200% zoom keeps header and preview visible
+ok   http codex-reading.html: no page error 
+ok   http codex-reading.html: no console error 
+ok   http codex-overview.html: rail has text (2180 code units)
+ok   http codex-overview.html: sha256(rail) == receipt.sourceChecksum
+ok   http codex-overview.html: sha256(rail) == layout.sourceChecksum
+ok   http codex-overview.html: header Source checksum matches receipt
+ok   http codex-overview.html: 46 lines == layout.lines
+ok   http codex-overview.html: 2 pages == layout.pages
+ok   http codex-overview.html: one overlay svg per page (2)
+ok   http codex-overview.html: every line data-name starts with line/
+ok   http codex-overview.html: line data-names are unique
+ok   http codex-overview.html: 648 pieces == layout.annotationFragments
+ok   http codex-overview.html: 648 pieces == receipt names
+ok   http codex-overview.html: overlay data-names are piece ids, not line ids
+ok   http codex-overview.html: piece data-names are unique
+ok   http codex-overview.html: all data-name values unique
+ok   http codex-overview.html: data-name count is lines + pieces
+ok   http codex-overview.html: Overview lens has overlay pieces
+ok   http codex-overview.html: no <script>
+ok   http codex-overview.html: no <link>
+ok   http codex-overview.html: no href/src/srcset 
+ok   http codex-overview.html: no dependent request 
+ok   http codex-overview.html: DOM read order is header, main, footer
+ok   http codex-overview.html: header paginator == layout.paginator
+ok   http codex-overview.html: header pageWidthPx == layout.pageWidthPx
+ok   http codex-overview.html: header pageHeightPx == layout.pageHeightPx
+ok   http codex-overview.html: header linesPerPage == layout.linesPerPage
+ok   http codex-overview.html: header measurer == layout.measurer
+ok   http codex-overview.html: header fontFamily == layout.fontFamily
+ok   http codex-overview.html: header fontSizePx == layout.fontSizePx
+ok   http codex-overview.html: header unitsPerPixel == layout.unitsPerPixel
+ok   http codex-overview.html: header pages == layout.pages
+ok   http codex-overview.html: header lines == layout.lines
+ok   http codex-overview.html: header annotationFragments == layout.annotationFragments
+ok   http codex-overview.html: header prints the researcher-reviewed basis
+ok   http codex-overview.html: overlay meaning is stated in text, not colour alone
+ok   http codex-overview.html: compact overlay legend is visible without opening the receipt
+ok   http codex-overview.html: detailed receipt is initially collapsed
+ok   http codex-overview.html: receipt disclosure has an explicit accessible label
+ok   http codex-overview.html: devicePixelRatio is 2
+ok   http codex-overview.html: 200% zoom preserves canonical DOM text
+ok   http codex-overview.html: 200% zoom keeps header and preview visible
+ok   http codex-overview.html: no page error 
+ok   http codex-overview.html: no console error 
+
+static-edition playwright laws passed

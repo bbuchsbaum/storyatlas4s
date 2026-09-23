@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "description": "legacy checked route renders one real SVG plate in the edition shell"
+    },
+    {
+      "ok": true,
+      "description": "legacy checked route has no decode or compile error"
+    },
+    {
+      "ok": true,
+      "description": "legacy picker retains every canonical unit plus its placeholder"
+    },
+    {
+      "ok": true,
+      "description": "legacy default layout has a measured plate width"
+    },
+    {
+      "ok": true,
+      "description": "legacy default layout reports supplied timed inventory without inventing clocks"
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "fixture": "bell.voyage.json",
+  "exit": 1,
+  "failure": "page.waitForFunction: Timeout 5000ms exceeded.\n    at /private/tmp/storyatlas4s-workspace-m1-20260922/app/smoke/legacy-workspace.cjs:62:18"
+}

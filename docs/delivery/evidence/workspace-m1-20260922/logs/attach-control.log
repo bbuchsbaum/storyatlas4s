@@ -1,0 +1,114 @@
+[info] welcome to sbt 1.12.14 (Homebrew Java 25.0.1)
+[info] loading settings for project storyatlas4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storyatlas4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-intaglio-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-intaglio-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-grakern-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-grakern-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project gale-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/c6b5fe94c20cf0d05b05/gale/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project graph4s-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/8d03f2d14a9e2c9f6990/graph4s/project
+[info] loading settings for project root from build.sbt...
+[info] resolving key references (148721 settings) ...
+[info] set current project to root (in build file:/private/tmp/storyatlas4s-workspace-m1-20260922/)
+[info] scalafmt: Formatting 2 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/shell/.js)...
+[info] scalafmt: Formatting 2 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/shell/.js)...
+[info] scalafmt: Formatting 2 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm)...
+[info] scalafmt: Formatting 2 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm)...
+[info] scalafmt: Formatting 2 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/app)...
+[info] scalafmt: Reformatted 2 Scala sources
+[info] scalafmt: Reformatted 2 Scala sources
+[info] scalafmt: Reformatted 2 Scala sources
+[info] scalafmt: Reformatted 2 Scala sources
+[info] scalafmt: Reformatted 2 Scala sources
+[success] Total time: 2 s, completed Sep 22, 2026, 9:45:36 p.m.
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm/target/scala-3.7.4/classes ...
+[info] done compiling
+[info] compiling 2 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm/target/scala-3.7.4/test-classes ...
+[info] done compiling
+Test run storyatlas4s.shell.WorkspaceImportSuite started
+storyatlas4s.shell.WorkspaceImportSuite: finished 3.594s
+Test run storyatlas4s.shell.WorkspaceImportSuite finished: 0 failed, 0 ignored, 5 total 3.605s
+Test run storyatlas4s.shell.WorkspaceControllerSuite started
+storyatlas4s.shell.WorkspaceControllerSuite: finished 1.472s
+Test run storyatlas4s.shell.WorkspaceControllerSuite finished: 0 failed, 0 ignored, 11 total 1.472s
+Test run storyatlas4s.shell.WorkspaceExportSuite started
+storyatlas4s.shell.WorkspaceExportSuite: finished 0.785s
+Test run storyatlas4s.shell.WorkspaceExportSuite finished: 0 failed, 0 ignored, 3 total 0.785s
+[info] Passed: Total 19, Failed 0, Errors 0, Passed 19
+[success] Total time: 14 s, completed Sep 22, 2026, 9:45:49 p.m.
+[info] compiling 2 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.js/target/scala-3.7.4/classes ...
+[info] done compiling
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/app/target/scala-3.7.4/classes ...
+[error] -- [E173] Reference Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:24:67 
+[error] 24 |    def exportEvidence(): Unit = WorkspaceExport.create(controller.now()) match
+[error]    |                                                        ^^^^^^^^^^^^^^
+[error]    |method now cannot be accessed as a member of (controller :
+[error]    |  com.raquo.airstream.core.Signal[storyatlas4s.shell.WorkspaceController]) from object WorkspaceView.
+[error]    |  protected[airstream] method now can only be accessed from package com.raquo.airstream in package com.raquo, or trait Signal in package com.raquo.airstream.core or one of its subclasses.
+[error] -- [E006] Not Found Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:25:59 
+[error] 25 |      case Left(reason)   => notice.set(s"Export refused: $reason")
+[error]    |                                                           ^^^^^^
+[error]    |                                                       Not found: reason
+[error]    |
+[error]    | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:27:59 
+[error] 27 |        WorkspaceHost.download("storyatlas-evidence.json", content)
+[error]    |                                                           ^^^^^^^
+[error]    |        Not found: content - did you mean Extent? or perhaps contentCss?
+[error]    |
+[error]    | longer explanation available when compiling with `-explain`
+[error] -- [E173] Reference Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:33:23 
+[error] 33 |      () => controller.now().sourceChoice,
+[error]    |            ^^^^^^^^^^^^^^
+[error]    |method now cannot be accessed as a member of (controller :
+[error]    |  com.raquo.airstream.core.Signal[storyatlas4s.shell.WorkspaceController]) from object WorkspaceView.
+[error]    |  protected[airstream] method now can only be accessed from package com.raquo.airstream in package com.raquo, or trait Signal in package com.raquo.airstream.core or one of its subclasses.
+[error] -- [E173] Reference Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:37:11 
+[error] 36 |        controller
+[error] 37 |          .now()
+[error]    |        ^
+[error]    |method now cannot be accessed as a member of (controller :
+[error]    |  com.raquo.airstream.core.Signal[storyatlas4s.shell.WorkspaceController]) from object WorkspaceView.
+[error]    |  protected[airstream] method now can only be accessed from package com.raquo.airstream in package com.raquo, or trait Signal in package com.raquo.airstream.core or one of its subclasses.
+[error] -- [E173] Reference Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:151:23 
+[error] 151 |      () => controller.now(),
+[error]     |            ^^^^^^^^^^^^^^
+[error]     |method now cannot be accessed as a member of (controller :
+[error]     |  com.raquo.airstream.core.Signal[storyatlas4s.shell.WorkspaceController]) from object WorkspaceView.
+[error]     |  protected[airstream] method now can only be accessed from package com.raquo.airstream in package com.raquo, or trait Signal in package com.raquo.airstream.core or one of its subclasses.
+[error] -- [E173] Reference Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:158:23 
+[error] 158 |      () => controller.now(),
+[error]     |            ^^^^^^^^^^^^^^
+[error]     |method now cannot be accessed as a member of (controller :
+[error]     |  com.raquo.airstream.core.Signal[storyatlas4s.shell.WorkspaceController]) from object WorkspaceView.
+[error]     |  protected[airstream] method now can only be accessed from package com.raquo.airstream in package com.raquo, or trait Signal in package com.raquo.airstream.core or one of its subclasses.
+[error] -- [E173] Reference Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:219:89 
+[error] 219 |            WorkspaceHost.download("investigation.json", WorkspaceSave.encode(controller.now()))
+[error]     |                                                                              ^^^^^^^^^^^^^^
+[error]     |method now cannot be accessed as a member of (controller :
+[error]     |  com.raquo.airstream.core.Signal[storyatlas4s.shell.WorkspaceController]) from object WorkspaceView.
+[error]     |  protected[airstream] method now can only be accessed from package com.raquo.airstream in package com.raquo, or trait Signal in package com.raquo.airstream.core or one of its subclasses.
+[error] -- [E173] Reference Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:279:35 
+[error] 279 |                        controller.now().state.recallHorizon
+[error]     |                        ^^^^^^^^^^^^^^
+[error]     |method now cannot be accessed as a member of (controller :
+[error]     |  com.raquo.airstream.core.Signal[storyatlas4s.shell.WorkspaceController]) from object WorkspaceView.
+[error]     |  protected[airstream] method now can only be accessed from package com.raquo.airstream in package com.raquo, or trait Signal in package com.raquo.airstream.core or one of its subclasses.
+[error] -- [E173] Reference Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:347:77 
+[error] 347 |              VoyageView.controlled(projection, controller, () => controller.now(), dispatch)
+[error]     |                                                                  ^^^^^^^^^^^^^^
+[error]     |method now cannot be accessed as a member of (controller :
+[error]     |  com.raquo.airstream.core.Signal[storyatlas4s.shell.WorkspaceController]) from object WorkspaceView.
+[error]     |  protected[airstream] method now can only be accessed from package com.raquo.airstream in package com.raquo, or trait Signal in package com.raquo.airstream.core or one of its subclasses.
+[error] 10 errors found
+[error] (app / Compile / compileIncremental) Compilation failed
+[error] Total time: 6 s, completed Sep 22, 2026, 9:45:56 p.m.

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-23T00:03:26.692520+00:00",
+  "finished_utc": "2026-09-23T00:04:18.095029+00:00",
+  "duration_seconds": 51.401564,
+  "command": [
+    "sbt",
+    "-batch",
+    "-Dsbt.global.staging=/private/tmp/storymodel4s-m1-sbt-staging-20260922",
+    "-Dstoryatlas4s.storymodel4s.build=/private/tmp/storymodel4s-workspace-m1-20260922",
+    "-Dstorymodel4s.grakern.build=/private/tmp/storymodel4s-m1-grakern-20260922",
+    "-Dstoryatlas4s.intaglio.build=/private/tmp/storymodel4s-m1-intaglio-20260922",
+    "scalafmtAll",
+    "scalafmtSbt",
+    "editionJVM/testOnly *WorkspacePacketSuite *SourceInputSuite *ArtifactInputSuite",
+    "shellJVM/testOnly *WorkspaceControllerSuite *WorkspaceOpenSuite",
+    "cli/testOnly *ModelInputSuite",
+    "app/compile"
+  ],
+  "cwd": "/private/tmp/storyatlas4s-workspace-m1-20260922",
+  "log": "/private/tmp/workspace-m1-evidence/atlas/consumer-first-1.log",
+  "exit_code": 1,
+  "child_returncode": 1,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 1800.0,
+  "log_bytes": 8267
+}

@@ -1,0 +1,1 @@
+{"checks":75,"exit":1,"failure":"AssertionError [ERR_ASSERTION]: history witness uses distinct matrix positions\n    at /private/tmp/storyatlas4s-workspace-m1-20260922/app/smoke/workspace.cjs:397:12"}

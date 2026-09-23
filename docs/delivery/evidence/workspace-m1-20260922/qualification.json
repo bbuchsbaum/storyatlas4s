@@ -1,0 +1,192 @@
+{
+  "schema": "storyatlas.workspace-m1-qualification/v1",
+  "consumer": "f74573eb7606ef0243b0bb75b93b4c54b54c995a",
+  "consumer_tree": "c0dfe0b5a69ef32bd6704eda010757c2b168a087",
+  "inputs": {
+    "consumer": {
+      "path": "/private/tmp/storyatlas4s-workspace-m1-20260922",
+      "sha": "f74573eb7606ef0243b0bb75b93b4c54b54c995a",
+      "tracked_status": ""
+    },
+    "producer": {
+      "path": "/private/tmp/storymodel4s-workspace-m1-20260922",
+      "sha": "7b2f076a57bde1ec540090c43debfec51c8d44d4",
+      "tracked_status": ""
+    },
+    "intaglio": {
+      "path": "/private/tmp/storymodel4s-m1-intaglio-20260922",
+      "sha": "4eb566d9208f474d64d61e778e084dee2ddbaa76",
+      "tracked_status": ""
+    },
+    "grakern": {
+      "path": "/private/tmp/storymodel4s-m1-grakern-20260922",
+      "sha": "0329c43c88a0b71e9aa4456723bb16bac2fa3841",
+      "tracked_status": ""
+    }
+  },
+  "producer_executable": "f4af92e8fccf805f34a23d48ca1e9c08d084df96",
+  "producer_receipt": "storymodel4s@7b2f076a:docs/refactor/evidence/workspace-m1-packet-20260922/qualification.json",
+  "declared_pins_equal_actual_overrides": true,
+  "scope": "Local exact-pair M1 acceptance; no push, hosted CI, deployment or 1.0 release certification",
+  "full_gate": {
+    "log": "logs/consumer-restored-final.log",
+    "command_receipt": "logs/consumer-restored-final.log.meta.json",
+    "tests": 376,
+    "reports": 45,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "scala_compiler_warnings": 0
+  },
+  "browser": {
+    "workspace": 83,
+    "standalone_voyage": 19,
+    "source": 260,
+    "static": 255,
+    "feature_pages": 2,
+    "feature_outcomes": 567,
+    "playwright": "1.55.1",
+    "chromium": "140.0.7339.186 / build1193",
+    "network_requests_workspace": 0,
+    "owned_cleanup": "browser-audit-final.txt"
+  },
+  "preservation_reuse": {
+    "source_static_feature_build_commit": "4707968e92ebb82c5101f4b7020970ce2ef062ce",
+    "final_diff_only_browser_witnesses": [
+      "app/smoke/legacy-workspace.cjs",
+      "app/smoke/workspace.cjs"
+    ],
+    "source_static_feature_executable_inputs_unchanged": true
+  },
+  "mutants": {
+    "source": 5,
+    "independent_resigned_export_controls": 10
+  },
+  "fixture_files": [
+    {
+      "path": "bell-authored-a-u0.csv",
+      "sha256": "821e7ca20e272f0b0d1b414196521e9ea440089ee120481037d64e8e36c95cd0",
+      "bytes": 4517
+    },
+    {
+      "path": "bell-authored-a-u0.json",
+      "sha256": "0b3b35ee9a62c970486b9253f1867168f39c8322a2ab4f8b443ed2562298c6e1",
+      "bytes": 29719
+    },
+    {
+      "path": "bell-authored-a-u0.receipt.json",
+      "sha256": "5a01aec2cefb216c9bf69df1a99b287d26aed3370cc8f806c51bb383b3e54f50",
+      "bytes": 752
+    },
+    {
+      "path": "bell-authored-a-u0.txt",
+      "sha256": "80e8343b8f3aac4c6b763cc96caa84c91f3aa859e108e166457789286ba6bc1a",
+      "bytes": 5409
+    },
+    {
+      "path": "bell-authored-b-u0.csv",
+      "sha256": "ca899669f8969d875b4318ad412eb6b61c49b45c98ff3de529b87af2acd89f3a",
+      "bytes": 4517
+    },
+    {
+      "path": "bell-authored-b-u0.json",
+      "sha256": "b7d74b890fb36a79a441029eafd8c215f2e277efc02f7aded3a1c430f4f503cc",
+      "bytes": 29720
+    },
+    {
+      "path": "bell-authored-b-u0.receipt.json",
+      "sha256": "c655941f87221d76f463f32480d6b7b7a8351bf032c18cbcac3a365a13042859",
+      "bytes": 752
+    },
+    {
+      "path": "bell-authored-b-u0.txt",
+      "sha256": "d9bb08f6ad9ecf0a114bd39b15bbea463576f7534c03010af3fdb7d48b5f9035",
+      "bytes": 5409
+    },
+    {
+      "path": "bell-voyage-projection.json",
+      "sha256": "2a0918a3ee140c1559f2365e041af139328164830bf6a440f64f3ab009c3529d",
+      "bytes": 3193
+    },
+    {
+      "path": "bell.voyage.json",
+      "sha256": "33122371e74240eb9361df8911d2c4f33ae43896859cda914c13b6cb9ad0d498",
+      "bytes": 4253
+    },
+    {
+      "path": "bell.workspace.json",
+      "sha256": "a604b0062f7353cece27fe3c552efa8420f4de9a2a1e45a0f25d55b9debc1ef1",
+      "bytes": 242454
+    },
+    {
+      "path": "index.json",
+      "sha256": "3aaf5d127435a8e4b582b01cd45bd1a51f9ebfd938d7df6e2a9fa059669211c0",
+      "bytes": 3644
+    },
+    {
+      "path": "wog-authored-a-u0.csv",
+      "sha256": "241bd88fc711530c4de6f317dbcdd075980009b93b2fee1fa62d818c058c4a8c",
+      "bytes": 40409
+    },
+    {
+      "path": "wog-authored-a-u0.json",
+      "sha256": "dbea96aa44ef61ac7c235c28d0a52055b961f5dc01a6459ed58d0487c44d9206",
+      "bytes": 71029
+    },
+    {
+      "path": "wog-authored-a-u0.receipt.json",
+      "sha256": "480e5c4020c3363d921cac353944d61e3f181099de7e5f489049162c7b4743fc",
+      "bytes": 752
+    },
+    {
+      "path": "wog-authored-a-u0.txt",
+      "sha256": "5f84921bf36a7deea7772fa97171337cbf76427f06ec41122e6f698605632a6f",
+      "bytes": 41326
+    },
+    {
+      "path": "wog-authored-b-u0.csv",
+      "sha256": "17331a3f051de551f3f36a5b0fae32742ffa8f678d3e2b20e886485c39683717",
+      "bytes": 40409
+    },
+    {
+      "path": "wog-authored-b-u0.json",
+      "sha256": "4dbb4c9e9d5a2c4369798dde7e3714584fe9b296ce0a28ecdef25259f6408008",
+      "bytes": 71033
+    },
+    {
+      "path": "wog-authored-b-u0.receipt.json",
+      "sha256": "86f4a5b4b2aa4595bcb0efd1b755c0922ba48ed1026bbdd08c7cbb729b69309d",
+      "bytes": 752
+    },
+    {
+      "path": "wog-authored-b-u0.txt",
+      "sha256": "0c4c95fd3006e899d7d0400ce1f3342773b35382ba8b027d3313cd68ea9d48bd",
+      "bytes": 41326
+    },
+    {
+      "path": "wog-voyage-projection.json",
+      "sha256": "5d972f1286ef87bb53cb99bca8d96160aae79f4e8ff30da5456a40ef81f2ea1e",
+      "bytes": 764
+    },
+    {
+      "path": "wog.workspace.json",
+      "sha256": "bfc99a70bdb0913fd194951b411b4981a1ebab2fc98a11d4d32f59fb46166088",
+      "bytes": 939238
+    }
+  ],
+  "compiled_app": {
+    "path": "target/edition/app.js",
+    "sha256": "9d92daf68134e4ce62e9b6154acbbfcee762fe38cffebd028bfb9b09014efc6b",
+    "bytes": 16196127
+  },
+  "warnings": [
+    "Forked CLI on Java25 emits Scala3 LazyVals sun.misc.Unsafe deprecation messages on stderr. No Scala compiler warnings.",
+    "Producer retains five optional live-inference skips and recorded Clang advisory; no new producer build was claimed."
+  ],
+  "limits": [
+    "Synthetic/precomputed mappings; no inference efficacy or calibration conclusion.",
+    "Capability checks bind supplied artifacts; no external authorization service or live grant-revocation service.",
+    "Semantic replay; responsive pixels may differ.",
+    "Public preparation/facade/exchange/temporal/OpenNeuro and release gates remain separate 1.0 work."
+  ]
+}

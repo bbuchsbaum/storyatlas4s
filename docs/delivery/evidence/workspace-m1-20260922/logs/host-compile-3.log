@@ -1,0 +1,123 @@
+[info] welcome to sbt 1.12.14 (Homebrew Java 25.0.1)
+[info] loading settings for project storyatlas4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storyatlas4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-intaglio-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-intaglio-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-grakern-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-grakern-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project gale-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/c6b5fe94c20cf0d05b05/gale/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project graph4s-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/8d03f2d14a9e2c9f6990/graph4s/project
+[info] loading settings for project root from build.sbt...
+[info] resolving key references (148721 settings) ...
+[info] set current project to root (in build file:/private/tmp/storyatlas4s-workspace-m1-20260922/)
+[info] scalafmt: Formatting 4 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/app)...
+[info] scalafmt: Reformatted 2 Scala sources
+[success] Total time: 2 s, completed Sep 22, 2026, 8:48:37 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.jvm/target/scala-3.7.4/classes ...
+[info] done compiling
+[info] compiling 2 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm/target/scala-3.7.4/classes ...
+[info] done compiling
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm/target/scala-3.7.4/test-classes ...
+[info] done compiling
+Test run storyatlas4s.shell.WorkspaceControllerSuite started
+storyatlas4s.shell.WorkspaceControllerSuite: finished 2.209s
+Test run storyatlas4s.shell.WorkspaceControllerSuite finished: 0 failed, 0 ignored, 9 total 2.218s
+Test run storyatlas4s.shell.WorkspaceImportSuite started
+storyatlas4s.shell.WorkspaceImportSuite: finished 1.67s
+Test run storyatlas4s.shell.WorkspaceImportSuite finished: 0 failed, 0 ignored, 3 total 1.67s
+Test run storyatlas4s.shell.WorkspaceExportSuite started
+storyatlas4s.shell.WorkspaceExportSuite: finished 0.675s
+Test run storyatlas4s.shell.WorkspaceExportSuite finished: 0 failed, 0 ignored, 2 total 0.675s
+Test run storyatlas4s.shell.WorkspaceOpenSuite started
+storyatlas4s.shell.WorkspaceOpenSuite: finished 1.045s
+Test run storyatlas4s.shell.WorkspaceOpenSuite finished: 0 failed, 0 ignored, 2 total 1.046s
+[info] Passed: Total 16, Failed 0, Errors 0, Passed 16
+[success] Total time: 12 s, completed Sep 22, 2026, 8:48:49 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/cli/target/scala-3.7.4/classes ...
+[info] done compiling
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/cli/target/scala-3.7.4/test-classes ...
+[info] done compiling
+[success] Total time: 3 s, completed Sep 22, 2026, 8:48:53 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/edition/.js/target/scala-3.7.4/classes ...
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.js/target/scala-3.7.4/classes ...
+[info] done compiling
+[info] done compiling
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.js/target/scala-3.7.4/classes ...
+[info] done compiling
+[info] compiling 6 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/app/target/scala-3.7.4/classes ...
+[error] -- [E007] Type Mismatch Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:88:84 
+[error] 88 |                aria.pressed <-- controller.signal.map(_.state.activeRecall.contains(unit.id))
+[error]    |                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[error]    |                                                       Found:    Boolean
+[error]    |                                                       Required: String
+[error]    |
+[error]    | longer explanation available when compiling with `-explain`
+[error] -- [E007] Type Mismatch Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:117:20 
+[error] 117 |                    c.state.activeRecall.contains(unit.id) && (destination match
+[error]     |                    ^
+[error]     |                    Found:    Boolean
+[error]     |                    Required: String
+[error] 118 |                      case Destination.Target(target) =>
+[error] 119 |                        c.state.correspondence.contains(Correspondence(unit.id, target))
+[error] 120 |                      case Destination.External(_) => false)
+[error]     |
+[error]     | longer explanation available when compiling with `-explain`
+[error] -- [E007] Type Mismatch Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:178:51 
+[error] 178 |            aria.pressed <-- controller.signal.map(_.state.mode == mode),
+[error]     |                                                   ^^^^^^^^^^^^^^^^^^^^
+[error]     |                                                   Found:    Boolean
+[error]     |                                                   Required: String
+[error]     |
+[error]     | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:291:8 
+[error] 291 |        section(cls("joined-source"), h2("Source"), source),
+[error]     |        ^^^^^^^
+[error]     |        Not found: section - did you mean action?
+[error]     |
+[error]     | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:292:8 
+[error] 292 |        section(
+[error]     |        ^^^^^^^
+[error]     |        Not found: section - did you mean action?
+[error]     |
+[error]     | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:298:6 
+[error] 298 |      section(
+[error]     |      ^^^^^^^
+[error]     |      Not found: section - did you mean action?
+[error]     |
+[error]     | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:305:6 
+[error] 305 |      section(
+[error]     |      ^^^^^^^
+[error]     |      Not found: section - did you mean action?
+[error]     |
+[error]     | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:323:6 
+[error] 323 |      details(
+[error]     |      ^^^^^^^
+[error]     |      Not found: details - did you mean detailsTag?
+[error]     |
+[error]     | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:324:8 
+[error] 324 |        summary("Artifact identities and view state"),
+[error]     |        ^^^^^^^
+[error]     |      Not found: summary - did you mean summaryTag? or perhaps summon?
+[error]     |
+[error]     | longer explanation available when compiling with `-explain`
+[error] -- [E008] Not Found Error: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceView.scala:341:86 
+[error] 341 |              blockQuote(p(text), small(s"Exact support: ${ref.span.start}?${ref.span.end}"))
+[error]     |                                                                             ^^^^^^^^^^^^
+[error]     |               value end is not a member of storymodel4s.core.TextSpan
+[error] 10 errors found
+[error] (app / Compile / compileIncremental) Compilation failed
+[error] Total time: 9 s, completed Sep 22, 2026, 8:49:02 p.m.

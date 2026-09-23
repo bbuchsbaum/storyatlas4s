@@ -1,0 +1,1 @@
+{"checks":5,"exit":1,"failure":"page.waitForFunction: Timeout 5000ms exceeded.\n    at /private/tmp/storyatlas4s-workspace-m1-20260922/app/smoke/legacy-workspace.cjs:62:18"}

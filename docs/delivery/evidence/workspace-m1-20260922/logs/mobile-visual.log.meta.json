@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-23T02:02:18.176616+00:00",
+  "finished_utc": "2026-09-23T02:02:20.177988+00:00",
+  "duration_seconds": 2.001268,
+  "command": [
+    "node",
+    "/private/tmp/m1-visual-check.cjs"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storymodel4s",
+  "log": "/private/tmp/workspace-m1-evidence/atlas/mobile-visual.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 60.0,
+  "log_bytes": 69
+}
