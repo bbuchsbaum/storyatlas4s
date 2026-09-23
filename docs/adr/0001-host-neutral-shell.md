@@ -66,8 +66,10 @@ shell decision*. Additional hosts are allowed; duplicated decisions are not. The
 1. **Picking named scenes.** Intaglio's portable picking (`intaglio.interaction`) routes only
    plans compiled from a `Plot`; the scene-level entry point is package-private. StoryAtlas
    lowerings build scenes directly and name them with `GraphicsName`. An additive Intaglio API that
-   compiles a `PickingPlan` from a `Scene` routed by grob name is required. It is tracked in the
-   Intaglio repository; StoryAtlas does not bump its Intaglio pin until it uses that API.
+   compiles a `PickingPlan` from a `Scene` routed by grob name is required. It is proposed as
+   `NamedPicking` in canardlapin/intaglio#10 (Intaglio Mote `bd-01M35MGSZPV6601K9ARY8AKNPB`),
+   awaiting merge; StoryAtlas does not bump its Intaglio pin until that lands and the bump is
+   qualified.
 2. **Emphasis as scene content.** The web host shows selection and focus with CSS applied after
    rendering. A canvas cannot. The lowering (or a pure post-lowering pass in `shell`) must accept
    the shell's presentations and emit the emphasis as marks, with the unselected output
@@ -75,9 +77,9 @@ shell decision*. Additional hosts are allowed; duplicated decisions are not. The
 3. **Host-specific names still in the core.** `MeasurerChoice.Dom` names the web host's live
    measurer. The shell only carries the choice (the measurer itself is injected), but a second
    host needs it generalized to a host-supplied live measurer.
-4. **Plate and index travel separately.** `Compiled` holds each plate beside its checked
-   `RenderedTargetIndex`; nothing in the types stops a host from resolving a hit against the
-   wrong plate's index. Bundle them when the first non-DOM host is written.
+4. **Plate and index travel separately.** Resolved: every plate the compiler returns is a
+   `TargetedPlate`, built only when the names drawn on it equal its index's names, and hosts
+   activate through `Activation(choice, plate, name, extend)`.
 5. **Recall Voyage.** `VoyageView`'s pure parts (compile under a selection, unit ordering and
    walking, inspector and hover-card content) move into `shell` in a follow-up, after the current
    Voyage presentation work releases those paths.
