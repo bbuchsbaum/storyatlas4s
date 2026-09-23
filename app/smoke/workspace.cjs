@@ -343,17 +343,20 @@ function mappingMember(a,id) {
     await open(input('source-only',member(wog,'SourceModel')));
     await page.locator('#workspace-source-only .shell[data-state=ready]').waitFor();
     check(await page.locator('.mapping-matrix').count()===0,'source-only opening presents reading without an empty matrix');
+    await page.locator('#workspace-source-only [data-source-offset]').first().waitFor();
     const sourceOffset=await page.locator('#workspace-source-only').evaluate(pane=>{
-      pane.scrollTop= Math.max(0,(pane.scrollHeight-pane.clientHeight)/2);
+      const anchors=[...pane.querySelectorAll('[data-source-offset]')];
+      const target=anchors[Math.floor(anchors.length/2)];
+      pane.scrollTop+=target.getBoundingClientRect().top-pane.getBoundingClientRect().top;
       const top=pane.getBoundingClientRect().top;
-      return Number([...pane.querySelectorAll('[data-source-offset]')].find(el=>el.getBoundingClientRect().bottom>top).dataset.sourceOffset);
+      return Number(anchors.find(el=>el.getBoundingClientRect().bottom>top).dataset.sourceOffset);
     });
     assert.ok(sourceOffset>0,'attachment witness has a nonzero reading position');
     await page.locator('#workspace-attach').setInputFiles(input('wrong-edition',load('bell.workspace.json')));
     await page.waitForFunction(()=>document.querySelector('[data-open-status]').dataset.openStatus.startsWith('Refused'));
     check(await page.locator('#workspace-source-only').count()===1 && await page.locator('.mapping-matrix').count()===0,'attaching a foreign edition refuses and keeps the current source');
     await page.locator('#workspace-attach').setInputFiles(input('same-edition',load('wog.workspace.json')));
-    await page.locator('#workspace-state').waitFor();
+    await page.locator('#workspace-state').waitFor({state:'attached'});
     assert.equal((await state()).viewport.sourceOffset,sourceOffset);
     assert.equal((await state()).mode,'Source');
     await page.waitForFunction(offset=>{
@@ -366,13 +369,13 @@ function mappingMember(a,id) {
     check(true,'compatible recall attachment preserves the exact source reading position');
     await page.getByRole('button',{name:'Recall',exact:true}).click();
     await page.locator('#workspace-recall').selectOption('m1:u0');
-    const scrollMatrix=async(row)=>{
+    const scrollMatrix=async(column)=>{
       await page.waitForTimeout(50);
-      await page.locator('#workspace-matrix-scroll').evaluate((pane,row)=>{
-        const cell=pane.querySelector(`[data-matrix-cell="${row}-0"]`);
-        pane.scrollTop+=cell.getBoundingClientRect().top-pane.getBoundingClientRect().top;
+      await page.locator('#workspace-matrix-scroll').evaluate((pane,column)=>{
+        const cell=pane.querySelector(`[data-matrix-cell="0-${column}"]`);
+        pane.scrollLeft+=cell.getBoundingClientRect().left-pane.getBoundingClientRect().left;
         pane.dispatchEvent(new Event('scroll'));
-      },row);
+      },column);
       await page.waitForFunction(()=>{
         const pane=document.getElementById('workspace-matrix-scroll'),box=pane.getBoundingClientRect();
         const first=[...pane.querySelectorAll('[data-matrix-cell]')].find(e=>e.getBoundingClientRect().bottom>box.top+1 && e.getBoundingClientRect().right>box.left+1);
@@ -386,12 +389,12 @@ function mappingMember(a,id) {
       const s=JSON.parse(document.getElementById('workspace-state').textContent);
       return s.activeRecall===expected.activeRecall && first.dataset.matrixCell===`${expected.viewport.matrixRow}-${expected.viewport.matrixColumn}`;
     },expected);
-    await scrollMatrix(2);
+    await scrollMatrix(Math.floor((await page.locator('.mapping-matrix thead th').count()-1)/2));
     const historyA=await state();
     await page.locator('#workspace-recall').selectOption('m1:u1');
     await scrollMatrix(0);
     const historyB=await state();
-    assert.notEqual(historyA.viewport.matrixRow,historyB.viewport.matrixRow,'history witness uses distinct matrix positions');
+    assert.notEqual(historyA.viewport.matrixColumn,historyB.viewport.matrixColumn,'history witness uses distinct matrix positions');
     await page.locator('#workspace-back').click();
     await restoredMatrix(historyA);
     await page.locator('#workspace-return').click();
@@ -412,6 +415,28 @@ function mappingMember(a,id) {
     await page.waitForFunction(()=>document.querySelector('[data-open-status]')?.getAttribute('data-open-status')?.startsWith('Refused'));
     assert.equal(await page.locator('#source-features').getAttribute('data-track-count'),String(featureExpected.trackCount));
     check(true,'missing sidecar refuses and retains the previous admitted source');
+    await context.close();
+    context=await browser.newContext({viewport:{width:1600,height:1100},deviceScaleFactor:2});
+    page=await context.newPage();
+    page.on('pageerror',e=>report.errors.push(String(e)));
+    page.on('console',m=>{report.console.push(m.text());if(m.type()==='error')report.errors.push(m.text());});
+    page.on('request',r=>{if(/^https?:/.test(r.url()))report.requests.push(r.url());});
+    await page.goto(pathToFileURL(entry).href);
+    await open(input('retina-bell',load('bell.workspace.json')));
+    await page.locator('[data-matrix-cell="0-0"]').focus();
+    await page.keyboard.press('ArrowDown');
+    check(await page.evaluate(()=>devicePixelRatio===2 && document.activeElement?.matches('[data-matrix-cell="1-0"]')),'DPR2 keyboard focus retains qualified matrix identity');
+    const focusStyle=await page.evaluate(()=>{const s=getComputedStyle(document.activeElement);return {width:s.outlineWidth,style:s.outlineStyle};});
+    check(parseFloat(focusStyle.width)>0 && focusStyle.style!=='none','DPR2 keyboard focus has a visible non-color-only outline');
+    const contrast=await page.locator('.joined-workspace > h1').evaluate(element=>{
+      const rgb=s=>(s.match(/[\d.]+/g)||[]).slice(0,3).map(Number);
+      const luminance=a=>a.map(v=>v/255).map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4)).reduce((sum,v,i)=>sum+v*[0.2126,0.7152,0.0722][i],0);
+      const fg=rgb(getComputedStyle(element).color);let parent=element,bg='rgba(0, 0, 0, 0)';
+      while(parent && bg==='rgba(0, 0, 0, 0)'){bg=getComputedStyle(parent).backgroundColor;parent=parent.parentElement;}
+      const a=luminance(fg),b=luminance(rgb(bg));return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+    });
+    check(contrast>=4.5,'workspace primary text meets measured contrast floor');
+    await page.screenshot({path:path.join(output,'dpr2.png'),fullPage:true});
     check(report.errors.length===0,'no browser or console errors');
     check(report.requests.length===0,'no network request from the local workspace');
     report.exit=0;

@@ -39,6 +39,7 @@ function voyageFromPacket() {
     browser = await chromium.launch({headless:true});
     context = await browser.newContext({viewport:{width:1600,height:1100}});
     page = await context.newPage();
+    page.setDefaultTimeout(5000);
     page.on('pageerror', error => report.errors.push(String(error)));
     page.on('console', message => { if (message.type() === 'error') report.errors.push(message.text()); });
     page.on('request', request => { if (/^https?:/.test(request.url())) report.requests.push(request.url()); });
