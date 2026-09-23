@@ -136,3 +136,12 @@ its exact subset with the matrix figure/twin and the identity-bound descriptor.
 The full permitted scientific subset and the recorded presentation horizons are
 labeled separately. The browser owns file picking/downloads; the shell owns no
 filesystem, fetch, provider invocation or new inference.
+
+The controlled Voyage entry reads qualified selection, canonical traversal,
+independent cursors and recall range from `WorkspaceController`. Mark activation
+uses both sides of the producer's address bridge. Its lowerer accepts optional
+visible recall text from the existing evidence-horizon rule; when supplied, an
+absent entry reveals no text. Reusing full legacy quotations in titles and hover
+cards was rejected because it bypassed the workspace horizon. The legacy entry
+retains its standalone behavior. Saved schema v2 adds checked matrix coordinates;
+source offsets and matrix anchors restore actual panes independently of clocks.

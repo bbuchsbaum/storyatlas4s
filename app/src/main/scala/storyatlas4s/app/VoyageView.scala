@@ -5,8 +5,9 @@ import com.raquo.laminar.api.L.*
 import org.scalajs.dom
 import scala.scalajs.js
 import storyatlas4s.intaglio.{RecallWindow, VoyageLowering}
+import storyatlas4s.shell.{WorkspaceAction, WorkspaceController}
 import storymodel4s.align.SourceNodeRef
-import storymodel4s.codec.VoyageCodecs
+import storymodel4s.codec.{VoyageCodecs, WorkspaceVoyage}
 import storymodel4s.core.{Address, Addressable}
 import storymodel4s.recall.{RecallRef, RecallUnitId}
 import storymodel4s.view.*
@@ -56,6 +57,445 @@ object VoyageView:
       case Left(problem) =>
         div(cls("error"), role("alert"), s"The voyage did not compile: ${problem.message}")
       case Right(scene) => pane(document, scene)
+
+  /** Workspace-owned voyage state. The document is a conservative legacy projection, so every
+    * interaction crosses its checked address bridge before reaching the controller.
+    */
+  def controlled(
+      projection: WorkspaceVoyage.Projection,
+      signal: Signal[WorkspaceController],
+      current: () => WorkspaceController,
+      dispatch: WorkspaceAction => Unit
+  ): HtmlElement =
+    projection.document match
+      case None           => unavailable(projection, signal)
+      case Some(document) =>
+        document.compile(Set.empty) match
+          case Left(problem) =>
+            div(
+              cls("error"),
+              role("alert"),
+              s"The workspace voyage did not compile: ${problem.message}"
+            )
+          case Right(scene) =>
+            controlledPane(projection, document, scene, signal, current, dispatch)
+
+  private def unavailable(
+      projection: WorkspaceVoyage.Projection,
+      signal: Signal[WorkspaceController]
+  ): HtmlElement =
+    div(
+      cls("page voyage-unavailable"),
+      headerTag(
+        cls("top"),
+        div(cls("masthead"), h1("Recall Voyage"), p("This workspace cannot supply a voyage plate."))
+      ),
+      p(
+        role("status"),
+        "No voyage plate is available; each unit's recorded disposition explains why."
+      ),
+      ul(
+        projection.units.sortBy(_.ordinal).map { row =>
+          li(
+            dataAttr("recall-unit") := row.unit.value,
+            s"${row.ordinal} · ${row.unit.value} · ${row.disposition}"
+          )
+        }
+      ),
+      dataAttr("selection") <-- signal.map(c =>
+        projection.legacySelection(c.state.selection).toVector.map(_.render).sorted.mkString(" ")
+      )
+    )
+
+  private def controlledPane(
+      projection: WorkspaceVoyage.Projection,
+      document: RecallVoyageDocument,
+      base: VoyageScene,
+      signal: Signal[WorkspaceController],
+      current: () => WorkspaceController,
+      dispatch: WorkspaceAction => Unit
+  ): HtmlElement =
+    val hovered = Var(Option.empty[MarkId])
+    val tip = Var(Option.empty[(Double, Double)])
+    val ghosts = Var(false)
+    val allColumns = Var(false)
+    val width = Var(Option.empty[Int])
+    val preview = Var(Option.empty[(Double, Double)])
+    val rangeError = Var(Option.empty[String])
+    val cursorError = Var(Option.empty[String])
+    var dragStart = Option.empty[Double]
+    val total = base.recallLength.value
+    val sourceExtent = base.timeline.nodes.map(_.span.end.value).maxOption
+
+    def recallWindow(controller: WorkspaceController): Option[RecallWindow] =
+      controller.state.viewport.recallWindow.fold(RecallWindow.bounded(0, total, total))(span =>
+        RecallWindow.bounded(span.start.value, span.length, total)
+      )
+    def focus(controller: WorkspaceController): Option[RecallUnitId] = controller.state.activeRecall
+    def selection(controller: WorkspaceController): Set[Address] =
+      projection.legacySelection(controller.state.selection)
+    def setWindow(next: Option[RecallWindow]): Unit =
+      next.flatMap(r => ClockSpan.of(r.start, r.end).toOption).foreach { span =>
+        val old = current().state.viewport
+        dispatch(WorkspaceAction.Viewport(old.copy(recallWindow = Some(span))))
+      }
+      hovered.set(None)
+      tip.set(None)
+      rangeError.set(None)
+    def setCursor(source: Boolean, raw: String): Unit =
+      val checked: Either[String, Option[Seconds]] = raw.trim match
+        case ""   => Right(None)
+        case text =>
+          for
+            value <- parseClock(text)
+            _ <- Either.cond(
+              value <= (if source then sourceExtent.getOrElse(-1.0) else total),
+              (),
+              "Cursor must be within the supplied clock extent."
+            )
+            seconds <- Seconds.of(value).left.map(_.message)
+          yield Some(seconds)
+      checked match
+        case Left(problem) => cursorError.set(Some(problem))
+        case Right(value)  =>
+          val old = current().state.viewport
+          val next =
+            if source then old.copy(sourceCursor = value) else old.copy(recallCursor = value)
+          dispatch(WorkspaceAction.Viewport(next))
+          cursorError.set(None)
+    def chooseUnit(id: RecallUnitId): Unit = dispatch(WorkspaceAction.Jump(id))
+    def walk(delta: Int): Unit = dispatch(WorkspaceAction.Walk(delta))
+    def activate(target: dom.EventTarget, extend: Boolean): Unit =
+      nameAt(target).flatMap(n => base.navigation.addressOf.get(MarkId.unsafe(n))).foreach {
+        legacy =>
+          val addresses = projection.workspaceSelection(legacy)
+          val workspace = current().workspace
+          val recall = addresses.flatMap(workspace.recallAddresses.get).headOption
+          val source = addresses.flatMap(workspace.sourceAddresses.get).headOption
+          (recall, source) match
+            case (Some(unit), Some(ref)) => dispatch(WorkspaceAction.Inspect(unit, ref))
+            case (Some(unit), None)      =>
+              workspace
+                .recallAddress(unit)
+                .foreach(a => dispatch(WorkspaceAction.Select(a, extend)))
+            case _ => ()
+      }
+    def fit(el: dom.Element): Unit =
+      val w = el.clientWidth
+      if w > 0 then width.set(Some(math.max(MinWidth, math.min(MaxWidth, w))))
+    def pointerTime(ev: dom.PointerEvent): Double =
+      val rect = ev.currentTarget.asInstanceOf[dom.Element].getBoundingClientRect()
+      math.max(
+        0,
+        math.min(
+          total,
+          math.round((ev.clientX - rect.left) / math.max(1, rect.width) * total * 10) / 10.0
+        )
+      )
+
+    val legacySelection = signal.map(selection)
+    val active = signal.map(focus)
+    val windows = signal.map(recallWindow)
+    val sourceCursor = signal.map(_.state.viewport.sourceCursor)
+    val recallCursor = signal.map(_.state.viewport.recallCursor)
+    val lens = legacySelection
+      .combineWith(ghosts.signal, allColumns.signal, width.signal.distinct, windows)
+      .map { case (s, g, all, w, r) => Lens(s, g, all, w, r) }
+    val visibleText = signal
+      .map(c =>
+        base.units
+          .map(u =>
+            u.id -> c.recallEvidence(u.id).toOption.toVector.flatten.map(_._2).mkString(" … ")
+          )
+          .toMap
+      )
+      .distinct
+    val frames = lens.combineWith(visibleText).map { (l, text) =>
+      l.width.map(w => compile(document, base, l, w, Some(text)))
+    }
+    val dispositions = projection.units.map(row => row.unit -> row).toMap
+
+    val startField = input(
+      idAttr("voyage-range-start"),
+      typ("text"),
+      aria.label("Detail start (m:ss)"),
+      value <-- windows.map(_.fold("")(r => clockInput(r.start)))
+    )
+    val endField = input(
+      idAttr("voyage-range-end"),
+      typ("text"),
+      aria.label("Detail end (m:ss)"),
+      value <-- windows.map(_.fold("")(r => clockInput(r.end)))
+    )
+    val sourceCursorField = input(
+      idAttr("voyage-source-cursor"),
+      typ("text"),
+      aria.label("Source cursor (m:ss)"),
+      value <-- sourceCursor.map(_.fold("")(t => clockInput(t.value)))
+    )
+    val recallCursorField = input(
+      idAttr("voyage-recall-cursor"),
+      typ("text"),
+      aria.label("Recall cursor (m:ss)"),
+      value <-- recallCursor.map(_.fold("")(t => clockInput(t.value)))
+    )
+    def applyRange(): Unit =
+      (for
+        start <- parseClock(startField.ref.value)
+        end <- parseClock(endField.ref.value)
+        r <- RecallWindow.of(start, end)
+        _ <- Either.cond(
+          end <= total && start < end,
+          (),
+          "Use a nonempty range within the supplied recall extent."
+        )
+      yield r) match
+        case Left(problem) => rangeError.set(Some(problem))
+        case Right(r)      => setWindow(Some(r))
+
+    val rangeControls = div(
+      cls("voyage-navigation"),
+      form(
+        cls("range-form"),
+        onSubmit --> { ev => ev.preventDefault(); applyRange() },
+        label("From ", startField),
+        label("To ", endField),
+        button(typ("submit"), "Apply range")
+      ),
+      div(
+        cls("cursor-form"),
+        sourceExtent.fold[HtmlElement](span("No supplied source clock extent.")) { extent =>
+          form(
+            onSubmit --> { ev =>
+              ev.preventDefault(); setCursor(true, sourceCursorField.ref.value)
+            },
+            label("Source cursor ", sourceCursorField),
+            span(cls("cursor-extent"), s"0:00–${clockInput(extent)}"),
+            button(typ("submit"), "Set source cursor")
+          )
+        },
+        form(
+          onSubmit --> { ev => ev.preventDefault(); setCursor(false, recallCursorField.ref.value) },
+          label("Recall cursor ", recallCursorField),
+          span(cls("cursor-extent"), s"0:00–${clockInput(total)}"),
+          button(typ("submit"), "Set recall cursor")
+        )
+      ),
+      div(
+        cls("range-actions"),
+        button(
+          typ("button"),
+          "Earlier",
+          onClick --> (_ => {
+            recallWindow(current()).foreach(r =>
+              setWindow(RecallWindow.bounded(r.start - r.span / 2, r.span, total))
+            )
+          })
+        ),
+        button(
+          typ("button"),
+          "Later",
+          onClick --> (_ => {
+            recallWindow(current()).foreach(r =>
+              setWindow(RecallWindow.bounded(r.start + r.span / 2, r.span, total))
+            )
+          })
+        ),
+        button(
+          typ("button"),
+          "Whole recall",
+          onClick --> (_ => setWindow(RecallWindow.bounded(0, total, total)))
+        )
+      ),
+      child.maybe <-- rangeError.signal.map(_.map(e => p(cls("range-error"), role("alert"), e))),
+      child.maybe <-- cursorError.signal.map(_.map(e => p(cls("range-error"), role("alert"), e))),
+      div(
+        cls("overview-caption"),
+        span(s"Whole recall · ${base.units.count(_.onset.nonEmpty)} timed onsets"),
+        span("Drag to set detail · range fields support keyboard entry")
+      ),
+      div(
+        cls("recall-overview"),
+        role("group"),
+        aria.label("Whole recall overview brush"),
+        svg.svg(
+          svg.viewBox := "0 0 1000 44",
+          svg.preserveAspectRatio := "none",
+          svg.width := "100%",
+          svg.height := "44",
+          base.units.flatMap(u =>
+            u.onset.map(t =>
+              svg.line(
+                svg.x1 := (1000 * t.value / math.max(total, 1e-9)).toString,
+                svg.x2 := (1000 * t.value / math.max(total, 1e-9)).toString,
+                svg.y1 := "10",
+                svg.y2 := "34",
+                svg.cls := "onset-tick"
+              )
+            )
+          )
+        ),
+        div(
+          cls("brush-window"),
+          left <-- windows.combineWith(preview.signal).map { case (r, p) =>
+            s"${100 * p.fold(r.fold(0.0)(_.start))(_._1) / math.max(total, 1e-9)}%"
+          },
+          com.raquo.laminar.api.L.width <-- windows.combineWith(preview.signal).map { case (r, p) =>
+            s"${100 * p.fold(r.fold(0.0)(_.span))(v => v._2 - v._1) / math.max(total, 1e-9)}%"
+          }
+        ),
+        onPointerDown --> { ev =>
+          if total > 0 && ev.button == 0 then
+            ev.preventDefault(); val t = pointerTime(ev); dragStart = Some(t);
+            preview.set(Some(t -> t))
+            val _ = ev.currentTarget.asInstanceOf[js.Dynamic].setPointerCapture(ev.pointerId)
+        },
+        onPointerMove --> { ev =>
+          dragStart.foreach(s => {
+            val e = pointerTime(ev); preview.set(Some(math.min(s, e) -> math.max(s, e)))
+          })
+        },
+        onPointerUp --> { ev =>
+          dragStart.foreach { s =>
+            val e = pointerTime(ev);
+            RecallWindow.of(math.min(s, e), math.max(s, e)).foreach(r => setWindow(Some(r)))
+          };
+          dragStart = None; preview.set(None)
+        },
+        onPointerCancel --> (_ => { dragStart = None; preview.set(None) })
+      ),
+      div(
+        cls("recall-picker"),
+        label(
+          "Inspect recall unit ",
+          select(
+            idAttr("voyage-unit"),
+            aria.label("Inspect recall unit"),
+            option(value := "", disabled := true, "Choose a unit"),
+            projection.units
+              .sortBy(_.ordinal)
+              .map(row =>
+                option(
+                  value := row.unit.value,
+                  s"${row.ordinal} · ${row.disposition} · ${row.unit.value}"
+                )
+              ),
+            value <-- active.map(_.fold("")(_.value)),
+            onChange.mapToValue --> (id =>
+              projection.units.find(_.unit.value == id).foreach(row => chooseUnit(row.unit))
+            )
+          )
+        )
+      ),
+      p(
+        cls("selection-location"),
+        role("status"),
+        child.text <-- active.combineWith(windows).map { case (id, window) =>
+          id.flatMap(dispositions.get)
+            .fold(s"All ${projection.units.size} units remain available.") { row =>
+              row.disposition match
+                case WorkspaceVoyage.Disposition.Plotted =>
+                  val within = base.units
+                    .find(_.id == row.unit)
+                    .flatMap(_.onset)
+                    .exists(at => window.forall(_.contains(at.value)))
+                  if within then s"Unit ${row.ordinal} is on the current Voyage projection."
+                  else
+                    s"Unit ${row.ordinal} is outside the current range (OffProjection); selection is retained."
+                case WorkspaceVoyage.Disposition.Untimed =>
+                  s"Unit ${row.ordinal} is untimed; no clock position is inferred."
+                case WorkspaceVoyage.Disposition.Unsupported(reason) =>
+                  s"Unit ${row.ordinal} is not plotted: $reason."
+            }
+        }
+      )
+    )
+
+    div(
+      cls("page"),
+      dataAttr("marks") := base.marks.size.toString,
+      dataAttr("selection") <-- legacySelection.map(_.toVector.map(_.render).sorted.mkString(" ")),
+      dataAttr("focus") <-- active.map(_.fold("none")(_.value)),
+      dataAttr("range-start") <-- windows.map(_.fold("none")(_.start.toString)),
+      dataAttr("range-end") <-- windows.map(_.fold("none")(_.end.toString)),
+      dataAttr("source-cursor") <-- sourceCursor.map(_.fold("none")(_.value.toString)),
+      dataAttr("recall-cursor") <-- recallCursor.map(_.fold("none")(_.value.toString)),
+      header(ghosts, allColumns),
+      stats(base),
+      div(
+        cls("panes"),
+        sectionTag(
+          cls("panel"),
+          aria.label("Recall Voyage"),
+          tabIndex(0),
+          div(
+            cls("head"),
+            h2("Recall time against source time"),
+            span(cls("hint"), "choose a unit · click to inspect · ← → all units")
+          ),
+          onClick --> (ev => activate(ev.target, ev.shiftKey)),
+          onKeyDown --> { ev =>
+            if ev.target.isInstanceOf[dom.Element] && !Set("INPUT", "SELECT", "TEXTAREA", "BUTTON")
+                .contains(ev.target.asInstanceOf[dom.Element].tagName)
+            then
+              ev.key match
+                case "ArrowRight" => ev.preventDefault(); walk(1)
+                case "ArrowLeft"  => ev.preventDefault(); walk(-1)
+                case "Enter"      => activate(ev.target, ev.shiftKey)
+                case _            => ()
+          },
+          rangeControls,
+          div(
+            cls("scroller"),
+            onMountCallback { ctx =>
+              fit(ctx.thisNode.ref)
+              val _ = signal
+                .map(_.state.mode)
+                .distinct
+                .foreach { _ =>
+                  val _ = dom.window.requestAnimationFrame(_ => fit(ctx.thisNode.ref))
+                }(using ctx.owner)
+            },
+            inContext { node => windowEvents(_.onResize).throttle(120) --> (_ => fit(node.ref)) },
+            onMouseMove --> { ev =>
+              val n = nameAt(ev.target); hovered.set(n.map(MarkId.unsafe));
+              val box = ev.currentTarget.asInstanceOf[dom.Element].getBoundingClientRect();
+              tip.set(n.map(_ => (ev.clientX - box.left + 14, ev.clientY - box.top + 14)))
+            },
+            onMouseLeave --> (_ => { hovered.set(None); tip.set(None) }),
+            div(
+              cls("plate"),
+              inContext { node =>
+                frames --> {
+                  case None                => ()
+                  case Some(Left(problem)) =>
+                    node.ref.innerHTML = "";
+                    node.ref.textContent = s"The voyage did not compile: $problem"
+                  case Some(Right(frame)) => mount(node.ref, frame, selection(current()))
+                }
+              }
+            ),
+            child.maybe <-- hovered.signal.combineWith(tip.signal, visibleText).map {
+              case (h, at, text) =>
+                for id <- h; (x, y) <- at; card <- hoverCard(base, id, Some(text))
+                yield div(cls("tip"), left := s"${x}px", top := s"${y}px", card)
+            }
+          ),
+          detailsTag(cls("voyage-key"), summaryTag("Key"), child <-- lens.map(l => legend(base, l)))
+        ),
+        asideTag(
+          cls("panel inspector"),
+          aria.live("polite"),
+          child <-- active.combineWith(visibleText).map { (id, text) =>
+            id.flatMap(id => base.units.find(_.id == id))
+              .fold[HtmlElement](
+                div(cls("empty"), "Select a plotted unit to inspect its supplied voyage marks.")
+              )(u => inspector(base, u, Some(text.getOrElse(u.id, ""))))
+          }
+        )
+      ),
+      provenance(base)
+    )
 
   private def pane(document: RecallVoyageDocument, scene: VoyageScene): HtmlElement =
     val selection = Var(Set.empty[Address])
@@ -459,7 +899,8 @@ object VoyageView:
       document: RecallVoyageDocument,
       base: VoyageScene,
       lens: Lens,
-      width: Int
+      width: Int,
+      visibleRecallText: Option[Map[RecallUnitId, String]] = None
   ): Either[String, Frame] =
     for
       scene <- document.compile(lens.selection).left.map(_.message)
@@ -487,7 +928,8 @@ object VoyageView:
           contextFor = context,
           ghostsFor = selected,
           window = lens.window,
-          includeUntimed = false
+          includeUntimed = false,
+          visibleRecallText = visibleRecallText
         )
         .left
         .map(_.message)
@@ -857,7 +1299,11 @@ object VoyageView:
   private def nodeLabel(scene: VoyageScene, ref: SourceNodeRef): String =
     scene.timeline.node(ref).map(_.label).getOrElse(ref.key)
 
-  private def hoverCard(scene: VoyageScene, id: MarkId): Option[HtmlElement] =
+  private def hoverCard(
+      scene: VoyageScene,
+      id: MarkId,
+      visibleRecallText: Option[Map[RecallUnitId, String]] = None
+  ): Option[HtmlElement] =
     markOf(scene, id).flatMap { m =>
       scene.units.find(_.id == m.unit).map { u =>
         val where = m match
@@ -881,7 +1327,11 @@ object VoyageView:
                 )
           case a: VoyageMark.Unanchored => f"external ${a.externalMass}%.2f"
           case _                        => ""
-        div(div(cls("q"), u.text), div(cls("m"), where), div(cls("m"), numbers))
+        div(
+          div(cls("q"), visibleRecallText.fold(u.text)(_.getOrElse(u.id, ""))),
+          div(cls("m"), where),
+          div(cls("m"), numbers)
+        )
       }
     }
 
@@ -971,7 +1421,11 @@ object VoyageView:
         )
     }
 
-  private def inspector(scene: VoyageScene, u: VoyageUnit): HtmlElement =
+  private def inspector(
+      scene: VoyageScene,
+      u: VoyageUnit,
+      visibleRecallText: Option[String] = None
+  ): HtmlElement =
     val anchor = scene.marks.collectFirst { case m: VoyageMark.UnitAnchor if m.unit == u.id => m }
     val alternatives = scene.marks.collect { case m: VoyageMark.Alternative if m.unit == u.id => m }
     val absence = scene.marks.collectFirst {
@@ -1083,7 +1537,7 @@ object VoyageView:
     div(
       div(
         div(cls("where"), s"Unit ${u.ordinal} · ", span(cls("num"), onsetText), " into the recall"),
-        p(cls("quote"), s"“${u.text}”")
+        p(cls("quote"), s"“${visibleRecallText.getOrElse(u.text)}”")
       ),
       div(cls("kv"), placement),
       anchor.toVector.flatMap(a => withinGroup(scene, a, alternatives)),

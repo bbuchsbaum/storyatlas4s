@@ -483,3 +483,16 @@ class VoyageLoweringSuite extends FunSuite:
     assertEquals(drawn, alts, "one column per alternative")
     assert(!x.contains("voyage-alt context"), "focus wins over context")
   }
+
+  test("explicit horizon text never falls back to beyond-horizon quotations in SVG titles") {
+    val source = sceneWithText("beyond-horizon-canary")
+    val original = ok(VoyageLowering.lower(source))
+    val hidden = ok(VoyageLowering.lower(source, visibleRecallText = Some(Map.empty)))
+    assert(!render(hidden).contains("beyond-horizon-canary"))
+    assertEquals(GraphicsNames.collect(hidden), GraphicsNames.collect(original))
+    val partial = render(
+      ok(VoyageLowering.lower(source, visibleRecallText = Some(Map(u1 -> "permitted fragment"))))
+    )
+    assert(partial.contains("permitted fragment"))
+    assert(!partial.contains("beyond-horizon-canary"))
+  }

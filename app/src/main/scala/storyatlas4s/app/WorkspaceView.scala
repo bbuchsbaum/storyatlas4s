@@ -329,13 +329,7 @@ object WorkspaceView:
           WorkspaceVoyage.from(workspace, id) match
             case Left(reason)      => p(s"Voyage unavailable: $reason")
             case Right(projection) =>
-              div(
-                p("Clock projection availability for the complete recall inventory:"),
-                ul(
-                  projection.units
-                    .map(u => li(s"${u.ordinal + 1}. ${u.unit.value}: ${u.disposition}"))
-                )
-              )
+              VoyageView.controlled(projection, controller.signal, () => controller.now(), dispatch)
         }
       ),
       detailsTag(

@@ -97,6 +97,17 @@ nav ul { margin: 0; padding-left: 1.2em; }
 .joined-workspace details p, .joined-workspace details pre { overflow-wrap: anywhere; white-space: pre-wrap; font-size: 13px; }
 @media (max-width: 850px) { .joined-columns { grid-template-columns: minmax(0, 1fr); } .joined-source, .joined-recall { max-height: none; } .workspace-open-bar input { max-width: 100%; } .joined-workspace .workspace-actions label, .joined-workspace select { max-width: 100%; } }
 
+#workspace-voyage .panes { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 16px; }
+#workspace-voyage .page { padding: 16px; width: auto; height: auto; box-shadow: none; }
+#workspace-voyage .scroller { position: relative; overflow: auto; min-width: 0; }
+#workspace-voyage .plate svg { display: block; }
+#workspace-voyage .range-form, #workspace-voyage .cursor-form, #workspace-voyage .range-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+#workspace-voyage input { max-width: 7em; font: inherit; padding: 6px; }
+#workspace-voyage .recall-overview { position: relative; height: 44px; background: #edf2ee; touch-action: none; }
+#workspace-voyage .onset-tick { stroke: #176f5f; }
+#workspace-voyage .brush-window { position: absolute; top: 0; bottom: 0; border: 2px solid #176f5f; background: #176f5f18; pointer-events: none; }
+#workspace-voyage .tip { position: absolute; max-width: 24em; padding: 12px; background: #fff; border: 1px solid #53665e; pointer-events: none; z-index: 4; }
+@media (max-width: 850px) { #workspace-voyage .panes { grid-template-columns: minmax(0, 1fr); } }
 </style>
 </head>
 <body>

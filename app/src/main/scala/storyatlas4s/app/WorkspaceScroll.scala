@@ -85,7 +85,7 @@ private[app] object WorkspaceScroll:
           }
         )
         observer = Some(watch)
-        signal.map(_.state.mode).distinct.foreach(_ => schedule())(ctx.owner)
+        signal.map(_.state.mode).distinct.foreach(_ => schedule())(using ctx.owner)
         schedule()
       },
       onUnmountCallback { _ =>

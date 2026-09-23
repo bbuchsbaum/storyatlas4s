@@ -210,7 +210,8 @@ object VoyageLowering:
       contextFor: Set[RecallUnitId] = Set.empty,
       ghostsFor: Set[RecallUnitId] = Set.empty,
       window: Option[RecallWindow] = None,
-      includeUntimed: Boolean = true
+      includeUntimed: Boolean = true,
+      visibleRecallText: Option[Map[RecallUnitId, String]] = None
   ): Either[GraphicsError, ig.Scene] =
     window match
       case Some(w) if w.start < 0.0 || w.end > scene.recallLength.value =>
@@ -221,7 +222,7 @@ object VoyageLowering:
         )
       case _ =>
         val sc = scales(scene, box, window)
-        val words = Words(scene)
+        val words = Words(scene, visibleRecallText)
         for
           vp <- viewport(box)
           ground <- groundLayer(scene, sc, vp, alternativesFor)
@@ -234,9 +235,13 @@ object VoyageLowering:
   // ------------------------------------------------------------------ titles
 
   /** What a title may say: only what the scene already holds, looked up once. */
-  private final case class Words(scene: VoyageScene):
+  private final case class Words(
+      scene: VoyageScene,
+      visibleRecallText: Option[Map[RecallUnitId, String]]
+  ):
     private val units = scene.units.map(u => u.id -> u).toMap
-    def text(id: RecallUnitId): String = units.get(id).map(_.text).getOrElse("")
+    def text(id: RecallUnitId): String =
+      visibleRecallText.fold(units.get(id).map(_.text).getOrElse(""))(_.getOrElse(id, ""))
     def ordinal(id: RecallUnitId): Int = units.get(id).map(_.ordinal).getOrElse(-1)
     def node(ref: storymodel4s.align.SourceNodeRef): String =
       scene.timeline.node(ref).map(_.label).getOrElse(ref.key)
