@@ -45,7 +45,7 @@ object VoyageLowering:
     val default: Box = Box(
       width = 1100,
       left = 62,
-      right = 132,
+      right = 196,
       top = 14,
       bottom = 28,
       plotHeight = 540,
@@ -67,6 +67,8 @@ object VoyageLowering:
     val track = "voyage-track"
     val externalDominant = "external-dominant"
     val groupLevel = "level-group"
+    val groupLabel = "voyage-group-label"
+    val groupBand = "voyage-group-band"
     def origin(o: AnchorOrigin): String = o match
       case AnchorOrigin.PosteriorArgmax => "origin-argmax"
       case AnchorOrigin.DecodeBound     => "origin-bound"
@@ -79,10 +81,10 @@ object VoyageLowering:
     val model = ig.Rgba.unsafe(0x1b, 0x7f, 0xa3)
     val gold = ig.Rgba.unsafe(0xc9, 0x92, 0x2e)
     val goldBand = ig.Rgba.unsafe(0xc9, 0x92, 0x2e, 0.17)
-    val goldLine = ig.Rgba.unsafe(0xc9, 0x92, 0x2e, 0.3)
+    val groupBand = ig.Rgba.unsafe(0xf4, 0xf6, 0xf5)
     val external = ig.Rgba.unsafe(0x8a, 0x93, 0x9d)
     val raw = ig.Rgba.unsafe(0x9a, 0xa3, 0xab)
-    val ghostLine = ig.Rgba.unsafe(0x9a, 0xa3, 0xab, 0.45)
+    val ghostLine = ig.Rgba.unsafe(0x9a, 0xa3, 0xab, 0.2)
     val ghostDot = ig.Rgba.unsafe(0x9a, 0xa3, 0xab, 0.7)
     val ink2 = ig.Rgba.unsafe(0x4b, 0x56, 0x5f)
     val hair = ig.Rgba.unsafe(0xd5, 0xda, 0xd8)
@@ -137,7 +139,8 @@ object VoyageLowering:
       val legal = cp == 0x9 || cp == 0xa || cp == 0xd ||
         (cp >= 0x20 && cp <= 0xd7ff) || (cp >= 0xe000 && cp <= 0xfffd) ||
         (cp >= 0x10000 && cp <= 0x10ffff)
-      if legal then out.appendCodePoint(cp)
+      if legal then
+        val _ = out.appendCodePoint(cp)
       i += Character.charCount(cp)
     out.toString
 
@@ -157,15 +160,31 @@ object VoyageLowering:
   private def px(x: Double, y: Double): ig.Point = ig.Point.nativeUnsafe(x, y)
 
   /** Pixel scales of the two clocks. */
-  final case class Scales(box: Box, recallLength: Double, sourceEnd: Double):
-    def x(t: Double): Double = box.left + box.plotWidth * (t / math.max(recallLength, 1e-9))
+  final case class Scales(
+      box: Box,
+      recallLength: Double,
+      sourceEnd: Double,
+      recallStart: Double = 0.0,
+      recallEnd: Option[Double] = None
+  ):
+    def rangeStart: Double = recallStart
+    def rangeEnd: Double = recallEnd.getOrElse(recallLength)
+    def visible(t: Double): Boolean = t >= rangeStart && t <= rangeEnd
+    def x(t: Double): Double =
+      box.left + box.plotWidth * ((t - rangeStart) / math.max(rangeEnd - rangeStart, 1e-9))
     def y(s: Double): Double =
       box.top + box.plotHeight - box.plotHeight * (s / math.max(sourceEnd, 1e-9))
     def track(group: Int, groupCount: Int): Double =
       box.trackTop + box.trackHeight - box.trackHeight * ((group - 0.5) / math.max(groupCount, 1))
 
-  def scales(scene: VoyageScene, box: Box): Scales =
-    Scales(box, scene.recallLength.value, scene.timeline.end)
+  def scales(scene: VoyageScene, box: Box, window: Option[RecallWindow] = None): Scales =
+    Scales(
+      box,
+      scene.recallLength.value,
+      scene.timeline.end,
+      window.fold(0.0)(_.start),
+      window.map(_.end)
+    )
 
   /** Radius in pixels for a mass: area grows with mass, and a zero-mass anchor keeps a legible
     * hollow shape rather than vanishing.
@@ -179,26 +198,38 @@ object VoyageLowering:
 
   /** Lower a scene. `alternativesFor` names the units whose posterior columns are drawn in full;
     * `contextFor` names units whose columns are drawn faint, as context behind the focused ones;
-    * `ghosts` says whether a decode-moved anchor shows the posterior argmax it left; `box` is the
-    * plate.
+    * `ghosts` opts into all moved argmaxes; otherwise only `ghostsFor` are shown. Labels prioritize
+    * the groups of `alternativesFor`, then the number of drawn anchors, without moving their source
+    * coordinates. These are display choices only; `box` is the plate.
     */
   def lower(
       scene: VoyageScene,
       alternativesFor: Set[RecallUnitId] = Set.empty,
       box: Box = Box.default,
-      ghosts: Boolean = true,
-      contextFor: Set[RecallUnitId] = Set.empty
+      ghosts: Boolean = false,
+      contextFor: Set[RecallUnitId] = Set.empty,
+      ghostsFor: Set[RecallUnitId] = Set.empty,
+      window: Option[RecallWindow] = None,
+      includeUntimed: Boolean = true
   ): Either[GraphicsError, ig.Scene] =
-    val sc = scales(scene, box)
-    val words = Words(scene)
-    for
-      vp <- viewport(box)
-      ground <- groundLayer(scene, sc, vp)
-      bands <- codingLayer(scene, sc, vp, words)
-      links <- linkLayer(scene, sc, vp, alternativesFor, contextFor, ghosts, words)
-      marks <- markLayer(scene, sc, vp, words)
-      track <- trackLayer(scene, sc, vp)
-    yield ig.Scene(Vector(ground, bands, links, marks, track))
+    window match
+      case Some(w) if w.start < 0.0 || w.end > scene.recallLength.value =>
+        Left(
+          GraphicsError.InvalidExtent(
+            s"recall window ${w.start}–${w.end} lies outside recall extent 0–${scene.recallLength.value}"
+          )
+        )
+      case _ =>
+        val sc = scales(scene, box, window)
+        val words = Words(scene)
+        for
+          vp <- viewport(box)
+          ground <- groundLayer(scene, sc, vp, alternativesFor)
+          bands <- codingLayer(scene, sc, vp, words)
+          links <- linkLayer(scene, sc, vp, alternativesFor, contextFor, ghosts, ghostsFor, words)
+          marks <- markLayer(scene, sc, vp, words, includeUntimed)
+          track <- trackLayer(scene, sc, vp)
+        yield ig.Scene(Vector(ground, bands, links, marks, track))
 
   // ------------------------------------------------------------------ titles
 
@@ -243,29 +274,97 @@ object VoyageLowering:
   private def groundLayer(
       scene: VoyageScene,
       sc: Scales,
-      vp: ig.Viewport
+      vp: ig.Viewport,
+      selected: Set[RecallUnitId]
   ): Either[GraphicsError, ig.Grob] =
     val box = sc.box
     val groups = scene.timeline.groups.sortBy(_.ordinal)
+    val anchors = scene.marks.collect {
+      case a: VoyageMark.UnitAnchor if sc.visible(a.at.value) => a
+    }
+    val selectedGroups = anchors.filter(a => selected(a.unit)).flatMap(_.group).toSet
+    val density = anchors.flatMap(_.group).groupMapReduce(identity)(_ => 1)(_ + _)
+    // Fixed-width font; wrap instead of losing the end of a supplied label. Only the choice of
+    // visible labels is layout policy. Their centers stay exactly at the supplied span midpoint.
+    val columns = math.max(8, (box.right - 18) / 7)
+    def codePoints(word: String): Iterator[String] = Iterator.unfold(0) { i =>
+      if i >= word.length then None
+      else
+        val end = i + Character.charCount(word.codePointAt(i))
+        Some(word.substring(i, end) -> end)
+    }
+    def length(text: String): Int = text.codePointCount(0, text.length)
+    def wrap(text: String): Vector[String] =
+      text
+        .split("\\s+")
+        .toVector
+        .filter(_.nonEmpty)
+        .flatMap(word => codePoints(word).grouped(columns).map(_.mkString))
+        .foldLeft(
+          Vector.empty[String]
+        ) { (lines, word) =>
+          if lines.nonEmpty && length(lines.last) + length(word) + 1 <= columns then
+            lines.init :+ (lines.last + " " + word)
+          else lines :+ word
+        }
+    val candidates = groups
+      .map(g => (g, wrap(g.label)))
+      .sortBy { case (g, _) =>
+        (if selectedGroups(g.ordinal) then 0 else 1, -density.getOrElse(g.ordinal, 0), g.ordinal)
+      }
+    val labels = candidates
+      .foldLeft(Vector.empty[(SourceTimelineGroup, Vector[String])]) {
+        case (kept, candidate @ (g, lines)) =>
+          val y = sc.y(g.span.midpoint)
+          val overlaps = kept.exists { case (other, otherLines) =>
+            math.abs(y - sc.y(other.span.midpoint)) < (lines.size + otherLines.size) * 6.5 + 3
+          }
+          if overlaps then kept else kept :+ candidate
+      }
+      .sortBy(_._1.ordinal)
     for
       hair <- params(Some(Palette.hair), None)
-      goldLine <- params(Some(Palette.goldLine), None, width = 0.6)
+      band <- params(None, Some(Palette.groupBand))
       label <- params(None, Some(Palette.ink2))
-      boundaries <- groups.traverse { g =>
-        val y = sc.y(g.span.start.value)
-        ig.Grob.lines(Vector(px(box.left, y), px(box.width - box.right, y)), gp = goldLine)
-      }
-      groupLabels <- groups
-        .filter(g => sc.y(g.span.start.value) - sc.y(g.span.end.value) >= 11.0)
-        .traverse { g =>
-          val text = if g.label.length > 19 then g.label.take(18) + "…" else g.label
-          ig.Grob.text(
-            text,
-            px(box.width - box.right + 6, sc.y(g.span.midpoint) + 3.5),
-            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
-            gp = label
+      groupLabel <- params(None, Some(Palette.ink2), fontPx = 11)
+      boundaries <- groups.zipWithIndex.filter(_._2 % 2 == 0).traverse { case (g, _) =>
+        val top = sc.y(g.span.end.value)
+        val bottom = sc.y(g.span.start.value)
+        ig.Grob
+          .polygon(
+            Vector(
+              px(box.left, top),
+              px(box.width - box.right, top),
+              px(box.width - box.right, bottom),
+              px(box.left, bottom)
+            ),
+            gp = band
           )
-        }
+          .flatMap(annotated(_, Some(g.label), Classes.groupBand, "group" -> g.ordinal.toString))
+      }
+      groupLabels <- labels.traverse { case (g, lines) =>
+        val y = sc.y(g.span.midpoint)
+        for
+          tick <- ig.Grob.lines(
+            Vector(px(box.width - box.right - 3, y), px(box.width - box.right + 5, y)),
+            gp = hair
+          )
+          text <- lines.zipWithIndex.traverse { case (line, i) =>
+            ig.Grob.text(
+              line,
+              px(box.width - box.right + 9, y + (i - (lines.size - 1) / 2.0) * 13 + 3.5),
+              ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+              gp = groupLabel
+            )
+          }
+          result <- annotated(
+            ig.Grob.group(Vector(tick) ++ text),
+            Some(g.label),
+            Classes.groupLabel,
+            "group" -> g.ordinal.toString
+          )
+        yield result
+      }
       yAxis <- ig.Grob.lines(
         Vector(px(box.left, box.top), px(box.left, box.top + box.plotHeight)),
         gp = hair
@@ -288,15 +387,19 @@ object VoyageLowering:
           gp = label
         )
       }
-      xTicks <- ticks(0.0, sc.recallLength, 60.0).traverse { t =>
+      xTicks <- timeTicks(sc.rangeStart, sc.rangeEnd, box.plotWidth, 44.0).traverse { t =>
         ig.Grob.lines(
           Vector(px(sc.x(t), box.top + box.plotHeight), px(sc.x(t), box.top + box.plotHeight + 4)),
           gp = hair
         )
       }
-      xLabels <- ticks(0.0, sc.recallLength, 300.0).traverse { t =>
+      xLabels <- timeLabels(sc.rangeStart, sc.rangeEnd, box.plotWidth, 160.0, 40.0).traverse { t =>
         ig.Grob.text(
-          clock(t),
+          tickLabel(
+            t,
+            sc.rangeEnd - sc.rangeStart,
+            t == sc.rangeStart || t == sc.rangeEnd
+          ),
           px(sc.x(t), box.top + box.plotHeight + 16),
           ig.Anchor(ig.HJust.Center, ig.VJust.Bottom),
           gp = label
@@ -311,8 +414,8 @@ object VoyageLowering:
         ),
         ig.Grob.text(
           "recall time",
-          px(box.width - box.right, box.top + box.plotHeight + 16),
-          ig.Anchor(ig.HJust.Right, ig.VJust.Bottom),
+          px(box.left + box.plotWidth / 2.0, box.top + box.plotHeight + 27),
+          ig.Anchor(ig.HJust.Center, ig.VJust.Bottom),
           gp = label
         ),
         ig.Grob.text(
@@ -340,21 +443,24 @@ object VoyageLowering:
     val intervals = scene.coding.map(_.intervals).getOrElse(Vector.empty)
     for
       band <- params(None, Some(Palette.goldBand))
-      rects <- intervals.traverse { iv =>
-        scene.timeline.byGroup.get(iv.group) match
-          case None    => Right(ig.Grob.group(Vector.empty))
-          case Some(g) =>
-            val x0 = sc.x(iv.recall.start.value)
-            // a coding may run past the last word (its coder heard the recording end); clip
-            val x1 = math.min(sc.x(iv.recall.end.value), sc.box.width - sc.box.right)
-            val y0 = sc.y(g.span.end.value)
-            val y1 = sc.y(g.span.start.value)
-            ig.Grob
-              .polygon(Vector(px(x0, y0), px(x1, y0), px(x1, y1), px(x0, y1)), band)
-              .flatMap(
-                annotated(_, Some(words.coded(iv)), Classes.coding, "group" -> iv.group.toString)
-              )
-      }
+      rects <- intervals
+        .filter(iv => intersects(iv.recall.start.value, iv.recall.end.value, sc))
+        .traverse { iv =>
+          scene.timeline.byGroup.get(iv.group) match
+            case None    => Right(ig.Grob.group(Vector.empty))
+            case Some(g) =>
+              val x0 = sc.x(math.max(iv.recall.start.value, sc.rangeStart))
+              // A coding may run past the last word (its coder heard the recording end). Its geometry
+              // is clipped to this display window; the interval itself remains compiler-owned data.
+              val x1 = sc.x(math.min(iv.recall.end.value, sc.rangeEnd))
+              val y0 = sc.y(g.span.end.value)
+              val y1 = sc.y(g.span.start.value)
+              ig.Grob
+                .polygon(Vector(px(x0, y0), px(x1, y0), px(x1, y1), px(x0, y1)), band)
+                .flatMap(
+                  annotated(_, Some(words.coded(iv)), Classes.coding, "group" -> iv.group.toString)
+                )
+        }
       layer = ig.Grob.group(rects, viewport = Some(vp))
     yield layer
 
@@ -365,21 +471,25 @@ object VoyageLowering:
       alternativesFor: Set[RecallUnitId],
       contextFor: Set[RecallUnitId],
       ghosts: Boolean,
+      ghostsFor: Set[RecallUnitId],
       words: Words
   ): Either[GraphicsError, ig.Grob] =
-    val anchors = scene.marks.collect { case m: VoyageMark.UnitAnchor => m }
+    val anchors = scene.marks.collect {
+      case m: VoyageMark.UnitAnchor if sc.visible(m.at.value) => m
+    }
+    val anchorAt = scene.marks.collect { case a: VoyageMark.UnitAnchor =>
+      a.unit -> a.at.value
+    }.toMap
     val alternatives = scene.marks.collect {
       case m: VoyageMark.Alternative
-          if alternativesFor.contains(m.unit) || contextFor.contains(m.unit) =>
+          if anchorAt.get(m.unit).exists(sc.visible) &&
+            (alternativesFor.contains(m.unit) || contextFor.contains(m.unit)) =>
         m
     }
     val anchorOf = anchors.map(m => m.unit -> m).toMap
-    val moved =
-      if !ghosts then Vector.empty
-      else
-        anchors
-          .filter(m => m.origin != AnchorOrigin.PosteriorArgmax)
-          .flatMap(m => m.argmax.flatMap(scene.timeline.node).map(n => m -> n))
+    val moved = anchors
+      .filter(m => m.origin != AnchorOrigin.PosteriorArgmax && (ghosts || ghostsFor(m.unit)))
+      .flatMap(m => m.argmax.flatMap(scene.timeline.node).map(n => m -> n))
     for
       ghostLine <- params(Some(Palette.ghostLine), None, width = 0.7)
       ghostDot <- params(None, Some(Palette.ghostDot))
@@ -444,12 +554,22 @@ object VoyageLowering:
       scene: VoyageScene,
       sc: Scales,
       vp: ig.Viewport,
-      words: Words
+      words: Words,
+      includeUntimed: Boolean
   ): Either[GraphicsError, ig.Grob] =
     val box = sc.box
-    val untimed = scene.marks.collect { case m: VoyageMark.Untimed => m }
+    val anchorAt = scene.marks.collect { case a: VoyageMark.UnitAnchor =>
+      a.unit -> a.at.value
+    }.toMap
+    val displayed = scene.marks.filter {
+      case m: VoyageMark.UnitAnchor  => sc.visible(m.at.value)
+      case m: VoyageMark.Unanchored  => sc.visible(m.at.value)
+      case m: VoyageMark.Alternative => anchorAt.get(m.unit).exists(sc.visible)
+      case _: VoyageMark.Untimed     => includeUntimed
+    }
+    val untimed = displayed.collect { case m: VoyageMark.Untimed => m }
     for
-      grobs <- scene.marks.traverse {
+      grobs <- displayed.traverse {
         case m: VoyageMark.UnitAnchor =>
           val x = sc.x(m.at.value)
           val cy = sc.y(m.span.midpoint)
@@ -572,14 +692,15 @@ object VoyageLowering:
     val intervals = scene.coding.map(_.intervals).getOrElse(Vector.empty)
     def step(groupOf: VoyageMark.UnitAnchor => Option[Int], gp: ig.GraphicParams) =
       anchors.zipWithIndex.flatMap { case (m, i) =>
-        groupOf(m).map { g =>
-          val x0 = sc.x(m.at.value)
-          val x1 = anchors
+        groupOf(m).flatMap { g =>
+          val end = anchors
             .lift(i + 1)
-            .map(n => sc.x(n.at.value))
-            .getOrElse(sc.x(math.min(sc.recallLength, m.at.value + 8)))
+            .map(_.at.value)
+            .getOrElse(math.min(sc.recallLength, m.at.value + 8))
           val y = sc.track(g, groupCount)
-          ig.Grob.lines(Vector(px(x0, y), px(x1, y)), gp = gp)
+          clip(m.at.value, end, sc).map { case (start, stop) =>
+            ig.Grob.lines(Vector(px(sc.x(start), y), px(sc.x(stop), y)), gp = gp)
+          }
         }
       }.sequence
     for
@@ -612,18 +733,23 @@ object VoyageLowering:
             gp = label
           )
         )
-      gold <- intervals.traverse(iv =>
-        ig.Grob.lines(
-          Vector(
-            px(sc.x(iv.recall.start.value), sc.track(iv.group, groupCount)),
-            px(
-              math.min(sc.x(iv.recall.end.value), sc.box.width - sc.box.right),
-              sc.track(iv.group, groupCount)
-            )
-          ),
-          gp = goldGp
+      gold <- intervals
+        .filter(iv => intersects(iv.recall.start.value, iv.recall.end.value, sc))
+        .traverse(iv =>
+          ig.Grob.lines(
+            Vector(
+              px(
+                sc.x(math.max(iv.recall.start.value, sc.rangeStart)),
+                sc.track(iv.group, groupCount)
+              ),
+              px(
+                sc.x(math.min(iv.recall.end.value, sc.rangeEnd)),
+                sc.track(iv.group, groupCount)
+              )
+            ),
+            gp = goldGp
+          )
         )
-      )
       raw <- step(m => m.argmax.flatMap(scene.timeline.node).flatMap(_.group), rawGp)
       model <- step(_.group, modelGp)
       goldTrack <- annotated(ig.Grob.group(gold), None, s"${Classes.track} track-coding")
@@ -659,6 +785,68 @@ object VoyageLowering:
   private def ticks(from: Double, to: Double, step: Double): Vector[Double] =
     if to <= from then Vector(from)
     else Vector.iterate(from, ((to - from) / step).toInt + 1)(_ + step)
+
+  private def intersects(start: Double, end: Double, sc: Scales): Boolean =
+    end >= sc.rangeStart && start <= sc.rangeEnd
+
+  private def clip(start: Double, end: Double, sc: Scales): Option[(Double, Double)] =
+    val clippedStart = math.max(start, sc.rangeStart)
+    val clippedEnd = math.min(end, sc.rangeEnd)
+    Option.when(clippedStart <= clippedEnd)(clippedStart -> clippedEnd)
+
+  /** Ticks retain the actual recall values at both edges; only their density is display policy. */
+  private def timeTicks(
+      from: Double,
+      to: Double,
+      width: Int,
+      minimumSpacing: Double
+  ): Vector[Double] =
+    if to <= from then Vector(from)
+    else
+      val span = to - from
+      val maximumIntervals = math.max(1, math.floor(width / minimumSpacing).toInt)
+      val target = math.max(span / maximumIntervals, if span >= 1.0 then 1.0 else 0.0)
+      val magnitude = math.pow(10.0, math.floor(math.log10(target)))
+      val step =
+        Vector(1.0, 2.0, 5.0, 10.0).map(_ * magnitude).find(_ >= target).getOrElse(magnitude)
+      val first = math.ceil(from / step) * step
+      val interior = Iterator
+        .iterate(first)(_ + step)
+        .takeWhile(_ < to - 1e-9)
+        .filter(_ > from + 1e-9)
+        .toVector
+      Vector(from) ++ interior ++ Vector(to)
+
+  /** Labels need more room than their ticks. Exact endpoints stay visible; an interior label that
+    * would collide with either endpoint is omitted rather than relabelled or shifted.
+    */
+  private def timeLabels(
+      from: Double,
+      to: Double,
+      width: Int,
+      minimumSpacing: Double,
+      endpointClearance: Double
+  ): Vector[Double] =
+    val ticks = timeTicks(from, to, width, minimumSpacing)
+    val span = to - from
+    if span <= 0.0 then ticks
+    else
+      ticks.filter { t =>
+        t == from || t == to ||
+        ((t - from) / span * width >= endpointClearance &&
+          (to - t) / span * width >= endpointClearance)
+      }
+
+  private def tickLabel(seconds: Double, visibleSpan: Double, endpoint: Boolean): String =
+    if visibleSpan < 1.0 then f"$seconds%.2fs"
+    else if endpoint && math.abs(seconds - math.rint(seconds)) > 1e-9 then clockFraction(seconds)
+    else clock(seconds)
+
+  private def clockFraction(seconds: Double): String =
+    val minute = math.floor(seconds / 60.0).toLong
+    val second = seconds - minute * 60.0
+    val rendered = f"$second%.3f".reverse.dropWhile(_ == '0').reverse.stripSuffix(".")
+    s"$minute:${if second < 10.0 then "0" else ""}$rendered"
 
   /** `m:ss` on a clock, as the reference page prints it. */
   def clock(seconds: Double): String =

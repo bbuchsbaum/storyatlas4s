@@ -77,15 +77,15 @@ object VoyagePage:
       |.stat .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
       |.stat .v { font-family: var(--mono); font-size: 20px; font-variant-numeric: tabular-nums; }
       |.stat .s { font-size: 12px; color: var(--ink-2); }
-      |.panes { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
-      |@media (max-width: 1100px) { .panes { grid-template-columns: 1fr; } }
-      |.panel { background: var(--surface); border: 1px solid var(--hair); border-radius: 10px; }
+      |.panes { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+      |@media (max-width: 1100px) { .panes { grid-template-columns: minmax(0, 1fr); } }
+      |.panel { min-width: 0; background: var(--surface); border: 1px solid var(--hair); border-radius: 10px; }
       |.panel > .head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 16px 8px; }
       |.panel > .head .hint { color: var(--muted); font-size: 12px; }
       |.scroller { overflow-x: auto; overflow-y: hidden; position: relative; padding: 0 0 8px; }
       |.scroller svg { display: block; }
       |.scroller svg [data-name] { cursor: pointer; }
-      |.plate svg { display: block; max-width: 100%; }
+      |.plate svg { display: block; max-width: none; }
       |.controls input { accent-color: var(--model); }
       |.legend-row span { display: inline-flex; align-items: center; gap: 7px; }
       |.legend-row .glyph { flex: none; }
@@ -119,4 +119,51 @@ object VoyagePage:
       |footer.prov p { margin: 4px 0; }
       |.kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--hair); border-radius: 4px; padding: 0 5px; background: var(--surface-2); }
       |.error { border: 2px solid var(--ink); padding: 0.75em; background: var(--surface); }
+      |.voyage-navigation { padding: 12px 16px 0; }
+      |.range-toolbar, .range-form, .range-actions { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+      |.range-toolbar { justify-content: space-between; }
+      |.range-form label { display: grid; gap: 3px; font-size: 12px; }
+      |.range-form input { width: 7.5em; padding: 7px 8px; border: 1px solid var(--hair); border-radius: 4px; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+      |.voyage-navigation button { min-height: 36px; padding: 7px 10px; border: 1px solid var(--hair); border-radius: 4px; background: var(--surface); cursor: pointer; }
+      |.voyage-navigation button:hover:not(:disabled) { background: var(--surface-2); }
+      |.voyage-navigation button:disabled { opacity: 0.5; cursor: default; }
+      |.overview-caption, .overview-extents { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--ink-2); }
+      |.overview-caption { margin-top: 16px; margin-bottom: 5px; flex-wrap: wrap; }
+      |.overview-extents { font-family: var(--mono); margin-top: 3px; }
+      |.recall-overview { height: 46px; position: relative; border: 1px solid var(--hair); background: var(--surface-2); cursor: crosshair; touch-action: none; user-select: none; }
+      |.recall-overview svg { display: block; pointer-events: none; }
+      |.onset-tick { stroke: var(--ink-2); stroke-width: 1; }
+      |.brush-window { position: absolute; top: 0; bottom: 0; min-width: 1px; border: 2px solid var(--ink); background: rgba(27,127,163,0.12); pointer-events: none; }
+      |.range-status { margin-top: 8px; font-weight: 600; font-variant-numeric: tabular-nums; }
+      |.range-error { margin: 8px 0; color: #942f29; }
+      |.recall-picker { display: flex; align-items: end; gap: 10px; margin-top: 12px; }
+      |.recall-picker label { display: grid; gap: 4px; min-width: 0; flex: 1; font-size: 12px; }
+      |.recall-picker select { width: 100%; min-width: 0; padding: 7px; background: var(--surface); border: 1px solid var(--hair); border-radius: 4px; }
+      |.selection-location { min-height: 1.5em; margin: 6px 0 10px; font-size: 12px; color: var(--ink-2); }
+      |.voyage-key { border-top: 1px solid var(--hair); }
+      |.voyage-key > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+      |.voyage-key .legend-row { border-top: 0; }
+      |@media (max-width: 640px) {
+      |  .page { padding: 12px 12px 24px; gap: 12px; }
+      |  header.top { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+      |  .masthead p { font-size: 14px; }
+      |  .controls { justify-content: flex-start; gap: 8px; }
+      |  .controls label { min-height: 36px; }
+      |  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+      |  .stat { padding: 8px; }
+      |  .panel > .head { display: grid; gap: 4px; padding: 12px 10px 4px; }
+      |  .voyage-navigation { padding: 10px 10px 0; }
+      |  .range-toolbar { display: grid; gap: 10px; }
+      |  .range-form { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; }
+      |  .range-form input { width: 100%; min-width: 0; font-size: 16px; }
+      |  .voyage-navigation button, .recall-picker select { min-height: 44px; }
+      |  .range-actions { display: grid; grid-template-columns: repeat(3, 1fr); }
+      |  .recall-picker { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+      |  .recall-picker select { font-size: 16px; }
+      |  .recall-picker button { justify-self: start; }
+      |  .inspector { padding: 12px 10px; }
+      |  .kv { grid-template-columns: max-content minmax(0,1fr); }
+      |  table.alts { table-layout: fixed; overflow-wrap: anywhere; }
+      |  .legend-row { display: grid; font-size: 13px; }
+      |}
       |""".stripMargin

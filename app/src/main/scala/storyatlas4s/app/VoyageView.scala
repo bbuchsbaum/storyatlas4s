@@ -4,7 +4,7 @@ import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import com.raquo.laminar.api.L.*
 import org.scalajs.dom
 import scala.scalajs.js
-import storyatlas4s.intaglio.VoyageLowering
+import storyatlas4s.intaglio.{RecallWindow, VoyageLowering}
 import storymodel4s.align.SourceNodeRef
 import storymodel4s.codec.VoyageCodecs
 import storymodel4s.core.{Address, Addressable}
@@ -19,8 +19,8 @@ import storymodel4s.view.*
   * and the row's numbers, click and keyboard selection resolved through the scene's navigation from
   * `data-name` to `Address`, the posterior column for the focused unit, two toggles (the ghosts of
   * moved argmaxes, the columns of every unit), a plate as wide as its panel, and an inspector that
-  * prints what the scene already holds. It computes no number: every figure is read from a mark or
-  * the compiled summary, and a bar's segments are the masses the marks carry.
+  * prints what the scene already holds. It computes no scientific estimate: every figure is read
+  * from a mark or the compiled summary, and a bar's segments are the masses the marks carry.
   *
   * The skeleton is built once and stays in the DOM; a change of selection, toggle or width
   * re-lowers only the plate's SVG and re-renders the inspector, so a focused section keeps its
@@ -35,13 +35,14 @@ object VoyageView:
       selection: Set[Address],
       ghosts: Boolean,
       allColumns: Boolean,
-      width: Option[Int]
+      width: Option[Int],
+      window: Option[RecallWindow]
   )
 
   /** The plate follows its panel between these widths; narrower and the clocks lose their ticks,
     * wider and the marks drift apart for nothing.
     */
-  private val MinWidth = 720
+  private val MinWidth = 300
   private val MaxWidth = 1600
 
   def fromDocumentText(text: String): HtmlElement =
@@ -61,13 +62,18 @@ object VoyageView:
     val focus = Var(Option.empty[RecallUnitId])
     val hovered = Var(Option.empty[MarkId])
     val tip = Var(Option.empty[(Double, Double)])
-    val ghosts = Var(true)
+    val ghosts = Var(false)
     val allColumns = Var(false)
     // unmeasured until the panel is laid out, so the plate is lowered once, at its real width
     val width = Var(Option.empty[Int])
+    val total = scene.recallLength.value
+    val window = Var(RecallWindow.bounded(0, total, total))
+    val rangeError = Var(Option.empty[String])
+    val preview = Var(Option.empty[(Double, Double)])
+    var dragStart = Option.empty[Double]
     val lens: Signal[Lens] = selection.signal
-      .combineWith(ghosts.signal, allColumns.signal, width.signal.distinct)
-      .map { case (s, g, all, w) => Lens(s, g, all, w) }
+      .combineWith(ghosts.signal, allColumns.signal, width.signal.distinct, window.signal)
+      .map { case (s, g, all, w, r) => Lens(s, g, all, w, r) }
     val frames: Signal[Option[Either[String, Frame]]] =
       lens.map(l => l.width.map(w => compile(document, scene, l, w)))
     val timed = scene.units.filter(_.onset.isDefined).sortBy(_.onset.map(_.value))
@@ -94,9 +100,247 @@ object VoyageView:
         selection.set(Set(unitAddress(id)))
         focus.set(Some(id))
 
+    def chooseUnit(id: RecallUnitId): Unit =
+      selection.set(Set(unitAddress(id)))
+      focus.set(Some(id))
+
     def fit(el: dom.Element): Unit =
       val w = el.clientWidth
-      if w > 0 then width.set(Some(math.max(MinWidth, math.min(MaxWidth, w))))
+      if w > 0 then
+        // A first compact visit starts with readable detail. Subsequent resizes preserve the
+        // user's range, selection and focus, rather than silently moving the investigation.
+        if width.now().isEmpty && w < 640 then
+          window.set(RecallWindow.bounded(0, math.min(120, total), total))
+        width.set(Some(math.max(MinWidth, math.min(MaxWidth, w))))
+
+    def setWindow(next: Option[RecallWindow]): Unit =
+      window.set(next)
+      hovered.set(None)
+      tip.set(None)
+      rangeError.set(None)
+
+    def shift(fraction: Double): Unit = window.now().foreach { r =>
+      setWindow(RecallWindow.bounded(r.start + r.span * fraction, r.span, total))
+    }
+
+    def zoom(factor: Double): Unit = window.now().foreach { r =>
+      val span = math.min(total, math.max(math.min(1.0, total), r.span * factor))
+      setWindow(RecallWindow.bounded((r.start + r.end - span) / 2, span, total))
+    }
+
+    def reveal(): Unit =
+      for
+        id <- focus.now()
+        unit <- scene.units.find(_.id == id)
+        onset <- unit.onset
+        r <- window.now()
+      do
+        if !r.contains(onset.value) then
+          setWindow(RecallWindow.bounded(onset.value - r.span / 2, r.span, total))
+
+    def pointerTime(ev: dom.PointerEvent): Double =
+      val rect = ev.currentTarget.asInstanceOf[dom.Element].getBoundingClientRect()
+      math.max(
+        0,
+        math.min(
+          total,
+          math.round((ev.clientX - rect.left) / math.max(1, rect.width) * total * 10) / 10.0
+        )
+      )
+
+    val startField = input(
+      idAttr("voyage-range-start"),
+      typ("text"),
+      aria.label("Detail start (m:ss)"),
+      value <-- window.signal.map(_.fold("")(r => clockInput(r.start)))
+    )
+    val endField = input(
+      idAttr("voyage-range-end"),
+      typ("text"),
+      aria.label("Detail end (m:ss)"),
+      value <-- window.signal.map(_.fold("")(r => clockInput(r.end)))
+    )
+    def applyRange(): Unit =
+      val checked = for
+        start <- parseClock(startField.ref.value)
+        end <- parseClock(endField.ref.value)
+        r <- RecallWindow.of(start, end)
+        _ <- Either.cond(end <= total, (), "End must be within the supplied recall extent.")
+      yield r
+      checked match
+        case Left(problem) => rangeError.set(Some(problem))
+        case Right(r)      => setWindow(Some(r))
+
+    val rangeControls = div(
+      cls("voyage-navigation"),
+      div(
+        cls("range-toolbar"),
+        form(
+          cls("range-form"),
+          onSubmit --> { ev => ev.preventDefault(); applyRange() },
+          label("From ", startField),
+          label("To ", endField),
+          button(typ("submit"), "Apply range", disabled := window.now().isEmpty)
+        ),
+        div(
+          cls("range-actions"),
+          button(
+            typ("button"),
+            "Earlier",
+            onClick --> (_ => shift(-0.5)),
+            disabled <-- window.signal.map(_.forall(_.start <= 0))
+          ),
+          button(
+            typ("button"),
+            "Later",
+            onClick --> (_ => shift(0.5)),
+            disabled <-- window.signal.map(_.forall(_.end >= total))
+          ),
+          button(
+            typ("button"),
+            "Zoom in",
+            onClick --> (_ => zoom(0.5)),
+            disabled <-- window.signal.map(_.forall(_.span <= math.min(1.0, total)))
+          ),
+          button(
+            typ("button"),
+            "Zoom out",
+            onClick --> (_ => zoom(2)),
+            disabled <-- window.signal.map(_.forall(_.span >= total))
+          ),
+          button(
+            typ("button"),
+            "Whole recall",
+            onClick --> (_ => setWindow(RecallWindow.bounded(0, total, total))),
+            disabled := window.now().isEmpty
+          )
+        )
+      ),
+      child.maybe <-- rangeError.signal.map(_.map(e => p(cls("range-error"), role("alert"), e))),
+      div(
+        cls("overview-caption"),
+        span(s"Whole recall · ${scene.units.count(_.onset.nonEmpty)} timed onsets"),
+        span("Drag to set detail · range fields support keyboard entry")
+      ),
+      div(
+        cls("recall-overview"),
+        role("group"),
+        aria.label("Whole recall overview brush"),
+        svg.svg(
+          svg.viewBox := "0 0 1000 44",
+          svg.preserveAspectRatio := "none",
+          svg.width := "100%",
+          svg.height := "44",
+          scene.units.flatMap(u =>
+            u.onset.map(t =>
+              svg.line(
+                svg.x1 := (1000 * t.value / math.max(total, 1e-9)).toString,
+                svg.x2 := (1000 * t.value / math.max(total, 1e-9)).toString,
+                svg.y1 := "10",
+                svg.y2 := "34",
+                svg.cls := "onset-tick"
+              )
+            )
+          )
+        ),
+        div(
+          cls("brush-window"),
+          left <-- window.signal.combineWith(preview.signal).map { case (r, p) =>
+            s"${100 * p.fold(r.fold(0.0)(_.start))(_._1) / math.max(total, 1e-9)}%"
+          },
+          com.raquo.laminar.api.L.width <-- window.signal.combineWith(preview.signal).map {
+            case (r, p) =>
+              val span = p.fold(r.fold(0.0)(_.span))(v => v._2 - v._1)
+              s"${100 * span / math.max(total, 1e-9)}%"
+          }
+        ),
+        onPointerDown --> { ev =>
+          if total > 0 && ev.button == 0 then
+            ev.preventDefault()
+            val t = pointerTime(ev)
+            dragStart = Some(t)
+            preview.set(Some(t -> t))
+            val _ = ev.currentTarget.asInstanceOf[js.Dynamic].setPointerCapture(ev.pointerId)
+        },
+        onPointerMove --> { ev =>
+          dragStart.foreach { start =>
+            val end = pointerTime(ev)
+            preview.set(Some(math.min(start, end) -> math.max(start, end)))
+          }
+        },
+        onPointerUp --> { ev =>
+          dragStart.foreach { start =>
+            val end = pointerTime(ev)
+            if math.abs(end - start) >= math.min(1.0, total) then
+              setWindow(RecallWindow.of(math.min(start, end), math.max(start, end)).toOption)
+          }
+          dragStart = None
+          preview.set(None)
+        },
+        onPointerCancel --> { _ => dragStart = None; preview.set(None) }
+      ),
+      div(cls("overview-extents"), span("0:00"), span(clockInput(total))),
+      div(
+        cls("range-status"),
+        role("status"),
+        aria.live("polite"),
+        child.text <-- window.signal.map { r =>
+          val visible = scene.units.count(u => u.onset.exists(t => r.forall(_.contains(t.value))))
+          r.fold("No timed recall extent supplied") { w =>
+            s"Detail ${clockInput(w.start)}–${clockInput(w.end)} · $visible timed units in view"
+          }
+        }
+      ),
+      div(
+        cls("recall-picker"),
+        label(
+          "Inspect recall unit ",
+          select(
+            idAttr("voyage-unit"),
+            aria.label("Inspect recall unit"),
+            option(value := "", disabled := true, "Choose a unit"),
+            scene.units
+              .sortBy(_.ordinal)
+              .map(u =>
+                option(
+                  value := u.id.value,
+                  s"${u.ordinal} · ${u.onset.fold("untimed")(t => clockInput(t.value))} · ${u.text.take(65)}"
+                )
+              ),
+            value <-- focus.signal.map(_.fold("")(_.value)),
+            onChange.mapToValue --> (id =>
+              scene.units.find(_.id.value == id).foreach(u => chooseUnit(u.id))
+            )
+          )
+        ),
+        button(
+          typ("button"),
+          "Reveal selected",
+          onClick --> (_ => reveal()),
+          disabled <-- focus.signal.map(
+            _.flatMap(id => scene.units.find(_.id == id)).forall(_.onset.isEmpty)
+          )
+        )
+      ),
+      p(
+        cls("selection-location"),
+        role("status"),
+        child.text <-- focus.signal.combineWith(window.signal).map { case (f, r) =>
+          f.flatMap(id => scene.units.find(_.id == id))
+            .fold(
+              s"All ${scene.units.size} units remain available; ${scene.units.count(_.onset.isEmpty)} untimed."
+            )(u =>
+              u.onset.fold(
+                s"Unit ${u.ordinal} is untimed; inspect its text without a clock position."
+              ) { t =>
+                if r.exists(w => !w.contains(t.value)) then
+                  s"Unit ${u.ordinal} is outside this detail window. Reveal selected to bring it into view."
+                else s"Unit ${u.ordinal} is in the detail window."
+              }
+            )
+        }
+      )
+    )
 
     val focusedUnit: Signal[Option[VoyageUnit]] =
       focus.signal.map(_.flatMap(id => scene.units.find(_.id == id)))
@@ -109,7 +353,9 @@ object VoyageView:
       ),
       dataAttr("focus") <-- focus.signal.map(_.fold("none")(_.value)),
       dataAttr("plate-width") <-- width.signal.map(_.fold("unmeasured")(_.toString)),
-      header(scene, ghosts, allColumns),
+      dataAttr("range-start") <-- window.signal.map(_.fold("none")(_.start.toString)),
+      dataAttr("range-end") <-- window.signal.map(_.fold("none")(_.end.toString)),
+      header(ghosts, allColumns),
       stats(scene),
       div(
         cls("panes"),
@@ -120,16 +366,21 @@ object VoyageView:
           div(
             cls("head"),
             h2("Recall time against source time"),
-            span(cls("hint"), "hover a mark · click to inspect · ← → walk the recall")
+            span(cls("hint"), "choose a unit · click to inspect · ← → timed units")
           ),
           onClick --> (ev => activate(ev.target, ev.shiftKey)),
           onKeyDown --> { ev =>
-            ev.key match
-              case "ArrowRight" => ev.preventDefault(); walk(1)
-              case "ArrowLeft"  => ev.preventDefault(); walk(-1)
-              case "Enter"      => activate(ev.target, ev.shiftKey)
-              case _            => ()
+            val inPlot = ev.target match
+              case el: dom.Element => el == ev.currentTarget || el.closest(".plate") != null
+              case _               => false
+            if inPlot then
+              ev.key match
+                case "ArrowRight" => ev.preventDefault(); walk(1)
+                case "ArrowLeft"  => ev.preventDefault(); walk(-1)
+                case "Enter"      => activate(ev.target, ev.shiftKey)
+                case _            => ()
           },
+          rangeControls,
           div(
             cls("scroller"),
             onMountCallback(ctx => fit(ctx.thisNode.ref)),
@@ -173,7 +424,14 @@ object VoyageView:
                 yield div(cls("tip"), left := s"${x}px", top := s"${y}px", card)
               }
           ),
-          legend
+          detailsTag(
+            cls("voyage-key"),
+            onMountCallback(ctx =>
+              if dom.window.innerWidth > 640 then ctx.thisNode.ref.setAttribute("open", "")
+            ),
+            summaryTag("Key"),
+            child <-- lens.map(l => legend(scene, l))
+          )
         ),
         asideTag(
           cls("panel inspector"),
@@ -210,14 +468,26 @@ object VoyageView:
         .collect { case RecallRef.Unit(id) => id }
         .toSet
       context = if lens.allColumns then base.units.map(_.id).toSet -- selected else Set.empty
-      box = VoyageLowering.Box.default.copy(width = width)
+      box =
+        if width < 640 then
+          VoyageLowering.Box.default.copy(
+            width = width,
+            left = 46,
+            right = 128,
+            plotHeight = 380,
+            trackHeight = 64
+          )
+        else VoyageLowering.Box.default.copy(width = width)
       lowered <- VoyageLowering
         .lower(
           scene,
           alternativesFor = selected,
           box = box,
           ghosts = lens.ghosts,
-          contextFor = context
+          contextFor = context,
+          ghostsFor = selected,
+          window = lens.window,
+          includeUntimed = false
         )
         .left
         .map(_.message)
@@ -240,8 +510,9 @@ object VoyageView:
       i += 1
     decorate(container, frame.scene, selection)
     if keyboardInPlate then
-      Option(container.querySelector(s".${SvgDom.SelectedClass}"))
-        .foreach(_.asInstanceOf[js.Dynamic].focus())
+      val target = Option(container.querySelector(s".${SvgDom.SelectedClass}"))
+        .orElse(Option(container.closest("section[aria-label='Recall Voyage']")))
+      target.foreach(_.asInstanceOf[js.Dynamic].focus())
 
   private def decorate(container: dom.Element, scene: VoyageScene, selection: Set[Address]): Unit =
     val selectedMarks = selection.toVector.flatMap(scene.navigation.marksFor).map(_.value).toSet
@@ -265,8 +536,26 @@ object VoyageView:
 
   private def clock(t: Double): String = VoyageLowering.clock(t)
 
+  private def clockInput(t: Double): String =
+    val minutes = (t / 60).toLong
+    val seconds = (BigDecimal(t.toString) - BigDecimal(
+      minutes
+    ) * 60).bigDecimal.stripTrailingZeros.toPlainString
+    s"$minutes:${if t % 60 < 10 then "0" else ""}$seconds"
+
+  private def parseClock(text: String): Either[String, Double] =
+    val pieces = text.trim.split(":", -1)
+    val parsed = pieces.toList match
+      case seconds :: Nil            => seconds.toDoubleOption
+      case minutes :: seconds :: Nil =>
+        for
+          m <- minutes.toDoubleOption.filter(v => v >= 0 && v == math.floor(v))
+          s <- seconds.toDoubleOption.filter(v => v >= 0 && v < 60)
+        yield m * 60 + s
+      case _ => None
+    parsed.filter(v => v.isFinite && v >= 0).toRight("Enter a nonnegative time as m:ss or seconds.")
+
   private def header(
-      scene: VoyageScene,
       ghosts: Var[Boolean],
       allColumns: Var[Boolean]
   ): HtmlElement =
@@ -274,17 +563,17 @@ object VoyageView:
       cls("top"),
       div(
         cls("masthead"),
-        div(cls("eyebrow"), s"storyatlas4s · recall voyage · ${scene.provenance.basis.label}"),
+        div(cls("eyebrow"), "storyatlas4s · recall voyage · saved decisions"),
         h1("Recall Voyage"),
         p(
-          "Each spoken recall unit is placed on the source clock. The mark carries the posterior " +
-            "mass on the drawn anchor, how the anchor came to be, and where the independent coding " +
-            "puts the same moment."
+          "Recall onsets against the supplied source display clock. Marks retain the loaded decisions " +
+            "and their origins; model mass is not calibrated confidence. Decision-policy metadata " +
+            "and native media-clock bindings are not supplied by this legacy document."
         )
       ),
       div(
         cls("controls"),
-        toggle(ghosts, "ghosts of the posterior argmax"),
+        toggle(ghosts, "all moved-argmax ghosts (selected units always shown)"),
         toggle(allColumns, "posterior columns for every unit")
       )
     )
@@ -306,10 +595,14 @@ object VoyageView:
           s"$a of $t timed anchors"
         )
       ),
-      ("recall units", s.units.toString, s"${clock(scene.recallLength.value)} of speech"),
+      (
+        "recall units",
+        s.units.toString,
+        s"${clock(scene.recallLength.value)} supplied recall extent; word onsets, not speech duration"
+      ),
       (
         "moved by the decode",
-        moved.toString,
+        s"$moved/${s.units}",
         s"${s.decodeFilled} of them filled outside the posterior (mass zero)"
       ),
       ("unanchored", s.unanchored.toString, "no source anchor; drawn on the absence rail"),
@@ -348,12 +641,34 @@ object VoyageView:
   private def diamondPoints(cx: Double, cy: Double, d: Double): String =
     f"$cx%.1f,${cy - d}%.1f ${cx + d}%.1f,$cy%.1f $cx%.1f,${cy + d}%.1f ${cx - d}%.1f,$cy%.1f"
 
-  private def item(mark: SvgElement, text: String): HtmlElement = span(mark, text)
-
-  private def legend: HtmlElement =
+  private def legend(scene: VoyageScene, lens: Lens): HtmlElement =
+    val visible = scene.units
+      .filter(u => u.onset.exists(t => lens.window.forall(_.contains(t.value))))
+      .map(_.id)
+      .toSet
+    val anchors = scene.marks.collect { case a: VoyageMark.UnitAnchor if visible(a.unit) => a }
+    val alternatives = scene.marks.collect {
+      case a: VoyageMark.Alternative if visible(a.unit) => a
+    }
+    val selected = lens.selection.flatMap(a =>
+      Addressable[RecallRef].parse(a).collect { case RecallRef.Unit(id) =>
+        id
+      }
+    )
+    val hasCoding = scene.coding.exists(
+      _.intervals.exists(iv =>
+        lens.window.forall(r => iv.recall.end.value >= r.start && iv.recall.start.value <= r.end)
+      )
+    )
+    val hasGhosts = anchors.exists(a =>
+      a.origin != AnchorOrigin.PosteriorArgmax && a.argmax.flatMap(scene.timeline.node).nonEmpty &&
+        (lens.ghosts || selected(a.unit))
+    )
+    def item(visible: Boolean)(mark: SvgElement, text: String): Vector[HtmlElement] =
+      Option.when(visible)(span(mark, text)).toVector
     div(
       cls("legend-row"),
-      item(
+      item(anchors.exists(_.origin == AnchorOrigin.PosteriorArgmax))(
         glyph(
           svg.circle(
             svg.cx := "13",
@@ -364,13 +679,13 @@ object VoyageView:
         ),
         "posterior argmax; area is the anchor's posterior mass"
       ),
-      item(
+      item(anchors.exists(_.origin == AnchorOrigin.DecodeBound))(
         glyph(
           svg.polygon(svg.points := diamondPoints(13, 8, 7.5), svg.style := s"fill: $Model")
         ),
         "decode-bound: the scene decode chose it, with posterior mass"
       ),
-      item(
+      item(anchors.exists(_.origin == AnchorOrigin.DecodeFilled))(
         glyph(
           svg.polygon(
             svg.points := diamondPoints(13, 8, 5.6),
@@ -379,7 +694,7 @@ object VoyageView:
         ),
         "decode-filled: mass zero, outside the posterior"
       ),
-      item(
+      item(anchors.exists(_.level > 0))(
         glyph(
           svg.rect(
             svg.x := "10",
@@ -391,7 +706,7 @@ object VoyageView:
         ),
         "group-level anchor: the model stops at the group; width is mass"
       ),
-      item(
+      item(anchors.exists(_.externalDominant))(
         glyph(
           svg.circle(
             svg.cx := "13",
@@ -402,7 +717,7 @@ object VoyageView:
         ),
         "hollow: the row's external mass exceeds its source mass"
       ),
-      item(
+      item(alternatives.exists(a => selected(a.unit)))(
         glyph(
           svg.line(
             svg.x1 := "13",
@@ -420,7 +735,7 @@ object VoyageView:
         ),
         "posterior column of the focused unit: dashed rings, area is mass"
       ),
-      item(
+      item(hasCoding)(
         glyph(
           svg.rect(
             svg.x := "2",
@@ -432,7 +747,7 @@ object VoyageView:
         ),
         "independent coding: the coded group's span over the interval coded to it"
       ),
-      item(
+      item(hasGhosts)(
         glyph(
           svg.line(
             svg.x1 := "13",
@@ -445,7 +760,10 @@ object VoyageView:
         ),
         "ghost: the posterior argmax a decode moved away from"
       ),
-      item(
+      item(scene.marks.exists {
+        case m: VoyageMark.Unanchored => visible(m.unit)
+        case _                        => false
+      })(
         glyph(
           svg.line(
             svg.x1 := "9",
@@ -464,18 +782,7 @@ object VoyageView:
         ),
         "cross on the absence rail: anchored nowhere in the source"
       ),
-      item(
-        glyph(
-          svg.text(
-            svg.x := "2",
-            svg.y := "12",
-            svg.style := "font: 9px IBM Plex Mono, Menlo, monospace; fill: var(--ink-2)",
-            "unit"
-          )
-        ),
-        "margin row: a unit with no recall onset, its reason stated"
-      ),
-      item(
+      item(lens.allColumns && alternatives.exists(a => !selected(a.unit)))(
         glyph(
           svg.line(
             svg.x1 := "13",
@@ -493,15 +800,19 @@ object VoyageView:
         ),
         "context: every unit's column, faint, when toggled"
       ),
-      item(
+      item(anchors.exists(_.group.nonEmpty))(
         glyph(
-          svg.line(
-            svg.x1 := "2",
-            svg.y1 := "4",
-            svg.x2 := "24",
-            svg.y2 := "4",
-            svg.style := s"stroke: $Gold; stroke-width: 4; opacity: 0.6"
-          ),
+          Option
+            .when(hasCoding)(
+              svg.line(
+                svg.x1 := "2",
+                svg.y1 := "4",
+                svg.x2 := "24",
+                svg.y2 := "4",
+                svg.style := s"stroke: $Gold; stroke-width: 4; opacity: 0.6"
+              )
+            )
+            .toVector,
           svg.line(
             svg.x1 := "2",
             svg.y1 := "9",
@@ -517,7 +828,8 @@ object VoyageView:
             svg.style := s"stroke: $Raw; stroke-width: 1.2; stroke-dasharray: 3 2"
           )
         ),
-        "group track: coding as a thick band, this placement thin, the posterior argmax dashed"
+        "group track: drawn placement thin; posterior argmax dashed" +
+          (if hasCoding then "; independent coding as a thick band" else "")
       )
     )
 
@@ -526,7 +838,7 @@ object VoyageView:
     footerTag(
       cls("prov"),
       p(
-        s"Basis: ${prov.basis.label}. Source checksum ${prov.sourceChecksum.hex.take(12)}…; " +
+        s"Producer basis (legacy label): ${prov.basis.label}. Source checksum ${prov.sourceChecksum.hex.take(12)}…; " +
           s"configuration ${prov.configChecksum.hex.take(12)}…; compiler ${prov.compilerVersion}. " +
           scene.coding.fold("No independent coding.")(c =>
             s"Coding: ${c.name} (${c.checksum.hex.take(12)}…), ${c.intervals.size} intervals."

@@ -106,6 +106,13 @@ class VoyageLoweringSuite extends FunSuite:
     )
     ok(SvgRenderer.render(lowered, options)).value
 
+  private def native(expr: ig.LengthExpr): Double = expr match
+    case ig.LengthExpr.Const(length) => length.value
+    case other                       => fail(s"unexpected expression $other")
+
+  private def descendants(grob: ig.Grob): Vector[ig.Grob] =
+    grob +: grob.children.flatMap(descendants)
+
   test("every non-alternative mark is named exactly once by its MarkId, and nothing else is named"):
     val lowered = ok(VoyageLowering.lower(scene))
     val names = GraphicsNames.collect(lowered).map(_.value)
@@ -163,11 +170,87 @@ class VoyageLoweringSuite extends FunSuite:
     assert(x.contains(VoyageLowering.Classes.coding), "coded bands are classed")
   }
 
-  test("ghosts of moved argmaxes are drawn by default and withheld on request") {
-    val on = render(ok(VoyageLowering.lower(scene)))
-    val off = render(ok(VoyageLowering.lower(scene, ghosts = false)))
-    assert(on.contains(VoyageLowering.Classes.ghost), "the moved anchor u1 leaves a ghost")
-    assert(!off.contains(VoyageLowering.Classes.ghost), "no ghost when the shell withholds them")
+  test("ghosts are quiet by default, selected explicitly, and all remain available") {
+    val off = render(ok(VoyageLowering.lower(scene)))
+    val selected = render(ok(VoyageLowering.lower(scene, ghostsFor = Set(u1))))
+    val other = render(ok(VoyageLowering.lower(scene, ghostsFor = Set(u4))))
+    val all = render(ok(VoyageLowering.lower(scene, ghosts = true)))
+    assert(!off.contains(VoyageLowering.Classes.ghost), "no all-unit fence by default")
+    assert(selected.contains(VoyageLowering.Classes.ghost), "selected moved anchor u1 has a ghost")
+    assert(!other.contains(VoyageLowering.Classes.ghost), "selection never enables another unit")
+    assertEquals(selected, all, "only one moved argmax in this fixture")
+    val names = """data-name="([^"]+)"""".r
+    assertEquals(names.findAllIn(off).toVector, names.findAllIn(all).toVector)
+  }
+
+  test("source group shading is neutral and cannot impersonate absent independent coding") {
+    val uncoded = ok(
+      VoyageCompiler.compile(
+        ok(RecallVoyageInput.of(units, matrix, timeline, decisions, None, secs(12.0))),
+        Set.empty,
+        provenance
+      )
+    )
+    val lowered = ok(VoyageLowering.lower(uncoded))
+    val x = render(lowered)
+    assert(x.contains(VoyageLowering.Classes.groupBand))
+    assert(!x.contains(VoyageLowering.Classes.coding))
+    assert(!x.contains("#c9922e"), "no gold source boundaries in an uncoded document")
+    assertEquals(lowered.grobs(1).children.size, 0)
+    assertEquals(uncoded.marks, scene.marks, "coding decoration never changes the marks")
+  }
+
+  test("dense and selected groups get labels even when their spans are shorter than a label") {
+    val small = VoyageLowering.Box.default.copy(plotHeight = 12)
+    val x = render(ok(VoyageLowering.lower(scene, box = small)))
+    assert(x.contains("<title>group 2</title>"))
+    assert(x.contains("voyage-group-label\" data-group=\"2\""))
+    val tied = ok(
+      VoyageCompiler.compile(
+        ok(
+          RecallVoyageInput.of(
+            units,
+            matrix,
+            timeline,
+            decisions.updated(3, VoyageDecision(u4, Some(a), Some(1), AnchorOrigin.DecodeBound)),
+            None,
+            secs(12.0)
+          )
+        ),
+        Set.empty,
+        provenance
+      )
+    )
+    val selected = render(ok(VoyageLowering.lower(tied, alternativesFor = Set(u1), box = small)))
+    assert(
+      selected.contains("voyage-group-label\" data-group=\"2\""),
+      "selected group wins a collision with an earlier group"
+    )
+  }
+
+  test("long numbered group labels wrap without truncation and retain the actual midpoint") {
+    val long = "2 A numbered group with a complete descriptive label"
+    val renamed = ok(
+      SourceTimeline.of(
+        timeline.nodes,
+        timeline.groups.map(g => if g.ordinal == 2 then g.copy(label = long) else g)
+      )
+    )
+    val s = ok(
+      VoyageCompiler.compile(
+        ok(RecallVoyageInput.of(units, matrix, renamed, decisions, None, secs(12.0))),
+        Set.empty,
+        provenance
+      )
+    )
+    val x = render(ok(VoyageLowering.lower(s, alternativesFor = Set(u1))))
+    assert(x.contains(s"<title>$long</title>"))
+    assert(x.contains("descriptive label"), "the end is visible text, not only a tooltip")
+    assert(!x.contains("…"))
+    val expectedY = VoyageLowering.scales(s, VoyageLowering.Box.default).y(25.0)
+    assertEquals(expectedY, 104.0)
+    // The leader tick remains at the supplied group's midpoint, not a redistributed label row.
+    assert(x.contains("901,104 909,104"), x)
   }
 
   test("context columns are drawn faint and classed as context; focused ones are not") {
@@ -176,6 +259,29 @@ class VoyageLoweringSuite extends FunSuite:
     assert(focused.contains(VoyageLowering.Classes.alternative), "u1's column is drawn")
     assert(!focused.contains("voyage-alt context"), "a focused column is not classed context")
     assert(context.contains("voyage-alt context"), "a context column says so")
+  }
+
+  test("wrapping a long group token preserves a non-BMP character at the column boundary") {
+    val token = "x" * 24 + "\uD83D\uDE80" + "tail"
+    val renamed = ok(
+      SourceTimeline.of(
+        timeline.nodes,
+        timeline.groups.map(g => if g.ordinal == 2 then g.copy(label = token) else g)
+      )
+    )
+    val s = ok(
+      VoyageCompiler.compile(
+        ok(RecallVoyageInput.of(units, matrix, renamed, decisions, None, secs(12.0))),
+        Set.empty,
+        provenance
+      )
+    )
+    val x = render(ok(VoyageLowering.lower(s, alternativesFor = Set(u1))))
+    assert(
+      x.contains(("x" * 24) + "\uD83D\uDE80</text>"),
+      "the surrogate pair stays together in visible text, not just the title"
+    )
+    assert(x.contains(">tail</text>"))
   }
 
   test("a point's size is the device radius: u1's mass-0.5 alternative ring has r = radius(0.5)") {
@@ -198,6 +304,145 @@ class VoyageLoweringSuite extends FunSuite:
         case a: VoyageMark.Alternative if a.unit != u1 => assertEquals(n, 0, needle)
         case _                                         => assertEquals(n, 1, needle)
     }
+  }
+
+  test(
+    "a recall window is display-only: it preserves boundary marks and suppresses off-window ids"
+  ) {
+    val window = RecallWindow.of(4.0, 8.0).fold(e => fail(e), identity)
+    val originalMarks = scene.marks
+    val lowered = ok(VoyageLowering.lower(scene, alternativesFor = Set(u1), window = Some(window)))
+    val names = GraphicsNames.collect(lowered).map(_.value).toSet
+    val u2Id = scene.marks
+      .collectFirst {
+        case m: VoyageMark.Unanchored if m.unit == u2 => m.identity.mark.value
+      }
+      .getOrElse(fail("u2 unanchored mark"))
+    val u1Ids = scene.marks.collect {
+      case m if m.identity.mark.value.contains("/u1") => m.identity.mark.value
+    }
+    val u4Ids = scene.marks.collect {
+      case m if m.identity.mark.value.contains("/u4") => m.identity.mark.value
+    }
+    assert(names.contains(u2Id), "an onset in the window remains")
+    assert(
+      u1Ids.forall(id => !names.contains(id)),
+      "off-window alternatives and anchors have no renderer id"
+    )
+    assert(u4Ids.forall(id => !names.contains(id)), "off-window anchors have no renderer id")
+    assertEquals(scene.marks, originalMarks, "lowering never alters the compiler scene")
+    val sc = VoyageLowering.scales(scene, VoyageLowering.Box.default, Some(window))
+    assertEqualsDouble(sc.x(4.0), VoyageLowering.Box.default.left.toDouble, 1e-9)
+    assertEqualsDouble(
+      sc.x(8.0),
+      (VoyageLowering.Box.default.width - VoyageLowering.Box.default.right).toDouble,
+      1e-9
+    )
+    val svg = render(lowered)
+    assert(svg.contains("0:04"), "the visible start is labelled with its source clock value")
+    assert(svg.contains("0:08"), "the visible end is labelled with its source clock value")
+  }
+
+  test("window boundaries include timed marks, coding bands and track segments are clipped") {
+    val boundedUnits = units
+      .updated(0, units(0).copy(onset = Some(secs(4.0)), lastWordOnset = Some(secs(4.0))))
+      .updated(
+        3,
+        units(3).copy(onset = Some(secs(8.0)))
+      )
+    val wideCoding =
+      IndependentCoding("coding", Checksum.ofText("wide"), Vector(CodedInterval(span(2, 10), 1)))
+    val boundedScene = ok(
+      VoyageCompiler.compile(
+        ok(
+          RecallVoyageInput
+            .of(boundedUnits, matrix, timeline, decisions, Some(wideCoding), secs(12.0))
+        ),
+        Set.empty,
+        provenance
+      )
+    )
+    val window = RecallWindow.of(4.0, 8.0).fold(e => fail(e), identity)
+    val lowered = ok(VoyageLowering.lower(boundedScene, window = Some(window)))
+    val names = GraphicsNames.collect(lowered).map(_.value).toSet
+    val boundaryIds = boundedScene.marks.collect {
+      case m: VoyageMark.UnitAnchor if m.unit == u1 || m.unit == u4 => m.identity.mark.value
+    }
+    assert(boundaryIds.forall(names.contains), "both inclusive boundaries keep their marks")
+    val band = descendants(lowered.grobs(1))
+      .collectFirst { case p: ig.Grob.Polygon => p }
+      .getOrElse(fail("coding band"))
+    val xs = band.points.map(p => native(p.x))
+    assertEqualsDouble(xs.min, VoyageLowering.Box.default.left.toDouble, 1e-9)
+    assertEqualsDouble(
+      xs.max,
+      (VoyageLowering.Box.default.width - VoyageLowering.Box.default.right).toDouble,
+      1e-9
+    )
+    val trackLines = descendants(lowered.grobs(4)).collect { case l: ig.Grob.Lines => l }
+    assert(trackLines.nonEmpty, "the clipped track contains lines")
+    val trackXs = trackLines.flatMap(_.points.map(p => native(p.x)))
+    assert(trackXs.forall(x => x >= xs.min - 1e-9 && x <= xs.max + 1e-9), trackXs.toString)
+  }
+
+  test("untimed marks are retained by default and can be withheld explicitly") {
+    val window = RecallWindow.of(4.0, 8.0).fold(e => fail(e), identity)
+    val untimedId = scene.marks
+      .collectFirst { case m: VoyageMark.Untimed =>
+        m.identity.mark.value
+      }
+      .getOrElse(fail("untimed mark"))
+    assert(
+      GraphicsNames
+        .collect(ok(VoyageLowering.lower(scene, window = Some(window))))
+        .map(_.value)
+        .contains(untimedId)
+    )
+    assert(
+      !GraphicsNames
+        .collect(ok(VoyageLowering.lower(scene, window = Some(window), includeUntimed = false)))
+        .map(_.value)
+        .contains(untimedId)
+    )
+  }
+
+  test("a window outside the supplied recall extent is refused") {
+    val outside = RecallWindow.of(4.0, 13.0).fold(e => fail(e), identity)
+    assert(VoyageLowering.lower(scene, window = Some(outside)).isLeft)
+  }
+
+  test("a fractional endpoint is labelled distinctly from an interior whole-second tick") {
+    val window = RecallWindow.of(0.0, 1.8).fold(e => fail(e), identity)
+    val svg = render(ok(VoyageLowering.lower(scene, window = Some(window))))
+    assert(svg.contains("0:01</text>"), "the nice one-second interior tick remains")
+    assert(svg.contains("0:01.8</text>"), "the exact fractional endpoint is not rounded to 0:02")
+  }
+
+  test("time labels retain distant endpoints without crowding them with near interior labels") {
+    val longScene = ok(
+      VoyageCompiler.compile(
+        ok(RecallVoyageInput.of(units, matrix, timeline, decisions, Some(coding), secs(600.0))),
+        Set.empty,
+        provenance
+      )
+    )
+    val window = RecallWindow.of(240.0, 600.0).fold(e => fail(e), identity)
+    val svg = render(ok(VoyageLowering.lower(longScene, window = Some(window))))
+    assert(svg.contains("4:00</text>"), "the requested start stays labelled")
+    assert(svg.contains("10:00</text>"), "the requested end stays labelled")
+    assert(!svg.contains("4:10</text>"), "a near-start interior label is omitted")
+  }
+
+  test("no window retains the full-domain scale") {
+    val sc = VoyageLowering.scales(scene, VoyageLowering.Box.default)
+    assertEqualsDouble(sc.rangeStart, 0.0, 1e-9)
+    assertEqualsDouble(sc.rangeEnd, scene.recallLength.value, 1e-9)
+    assertEqualsDouble(sc.x(0.0), VoyageLowering.Box.default.left.toDouble, 1e-9)
+    assertEqualsDouble(
+      sc.x(scene.recallLength.value),
+      (VoyageLowering.Box.default.width - VoyageLowering.Box.default.right).toDouble,
+      1e-9
+    )
   }
 
   private def sceneWithText(text: String): VoyageScene =
