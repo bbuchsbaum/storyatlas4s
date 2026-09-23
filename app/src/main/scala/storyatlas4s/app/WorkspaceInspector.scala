@@ -125,8 +125,11 @@ private[app] object WorkspaceInspector:
             ),
             detailsTag(
               cls("inspection-provenance"),
-              summaryTag("Policy, coverage and calibration"),
+              summaryTag("Processing, policy, coverage and calibration"),
               dataAttr("inspection-metadata")("true"),
+              p(s"Processing: ${row.outcome.processing}"),
+              p(s"Localization: ${row.outcome.localization}"),
+              p(row.outcome.decision.fold("Decision basis: not supplied")(d => s"Decision basis: ${d.basis.kind}")),
               p(s"Inference policy: ${c.policy.record.policies.inference}"),
               p(s"Candidate coverage: ${c.policy.record.policies.candidate}"),
               p(c.policy.record.policies.candidate match
