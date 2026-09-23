@@ -1,0 +1,177 @@
+[info] welcome to sbt 1.12.14 (Homebrew Java 25.0.1)
+[info] loading settings for project storyatlas4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storyatlas4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-intaglio-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-intaglio-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-grakern-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-grakern-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project gale-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/c6b5fe94c20cf0d05b05/gale/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project graph4s-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/8d03f2d14a9e2c9f6990/graph4s/project
+[info] loading settings for project root from build.sbt...
+[info] resolving key references (148721 settings) ...
+[info] set current project to root (in build file:/private/tmp/storyatlas4s-workspace-m1-20260922/)
+[success] Total time: 1 s, completed Sep 22, 2026, 8:58:00 p.m.
+[success] Total time: 1 s, completed Sep 22, 2026, 8:58:01 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 8:58:02 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 8:58:02 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 8:58:02 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 8:58:03 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 8:58:03 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 8:58:04 p.m.
+[info] compiling 2 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/cli/target/scala-3.7.4/classes ...
+[info] done compiling
+[success] Total time: 3 s, completed Sep 22, 2026, 8:58:07 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 8:58:07 p.m.
+Test run storyatlas4s.layout.PaginatorLawsSuite started
+storyatlas4s.layout.PaginatorLawsSuite: finished 0.61s
+Test run storyatlas4s.layout.PaginatorLawsSuite finished: 0 failed, 0 ignored, 14 total 0.621s
+Test run storyatlas4s.layout.AwtMeasurerSuite started
+storyatlas4s.layout.AwtMeasurerSuite: finished 0.651s
+Test run storyatlas4s.layout.AwtMeasurerSuite finished: 0 failed, 0 ignored, 3 total 0.651s
+Test run storyatlas4s.layout.WarOfTheGhostsPaginationSuite started
+storyatlas4s.layout.WarOfTheGhostsPaginationSuite: finished 0.117s
+Test run storyatlas4s.layout.WarOfTheGhostsPaginationSuite finished: 0 failed, 0 ignored, 5 total 0.118s
+[info] Passed: Total 22, Failed 0, Errors 0, Passed 22
+[success] Total time: 2 s, completed Sep 22, 2026, 8:58:09 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/layout/.js/target/scala-3.7.4/test-classes ...
+[info] done compiling
+[info] Fast optimizing /private/tmp/storyatlas4s-workspace-m1-20260922/layout/.js/target/scala-3.7.4/storyatlas4s-layout-test-fastopt
+Test run storyatlas4s.layout.PaginatorLawsSuite started
+storyatlas4s.layout.PaginatorLawsSuite: finished 0.421s
+Test run storyatlas4s.layout.PaginatorLawsSuite finished: 0 failed, 0 ignored, 14 total 0.421s
+Test run storyatlas4s.layout.DomMeasurerSuite started
+storyatlas4s.layout.DomMeasurerSuite: finished 0.070s
+Test run storyatlas4s.layout.DomMeasurerSuite finished: 0 failed, 0 ignored, 7 total 0.070s
+Test run storyatlas4s.layout.WarOfTheGhostsPaginationSuite started
+storyatlas4s.layout.WarOfTheGhostsPaginationSuite: finished 0.106s
+Test run storyatlas4s.layout.WarOfTheGhostsPaginationSuite finished: 0 failed, 0 ignored, 5 total 0.106s
+[info] Passed: Total 26, Failed 0, Errors 0, Passed 26
+[success] Total time: 5 s, completed Sep 22, 2026, 8:58:15 p.m.
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.jvm/target/scala-3.7.4/test-classes ...
+[warn] -- [E029] Pattern Match Exhaustivity Warning: /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/src/test/scala/storyatlas4s/intaglio/WarOfTheGhostsLoweringSuite.scala:72:8 
+[warn] 72 |        case ig.DeviceElement.Group(Some(name), _, _, children) if name.value == wanted =>
+[warn]    |        ^
+[warn]    |   match may not be exhaustive.
+[warn]    |
+[warn]    |   It would fail on pattern case: intaglio.DeviceElement.Annotated(_, _)
+[warn]    |
+[warn]    | longer explanation available when compiling with `-explain`
+[warn] one warning found
+[info] done compiling
+Test run storyatlas4s.intaglio.VoyageLoweringSuite started
+storyatlas4s.intaglio.VoyageLoweringSuite: finished 0.242s
+Test run storyatlas4s.intaglio.VoyageLoweringSuite finished: 0 failed, 0 ignored, 25 total 0.244s
+Test run storyatlas4s.intaglio.DraftLoweringSuite started
+storyatlas4s.intaglio.DraftLoweringSuite: finished 0.159s
+Test run storyatlas4s.intaglio.DraftLoweringSuite finished: 0 failed, 0 ignored, 7 total 0.159s
+Test run storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite started
+storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite: finished 0.468s
+Test run storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite finished: 0 failed, 0 ignored, 10 total 0.468s
+Test run storyatlas4s.intaglio.PlateCraftSuite started
+storyatlas4s.intaglio.PlateCraftSuite: finished 0.205s
+Test run storyatlas4s.intaglio.PlateCraftSuite finished: 0 failed, 0 ignored, 24 total 0.205s
+Test run storyatlas4s.intaglio.PagedCodexLoweringSuite started
+storyatlas4s.intaglio.PagedCodexLoweringSuite: finished 0.09s
+Test run storyatlas4s.intaglio.PagedCodexLoweringSuite finished: 0 failed, 0 ignored, 4 total 0.09s
+Test run storyatlas4s.intaglio.RecallWindowSuite started
+storyatlas4s.intaglio.RecallWindowSuite: finished 0.001s
+Test run storyatlas4s.intaglio.RecallWindowSuite finished: 0 failed, 0 ignored, 2 total 0.001s
+[info] Passed: Total 72, Failed 0, Errors 0, Passed 72
+[success] Total time: 3 s, completed Sep 22, 2026, 8:58:18 p.m.
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.js/target/scala-3.7.4/test-classes ...
+[warn] -- [E029] Pattern Match Exhaustivity Warning: /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/src/test/scala/storyatlas4s/intaglio/WarOfTheGhostsLoweringSuite.scala:72:8 
+[warn] 72 |        case ig.DeviceElement.Group(Some(name), _, _, children) if name.value == wanted =>
+[warn]    |        ^
+[warn]    |   match may not be exhaustive.
+[warn]    |
+[warn]    |   It would fail on pattern case: intaglio.DeviceElement.Annotated(_, _)
+[warn]    |
+[warn]    | longer explanation available when compiling with `-explain`
+[warn] one warning found
+[info] done compiling
+[info] Fast optimizing /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.js/target/scala-3.7.4/storyatlas4s-intaglio-test-fastopt
+Test run storyatlas4s.intaglio.VoyageLoweringSuite started
+storyatlas4s.intaglio.VoyageLoweringSuite: finished 0.069s
+Test run storyatlas4s.intaglio.VoyageLoweringSuite finished: 0 failed, 0 ignored, 25 total 0.069s
+Test run storyatlas4s.intaglio.DraftLoweringSuite started
+storyatlas4s.intaglio.DraftLoweringSuite: finished 0.066s
+Test run storyatlas4s.intaglio.DraftLoweringSuite finished: 0 failed, 0 ignored, 7 total 0.066s
+Test run storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite started
+storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite: finished 0.414s
+Test run storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite finished: 0 failed, 0 ignored, 10 total 0.414s
+Test run storyatlas4s.intaglio.PlateCraftSuite started
+storyatlas4s.intaglio.PlateCraftSuite: finished 0.192s
+Test run storyatlas4s.intaglio.PlateCraftSuite finished: 0 failed, 0 ignored, 24 total 0.192s
+Test run storyatlas4s.intaglio.PagedCodexLoweringSuite started
+storyatlas4s.intaglio.PagedCodexLoweringSuite: finished 0.094s
+Test run storyatlas4s.intaglio.PagedCodexLoweringSuite finished: 0 failed, 0 ignored, 4 total 0.094s
+Test run storyatlas4s.intaglio.RecallWindowSuite started
+storyatlas4s.intaglio.RecallWindowSuite: finished 0.000s
+Test run storyatlas4s.intaglio.RecallWindowSuite finished: 0 failed, 0 ignored, 2 total 0.000s
+[info] Passed: Total 72, Failed 0, Errors 0, Passed 72
+[success] Total time: 5 s, completed Sep 22, 2026, 8:58:23 p.m.
+Test run storyatlas4s.edition.SourceInputSuite started
+storyatlas4s.edition.SourceInputSuite: finished 1.762s
+Test run storyatlas4s.edition.SourceInputSuite finished: 0 failed, 0 ignored, 1 total 1.764s
+Test run storyatlas4s.edition.ArtifactInputSuite started
+storyatlas4s.edition.ArtifactInputSuite: finished 0.531s
+Test run storyatlas4s.edition.ArtifactInputSuite finished: 0 failed, 0 ignored, 4 total 0.532s
+Test run storyatlas4s.edition.WorkspacePacketSuite started
+storyatlas4s.edition.WorkspacePacketSuite: finished 1.1s
+Test run storyatlas4s.edition.WorkspacePacketSuite finished: 0 failed, 0 ignored, 8 total 1.1s
+[info] Passed: Total 13, Failed 0, Errors 0, Passed 13
+[success] Total time: 4 s, completed Sep 22, 2026, 8:58:27 p.m.
+[info] compiling 4 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/edition/.js/target/scala-3.7.4/test-classes ...
+[info] done compiling
+[info] Fast optimizing /private/tmp/storyatlas4s-workspace-m1-20260922/edition/.js/target/scala-3.7.4/storyatlas4s-edition-test-fastopt
+[error] Referring to non-existent method java.util.Locale.getLanguage()java.lang.String
+[error]   dispatched from java.util.Locale.getLanguage()java.lang.String
+[error]   called from java.lang.String.toLowerCase(java.util.Locale)java.lang.String
+[error]   called from private static storyatlas4s.edition.ArtifactInput$.open$$anonfun$2(java.lang.String)java.lang.String
+[error]   called from storyatlas4s.edition.ArtifactInput$.open(scala.collection.immutable.Vector)scala.util.Either
+[error]   called from private storyatlas4s.edition.ArtifactInputSuite.$init$$$anonfun$2$$anonfun$3(java.lang.String)boolean
+[error]   called from private storyatlas4s.edition.ArtifactInputSuite.$init$$$anonfun$2()java.lang.Object
+[error]   called from constructor storyatlas4s.edition.ArtifactInputSuite.<init>()void
+[error]   called from static constructor storyatlas4s.edition.ArtifactInputSuite.<stinit>()void
+[error]   called from core module analyzer
+[error] involving instantiated classes:
+[error]   java.lang.String
+[error] Referring to non-existent method static java.util.Locale.ROOT()java.util.Locale
+[error]   called from private static storyatlas4s.edition.ArtifactInput$.open$$anonfun$2(java.lang.String)java.lang.String
+[error]   called from storyatlas4s.edition.ArtifactInput$.open(scala.collection.immutable.Vector)scala.util.Either
+[error]   called from private storyatlas4s.edition.ArtifactInputSuite.$init$$$anonfun$2$$anonfun$3(java.lang.String)boolean
+[error]   called from private storyatlas4s.edition.ArtifactInputSuite.$init$$$anonfun$2()java.lang.Object
+[error]   called from constructor storyatlas4s.edition.ArtifactInputSuite.<init>()void
+[error]   called from static constructor storyatlas4s.edition.ArtifactInputSuite.<stinit>()void
+[error]   called from core module analyzer
+[error] Referring to non-existent class java.util.Locale
+[error]   called from private static storyatlas4s.edition.ArtifactInput$.open$$anonfun$2(java.lang.String)java.lang.String
+[error]   called from storyatlas4s.edition.ArtifactInput$.open(scala.collection.immutable.Vector)scala.util.Either
+[error]   called from private storyatlas4s.edition.ArtifactInputSuite.$init$$$anonfun$2$$anonfun$3(java.lang.String)boolean
+[error]   called from private storyatlas4s.edition.ArtifactInputSuite.$init$$$anonfun$2()java.lang.Object
+[error]   called from constructor storyatlas4s.edition.ArtifactInputSuite.<init>()void
+[error]   called from static constructor storyatlas4s.edition.ArtifactInputSuite.<stinit>()void
+[error]   called from core module analyzer
+[error] Referring to non-existent class java.util.Locale
+[error]   called from java.lang.String.toLowerCase(java.util.Locale)java.lang.String
+[error]   called from private static storyatlas4s.edition.ArtifactInput$.open$$anonfun$2(java.lang.String)java.lang.String
+[error]   called from storyatlas4s.edition.ArtifactInput$.open(scala.collection.immutable.Vector)scala.util.Either
+[error]   called from private storyatlas4s.edition.ArtifactInputSuite.$init$$$anonfun$2$$anonfun$3(java.lang.String)boolean
+[error]   called from private storyatlas4s.edition.ArtifactInputSuite.$init$$$anonfun$2()java.lang.Object
+[error]   called from constructor storyatlas4s.edition.ArtifactInputSuite.<init>()void
+[error]   called from static constructor storyatlas4s.edition.ArtifactInputSuite.<stinit>()void
+[error]   called from core module analyzer
+[error] involving instantiated classes:
+[error]   java.lang.String
+[error] There were linking errors
+[error] (editionJS / Test / fastLinkJS) There were linking errors
+[error] Total time: 2 s, completed Sep 22, 2026, 8:58:28 p.m.

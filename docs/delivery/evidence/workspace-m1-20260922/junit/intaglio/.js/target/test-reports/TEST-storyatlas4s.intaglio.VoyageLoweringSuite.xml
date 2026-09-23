@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuite hostname="BUC-GW02.local" name="storyatlas4s.intaglio.VoyageLoweringSuite" tests="26" errors="0" failures="0" skipped="0" time="0.051" timestamp="2026-09-22T21:58:34">
+          <properties>
+      <property name="java.specification.version" value="25"/><property name="sun.jnu.encoding" value="UTF-8"/><property name="java.class.path" value="/opt/homebrew/Cellar/sbt/1.11.7/libexec/bin/sbt-launch.jar"/><property name="sun.awt.enableExtraMouseButtons" value="true"/><property name="java.vm.vendor" value="Homebrew"/><property name="sun.arch.data.model" value="64"/><property name="storyatlas4s.intaglio.build" value="/private/tmp/storymodel4s-m1-intaglio-20260922"/><property name="jline.shutdownhook" value="false"/><property name="java.vendor.url" value="https://github.com/Homebrew/homebrew-core/issues"/><property name="user.timezone" value="America/Toronto"/><property name="jline.terminal" value="none"/><property name="java.vm.specification.version" value="25"/><property name="os.name" value="Mac OS X"/><property name="sun.java.launcher" value="SUN_STANDARD"/><property name="user.country" value="CA"/><property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk/25.0.1/libexec/openjdk.jdk/Contents/Home/lib"/><property name="sun.java.command" value="/opt/homebrew/Cellar/sbt/1.11.7/libexec/bin/sbt-launch.jar compileAll testAll scalafmtCheckAll scalafmtSbtCheck app/fastLinkJS cli/run edition --out target/edition app/editionBundle"/><property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/><property name="jdk.debug" value="release"/><property name="sun.cpu.endian" value="little"/><property name="user.home" value="/Users/bbuchsbaum"/><property name="user.language" value="en"/><property name="sbt.script" value="/opt/homebrew/Cellar/sbt/1.11.7/libexec/bin/sbt"/><property name="java.specification.vendor" value="Oracle Corporation"/><property name="sbt.ipcsocket.tmpdir" value="/var/folders/9h/nkjq6vss7mqdl4ck7q1hd8ph0000gp/T/.sbt1b8b7ae4/ipcsocket"/><property name="swoval.tmpdir" value="/var/folders/9h/nkjq6vss7mqdl4ck7q1hd8ph0000gp/T/.sbt1b8b7ae4/swoval"/><property name="java.version.date" value="2025-10-21"/><property name="java.home" value="/opt/homebrew/Cellar/openjdk/25.0.1/libexec/openjdk.jdk/Contents/Home"/><property name="file.separator" value="/"/><property name="java.vm.compressedOopsMode" value="Zero based"/><property name="line.separator" value="
+"/><property name="java.vm.specification.vendor" value="Oracle Corporation"/><property name="java.specification.name" value="Java Platform API Specification"/><property name="apple.awt.application.name" value="Boot"/><property name="sbt.global.staging" value="/private/tmp/storymodel4s-m1-sbt-staging-20260922"/><property name="storymodel4s.grakern.build" value="/private/tmp/storymodel4s-m1-grakern-20260922"/><property name="jline.esc.timeout" value="0"/><property name="java.protocol.handler.pkgs" value="com.google.common"/><property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/><property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/><property name="java.runtime.version" value="25.0.1"/><property name="user.name" value="bbuchsbaum"/><property name="stdout.encoding" value="US-ASCII"/><property name="path.separator" value=":"/><property name="os.version" value="14.3"/><property name="jna.nosys" value="true"/><property name="java.runtime.name" value="OpenJDK Runtime Environment"/><property name="log4j.ignoreTCL" value="true"/><property name="file.encoding" value="UTF-8"/><property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/><property name="java.vendor.version" value="Homebrew"/><property name="java.vendor.url.bug" value="https://github.com/Homebrew/homebrew-core/issues"/><property name="java.io.tmpdir" value="/var/folders/9h/nkjq6vss7mqdl4ck7q1hd8ph0000gp/T/"/><property name="java.version" value="25.0.1"/><property name="user.dir" value="/private/tmp/storyatlas4s-workspace-m1-20260922"/><property name="storyatlas4s.storymodel4s.build" value="/private/tmp/storymodel4s-workspace-m1-20260922"/><property name="os.arch" value="aarch64"/><property name="sun.misc.unsafe.memory.access" value="allow"/><property name="java.vm.specification.name" value="Java Virtual Machine Specification"/><property name="native.encoding" value="US-ASCII"/><property name="java.library.path" value="/Users/bbuchsbaum/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/><property name="java.vm.info" value="mixed mode, sharing"/><property name="stderr.encoding" value="US-ASCII"/><property name="java.vendor" value="Homebrew"/><property name="java.vm.version" value="25.0.1"/><property name="stdin.encoding" value="US-ASCII"/><property name="scala.ext.dirs" value="/Users/bbuchsbaum/.sbt/1.0/java9-rt-ext-homebrew_25_0_1"/><property name="sun.io.unicode.encoding" value="UnicodeBig"/><property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/><property name="java.class.version" value="69.0"/>
+    </properties>
+          <testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="every non-alternative mark is named exactly once by its MarkId, and nothing else is named" time="0.012">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="alternatives are drawn only for the units the shell names, and are named by their MarkId" time="0.004">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="lowering and rendering are deterministic" time="0.004">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="the layers are the five the contract names, in order" time="0.0">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="a coding band is drawn per coded interval and carries no name" time="0.0">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="the clock prints minutes and zero-padded seconds" time="0.0">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="every mark carries a title, a class naming its kind, and its unit as data" time="0.002">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="ghosts are quiet by default, selected explicitly, and all remain available" time="0.004">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="source group shading is neutral and cannot impersonate absent independent coding" time="0.002">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="dense and selected groups get labels even when their spans are shorter than a label" time="0.003">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="long numbered group labels wrap without truncation and retain the actual midpoint" time="0.001">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="context columns are drawn faint and classed as context; focused ones are not" time="0.001">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="wrapping a long group token preserves a non-BMP character at the column boundary" time="0.002">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="a point's size is the device radius: u1's mass-0.5 alternative ring has r = radius(0.5)" time="0.001">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="every drawn mark carries its data-name exactly once in the rendered SVG" time="0.007">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="a recall window is display-only: it preserves boundary marks and suppresses off-window ids" time="0.001">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="window boundaries include timed marks, coding bands and track segments are clipped" time="0.001">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="untimed marks are retained by default and can be withheld explicitly" time="0.0">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="a window outside the supplied recall extent is refused" time="0.0">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="a fractional endpoint is labelled distinctly from an interior whole-second tick" time="0.0">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="time labels retain distant endpoints without crowding them with near interior labels" time="0.001">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="no window retains the full-domain scale" time="0.0">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="a unit's words are escaped once on the way into a title, never by the lowering" time="0.001">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="a control character in a unit's words is dropped from the title, not fatal" time="0.001">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="a unit named as both focused and context is drawn once, focused" time="0.001">
+                      
+                    </testcase><testcase classname="storyatlas4s.intaglio.VoyageLoweringSuite" name="explicit horizon text never falls back to beyond-horizon quotations in SVG titles" time="0.002">
+                      
+                    </testcase>
+          <system-out><![CDATA[]]></system-out>
+          <system-err><![CDATA[]]></system-err>
+        </testsuite>

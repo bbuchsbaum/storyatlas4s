@@ -1,0 +1,35 @@
+[
+  {
+    "name": "horizon-leak",
+    "path": "intaglio/src/main/scala/storyatlas4s/intaglio/VoyageLowering.scala",
+    "before_sha256": "47211e9e3a73c8864e7896ec8cb51abc74ef63b464da8da176144af82831a2af",
+    "mutant_sha256": "f9e3e82013b487f151f6162a3ae0445e70d2c8dc27673050b83fe7a5f14a4399",
+    "old": "Words(scene, visibleRecallText)",
+    "new": "Words(scene, None)",
+    "exit_code": 1,
+    "killed": true,
+    "witness": "explicit horizon text never falls back"
+  },
+  {
+    "name": "untimed-traversal",
+    "path": "shell/src/main/scala/storyatlas4s/shell/WorkspaceController.scala",
+    "before_sha256": "353d2032d0fd084a3a93b1b6f9ed4fb7c6bb7551f1cd6f79b256d66b4f12dec3",
+    "mutant_sha256": "fac5c282709584d551faddbcc3cb5c8b5cda5f0786158c29a19f82b854acd16f",
+    "old": "val units = workspace.inventory.units",
+    "new": "val units = workspace.inventory.units.filter(u => workspace.timing(u.id) != storymodel4s.codec.WorkspaceTiming.Untimed)",
+    "exit_code": 1,
+    "killed": true,
+    "witness": "canonical traversal reaches every inventory outcome"
+  },
+  {
+    "name": "wrong-policy",
+    "path": "shell/src/main/scala/storyatlas4s/shell/WorkspaceExport.scala",
+    "before_sha256": "fcc43c457c77411c491dab595bef7511c3fc6aba8a59a2b1bd81a4d9f65f51b2",
+    "mutant_sha256": "07c1275bef5aaeb5be0a6564e8c8d0687aec8a20fd2ed8941793a642dd859580",
+    "old": "controller.state.policy,",
+    "new": "workspace.policies.head.id,",
+    "exit_code": 1,
+    "killed": true,
+    "witness": "untouched provider subset: authored-b"
+  }
+]

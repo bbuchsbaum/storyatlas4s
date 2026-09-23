@@ -1,0 +1,20 @@
+{
+  "reviewer": "m1_plan_review",
+  "mode": "read-only independent receipt audit",
+  "consumer": "f74573eb7606ef0243b0bb75b93b4c54b54c995a",
+  "verdict": "No material receipt blocker found",
+  "checked": [
+    "consumer tree, dependency pins, application hash and all22 fixture hashes",
+    "producer package differs from gated executable only in notebook/evidence",
+    "45 JUnit reports and raw summaries independently total376 passed",
+    "83 joined,19 legacy,260 source,255 static checks and567 feature outcomes",
+    "five source mutation witnesses and ten resigned export corruption controls",
+    "denial, source attachment, Back/Return viewport and untimed legacy traversal",
+    "4707968-to-f74573e preservation reuse is limited to two browser witness changes"
+  ],
+  "limits": [
+    "No builds or browser reruns by this reviewer",
+    "Earlier mutation evidence applies to unchanged tested logic, not a claim all mutants ran at final commit",
+    "Local synthetic qualification only; warnings and optional producer skips retained"
+  ]
+}

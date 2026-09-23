@@ -1,0 +1,288 @@
+[info] welcome to sbt 1.12.14 (Homebrew Java 25.0.1)
+[info] loading settings for project storyatlas4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storyatlas4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-intaglio-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-intaglio-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-grakern-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-grakern-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project gale-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/c6b5fe94c20cf0d05b05/gale/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project graph4s-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/8d03f2d14a9e2c9f6990/graph4s/project
+[info] loading settings for project root from build.sbt...
+[info] resolving key references (148721 settings) ...
+[info] set current project to root (in build file:/private/tmp/storyatlas4s-workspace-m1-20260922/)
+[info] scalafmt: Formatting 3 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm)...
+[info] scalafmt: Formatting 1 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/edition/.jvm)...
+[info] scalafmt: Formatting 1 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm)...
+[info] scalafmt: Formatting 1 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.js)...
+[info] scalafmt: Formatting 1 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/edition/.jvm)...
+[info] scalafmt: Formatting 1 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.jvm)...
+[info] scalafmt: Formatting 1 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/edition/.js)...
+[info] scalafmt: Formatting 1 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/edition/.js)...
+[info] scalafmt: Formatting 3 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/shell/.js)...
+[info] scalafmt: Formatting 1 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/shell/.js)...
+[info] scalafmt: Formatting 3 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/app)...
+[info] scalafmt: Reformatted 1 Scala sources
+[info] scalafmt: Reformatted 1 Scala sources
+[info] scalafmt: Reformatted 1 Scala sources
+[info] scalafmt: Reformatted 1 Scala sources
+[info] scalafmt: Reformatted 2 Scala sources
+[info] scalafmt: Reformatted 2 Scala sources
+[info] scalafmt: Reformatted 3 Scala sources
+[success] Total time: 2 s, completed Sep 22, 2026, 9:05:19 p.m.
+[success] Total time: 1 s, completed Sep 22, 2026, 9:05:20 p.m.
+[success] Total time: 1 s, completed Sep 22, 2026, 9:05:21 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 9:05:22 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 9:05:22 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/edition/.jvm/target/scala-3.7.4/classes ...
+[info] done compiling
+[success] Total time: 3 s, completed Sep 22, 2026, 9:05:25 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/edition/.js/target/scala-3.7.4/classes ...
+[info] done compiling
+[success] Total time: 2 s, completed Sep 22, 2026, 9:05:27 p.m.
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm/target/scala-3.7.4/classes ...
+[info] done compiling
+[success] Total time: 2 s, completed Sep 22, 2026, 9:05:28 p.m.
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.js/target/scala-3.7.4/classes ...
+[info] done compiling
+[success] Total time: 2 s, completed Sep 22, 2026, 9:05:30 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 9:05:31 p.m.
+[info] compiling 3 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/app/target/scala-3.7.4/classes ...
+[warn] -- Warning: /private/tmp/storyatlas4s-workspace-m1-20260922/app/src/main/scala/storyatlas4s/app/WorkspaceScroll.scala:88:71 
+[warn] 88 |        signal.map(_.state.mode).distinct.foreach(_ => schedule())(ctx.owner)
+[warn]    |                                                                   ^^^^^^^^^
+[warn]    |Implicit parameters should be provided with a `using` clause.
+[warn]    |This code can be rewritten automatically under -rewrite -source 3.7-migration.
+[warn]    |To disable the warning, please use the following option:
+[warn]    |  "-Wconf:msg=Implicit parameters should be provided with a `using` clause:s"
+[warn] one warning found
+[info] done compiling
+[success] Total time: 2 s, completed Sep 22, 2026, 9:05:33 p.m.
+Test run storyatlas4s.layout.PaginatorLawsSuite started
+storyatlas4s.layout.PaginatorLawsSuite: finished 0.626s
+Test run storyatlas4s.layout.PaginatorLawsSuite finished: 0 failed, 0 ignored, 14 total 0.635s
+Test run storyatlas4s.layout.AwtMeasurerSuite started
+storyatlas4s.layout.AwtMeasurerSuite: finished 0.378s
+Test run storyatlas4s.layout.AwtMeasurerSuite finished: 0 failed, 0 ignored, 3 total 0.378s
+Test run storyatlas4s.layout.WarOfTheGhostsPaginationSuite started
+storyatlas4s.layout.WarOfTheGhostsPaginationSuite: finished 0.113s
+Test run storyatlas4s.layout.WarOfTheGhostsPaginationSuite finished: 0 failed, 0 ignored, 5 total 0.113s
+[info] Passed: Total 22, Failed 0, Errors 0, Passed 22
+[success] Total time: 2 s, completed Sep 22, 2026, 9:05:35 p.m.
+Test run storyatlas4s.layout.PaginatorLawsSuite started
+storyatlas4s.layout.PaginatorLawsSuite: finished 0.409s
+Test run storyatlas4s.layout.PaginatorLawsSuite finished: 0 failed, 0 ignored, 14 total 0.409s
+Test run storyatlas4s.layout.DomMeasurerSuite started
+storyatlas4s.layout.DomMeasurerSuite: finished 0.068s
+Test run storyatlas4s.layout.DomMeasurerSuite finished: 0 failed, 0 ignored, 7 total 0.068s
+Test run storyatlas4s.layout.WarOfTheGhostsPaginationSuite started
+storyatlas4s.layout.WarOfTheGhostsPaginationSuite: finished 0.104s
+Test run storyatlas4s.layout.WarOfTheGhostsPaginationSuite finished: 0 failed, 0 ignored, 5 total 0.104s
+[info] Passed: Total 26, Failed 0, Errors 0, Passed 26
+[success] Total time: 2 s, completed Sep 22, 2026, 9:05:36 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.jvm/target/scala-3.7.4/test-classes ...
+[info] done compiling
+Test run storyatlas4s.intaglio.VoyageLoweringSuite started
+storyatlas4s.intaglio.VoyageLoweringSuite: finished 0.212s
+Test run storyatlas4s.intaglio.VoyageLoweringSuite finished: 0 failed, 0 ignored, 25 total 0.214s
+Test run storyatlas4s.intaglio.DraftLoweringSuite started
+storyatlas4s.intaglio.DraftLoweringSuite: finished 0.152s
+Test run storyatlas4s.intaglio.DraftLoweringSuite finished: 0 failed, 0 ignored, 7 total 0.153s
+Test run storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite started
+storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite: finished 0.342s
+Test run storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite finished: 0 failed, 0 ignored, 10 total 0.342s
+Test run storyatlas4s.intaglio.PlateCraftSuite started
+storyatlas4s.intaglio.PlateCraftSuite: finished 0.143s
+Test run storyatlas4s.intaglio.PlateCraftSuite finished: 0 failed, 0 ignored, 24 total 0.143s
+Test run storyatlas4s.intaglio.PagedCodexLoweringSuite started
+storyatlas4s.intaglio.PagedCodexLoweringSuite: finished 0.081s
+Test run storyatlas4s.intaglio.PagedCodexLoweringSuite finished: 0 failed, 0 ignored, 4 total 0.081s
+Test run storyatlas4s.intaglio.RecallWindowSuite started
+storyatlas4s.intaglio.RecallWindowSuite: finished 0.001s
+Test run storyatlas4s.intaglio.RecallWindowSuite finished: 0 failed, 0 ignored, 2 total 0.001s
+[info] Passed: Total 72, Failed 0, Errors 0, Passed 72
+[success] Total time: 2 s, completed Sep 22, 2026, 9:05:38 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.js/target/scala-3.7.4/test-classes ...
+[info] done compiling
+[info] Fast optimizing /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.js/target/scala-3.7.4/storyatlas4s-intaglio-test-fastopt
+Test run storyatlas4s.intaglio.VoyageLoweringSuite started
+storyatlas4s.intaglio.VoyageLoweringSuite: finished 0.075s
+Test run storyatlas4s.intaglio.VoyageLoweringSuite finished: 0 failed, 0 ignored, 25 total 0.075s
+Test run storyatlas4s.intaglio.DraftLoweringSuite started
+storyatlas4s.intaglio.DraftLoweringSuite: finished 0.067s
+Test run storyatlas4s.intaglio.DraftLoweringSuite finished: 0 failed, 0 ignored, 7 total 0.067s
+Test run storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite started
+storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite: finished 0.410s
+Test run storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite finished: 0 failed, 0 ignored, 10 total 0.410s
+Test run storyatlas4s.intaglio.PlateCraftSuite started
+storyatlas4s.intaglio.PlateCraftSuite: finished 0.187s
+Test run storyatlas4s.intaglio.PlateCraftSuite finished: 0 failed, 0 ignored, 24 total 0.187s
+Test run storyatlas4s.intaglio.PagedCodexLoweringSuite started
+storyatlas4s.intaglio.PagedCodexLoweringSuite: finished 0.093s
+Test run storyatlas4s.intaglio.PagedCodexLoweringSuite finished: 0 failed, 0 ignored, 4 total 0.093s
+Test run storyatlas4s.intaglio.RecallWindowSuite started
+storyatlas4s.intaglio.RecallWindowSuite: finished 0.000s
+Test run storyatlas4s.intaglio.RecallWindowSuite finished: 0 failed, 0 ignored, 2 total 0.000s
+[info] Passed: Total 72, Failed 0, Errors 0, Passed 72
+[success] Total time: 6 s, completed Sep 22, 2026, 9:05:44 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/edition/.jvm/target/scala-3.7.4/test-classes ...
+[info] done compiling
+Test run storyatlas4s.edition.SourceInputSuite started
+storyatlas4s.edition.SourceInputSuite: finished 1.767s
+Test run storyatlas4s.edition.SourceInputSuite finished: 0 failed, 0 ignored, 1 total 1.768s
+Test run storyatlas4s.edition.WorkspacePacketSuite started
+storyatlas4s.edition.WorkspacePacketSuite: finished 1.124s
+Test run storyatlas4s.edition.WorkspacePacketSuite finished: 0 failed, 0 ignored, 8 total 1.124s
+Test run storyatlas4s.edition.ArtifactInputSuite started
+storyatlas4s.edition.ArtifactInputSuite: finished 0.489s
+Test run storyatlas4s.edition.ArtifactInputSuite finished: 0 failed, 0 ignored, 4 total 0.489s
+[info] Passed: Total 13, Failed 0, Errors 0, Passed 13
+[success] Total time: 4 s, completed Sep 22, 2026, 9:05:48 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/edition/.js/target/scala-3.7.4/test-classes ...
+[info] done compiling
+[info] Fast optimizing /private/tmp/storyatlas4s-workspace-m1-20260922/edition/.js/target/scala-3.7.4/storyatlas4s-edition-test-fastopt
+Test run storyatlas4s.edition.SourceInputSuite started
+storyatlas4s.edition.SourceInputSuite: finished 2.857s
+Test run storyatlas4s.edition.SourceInputSuite finished: 0 failed, 0 ignored, 1 total 2.857s
+Test run storyatlas4s.edition.WorkspacePacketSuite started
+storyatlas4s.edition.WorkspacePacketSuite: finished 3.532s
+Test run storyatlas4s.edition.WorkspacePacketSuite finished: 0 failed, 0 ignored, 8 total 3.532s
+Test run storyatlas4s.edition.ArtifactInputSuite started
+storyatlas4s.edition.ArtifactInputSuite: finished 1.472s
+Test run storyatlas4s.edition.ArtifactInputSuite finished: 0 failed, 0 ignored, 4 total 1.472s
+[info] Passed: Total 13, Failed 0, Errors 0, Passed 13
+[success] Total time: 11 s, completed Sep 22, 2026, 9:06:00 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm/target/scala-3.7.4/test-classes ...
+[info] done compiling
+Test run storyatlas4s.shell.WorkspaceExportSuite started
+storyatlas4s.shell.WorkspaceExportSuite: finished 1.2s
+Test run storyatlas4s.shell.WorkspaceExportSuite finished: 0 failed, 0 ignored, 2 total 1.202s
+Test run storyatlas4s.shell.InteractionPresentationSuite started
+storyatlas4s.shell.InteractionPresentationSuite: finished 0.004s
+Test run storyatlas4s.shell.InteractionPresentationSuite finished: 0 failed, 0 ignored, 3 total 0.004s
+Test run storyatlas4s.shell.WorkspaceOpenSuite started
+storyatlas4s.shell.WorkspaceOpenSuite: finished 0.843s
+Test run storyatlas4s.shell.WorkspaceOpenSuite finished: 0 failed, 0 ignored, 2 total 0.843s
+Test run storyatlas4s.shell.AppCompilerSuite started
+storyatlas4s.shell.AppCompilerSuite: finished 0.944s
+Test run storyatlas4s.shell.AppCompilerSuite finished: 0 failed, 0 ignored, 13 total 0.944s
+Test run storyatlas4s.shell.WorkspaceControllerSuite started
+storyatlas4s.shell.WorkspaceControllerSuite: finished 0.829s
+Test run storyatlas4s.shell.WorkspaceControllerSuite finished: 0 failed, 0 ignored, 10 total 0.829s
+Test run storyatlas4s.shell.ActivationSuite started
+storyatlas4s.shell.ActivationSuite: finished 0.026s
+Test run storyatlas4s.shell.ActivationSuite finished: 0 failed, 0 ignored, 6 total 0.027s
+Test run storyatlas4s.shell.SemanticZoomSuite started
+storyatlas4s.shell.SemanticZoomSuite: finished 0.006s
+Test run storyatlas4s.shell.SemanticZoomSuite finished: 0 failed, 0 ignored, 6 total 0.007s
+Test run storyatlas4s.shell.WorkspaceImportSuite started
+storyatlas4s.shell.WorkspaceImportSuite: finished 1.187s
+Test run storyatlas4s.shell.WorkspaceImportSuite finished: 0 failed, 0 ignored, 3 total 1.187s
+[info] Passed: Total 45, Failed 0, Errors 0, Passed 45
+[success] Total time: 7 s, completed Sep 22, 2026, 9:06:06 p.m.
+[info] compiling 8 Scala sources to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.js/target/scala-3.7.4/test-classes ...
+[info] done compiling
+[info] Fast optimizing /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.js/target/scala-3.7.4/storyatlas4s-shell-test-fastopt
+Test run storyatlas4s.shell.WorkspaceExportSuite started
+storyatlas4s.shell.WorkspaceExportSuite: finished 1.564s
+Test run storyatlas4s.shell.WorkspaceExportSuite finished: 0 failed, 0 ignored, 2 total 1.564s
+Test run storyatlas4s.shell.InteractionPresentationSuite started
+storyatlas4s.shell.InteractionPresentationSuite: finished 0.001s
+Test run storyatlas4s.shell.InteractionPresentationSuite finished: 0 failed, 0 ignored, 3 total 0.001s
+Test run storyatlas4s.shell.WorkspaceOpenSuite started
+storyatlas4s.shell.WorkspaceOpenSuite: finished 2.639s
+Test run storyatlas4s.shell.WorkspaceOpenSuite finished: 0 failed, 0 ignored, 2 total 2.639s
+Test run storyatlas4s.shell.AppCompilerSuite started
+storyatlas4s.shell.AppCompilerSuite: finished 1.304s
+Test run storyatlas4s.shell.AppCompilerSuite finished: 0 failed, 0 ignored, 13 total 1.304s
+Test run storyatlas4s.shell.WorkspaceControllerSuite started
+storyatlas4s.shell.WorkspaceControllerSuite: finished 2.864s
+Test run storyatlas4s.shell.WorkspaceControllerSuite finished: 0 failed, 0 ignored, 10 total 2.864s
+Test run storyatlas4s.shell.ActivationSuite started
+storyatlas4s.shell.ActivationSuite: finished 0.049s
+Test run storyatlas4s.shell.ActivationSuite finished: 0 failed, 0 ignored, 6 total 0.049s
+Test run storyatlas4s.shell.SemanticZoomSuite started
+storyatlas4s.shell.SemanticZoomSuite: finished 0.001s
+Test run storyatlas4s.shell.SemanticZoomSuite finished: 0 failed, 0 ignored, 6 total 0.001s
+Test run storyatlas4s.shell.WorkspaceImportSuite started
+storyatlas4s.shell.WorkspaceImportSuite: finished 4.286s
+Test run storyatlas4s.shell.WorkspaceImportSuite finished: 0 failed, 0 ignored, 3 total 4.286s
+[info] Passed: Total 45, Failed 0, Errors 0, Passed 45
+[success] Total time: 18 s, completed Sep 22, 2026, 9:06:24 p.m.
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/cli/target/scala-3.7.4/test-classes ...
+[info] done compiling
+Test run storyatlas4s.cli.ModelInputSuite started
+storyatlas4s.cli.ModelInputSuite: finished 2.514s
+Test run storyatlas4s.cli.ModelInputSuite finished: 0 failed, 0 ignored, 22 total 2.516s
+Test run storyatlas4s.cli.EditionSuite started
+storyatlas4s.cli.EditionSuite: finished 0.464s
+Test run storyatlas4s.cli.EditionSuite finished: 0 failed, 0 ignored, 7 total 0.464s
+Test run storyatlas4s.cli.VoyageEditionSuite started
+storyatlas4s.cli.VoyageEditionSuite: finished 0.056s
+Test run storyatlas4s.cli.VoyageEditionSuite finished: 0 failed, 0 ignored, 4 total 0.056s
+Test run storyatlas4s.cli.WorkspaceSuite started
+storyatlas4s.cli.WorkspaceSuite: finished 0.06s
+Test run storyatlas4s.cli.WorkspaceSuite finished: 0 failed, 0 ignored, 17 total 0.06s
+Test run storyatlas4s.cli.CodexHtmlSuite started
+storyatlas4s.cli.CodexHtmlSuite: finished 0.261s
+Test run storyatlas4s.cli.CodexHtmlSuite finished: 0 failed, 0 ignored, 8 total 0.262s
+[info] Passed: Total 58, Failed 0, Errors 0, Passed 58
+[success] Total time: 5 s, completed Sep 22, 2026, 9:06:29 p.m.
+[info] Fast optimizing /private/tmp/storyatlas4s-workspace-m1-20260922/app/target/scala-3.7.4/storyatlas4s-app-test-fastopt
+[success] Total time: 1 s, completed Sep 22, 2026, 9:06:30 p.m.
+[info] scalafmt: Checking 1 Scala sources (/private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm)...
+[success] Total time: 0 s, completed Sep 22, 2026, 9:06:30 p.m.
+[info] Fast optimizing /private/tmp/storyatlas4s-workspace-m1-20260922/app/target/scala-3.7.4/storyatlas4s-app-fastopt
+[success] Total time: 3 s, completed Sep 22, 2026, 9:06:34 p.m.
+[info] running (fork) storyatlas4s.cli.Main edition --out target/edition
+[error] WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+[error] WARNING: sun.misc.Unsafe::objectFieldOffset has been called by scala.runtime.LazyVals$ (file:/private/tmp/storyatlas4s-workspace-m1-20260922/target/bg-jobs/sbt_dd6b78ac/target/16f4dc48/adca020a/scala3-library_3-3.7.4.jar)
+[error] WARNING: Please consider reporting this to the maintainers of class scala.runtime.LazyVals$
+[error] WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[info] target/edition/atlas-story-hidden.svg
+[info] target/edition/atlas-story-hidden.txt
+[info] target/edition/atlas-story-sentences.svg
+[info] target/edition/atlas-story-sentences.txt
+[info] target/edition/atlas-story-tokens.svg
+[info] target/edition/atlas-story-tokens.txt
+[info] target/edition/atlas-episode-hidden.svg
+[info] target/edition/atlas-episode-hidden.txt
+[info] target/edition/atlas-episode-sentences.svg
+[info] target/edition/atlas-episode-sentences.txt
+[info] target/edition/atlas-episode-tokens.svg
+[info] target/edition/atlas-episode-tokens.txt
+[info] target/edition/atlas-scene-hidden.svg
+[info] target/edition/atlas-scene-hidden.txt
+[info] target/edition/atlas-scene-sentences.svg
+[info] target/edition/atlas-scene-sentences.txt
+[info] target/edition/atlas-scene-tokens.svg
+[info] target/edition/atlas-scene-tokens.txt
+[info] target/edition/codex-reading.svg
+[info] target/edition/codex-reading.txt
+[info] target/edition/codex-reading.html
+[info] target/edition/codex-reading-pages.txt
+[info] target/edition/codex-overview.svg
+[info] target/edition/codex-overview.txt
+[info] target/edition/codex-overview.html
+[info] target/edition/codex-overview-pages.txt
+[info] target/edition/preview.html
+[info] target/edition/preview.txt
+[info] target/edition/features.html
+[info] target/edition/receipt.json
+[success] Total time: 2 s, completed Sep 22, 2026, 9:06:36 p.m.
+[success] Total time: 0 s, completed Sep 22, 2026, 9:06:37 p.m.
+[info] running (fork) storyatlas4s.cli.WorkspaceBrowserFixtureWriter /private/tmp/workspace-m1-evidence/atlas/source-feature-bundle
+[error] WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+[error] WARNING: sun.misc.Unsafe::objectFieldOffset has been called by scala.runtime.LazyVals$ (file:/private/tmp/storyatlas4s-workspace-m1-20260922/target/bg-jobs/sbt_dd6b78ac/target/16f4dc48/adca020a/scala3-library_3-3.7.4.jar)
+[error] WARNING: Please consider reporting this to the maintainers of class scala.runtime.LazyVals$
+[error] WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[info] generated source feature bundle: 2 checked tracks
+[success] Total time: 1 s, completed Sep 22, 2026, 9:06:38 p.m.

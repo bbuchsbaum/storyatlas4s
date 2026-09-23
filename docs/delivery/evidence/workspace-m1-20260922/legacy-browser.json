@@ -1,0 +1,84 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "description": "legacy checked route renders one real SVG plate in the edition shell"
+    },
+    {
+      "ok": true,
+      "description": "legacy checked route has no decode or compile error"
+    },
+    {
+      "ok": true,
+      "description": "legacy picker retains every canonical unit plus its placeholder"
+    },
+    {
+      "ok": true,
+      "description": "legacy default layout has a measured plate width"
+    },
+    {
+      "ok": true,
+      "description": "legacy default layout reports supplied timed inventory without inventing clocks"
+    },
+    {
+      "ok": true,
+      "description": "legacy keyboard traversal reaches canonical ordinal 0"
+    },
+    {
+      "ok": true,
+      "description": "legacy keyboard traversal reaches canonical ordinal 1"
+    },
+    {
+      "ok": true,
+      "description": "legacy keyboard traversal reaches canonical ordinal 2"
+    },
+    {
+      "ok": true,
+      "description": "legacy keyboard traversal reaches canonical ordinal 3"
+    },
+    {
+      "ok": true,
+      "description": "legacy reverse traversal reaches canonical ordinal 2"
+    },
+    {
+      "ok": true,
+      "description": "legacy reverse traversal reaches canonical ordinal 1"
+    },
+    {
+      "ok": true,
+      "description": "legacy reverse traversal reaches canonical ordinal 0"
+    },
+    {
+      "ok": true,
+      "description": "legacy first endpoint retains canonical selection"
+    },
+    {
+      "ok": true,
+      "description": "legacy untimed inspector quote is exact producer text"
+    },
+    {
+      "ok": true,
+      "description": "legacy untimed selection states that no clock position is inferred"
+    },
+    {
+      "ok": true,
+      "description": "legacy untimed selection cannot fabricate a reveal clock position"
+    },
+    {
+      "ok": true,
+      "description": "legacy recall-range controls leave the untimed canonical selection without a fabricated clock"
+    },
+    {
+      "ok": true,
+      "description": "legacy route has no browser or console errors"
+    },
+    {
+      "ok": true,
+      "description": "legacy route makes no HTTP(S) requests"
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "fixture": "bell.voyage.json",
+  "exit": 0
+}

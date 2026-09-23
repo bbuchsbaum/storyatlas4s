@@ -1,0 +1,1 @@
+{"checks":16,"exit":1,"failure":"AssertionError [ERR_ASSERTION]: bell: keyboard candidate activation restores its semantic control\n    at check (/private/tmp/storyatlas4s-workspace-m1-20260922/app/smoke/workspace.cjs:16:84)\n    at /private/tmp/storyatlas4s-workspace-m1-20260922/app/smoke/workspace.cjs:115:7"}

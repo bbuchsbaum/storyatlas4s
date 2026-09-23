@@ -1,0 +1,368 @@
+{
+  "reports": [
+    {
+      "path": "layout/.jvm/target/test-reports/TEST-storyatlas4s.layout.WarOfTheGhostsPaginationSuite.xml",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "layout/.jvm/target/test-reports/TEST-storyatlas4s.layout.AwtMeasurerSuite.xml",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "layout/.jvm/target/test-reports/TEST-storyatlas4s.layout.PaginatorLawsSuite.xml",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "layout/.js/target/test-reports/TEST-storyatlas4s.layout.WarOfTheGhostsPaginationSuite.xml",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "layout/.js/target/test-reports/TEST-storyatlas4s.layout.PaginatorLawsSuite.xml",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "layout/.js/target/test-reports/TEST-storyatlas4s.layout.DomMeasurerSuite.xml",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.jvm/target/test-reports/TEST-storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite.xml",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.jvm/target/test-reports/TEST-storyatlas4s.intaglio.VoyageLoweringSuite.xml",
+      "tests": 26,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.jvm/target/test-reports/TEST-storyatlas4s.intaglio.RecallWindowSuite.xml",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.jvm/target/test-reports/TEST-storyatlas4s.intaglio.PagedCodexLoweringSuite.xml",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.jvm/target/test-reports/TEST-storyatlas4s.intaglio.DraftLoweringSuite.xml",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.jvm/target/test-reports/TEST-storyatlas4s.intaglio.PlateCraftSuite.xml",
+      "tests": 24,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.js/target/test-reports/TEST-storyatlas4s.intaglio.WarOfTheGhostsLoweringSuite.xml",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.js/target/test-reports/TEST-storyatlas4s.intaglio.VoyageLoweringSuite.xml",
+      "tests": 26,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.js/target/test-reports/TEST-storyatlas4s.intaglio.RecallWindowSuite.xml",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.js/target/test-reports/TEST-storyatlas4s.intaglio.PagedCodexLoweringSuite.xml",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.js/target/test-reports/TEST-storyatlas4s.intaglio.DraftLoweringSuite.xml",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "intaglio/.js/target/test-reports/TEST-storyatlas4s.intaglio.PlateCraftSuite.xml",
+      "tests": 24,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "edition/.jvm/target/test-reports/TEST-storyatlas4s.edition.ArtifactInputSuite.xml",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "edition/.jvm/target/test-reports/TEST-storyatlas4s.edition.WorkspacePacketSuite.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "edition/.jvm/target/test-reports/TEST-storyatlas4s.edition.SourceInputSuite.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "edition/.js/target/test-reports/TEST-storyatlas4s.edition.ArtifactInputSuite.xml",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "edition/.js/target/test-reports/TEST-storyatlas4s.edition.WorkspacePacketSuite.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "edition/.js/target/test-reports/TEST-storyatlas4s.edition.SourceInputSuite.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.jvm/target/test-reports/TEST-storyatlas4s.shell.WorkspaceExportSuite.xml",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.jvm/target/test-reports/TEST-storyatlas4s.shell.AppCompilerSuite.xml",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.jvm/target/test-reports/TEST-storyatlas4s.shell.InteractionPresentationSuite.xml",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.jvm/target/test-reports/TEST-storyatlas4s.shell.WorkspaceOpenSuite.xml",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.jvm/target/test-reports/TEST-storyatlas4s.shell.SemanticZoomSuite.xml",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.jvm/target/test-reports/TEST-storyatlas4s.shell.WorkspaceImportSuite.xml",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.jvm/target/test-reports/TEST-storyatlas4s.shell.WorkspaceControllerSuite.xml",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.jvm/target/test-reports/TEST-storyatlas4s.shell.ActivationSuite.xml",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.js/target/test-reports/TEST-storyatlas4s.shell.WorkspaceExportSuite.xml",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.js/target/test-reports/TEST-storyatlas4s.shell.AppCompilerSuite.xml",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.js/target/test-reports/TEST-storyatlas4s.shell.InteractionPresentationSuite.xml",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.js/target/test-reports/TEST-storyatlas4s.shell.WorkspaceOpenSuite.xml",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.js/target/test-reports/TEST-storyatlas4s.shell.SemanticZoomSuite.xml",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.js/target/test-reports/TEST-storyatlas4s.shell.WorkspaceImportSuite.xml",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.js/target/test-reports/TEST-storyatlas4s.shell.WorkspaceControllerSuite.xml",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "shell/.js/target/test-reports/TEST-storyatlas4s.shell.ActivationSuite.xml",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "cli/target/test-reports/TEST-storyatlas4s.cli.VoyageEditionSuite.xml",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "cli/target/test-reports/TEST-storyatlas4s.cli.WorkspaceSuite.xml",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "cli/target/test-reports/TEST-storyatlas4s.cli.EditionSuite.xml",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "cli/target/test-reports/TEST-storyatlas4s.cli.ModelInputSuite.xml",
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    },
+    {
+      "path": "cli/target/test-reports/TEST-storyatlas4s.cli.CodexHtmlSuite.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh": true
+    }
+  ],
+  "tests": 376,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0
+}

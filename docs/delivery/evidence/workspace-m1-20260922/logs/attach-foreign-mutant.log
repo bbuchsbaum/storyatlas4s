@@ -1,0 +1,61 @@
+[info] welcome to sbt 1.12.14 (Homebrew Java 25.0.1)
+[info] loading settings for project storyatlas4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storyatlas4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-intaglio-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-intaglio-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-grakern-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-grakern-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project gale-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/c6b5fe94c20cf0d05b05/gale/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project graph4s-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/8d03f2d14a9e2c9f6990/graph4s/project
+[info] loading settings for project root from build.sbt...
+[info] resolving key references (148721 settings) ...
+[info] set current project to root (in build file:/private/tmp/storyatlas4s-workspace-m1-20260922/)
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm/target/scala-3.7.4/classes ...
+[warn] -- [E198] Unused Symbol Warning: /private/tmp/storyatlas4s-workspace-m1-20260922/shell/src/main/scala/storyatlas4s/shell/WorkspaceImport.scala:6:38 
+[warn] 6 |import storymodel4s.codec.{Canonical, StoryModelCodec}
+[warn]   |                                      ^^^^^^^^^^^^^^^
+[warn]   |                                      unused import
+[warn] -- [E198] Unused Symbol Warning: /private/tmp/storyatlas4s-workspace-m1-20260922/shell/src/main/scala/storyatlas4s/shell/WorkspaceImport.scala:29:6 
+[warn] 29 |      source: ImportedSource,
+[warn]    |      ^^^^^^
+[warn]    |      unused explicit parameter
+[warn] two warnings found
+[info] done compiling
+Test run storyatlas4s.shell.WorkspaceImportSuite started
+==> X storyatlas4s.shell.WorkspaceImportSuite.foreign models and unsupported source addresses refuse attachment 0.693s munit.ComparisonFailException: shell/src/test/scala/storyatlas4s/shell/WorkspaceImportSuite.scala:104
+103:      Left(WorkspaceRefusal.SemanticJoinMismatch)
+104:    )
+105:    assertEquals(
+values are not the same
+=> Obtained
+Right(
+  value = Investigation(
+    controller = storyatlas4s.shell.WorkspaceController@52a088dc
+  )
+)
+=> Diff (- expected, + obtained)
+-Left(
+-  value = SemanticJoinMismatch()
++Right(
++  value = Investigation(
++    controller = storyatlas4s.shell.WorkspaceController@52a088dc
++  )
+ )
+    at munit.FunSuite.assertEquals(FunSuite.scala:12)
+    at storyatlas4s.shell.WorkspaceImportSuite.$init$$$anonfun$5(WorkspaceImportSuite.scala:104)
+storyatlas4s.shell.WorkspaceImportSuite: finished 3.026s
+Test run storyatlas4s.shell.WorkspaceImportSuite finished: 1 failed, 0 ignored, 5 total 3.035s
+[error] Failed: Total 5, Failed 1, Errors 0, Passed 4
+[error] Failed tests:
+[error] 	storyatlas4s.shell.WorkspaceImportSuite
+[error] (shellJVM / Test / testOnly) sbt.TestsFailedException: Tests unsuccessful
+[error] Total time: 7 s, completed Sep 22, 2026, 9:57:44 p.m.

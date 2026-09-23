@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-23T01:07:26.594386+00:00",
+  "finished_utc": "2026-09-23T01:07:26.798135+00:00",
+  "duration_seconds": 0.203603,
+  "command": [
+    "node",
+    "app/smoke/smoke.cjs",
+    "target/edition/index.html"
+  ],
+  "cwd": "/private/tmp/storyatlas4s-workspace-m1-20260922",
+  "log": "/private/tmp/workspace-m1-evidence/atlas/source-browser-1.log",
+  "exit_code": 1,
+  "child_returncode": 1,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 240.0,
+  "log_bytes": 1292
+}

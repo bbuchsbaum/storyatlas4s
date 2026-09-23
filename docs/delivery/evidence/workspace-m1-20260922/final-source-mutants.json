@@ -1,0 +1,22 @@
+[
+  {
+    "name": "legacy-timed-only",
+    "file": "app/src/main/scala/storyatlas4s/app/VoyageView.scala",
+    "original_sha256": "b2987b8b4b997ed95502c817326e955d816657585223855680381e79b3277dfd",
+    "old": "val ordered = scene.units.sortBy(_.ordinal)",
+    "new": "val ordered = scene.units.filter(_.onset.nonEmpty).sortBy(_.ordinal)",
+    "killed": true,
+    "exit_code": 1,
+    "witness": "legacy first untimed canonical unit does not activate"
+  },
+  {
+    "name": "attach-foreign-model",
+    "file": "shell/src/main/scala/storyatlas4s/shell/WorkspaceImport.scala",
+    "original_sha256": "b92a7a707746e1774c0f71c188ee9f05c5a13434fe4a0d3b1457c4837d3037e8",
+    "old": "StoryModelCodec.encode(source.draft) == StoryModelCodec.encode(\n          controller.workspace.draft.model\n        )",
+    "new": "true",
+    "killed": true,
+    "exit_code": 1,
+    "witness": "foreign models and unsupported source addresses refuse attachment"
+  }
+]

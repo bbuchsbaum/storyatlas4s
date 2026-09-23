@@ -1,0 +1,56 @@
+[info] welcome to sbt 1.12.14 (Homebrew Java 25.0.1)
+[info] loading settings for project storyatlas4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storyatlas4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-intaglio-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-intaglio-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-workspace-m1-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-workspace-m1-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-m1-grakern-20260922-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-grakern-20260922/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project gale-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/c6b5fe94c20cf0d05b05/gale/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project graph4s-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storymodel4s-m1-sbt-staging-20260922/8d03f2d14a9e2c9f6990/graph4s/project
+[info] loading settings for project root from build.sbt...
+[info] resolving key references (148721 settings) ...
+[info] set current project to root (in build file:/private/tmp/storyatlas4s-workspace-m1-20260922/)
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/intaglio/.jvm/target/scala-3.7.4/classes ...
+[info] done compiling
+[info] compiling 1 Scala source to /private/tmp/storyatlas4s-workspace-m1-20260922/shell/.jvm/target/scala-3.7.4/classes ...
+[info] done compiling
+Test run storyatlas4s.shell.WorkspaceControllerSuite started
+==> X storyatlas4s.shell.WorkspaceControllerSuite.canonical traversal reaches every inventory outcome including untimed and failed units 1.935s munit.ComparisonFailException: shell/src/test/scala/storyatlas4s/shell/WorkspaceControllerSuite.scala:31
+30:      Vector("m1:u0", "m1:u1", "m1:u2", "m1:u3").map(RecallUnitId.unsafe)
+31:    )
+32:    assertEquals(
+values are not the same
+=> Obtained
+Vector(
+  "m1:u1",
+  "m1:u2",
+  "m1:u2",
+  "m1:u2"
+)
+=> Diff (- expected, + obtained)
+ Vector(
+-  "m1:u0",
+   "m1:u1",
+   "m1:u2",
+-  "m1:u3"
++  "m1:u2",
++  "m1:u2"
+ )
+    at munit.FunSuite.assertEquals(FunSuite.scala:12)
+    at storyatlas4s.shell.WorkspaceControllerSuite.$init$$$anonfun$1(WorkspaceControllerSuite.scala:31)
+storyatlas4s.shell.WorkspaceControllerSuite: finished 2.342s
+Test run storyatlas4s.shell.WorkspaceControllerSuite finished: 1 failed, 0 ignored, 10 total 2.352s
+[error] Failed: Total 10, Failed 1, Errors 0, Passed 9
+[error] Failed tests:
+[error] 	storyatlas4s.shell.WorkspaceControllerSuite
+[error] (shellJVM / Test / testOnly) sbt.TestsFailedException: Tests unsuccessful
+[error] Total time: 13 s, completed Sep 22, 2026, 9:38:25 p.m.
