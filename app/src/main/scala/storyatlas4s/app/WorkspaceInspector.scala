@@ -51,72 +51,87 @@ private[app] object WorkspaceInspector:
             ),
             c.recallEvidence(unit).fold(reason => p(s"Evidence unavailable: $reason"), pieces),
             h3("Supplied alternatives"),
-            p(cls("inspection-caption"), "Each supplied measure is named separately. No values are renormalized."),
-            ul(cls("alternative-list"), row.cells.filter(cell =>
-              cell.links.nonEmpty || cell.raw.nonEmpty || cell.normalized.nonEmpty ||
-                cell.transport.nonEmpty || cell.posterior.nonEmpty || cell.chosen
-            ).map { cell =>
-              li(
-                cls("alternative-row"),
-                dataAttr("candidate-focused")((cell.destination match
-                  case Destination.Target(ref) => c.state.correspondence.contains(Correspondence(unit, ref))
-                  case Destination.External(_) => false).toString),
-                button(
-                  typ("button"),
-                  cls("alternative-target"),
-                  WorkspaceLabels.destination(cell.destination),
-                  dataAttr("inspect-destination")(cell.destination.key),
-                  onClick --> (_ =>
-                    cell.destination match
-                      case Destination.Target(ref) =>
-                        activate(
-                          "data-inspect-destination",
-                          cell.destination.key,
-                          WorkspaceAction.Inspect(unit, ref)
-                        )
-                      case Destination.External(_) =>
-                        activate(
-                          "data-inspect-destination",
-                          cell.destination.key,
-                          WorkspaceAction.Jump(unit)
-                        )
-                  )
-                ),
-                Option.when(cell.chosen)(span(cls("candidate-decision"), "Decision")),
-                div(cls("candidate-measures"), MatrixLowering.values(cell).map { (kind, value) =>
-                  div(cls("candidate-measure"), span(kind), strong(value))
-                }),
-                detailsTag(
-                  summaryTag("Support and fidelity"),
-                  dataAttr("inspection-metadata")("true"),
-                  if cell.links.isEmpty then Vector(p("Link support: not supplied"))
-                  else
-                    cell.links.map { link =>
-                      val support = link.termSupport match
-                        case absent: TermSupportStatus.NotComputed =>
-                          s"Not computed (${absent.reason})"
-                        case evaluated: TermSupportStatus.Evaluated => evaluated.assessment.toString
-                      div(
-                        p(s"Term support: $support"),
-                        p(
-                          s"Candidate set: ${link.candidateSet.digest.hex}; inference stage: ${link.inferenceStage.digest.hex}"
-                        ),
-                        p(link.gate match
-                          case GateOutcome.NotGated => "Contradiction gate: not evaluated"
-                          case _: GateOutcome.NoContradictionDetected =>
-                            "Contradiction gate: no contradiction detected"
-                          case contradicted: GateOutcome.Contradicted =>
-                            s"Contradiction gate: ${contradicted.facets}"),
-                        p(link.fidelity match
-                          case absent: FidelityStatus.NotAssessed =>
-                            s"Fidelity: not assessed (${absent.reason})"
-                          case FidelityStatus.NotApplicable      => "Fidelity: not applicable"
-                          case assessed: FidelityStatus.Assessed => s"Fidelity: ${assessed.report}")
-                      )
-                    }
+            p(
+              cls("inspection-caption"),
+              "Each supplied measure is named separately. No values are renormalized."
+            ),
+            ul(
+              cls("alternative-list"),
+              row.cells
+                .filter(cell =>
+                  cell.links.nonEmpty || cell.raw.nonEmpty || cell.normalized.nonEmpty ||
+                    cell.transport.nonEmpty || cell.posterior.nonEmpty || cell.chosen
                 )
-              )
-            }),
+                .map { cell =>
+                  li(
+                    cls("alternative-row"),
+                    dataAttr("candidate-focused")((cell.destination match
+                      case Destination.Target(ref) =>
+                        c.state.correspondence.contains(Correspondence(unit, ref))
+                      case Destination.External(_) => false
+                    ).toString),
+                    button(
+                      typ("button"),
+                      cls("alternative-target"),
+                      WorkspaceLabels.destination(cell.destination),
+                      dataAttr("inspect-destination")(cell.destination.key),
+                      onClick --> (_ =>
+                        cell.destination match
+                          case Destination.Target(ref) =>
+                            activate(
+                              "data-inspect-destination",
+                              cell.destination.key,
+                              WorkspaceAction.Inspect(unit, ref)
+                            )
+                          case Destination.External(_) =>
+                            activate(
+                              "data-inspect-destination",
+                              cell.destination.key,
+                              WorkspaceAction.Jump(unit)
+                            )
+                      )
+                    ),
+                    Option.when(cell.chosen)(span(cls("candidate-decision"), "Decision")),
+                    div(
+                      cls("candidate-measures"),
+                      MatrixLowering.values(cell).map { (kind, value) =>
+                        div(cls("candidate-measure"), span(kind), strong(value))
+                      }
+                    ),
+                    detailsTag(
+                      summaryTag("Support and fidelity"),
+                      dataAttr("inspection-metadata")("true"),
+                      if cell.links.isEmpty then Vector(p("Link support: not supplied"))
+                      else
+                        cell.links.map { link =>
+                          val support = link.termSupport match
+                            case absent: TermSupportStatus.NotComputed =>
+                              s"Not computed (${absent.reason})"
+                            case evaluated: TermSupportStatus.Evaluated =>
+                              evaluated.assessment.toString
+                          div(
+                            p(s"Term support: $support"),
+                            p(
+                              s"Candidate set: ${link.candidateSet.digest.hex}; inference stage: ${link.inferenceStage.digest.hex}"
+                            ),
+                            p(link.gate match
+                              case GateOutcome.NotGated => "Contradiction gate: not evaluated"
+                              case _: GateOutcome.NoContradictionDetected =>
+                                "Contradiction gate: no contradiction detected"
+                              case contradicted: GateOutcome.Contradicted =>
+                                s"Contradiction gate: ${contradicted.facets}"),
+                            p(link.fidelity match
+                              case absent: FidelityStatus.NotAssessed =>
+                                s"Fidelity: not assessed (${absent.reason})"
+                              case FidelityStatus.NotApplicable      => "Fidelity: not applicable"
+                              case assessed: FidelityStatus.Assessed =>
+                                s"Fidelity: ${assessed.report}")
+                          )
+                        }
+                    )
+                  )
+                }
+            ),
             p(
               cls("decision-summary"),
               row.outcome.decision.fold("Decision not supplied")(d =>
@@ -129,7 +144,11 @@ private[app] object WorkspaceInspector:
               dataAttr("inspection-metadata")("true"),
               p(s"Processing: ${row.outcome.processing}"),
               p(s"Localization: ${row.outcome.localization}"),
-              p(row.outcome.decision.fold("Decision basis: not supplied")(d => s"Decision basis: ${d.basis.kind}")),
+              p(
+                row.outcome.decision.fold("Decision basis: not supplied")(d =>
+                  s"Decision basis: ${d.basis.kind}"
+                )
+              ),
               p(s"Inference policy: ${c.policy.record.policies.inference}"),
               p(s"Candidate coverage: ${c.policy.record.policies.candidate}"),
               p(c.policy.record.policies.candidate match
@@ -185,7 +204,10 @@ private[app] object WorkspaceInspector:
                 _.fold(p("Source support unlocated"))(pieces)
               ),
             h3("All supplied recall references"),
-            p(cls("inspection-caption"), "Transcript order; this list is not a distribution over recall units."),
+            p(
+              cls("inspection-caption"),
+              "Transcript order; this list is not a distribution over recall units."
+            ),
             references
           )
         }

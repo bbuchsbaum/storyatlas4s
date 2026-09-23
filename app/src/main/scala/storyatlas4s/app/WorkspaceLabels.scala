@@ -29,17 +29,17 @@ private[app] object WorkspaceLabels:
     case ProcessingStatus.ExcludedByInputPolicy(_) => "Excluded"
 
   def origin(value: DecisionOrigin): String = value match
-    case DecisionOrigin.RawArgmax                  => "Supplied argmax"
-    case DecisionOrigin.StructuredDecode(policy)   => s"Reconstruction · ${policy.value}"
-    case DecisionOrigin.GapFill(policy)            => s"Gap fill · ${policy.value}"
-    case DecisionOrigin.Abstention(reason)          => s"Abstention · $reason"
+    case DecisionOrigin.RawArgmax                => "Supplied argmax"
+    case DecisionOrigin.StructuredDecode(policy) => s"Reconstruction · ${policy.value}"
+    case DecisionOrigin.GapFill(policy)          => s"Gap fill · ${policy.value}"
+    case DecisionOrigin.Abstention(reason)       => s"Abstention · $reason"
 
   def destination(value: Destination): String = value match
     case Destination.Target(ref)    => ref.key
     case Destination.External(kind) => s"Non-source · $kind"
 
   def spoken(cell: Option[MappingMatrix.Cell]): String = cell match
-    case None => "not supplied in this result"
+    case None        => "not supplied in this result"
     case Some(value) =>
       values(value, Measure.All).map((kind, number) => s"$kind $number").mkString("; ") +
         (if value.chosen then "; supplied decision" else "")
