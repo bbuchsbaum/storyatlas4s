@@ -88,10 +88,125 @@ object WorkspaceView:
           Vector(span(cls("evidence-absence"), "No complete fragment at this horizon"))
         case Right(pieces) => pieces.map((_, text) => span(cls("recall-fragment"), text))
 
+    // Displayed range: a view-only measurement of the scroll pane, never saved scientific state.
+    val rowTotal = workspace.inventory.units.size
+    val columnTotal = destinations.size
+    val shown = Var(Option.empty[(MatrixSpan, MatrixSpan)])
+    def measureRange(): Unit =
+      Option(dom.document.getElementById("workspace-matrix-scroll")).foreach { pane =>
+        WorkspaceScroll.matrixVisible(pane, rowTotal, columnTotal).foreach(v => shown.set(Some(v)))
+      }
+    def settleThenMeasure(): Unit =
+      val _ = dom.window.requestAnimationFrame(_ =>
+        val _ = dom.window.requestAnimationFrame(_ => measureRange())
+      )
+
+    /** Moves only the matrix camera; result, cut, values, focus and selection are untouched. */
+    def reveal(row: Int, column: Int): Unit =
+      val v = history.now().current.state.viewport
+      dispatch(WorkspaceAction.Viewport(v.copy(matrixRow = row, matrixColumn = column)))
+      restorations.writer.onNext(())
+      settleThenMeasure()
+    def current(): (MatrixSpan, MatrixSpan) =
+      shown.now().getOrElse(MatrixRange.span(0, 0, rowTotal) -> MatrixRange.span(0, 0, columnTotal))
+    val rangeButton = (label: String, action: () => Unit) =>
+      button(typ("button"), label, onClick --> (_ => action()))
+    val rangeControls = div(
+      cls("matrix-range"),
+      role("group"),
+      aria.label("Matrix range"),
+      span(
+        cls("range-readout"),
+        role("status"),
+        aria.live("polite"),
+        child.text <-- shown.signal.map(
+          _.fold(s"$rowTotal recall units · $columnTotal destinations")((r, c) =>
+            s"${MatrixRange.label("Rows", r)} · ${MatrixRange.label("Columns", c)}"
+          )
+        )
+      ),
+      rangeButton(
+        "Previous rows",
+        () => reveal(MatrixRange.page(current()._1, false), current()._2.first)
+      ),
+      rangeButton(
+        "Next rows",
+        () => reveal(MatrixRange.page(current()._1, true), current()._2.first)
+      ),
+      rangeButton(
+        "Previous columns",
+        () => reveal(current()._1.first, MatrixRange.page(current()._2, false))
+      ),
+      rangeButton(
+        "Next columns",
+        () => reveal(current()._1.first, MatrixRange.page(current()._2, true))
+      ),
+      button(
+        typ("button"),
+        "Reveal selected",
+        disabled <-- controller.map(_.state.activeRecall.isEmpty),
+        onClick --> { _ =>
+          val c = history.now().current
+          val row = c.state.activeRecall
+            .map(u => workspace.inventory.units.indexWhere(_.id == u))
+            .filter(_ >= 0)
+            .getOrElse(current()._1.first)
+          val column = c.state.correspondence
+            .map(x => destinations.indexOf(Destination.Target(x.target)))
+            .filter(_ >= 0)
+            .getOrElse(current()._2.first)
+          reveal(row, column)
+        }
+      ),
+      rangeButton("Whole story", () => reveal(0, 0))
+    )
+    val activeRow = controller.map(c =>
+      c.state.activeRecall.map(u => workspace.inventory.units.indexWhere(_.id == u)).getOrElse(-1)
+    )
+    val navigator = div(
+      cls("matrix-navigator"),
+      div(
+        cls("navigator-marks"),
+        aria.hidden(true),
+        (0 until rowTotal).map { index =>
+          span(
+            cls("navigator-mark"),
+            cls("in-view") <-- shown.signal.map(_.exists(_._1.contains(index))),
+            cls("selected") <-- activeRow.map(_ == index)
+          )
+        }
+      ),
+      div(
+        cls("navigator-ranges"),
+        role("group"),
+        aria.label(s"All $rowTotal recall units, in transcript order"),
+        MatrixRange.blocks(rowTotal, 12).map { block =>
+          val name =
+            if block.first == block.last then s"R${block.first + 1}"
+            else s"R${block.first + 1}–R${block.last + 1}"
+          button(
+            typ("button"),
+            cls("navigator-range"),
+            name,
+            aria.label(s"Show recall units $name"),
+            aria.current <-- shown.signal.map(v =>
+              if v.exists(r => r._1.first <= block.last && r._1.last >= block.first) then "true"
+              else "false"
+            ),
+            onClick --> (_ => reveal(block.first, current()._2.first))
+          )
+        }
+      )
+    )
     val matrix = WorkspaceScroll.bind(
       div(
         idAttr("workspace-matrix-scroll"),
         cls("mapping-scroll"),
+        onScroll --> (_ => measureRange()),
+        onMountCallback(_ => settleThenMeasure()),
+        windowEvents(_.onResize) --> (_ => measureRange()),
+        controller.map(_.state.mode).distinct --> (_ => settleThenMeasure()),
+        restorations.events --> (_ => settleThenMeasure()),
         role("region"),
         aria.label("Recall by supplied target cut; scroll for all destinations"),
         table(
@@ -113,7 +228,9 @@ object WorkspaceView:
                     else "target-column"
                   ),
                   title(destination.key),
-                  WorkspaceLabels.destination(destination)
+                  MatrixCells
+                    .breakable(WorkspaceLabels.destination(destination))
+                    .flatMap(part => Vector[Modifier[HtmlElement]](part, wbr()))
                 )
               },
               th(cls("processing-column"), "Processing")
@@ -183,12 +300,13 @@ object WorkspaceView:
                     ),
                     children <-- displayed.map { (c, m, _) =>
                       c.policy.matrix.row(unit.id).flatMap(_.cell(destination)) match
-                        case None       => Vector(span(cls("measure-absent"), "Not supplied"))
+                        case None       => Vector(span(cls("visually-hidden"), "Not supplied"))
                         case Some(cell) =>
                           WorkspaceLabels.values(cell, m).map { (kind, value) =>
                             div(
                               cls(
-                                if value == "Not supplied" then "measure-absent" else "cell-measure"
+                                if value == "Not supplied" then "measure-absent visually-hidden"
+                                else "cell-measure"
                               ),
                               span(
                                 cls(
@@ -495,6 +613,8 @@ object WorkspaceView:
           sectionTag(
             cls("matrix-pane"),
             h2("Recall correspondence"),
+            navigator,
+            rangeControls,
             matrix,
             compactList,
             p(
@@ -503,7 +623,7 @@ object WorkspaceView:
               "Supplied decision",
               span(cls("legend-fill")),
               "Gap fill",
-              " · Selection uses an outline; values stay unchanged."
+              " · Blank cell: not supplied · Selection uses an outline; values stay unchanged."
             )
           ),
           sourcePane,

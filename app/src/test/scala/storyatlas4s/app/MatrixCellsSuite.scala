@@ -28,3 +28,15 @@ class MatrixCellsSuite extends FunSuite:
     assert(ring.key.endsWith("ring"), ring.key)
     assertEquals(MatrixCells.shortLabel(ring), "ring")
   }
+
+  test("header pieces break only after ':' and rejoin to the exact label") {
+    assertEquals(
+      MatrixCells.breakable("sit:bell:sit:quiet"),
+      Vector("sit:", "bell:", "sit:", "quiet")
+    )
+    assertEquals(MatrixCells.breakable("Non-source · Intrusion"), Vector("Non-source · Intrusion"))
+    assertEquals(MatrixCells.breakable("a:"), Vector("a:"))
+    assertEquals(MatrixCells.breakable(""), Vector.empty)
+    for label <- Seq("sit:bell:sit:quiet", "seg:x", "::", "plain") do
+      assertEquals(MatrixCells.breakable(label).mkString, label)
+  }

@@ -37,6 +37,15 @@ function mappingMember(a,id) {
     browser = await chromium.launch({headless:true});
     context = await browser.newContext({viewport:{width:1600,height:1100},acceptDownloads:true});
     page = await context.newPage();
+    // Sticky header and recall column occlude the matrix corner; mirror WorkspaceScroll.matrixBox.
+    await page.addInitScript(()=>{ window.__matrixInset=pane=>{
+      const b=pane.getBoundingClientRect(), head=pane.querySelector('thead'), row=pane.querySelector('tbody th');
+      const top=head&&head.getBoundingClientRect().bottom>b.top?head.getBoundingClientRect().bottom:b.top;
+      const left=row&&row.getBoundingClientRect().right>b.left?row.getBoundingClientRect().right:b.left;
+      const proc=pane.querySelector('tbody td.processing-column'), pl=proc&&proc.getBoundingClientRect().left;
+      const right=pl&&pl>left&&pl<b.right?pl:b.right;
+      return {top,left,bottom:b.bottom,right,width:b.width};
+    };});
     page.on('pageerror',e=>report.errors.push(String(e)));
     page.on('console',m=>{report.console.push(m.text()); if(m.type()==='error')report.errors.push(m.text());});
     page.on('request',r=>{if(/^https?:/.test(r.url()))report.requests.push(r.url());});
@@ -187,15 +196,16 @@ function mappingMember(a,id) {
           const rows=Math.max(...cells.map(cell=>Number(cell.getAttribute('data-matrix-cell').split('-')[0])))+1;
           const columns=Math.max(...cells.map(cell=>Number(cell.getAttribute('data-matrix-cell').split('-')[1])))+1;
           const target=pane.querySelector(`[data-matrix-cell='${Math.floor(rows/2)}-${Math.floor(columns/2)}']`);
-          pane.scrollTop+=target.getBoundingClientRect().top-pane.getBoundingClientRect().top;
-          pane.scrollLeft+=target.getBoundingClientRect().left-pane.getBoundingClientRect().left;
+          const inset=window.__matrixInset(pane);
+          pane.scrollTop+=target.getBoundingClientRect().top-inset.top;
+          pane.scrollLeft+=target.getBoundingClientRect().left-inset.left;
           pane.dispatchEvent(new Event('scroll'));
         });
         await page.waitForFunction(()=>{
           const state=JSON.parse(document.querySelector('#workspace-state').textContent);
           const pane=document.querySelector('#workspace-matrix-scroll');
           const first=[...pane.querySelectorAll('[data-matrix-cell]')].find(cell=>{
-            const rect=cell.getBoundingClientRect(), viewport=pane.getBoundingClientRect();
+            const rect=cell.getBoundingClientRect(), viewport=window.__matrixInset(pane);
             return rect.bottom>viewport.top+1 && rect.right>viewport.left+1;
           });
           const [row,column]=first.getAttribute('data-matrix-cell').split('-').map(Number);
@@ -213,7 +223,8 @@ function mappingMember(a,id) {
         const [paneId,anchor]=selectorOf==='matrix'
           ? ['#workspace-matrix-scroll',`[data-matrix-cell='${viewport.matrixRow}-${viewport.matrixColumn}']`]
           : ['#workspace-source-scroll',`[data-source-offset='${viewport.sourceOffset}']`];
-        const pane=document.querySelector(paneId), a=pane.querySelector(anchor).getBoundingClientRect(), b=pane.getBoundingClientRect();
+        const pane=document.querySelector(paneId), a=pane.querySelector(anchor).getBoundingClientRect();
+        const b=selectorOf==='matrix'?window.__matrixInset(pane):pane.getBoundingClientRect();
         const state=JSON.parse(document.querySelector('#workspace-state').textContent);
         return state.viewport.sourceOffset===viewport.sourceOffset &&
           state.viewport.matrixRow===viewport.matrixRow && state.viewport.matrixColumn===viewport.matrixColumn &&
@@ -388,18 +399,18 @@ function mappingMember(a,id) {
       await page.waitForTimeout(50);
       await page.locator('#workspace-matrix-scroll').evaluate((pane,column)=>{
         const cell=pane.querySelector(`[data-matrix-cell="0-${column}"]`);
-        pane.scrollLeft+=cell.getBoundingClientRect().left-pane.getBoundingClientRect().left;
+        pane.scrollLeft+=cell.getBoundingClientRect().left-window.__matrixInset(pane).left;
         pane.dispatchEvent(new Event('scroll'));
       },column);
       await page.waitForFunction(()=>{
-        const pane=document.getElementById('workspace-matrix-scroll'),box=pane.getBoundingClientRect();
+        const pane=document.getElementById('workspace-matrix-scroll'),box=window.__matrixInset(pane);
         const first=[...pane.querySelectorAll('[data-matrix-cell]')].find(e=>e.getBoundingClientRect().bottom>box.top+1 && e.getBoundingClientRect().right>box.left+1);
         const state=JSON.parse(document.getElementById('workspace-state').textContent);
         return first.dataset.matrixCell===`${state.viewport.matrixRow}-${state.viewport.matrixColumn}`;
       });
     };
     const restoredMatrix=async(expected)=>page.waitForFunction(expected=>{
-      const pane=document.getElementById('workspace-matrix-scroll'),box=pane.getBoundingClientRect();
+      const pane=document.getElementById('workspace-matrix-scroll'),box=window.__matrixInset(pane);
       const first=[...pane.querySelectorAll('[data-matrix-cell]')].find(e=>e.getBoundingClientRect().bottom>box.top+1 && e.getBoundingClientRect().right>box.left+1);
       const s=JSON.parse(document.getElementById('workspace-state').textContent);
       return s.activeRecall===expected.activeRecall && first.dataset.matrixCell===`${expected.viewport.matrixRow}-${expected.viewport.matrixColumn}`;
@@ -452,6 +463,67 @@ function mappingMember(a,id) {
     });
     check(contrast>=4.5,'workspace primary text meets measured contrast floor');
     await page.screenshot({path:path.join(output,'dpr2.png'),fullPage:true});
+    // Scale slice 1: the matrix camera. Range controls move only the viewport.
+    await page.setViewportSize({width:1000,height:640});
+    await page.evaluate(()=>{ window.__matrixInset=pane=>{
+      const b=pane.getBoundingClientRect(), head=pane.querySelector('thead'), row=pane.querySelector('tbody th');
+      const top=head&&head.getBoundingClientRect().bottom>b.top?head.getBoundingClientRect().bottom:b.top;
+      const left=row&&row.getBoundingClientRect().right>b.left?row.getBoundingClientRect().right:b.left;
+      const proc=pane.querySelector('tbody td.processing-column'), pl=proc&&proc.getBoundingClientRect().left;
+      const right=pl&&pl>left&&pl<b.right?pl:b.right;
+      return {top,left,bottom:b.bottom,right,width:b.width};
+    };});
+    await page.getByRole('button',{name:'Story + recall',exact:true}).click();
+    await settle();
+    const units=await page.locator('.mapping-matrix tbody tr').count();
+    const columns=await page.locator('.mapping-matrix thead th').count()-2; // recall heading, processing
+    check(await page.locator('.navigator-mark').count()===units,'navigator represents every recall unit exactly once');
+    const covered=await page.locator('.navigator-range').evaluateAll(buttons=>buttons.map(b=>b.textContent));
+    check(covered.join(' ')===Array.from({length:units},(_,i)=>`R${i+1}`).join(' '),'navigator range buttons cover the whole inventory in transcript order');
+    const science=async()=>page.evaluate(()=>{
+      const s=JSON.parse(document.querySelector('#workspace-state').textContent);
+      const cells=[...document.querySelectorAll('[data-matrix-cell]')].map(c=>[c.dataset.matrixCell,c.textContent,c.className,c.getAttribute('aria-label')]);
+      return {policy:s.policy,selection:s.selection,focus:s.focus,activeRecall:s.activeRecall,correspondence:s.correspondence,cells};
+    });
+    const shownCells=async()=>page.locator('#workspace-matrix-scroll').evaluate(pane=>{
+      const i=window.__matrixInset(pane);
+      return [...pane.querySelectorAll('[data-matrix-cell]')].filter(c=>{const r=c.getBoundingClientRect();
+        return r.width>0&&r.top>=i.top-1&&r.bottom<=i.bottom+1&&r.left>=i.left-1&&r.right<=i.right+1;}).map(c=>c.dataset.matrixCell.split('-').map(Number));
+    });
+    const readout=async()=>(await page.locator('.range-readout').textContent()).trim();
+    const exact=async()=>{
+      const seen=await shownCells(); const rows=seen.map(x=>x[0]), cols=seen.map(x=>x[1]);
+      return `Rows ${Math.min(...rows)+1}–${Math.max(...rows)+1} of ${units} · Columns ${Math.min(...cols)+1}–${Math.max(...cols)+1} of ${columns}`;
+    };
+    await page.getByRole('button',{name:'Whole story',exact:true}).click(); await settle();
+    const before=await science();
+    check(await readout()===await exact(),'range readout states exactly the rows and columns wholly displayed');
+    check((await shownCells()).length < units*columns,'narrow viewport shows a partial range, so paging is exercised');
+    const firstColumn=async()=>Math.min(...(await shownCells()).map(x=>x[1]));
+    const c0=await firstColumn();
+    await page.getByRole('button',{name:'Next columns',exact:true}).click(); await settle();
+    check(await firstColumn()>c0 && await readout()===await exact(),'Next columns pages the displayed columns and the readout follows');
+    const c1=await firstColumn();
+    await page.getByRole('button',{name:'Previous columns',exact:true}).click(); await settle();
+    check(await firstColumn()<c1 && await readout()===await exact(),'Previous columns pages the displayed columns back and the readout follows');
+    await page.getByRole('button',{name:`Show recall units R${units}`,exact:true}).click(); await settle();
+    check((await shownCells()).some(x=>x[0]===units-1),'navigator reveals the last unit, including a failed outcome row');
+    // A correspondence needs a source target; non-source destinations only select the unit.
+    const lastTarget=await page.locator('.mapping-matrix thead th.target-column').count()-1;
+    await page.locator(`[data-matrix-cell="0-${lastTarget}"]`).click();
+    const picked=await state();
+    check(picked.correspondence!==null && picked.correspondence!==undefined,'clicking a source target cell focuses a correspondence');
+    await page.getByRole('button',{name:'Whole story',exact:true}).click(); await settle();
+    await page.getByRole('button',{name:'Reveal selected',exact:true}).click(); await settle();
+    check((await shownCells()).some(x=>x[0]===0&&x[1]===lastTarget),'Reveal selected brings the focused correspondence into the displayed range');
+    const after=await state();
+    check(after.activeRecall===picked.activeRecall && JSON.stringify(after.selection)===JSON.stringify(picked.selection) && JSON.stringify(after.correspondence)===JSON.stringify(picked.correspondence),'range navigation leaves focus, selection and correspondence unchanged');
+    await page.getByRole('button',{name:'Next rows',exact:true}).focus(); await page.keyboard.press('Enter'); await settle();
+    check(await readout()===await exact(),'range controls work from the keyboard and keep the readout exact');
+    await page.getByRole('button',{name:'Whole story',exact:true}).click(); await settle();
+    check(await firstColumn()===c0 && (await shownCells()).some(x=>x[0]===0) && (await state()).viewport.matrixRow===0 && (await state()).viewport.matrixColumn===0,'Whole story returns the camera exactly to the first rows and columns');
+    const reset=await science();
+    check(JSON.stringify(reset.cells.map(c=>c.slice(0,2)))===JSON.stringify(before.cells.map(c=>c.slice(0,2))) && reset.policy===before.policy,'every cell value and the mapping result are identical after range navigation');
     check(report.errors.length===0,'no browser or console errors');
     check(report.requests.length===0,'no network request from the local workspace');
     report.exit=0;

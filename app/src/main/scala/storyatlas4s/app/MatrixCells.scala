@@ -75,3 +75,15 @@ object MatrixCells:
     destination match
       case Destination.Target(_)   => local
       case Destination.External(_) => s"Outside · $local"
+
+  /** Header pieces that may break after each ':' separator; joined, they are the exact label. */
+  def breakable(label: String): Vector[String] =
+    val pieces = Vector.newBuilder[String]
+    var start = 0
+    label.indices.foreach { i =>
+      if label.charAt(i) == ':' then
+        pieces += label.substring(start, i + 1)
+        start = i + 1
+    }
+    if start < label.length then pieces += label.substring(start)
+    pieces.result()
