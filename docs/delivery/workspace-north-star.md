@@ -54,10 +54,10 @@ Cross-cutting: non-source quantity is separate from processing status; one task 
 |---|---|---|
 | Workspace markup: matrix, inspector, labels | codex-design, `codex/workspace-design` | f6de2bb through 5a11205 (formatted) |
 | `app/index.html` stylesheet, `MatrixCells` rules, browser court | claude, `claude/v7-style` | a4d6458 on 5a11205. Court 83/83 with Playwright 1.55.1 and headless shell 1193, no page errors, no external requests. `MatrixCellsSuite` 3/3. |
-| Voyage mass tracks | atlas-voyage | Qualifying separately |
-| Combined gate | atlas-voyage, under the `#16` gate lock | Pending |
-| Landing on `main` | codex-design, after the gate | Pending |
+| Voyage mass tracks | atlas-voyage | Landed with independent fixed-scale anchor and external tracks; missing, zero and untimed remain distinct. |
+| Combined gate | atlas-voyage, under the `#16` gate lock | Passed: [exact-pair receipt and screenshots](evidence/workspace-v7-20260923/README.md). Full Scala gate 387; affected checks after spacing repair 30 JVM + 30 JS + 3 app; browser checks and resolved attempts archived. |
+| Landing on `main` | codex-design | Fast-forwarded locally to `cd8e21f` on 22 September 2026; runtime candidate `40b06ff`, later changes documentation and evidence only. |
 
-Open gates, not proven by any artboard: real interaction for Reveal/Return and `#evidence` links, real browser zoom and reflow, save/reopen/export under the new markup, and one shared fixture feeding every projection. Deferred polish: blank rather than "Not supplied" in empty cells, and header wrapping at word boundaries.
+The archived browser evidence qualifies the implemented shared-controller journeys, including save/reopen/export, under the new markup. Static artboard links remain illustrations. Real browser zoom, arbitrary artifact sizes, media binding and the full design roadmap remain outside this delivery. Deferred polish: blank rather than "Not supplied" in empty cells, and header wrapping at word boundaries.
 
 `implemented-bell-desktop-a4d6458.png` in the mockup folder is the court's own capture of the implemented shell at that commit.
