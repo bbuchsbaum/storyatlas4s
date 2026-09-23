@@ -23,7 +23,9 @@ object WorkspaceView:
       then WorkspaceLabels.Measure.Normalized
       else WorkspaceLabels.Measure.All
     )
-    val displayed = controller.combineWith(measure.signal)
+    val displayed = controller.combineWith(measure.signal).map { (c, m) =>
+      (c, m, MatrixCells.fill(c.policy.matrix))
+    }
     val workspace = initial.workspace
     def dispatch(action: WorkspaceAction): Unit = history.now().dispatch(action) match
       case Left(reason) => notice.set(s"Action refused: $reason")
@@ -93,7 +95,7 @@ object WorkspaceView:
         table(
           cls("mapping-matrix"),
           caption(
-            child.text <-- displayed.map { (c, m) =>
+            child.text <-- displayed.map { (c, m, _) =>
               if m == WorkspaceLabels.Measure.Normalized then
                 MatrixCells.fillLegend(c.policy.matrix) + " Blank measure: Not supplied."
               else s"${m.label} · exact supplied values; incomparable quantities stay separate."
@@ -133,17 +135,17 @@ object WorkspaceView:
                   cls(if destination.isInstanceOf[Destination.External] then "external-column" else "target-column"),
                   button(
                     typ("button"),
-                    cls <-- displayed.map { (c, m) =>
+                    cls <-- displayed.map { (c, m, scale) =>
                       val cell = c.policy.matrix.row(unit.id).flatMap(_.cell(destination))
                       val fill = c.policy.matrix.row(unit.id).flatMap(_.outcome.decision).exists(_.origin match
                         case DecisionOrigin.GapFill(_) => true
                         case _                         => false)
-                      s"matrix-cell ${cell.fold("")(WorkspaceLabels.tone(c.policy.matrix, _, m))}${if fill then " fill-origin" else ""}"
+                      s"matrix-cell ${cell.fold("")(WorkspaceLabels.tone(scale, _, m))}${if fill then " fill-origin" else ""}"
                     },
                     dataAttr("matrix-cell")(s"$rowIndex-$columnIndex"),
                     aria.label <-- controller.map { c =>
                       val cell = c.policy.matrix.row(unit.id).flatMap(_.cell(destination))
-                      s"Inspect recall ${unit.ordinal + 1}, ${WorkspaceLabels.destination(destination)}; ${MatrixCells.of(c.policy.matrix, cell).spoken}"
+                      s"Inspect recall ${unit.ordinal + 1}, ${WorkspaceLabels.destination(destination)}; ${WorkspaceLabels.spoken(cell)}"
                     },
                     tabIndex <-- controller.map { c =>
                       val activeRow = c.state.activeRecall.getOrElse(workspace.inventory.units.head.id)
@@ -155,7 +157,7 @@ object WorkspaceView:
                         case Destination.Target(target) => c.state.correspondence.contains(Correspondence(unit.id, target))
                         case Destination.External(_) => false)).toString
                     ),
-                    children <-- displayed.map { (c, m) =>
+                    children <-- displayed.map { (c, m, _) =>
                       c.policy.matrix.row(unit.id).flatMap(_.cell(destination)) match
                         case None => Vector(span(cls("measure-absent"), "Not supplied"))
                         case Some(cell) =>
