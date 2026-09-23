@@ -918,22 +918,25 @@ object VoyageView:
             plotHeight = 380,
             trackHeight = 64
           )
-        else VoyageLowering.Box.default.copy(width = width)
+        else VoyageLowering.Box.default.copy(width = width, trackHeight = 64)
+      massBox = box.copy(gap = 40)
       lowered <- VoyageLowering
         .lower(
           scene,
           alternativesFor = selected,
-          box = box,
+          box = massBox,
           ghosts = lens.ghosts,
           contextFor = context,
           ghostsFor = selected,
           window = lens.window,
           includeUntimed = false,
-          visibleRecallText = visibleRecallText
+          visibleRecallText = visibleRecallText,
+          track = VoyageLowering.Track.Masses
         )
         .left
         .map(_.message)
-      options <- SvgOptions(box.width, box.height, Some("Recall Voyage")).left.map(_.message)
+      options <- SvgOptions(massBox.width, massBox.height, Some("Recall Voyage")).left
+        .map(_.message)
       svg <- SvgRenderer.render(lowered, options).left.map(_.message)
     yield Frame(scene, svg.value)
 
@@ -1045,7 +1048,12 @@ object VoyageView:
       (
         "moved by the decode",
         s"$moved/${s.units}",
-        s"${s.decodeFilled} of them filled outside the posterior (mass zero)"
+        "supplied decisions differing from the posterior argmax"
+      ),
+      (
+        "zero-mass fills",
+        s.decodeFilled.toString,
+        "drawn outside posterior support; mass remains zero"
       ),
       ("unanchored", s.unanchored.toString, "no source anchor; drawn on the absence rail"),
       (
@@ -1067,7 +1075,6 @@ object VoyageView:
   private val ModelSoft = "var(--model-soft)"
   private val External = "var(--external)"
   private val Raw = "var(--raw)"
-  private val Gold = "var(--gold)"
   private val GoldBand = "var(--gold-band)"
   private val Surface = "var(--surface)"
 
@@ -1242,36 +1249,25 @@ object VoyageView:
         ),
         "context: every unit's column, faint, when toggled"
       ),
-      item(anchors.exists(_.group.nonEmpty))(
+      item(visible.nonEmpty)(
         glyph(
-          Option
-            .when(hasCoding)(
-              svg.line(
-                svg.x1 := "2",
-                svg.y1 := "4",
-                svg.x2 := "24",
-                svg.y2 := "4",
-                svg.style := s"stroke: $Gold; stroke-width: 4; opacity: 0.6"
-              )
-            )
-            .toVector,
           svg.line(
-            svg.x1 := "2",
-            svg.y1 := "9",
-            svg.x2 := "24",
-            svg.y2 := "9",
-            svg.style := s"stroke: $Model; stroke-width: 1.6"
+            svg.x1 := "8",
+            svg.y1 := "3",
+            svg.x2 := "8",
+            svg.y2 := "15",
+            svg.style := s"stroke: $Model; stroke-width: 3"
           ),
           svg.line(
-            svg.x1 := "2",
-            svg.y1 := "13.5",
-            svg.x2 := "24",
-            svg.y2 := "13.5",
-            svg.style := s"stroke: $Raw; stroke-width: 1.2; stroke-dasharray: 3 2"
+            svg.x1 := "18",
+            svg.y1 := "10",
+            svg.x2 := "18",
+            svg.y2 := "15",
+            svg.style := s"stroke: $External; stroke-width: 3"
           )
         ),
-        "group track: drawn placement thin; posterior argmax dashed" +
-          (if hasCoding then "; independent coding as a thick band" else "")
+        "mass tracks: drawn anchor and external, each fixed 0–1; not complements or calibrated confidence. " +
+          "Baseline tick = zero; cross = no source anchor. Untimed units stay in the unit selector."
       )
     )
 

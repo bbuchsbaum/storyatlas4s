@@ -3,6 +3,7 @@ package storyatlas4s.intaglio
 import _root_.intaglio as ig
 import _root_.intaglio.GraphicsError
 import cats.syntax.all.*
+import storymodel4s.core.Score
 import storymodel4s.recall.RecallUnitId
 import storymodel4s.view.*
 
@@ -25,6 +26,12 @@ import storymodel4s.view.*
   * never the lowering's judgement.
   */
 object VoyageLowering:
+
+  /** The historical group track remains the publication default. Masses is a display of the
+    * compiler's two supplied quantities, not a new projection or a normalization.
+    */
+  enum Track:
+    case Groups, Masses
 
   /** Pixel geometry of the plate; the defaults are the numbers the owner's reference page uses. */
   final case class Box(
@@ -69,6 +76,11 @@ object VoyageLowering:
     val groupLevel = "level-group"
     val groupLabel = "voyage-group-label"
     val groupBand = "voyage-group-band"
+    val mass = "voyage-mass"
+    val massAnchor = "mass-anchor"
+    val massExternal = "mass-external"
+    val massZero = "mass-zero"
+    val massUnavailable = "mass-unavailable"
     def origin(o: AnchorOrigin): String = o match
       case AnchorOrigin.PosteriorArgmax => "origin-argmax"
       case AnchorOrigin.DecodeBound     => "origin-bound"
@@ -211,9 +223,12 @@ object VoyageLowering:
       ghostsFor: Set[RecallUnitId] = Set.empty,
       window: Option[RecallWindow] = None,
       includeUntimed: Boolean = true,
-      visibleRecallText: Option[Map[RecallUnitId, String]] = None
+      visibleRecallText: Option[Map[RecallUnitId, String]] = None,
+      track: Track = Track.Groups
   ): Either[GraphicsError, ig.Scene] =
     window match
+      case _ if track == Track.Masses && box.trackHeight <= 8 =>
+        Left(GraphicsError.InvalidExtent("mass tracks require a height greater than their 8px gap"))
       case Some(w) if w.start < 0.0 || w.end > scene.recallLength.value =>
         Left(
           GraphicsError.InvalidExtent(
@@ -225,12 +240,14 @@ object VoyageLowering:
         val words = Words(scene, visibleRecallText)
         for
           vp <- viewport(box)
-          ground <- groundLayer(scene, sc, vp, alternativesFor)
+          ground <- groundLayer(scene, sc, vp, alternativesFor, track)
           bands <- codingLayer(scene, sc, vp, words)
           links <- linkLayer(scene, sc, vp, alternativesFor, contextFor, ghosts, ghostsFor, words)
           marks <- markLayer(scene, sc, vp, words, includeUntimed)
-          track <- trackLayer(scene, sc, vp)
-        yield ig.Scene(Vector(ground, bands, links, marks, track))
+          auxiliary <- track match
+            case Track.Groups => trackLayer(scene, sc, vp)
+            case Track.Masses => massLayer(scene, sc, vp, alternativesFor)
+        yield ig.Scene(Vector(ground, bands, links, marks, auxiliary))
 
   // ------------------------------------------------------------------ titles
 
@@ -280,7 +297,8 @@ object VoyageLowering:
       scene: VoyageScene,
       sc: Scales,
       vp: ig.Viewport,
-      selected: Set[RecallUnitId]
+      selected: Set[RecallUnitId],
+      track: Track
   ): Either[GraphicsError, ig.Grob] =
     val box = sc.box
     val groups = scene.timeline.groups.sortBy(_.ordinal)
@@ -422,19 +440,23 @@ object VoyageLowering:
           px(box.left + box.plotWidth / 2.0, box.top + box.plotHeight + 27),
           ig.Anchor(ig.HJust.Center, ig.VJust.Bottom),
           gp = label
-        ),
-        ig.Grob.text(
-          "group",
-          px(box.left + 6, box.trackTop + 10),
-          ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
-          gp = label
         )
       ).sequence
+      trackName <- Option
+        .when(track == Track.Groups)(
+          ig.Grob.text(
+            "group",
+            px(box.left + 6, box.trackTop + 10),
+            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+            gp = label
+          )
+        )
+        .sequence
       layer = ig.Grob.group(
         boundaries ++ groupLabels ++ Vector(
           yAxis,
           xAxis
-        ) ++ yTicks ++ yLabels ++ xTicks ++ xLabels ++ axisNames,
+        ) ++ yTicks ++ yLabels ++ xTicks ++ xLabels ++ axisNames ++ trackName,
         viewport = Some(vp)
       )
     yield layer
@@ -685,6 +707,131 @@ object VoyageLowering:
       }
       layer = ig.Grob.group(grobs, viewport = Some(vp))
     yield layer
+
+  /** Two independent fixed 0–1 tracks. Their x coordinates use the same Scales instance as the
+    * plate. These are unnamed decorations of existing marks: no duplicate scientific identities, no
+    * quoted text beyond a horizon, and no invented position or mass for an untimed unit.
+    */
+  private def massLayer(
+      scene: VoyageScene,
+      sc: Scales,
+      vp: ig.Viewport,
+      selected: Set[RecallUnitId]
+  ): Either[GraphicsError, ig.Grob] =
+    val box = sc.box
+    val rowHeight = (box.trackHeight - 8.0) / 2.0
+    val rows = Vector(
+      (Classes.massAnchor, "Drawn anchor", box.trackTop.toDouble),
+      (Classes.massExternal, "External", box.trackTop + rowHeight + 8.0)
+    )
+    def sample(
+        unit: RecallUnitId,
+        ordinal: Int,
+        onset: Double,
+        row: Int,
+        value: Option[Double],
+        origin: Option[AnchorOrigin]
+    ): Either[GraphicsError, ig.Grob] =
+      val (channel, label, top) = rows(row)
+      val x = sc.x(onset)
+      val bottom = top + rowHeight
+      val status = value.fold("unavailable")(v => if v == 0.0 then "zero" else "measured")
+      val explanation =
+        value.fold("unavailable: no source anchor")(v => f"$v%.6f on the fixed 0–1 scale")
+      for
+        bar <- params(None, Some(if row == 0 then Palette.model else Palette.external))
+        line <- params(Some(Palette.ink2), None, width = 1.0)
+        outline <- params(Some(Palette.ink2), None, width = 1.0, line = ig.LineType.Dashed)
+        mark <- value match
+          case Some(v) if v > 0.0 =>
+            ig.Grob.polygon(
+              Vector(
+                px(x - 1.5, bottom),
+                px(x + 1.5, bottom),
+                px(x + 1.5, bottom - rowHeight * v),
+                px(x - 1.5, bottom - rowHeight * v)
+              ),
+              gp = bar
+            )
+          case Some(_) =>
+            ig.Grob.lines(Vector(px(x - 2, bottom), px(x + 2, bottom)), gp = line)
+          case None =>
+            // The cross is deliberately away from the numeric baseline: missing is not zero.
+            ig.Grob.points(
+              Vector(px(x, top + rowHeight / 2)),
+              ig.ExtentExpr.nativeUnsafe(2.5),
+              ig.PointShape.Cross,
+              line
+            )
+        focus <- Option
+          .when(selected(unit))(
+            ig.Grob.polygon(
+              Vector(px(x - 4, top), px(x + 4, top), px(x + 4, bottom), px(x - 4, bottom)),
+              gp = outline
+            )
+          )
+          .sequence
+        result <- annotated(
+          ig.Grob.group(Vector(mark) ++ focus),
+          Some(
+            s"Unit $ordinal · $label mass $explanation" + origin.fold("")(o => s" · ${o.label}")
+          ),
+          s"${Classes.mass} $channel" +
+            (if status == "zero" then s" ${Classes.massZero}" else "") +
+            (if status == "unavailable" then s" ${Classes.massUnavailable}" else ""),
+          (Vector(
+            "unit" -> ordinal.toString,
+            "channel" -> channel,
+            "status" -> status,
+            "onset-bits" -> Score.hexBits(onset)
+          ) ++
+            value.map(v => "mass-bits" -> Score.hexBits(v)) ++
+            origin.map(o => "origin" -> Classes.origin(o).stripPrefix("origin-")))*
+        )
+      yield result
+    for
+      hair <- params(Some(Palette.hair), None)
+      label <- params(None, Some(Palette.ink2), fontPx = 11)
+      guides <- rows.traverse { case (_, title, top) =>
+        for
+          baseline <- ig.Grob.lines(
+            Vector(px(box.left, top + rowHeight), px(box.width - box.right, top + rowHeight)),
+            gp = hair
+          )
+          ceiling <- ig.Grob.lines(
+            Vector(px(box.left, top), px(box.width - box.right, top)),
+            gp = hair
+          )
+          name <- ig.Grob.text(
+            title,
+            px(box.width - box.right + 8, top + 12),
+            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+            gp = label
+          )
+          scale <- Vector(0.0, 1.0).traverse(v =>
+            ig.Grob.text(
+              v.toInt.toString,
+              px(box.left - 7, top + rowHeight * (1 - v) + 3),
+              ig.Anchor(ig.HJust.Right, ig.VJust.Bottom),
+              gp = label
+            )
+          )
+        yield ig.Grob.group(Vector(baseline, ceiling, name) ++ scale)
+      }
+      samples <- scene.marks.traverse {
+        case m: VoyageMark.UnitAnchor if sc.visible(m.at.value) =>
+          Vector(
+            sample(m.unit, m.unitOrdinal, m.at.value, 0, Some(m.mass), Some(m.origin)),
+            sample(m.unit, m.unitOrdinal, m.at.value, 1, Some(m.externalMass), None)
+          ).sequence
+        case m: VoyageMark.Unanchored if sc.visible(m.at.value) =>
+          Vector(
+            sample(m.unit, m.unitOrdinal, m.at.value, 0, None, None),
+            sample(m.unit, m.unitOrdinal, m.at.value, 1, Some(m.externalMass), None)
+          ).sequence
+        case _ => Right(Vector.empty[ig.Grob])
+      }
+    yield ig.Grob.group(guides ++ samples.flatten, viewport = Some(vp))
 
   private def trackLayer(
       scene: VoyageScene,

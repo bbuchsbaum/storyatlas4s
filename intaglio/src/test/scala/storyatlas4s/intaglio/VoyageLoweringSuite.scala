@@ -113,6 +113,132 @@ class VoyageLoweringSuite extends FunSuite:
   private def descendants(grob: ig.Grob): Vector[ig.Grob] =
     grob +: grob.children.flatMap(descendants)
 
+  private val massBox = VoyageLowering.Box.default.copy(trackHeight = 64, gap = 40)
+
+  private def massSamples(lowered: ig.Scene): Map[(Int, String), ig.Grob.Annotated] =
+    lowered.grobs
+      .flatMap(descendants)
+      .collect {
+        case a: ig.Grob.Annotated
+            if a.meta.cssClass.exists(_.value.split(" ").contains(VoyageLowering.Classes.mass)) =>
+          val data = a.meta.data.map((k, v) => k.value -> v).toMap
+          (data("unit").toInt -> data("channel")) -> a
+      }
+      .toMap
+
+  private def metadata(grob: ig.Grob.Annotated): Map[String, String] =
+    grob.meta.data.map((k, v) => k.value -> v).toMap
+
+  test("mass tracks distinguish measured zero, missing anchor and untimed placement") {
+    val lowered =
+      ok(VoyageLowering.lower(scene, box = massBox, track = VoyageLowering.Track.Masses))
+    val samples = massSamples(lowered)
+    assertEquals(
+      samples.keySet,
+      Set(0, 1, 3).flatMap(i => Set(i -> "mass-anchor", i -> "mass-external"))
+    )
+    val zero = samples(0 -> "mass-anchor")
+    assertEquals(metadata(zero)("mass-bits"), "0x0000000000000000")
+    assertEquals(metadata(zero)("status"), "zero")
+    assertEquals(metadata(zero)("origin"), "filled")
+    assert(!descendants(zero).exists(_.isInstanceOf[ig.Grob.Polygon]), "zero is no positive bar")
+    val missing = samples(1 -> "mass-anchor")
+    assertEquals(metadata(missing)("status"), "unavailable")
+    assert(!metadata(missing).contains("mass-bits"), "unavailable is never numeric zero")
+    assert(descendants(missing).exists(_.isInstanceOf[ig.Grob.Points]), "missing has its own glyph")
+    assertEquals(metadata(samples(1 -> "mass-external"))("mass-bits"), "0x3ff0000000000000")
+    assert(!samples.keys.exists(_._1 == 2), "untimed unit has no invented clock position")
+    assertEquals(
+      GraphicsNames.collect(lowered),
+      GraphicsNames.collect(ok(VoyageLowering.lower(scene)))
+    )
+    assertEquals(
+      lowered.grobs.take(4).drop(1),
+      ok(VoyageLowering.lower(scene, box = massBox)).grobs.take(4).drop(1),
+      "coding, links and scientific marks stay unchanged"
+    )
+  }
+
+  test("mass heights use the supplied values on independent fixed scales") {
+    val lowered =
+      ok(VoyageLowering.lower(scene, box = massBox, track = VoyageLowering.Track.Masses))
+    val samples = massSamples(lowered)
+    def barHeight(unit: Int, channel: String): Double =
+      val p = descendants(samples(unit -> channel))
+        .collectFirst { case p: ig.Grob.Polygon => p }
+        .getOrElse(fail("expected positive mass bar"))
+      val ys = p.points.map(p => native(p.y))
+      ys.max - ys.min
+    assertEqualsDouble(barHeight(0, "mass-external"), 8.4, 1e-9)
+    assertEqualsDouble(barHeight(1, "mass-external"), 28.0, 1e-9)
+    assertEqualsDouble(barHeight(3, "mass-anchor"), 16.8, 1e-9)
+    assertEquals(
+      metadata(samples(3 -> "mass-external"))("mass-bits"),
+      "0x0000000000000000",
+      "the coarse anchor's 0.6 does not fabricate a complementary external0.4"
+    )
+  }
+
+  test("mass tracks preserve values and source grain through viewport, resize and focus") {
+    val whole = ok(VoyageLowering.lower(scene, box = massBox, track = VoyageLowering.Track.Masses))
+    val window = ok(RecallWindow.of(5, 9))
+    val small = massBox.copy(width = 500, right = 128)
+    val zoomed = ok(
+      VoyageLowering.lower(
+        scene,
+        alternativesFor = Set(u4),
+        box = small,
+        window = Some(window),
+        track = VoyageLowering.Track.Masses
+      )
+    )
+    val samples = massSamples(zoomed)
+    assertEquals(
+      samples.keySet,
+      Set(1, 3).flatMap(i => Set(i -> "mass-anchor", i -> "mass-external"))
+    )
+    samples.foreach { case (key, grob) =>
+      assertEquals(metadata(grob), metadata(massSamples(whole)(key)))
+    }
+    val bar = descendants(samples(3 -> "mass-anchor"))
+      .collectFirst { case p: ig.Grob.Polygon => p }
+      .getOrElse(fail("anchor bar"))
+    val xs = bar.points.map(p => native(p.x))
+    val ys = bar.points.map(p => native(p.y))
+    assertEqualsDouble((xs.min + xs.max) / 2, 372.0, 1e-9, "inclusive end shares main plot x")
+    assertEqualsDouble(ys.max - ys.min, 16.8, 1e-9, "selection outline does not change mass height")
+    assertEquals(
+      scene.marks.collect { case a: VoyageMark.UnitAnchor if a.unit == u4 => a.level },
+      Vector(1)
+    )
+  }
+
+  test("mass metadata respects permitted text and historical publication remains the default") {
+    val clipped = render(
+      ok(
+        VoyageLowering.lower(
+          scene,
+          box = massBox,
+          visibleRecallText = Some(Map.empty),
+          track = VoyageLowering.Track.Masses
+        )
+      )
+    )
+    assert(!clipped.contains("“one”"))
+    assert(!clipped.contains("“two”"))
+    assert(clipped.contains("unavailable: no source anchor"))
+    assert(!render(ok(VoyageLowering.lower(scene))).contains("voyage-mass"))
+    assertEquals(
+      render(ok(VoyageLowering.lower(scene))),
+      render(ok(VoyageLowering.lower(scene, track = VoyageLowering.Track.Groups)))
+    )
+    assert(
+      VoyageLowering
+        .lower(scene, box = massBox.copy(trackHeight = 8), track = VoyageLowering.Track.Masses)
+        .isLeft
+    )
+  }
+
   test("every non-alternative mark is named exactly once by its MarkId, and nothing else is named"):
     val lowered = ok(VoyageLowering.lower(scene))
     val names = GraphicsNames.collect(lowered).map(_.value)
