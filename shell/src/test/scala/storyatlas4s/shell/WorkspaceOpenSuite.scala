@@ -6,8 +6,12 @@ import storymodel4s.codec.WorkspaceCodecs
 import storymodel4s.view.WorkspaceRefusal
 
 class WorkspaceOpenSuite extends FunSuite:
-  private lazy val bell = ImportedArtifact.Workspace(WorkspaceCodecs.decode(WorkspaceTestData.archives("bell")).toOption.get)
-  private lazy val wog = ImportedArtifact.Workspace(WorkspaceCodecs.decode(WorkspaceTestData.archives("wog")).toOption.get)
+  private lazy val bell = ImportedArtifact.Workspace(
+    WorkspaceCodecs.decode(WorkspaceTestData.archives("bell")).toOption.get
+  )
+  private lazy val wog = ImportedArtifact.Workspace(
+    WorkspaceCodecs.decode(WorkspaceTestData.archives("wog")).toOption.get
+  )
 
   test("a late older read cannot replace a later admitted workspace") {
     var snapshots = Vector.empty[OpenSnapshot]
@@ -30,5 +34,8 @@ class WorkspaceOpenSuite extends FunSuite:
     runtime.complete(pending, Right(wog))
     assertEquals(latest, OpenSnapshot(Some(bell), OpenDisplay.Cancelled))
     runtime.complete(runtime.begin(), Left(WorkspaceRefusal.PermissionDenied))
-    assertEquals(latest, OpenSnapshot(Some(bell), OpenDisplay.Refused(WorkspaceRefusal.PermissionDenied)))
+    assertEquals(
+      latest,
+      OpenSnapshot(Some(bell), OpenDisplay.Refused(WorkspaceRefusal.PermissionDenied))
+    )
   }

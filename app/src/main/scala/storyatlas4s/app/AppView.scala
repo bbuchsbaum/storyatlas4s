@@ -33,12 +33,22 @@ object AppView:
   ): HtmlElement =
     val initial = domMeasurer.fold(
       _ => ViewChoice.initial.copy(measurer = MeasurerChoice.Monospace),
-      _ => ViewChoice.initial)
+      _ => ViewChoice.initial
+    )
     val state = Var(initial)
-    val binding = ChoiceBinding(state.signal, () => state.now(), state.set,
-      (address, extend) => state.update(_.activate(address, extend)), () => state.update(_.cleared))
-    pane(model.source.canonicalText, binding, domMeasurer,
-      (choice, measurer) => AppCompiler.compile(model, choice, measurer))
+    val binding = ChoiceBinding(
+      state.signal,
+      () => state.now(),
+      state.set,
+      (address, extend) => state.update(_.activate(address, extend)),
+      () => state.update(_.cleared)
+    )
+    pane(
+      model.source.canonicalText,
+      binding,
+      domMeasurer,
+      (choice, measurer) => AppCompiler.compile(model, choice, measurer)
+    )
 
   def imported(
       draft: DraftModel,
@@ -49,9 +59,12 @@ object AppView:
       onActivate: (Address, Boolean) => Unit,
       onClear: () => Unit
   ): HtmlElement =
-    pane(draft.model.source.canonicalText,
-      ChoiceBinding(signal, current, onChoice, onActivate, onClear), domMeasurer,
-      (choice, measurer) => AppCompiler.compileDraft(draft, choice, measurer))
+    pane(
+      draft.model.source.canonicalText,
+      ChoiceBinding(signal, current, onChoice, onActivate, onClear),
+      domMeasurer,
+      (choice, measurer) => AppCompiler.compileDraft(draft, choice, measurer)
+    )
 
   private def pane(
       text: String,

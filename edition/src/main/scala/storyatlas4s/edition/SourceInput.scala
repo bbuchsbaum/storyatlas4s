@@ -25,7 +25,7 @@ object SourceInput:
       draft: TextModel[ModelStatus.Draft],
       text: Option[String]
   ): Either[String, DerivationRecord] = text match
-    case None => Right(DerivationRecord.NotSupplied)
+    case None        => Right(DerivationRecord.NotSupplied)
     case Some(value) => DerivationRecordCodec.decode(draft, value).left.map(_.message).map(_.record)
 
   def decodeFeatures(
@@ -33,24 +33,28 @@ object SourceInput:
       text: Option[String],
       bytes: String => Either[String, Array[Byte]]
   ): Either[String, FeatureRecord] = text match
-    case None => Right(FeatureRecord.NotSupplied)
+    case None        => Right(FeatureRecord.NotSupplied)
     case Some(value) =>
       for
         artifact <- FeaturesRecordCodec.decode(draft, value).left.map(_.message)
-        tracks <- artifact.tracks.foldLeft[Either[String, Vector[FeatureTrack[FeatureTarget, Double]]]](
-          Right(Vector.empty)
-        ) { (acc, entry) =>
-          for
-            done <- acc
-            _ <- Either.cond(
-              draft.sidecars.get(entry.track.space.id).contains(entry.track.manifest), (),
-              s"track ${entry.track.space.id.value} is not the model's sidecar for that space"
-            )
-            supplied <- bytes(entry.file)
-            track <- SidecarCodec.materializeScalarTrack(entry.track, supplied).left.map(e =>
-              s"${entry.file} is not the sidecar its record describes: ${e.message}")
-          yield done :+ track
-        }
+        tracks <- artifact.tracks
+          .foldLeft[Either[String, Vector[FeatureTrack[FeatureTarget, Double]]]](
+            Right(Vector.empty)
+          ) { (acc, entry) =>
+            for
+              done <- acc
+              _ <- Either.cond(
+                draft.sidecars.get(entry.track.space.id).contains(entry.track.manifest),
+                (),
+                s"track ${entry.track.space.id.value} is not the model's sidecar for that space"
+              )
+              supplied <- bytes(entry.file)
+              track <- SidecarCodec
+                .materializeScalarTrack(entry.track, supplied)
+                .left
+                .map(e => s"${entry.file} is not the sidecar its record describes: ${e.message}")
+            yield done :+ track
+          }
       yield FeatureRecord.Supplied(artifact, tracks)
 
   def decode(

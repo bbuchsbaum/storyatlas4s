@@ -522,17 +522,23 @@ class ModelInputSuite extends FunSuite:
           .exists(_.content.contains("empty-chart"))
       )
 
-  temp.test("portable and filesystem imports agree on companion records and measured values"): dir =>
-    val m = measured(receiptedDraft)
-    val path = writeBundle(dir, m.model, m.artifact, m.sidecars)
-    val derivation = derivationFor(m.model)
-    writeModel(dir, ModelInput.DerivationFile, derivation)
-    val disk = ok(ModelInput.read(path))
-    val portable = ok(storyatlas4s.edition.SourceInput.decode(
-      new String(Files.readAllBytes(path), UTF_8), Some(derivation),
-      Some(FeaturesRecordCodec.encode(m.artifact)), relative => Right(Files.readAllBytes(dir.resolve(relative)))))
-    assertEquals(portable.draft, disk.draft)
-    assertEquals(portable.outcome.report, disk.outcome.report)
-    assertEquals(portable.draftModel.promotion, disk.draftModel.promotion)
-    assertEquals(portable.derivation, disk.derivation)
-    assertEquals(portable.features, disk.features)
+  temp.test("portable and filesystem imports agree on companion records and measured values"):
+    dir =>
+      val m = measured(receiptedDraft)
+      val path = writeBundle(dir, m.model, m.artifact, m.sidecars)
+      val derivation = derivationFor(m.model)
+      writeModel(dir, ModelInput.DerivationFile, derivation)
+      val disk = ok(ModelInput.read(path))
+      val portable = ok(
+        storyatlas4s.edition.SourceInput.decode(
+          new String(Files.readAllBytes(path), UTF_8),
+          Some(derivation),
+          Some(FeaturesRecordCodec.encode(m.artifact)),
+          relative => Right(Files.readAllBytes(dir.resolve(relative)))
+        )
+      )
+      assertEquals(portable.draft, disk.draft)
+      assertEquals(portable.outcome.report, disk.outcome.report)
+      assertEquals(portable.draftModel.promotion, disk.draftModel.promotion)
+      assertEquals(portable.derivation, disk.derivation)
+      assertEquals(portable.features, disk.features)

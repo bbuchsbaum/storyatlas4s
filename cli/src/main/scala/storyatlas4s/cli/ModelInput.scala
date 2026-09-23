@@ -124,7 +124,10 @@ object ModelInput:
   ): Either[String, ReadModel] =
     for
       text <- slurp(path)
-      draft <- SourceInput.decodeModel(text).left.map(e => s"$path is not a readable storymodel.json: $e")
+      draft <- SourceInput
+        .decodeModel(text)
+        .left
+        .map(e => s"$path is not a readable storymodel.json: $e")
       record <- derivation.fold(readDerivation(path, draft))(r => Right(r))
       measured <- features.fold(readFeatures(path, draft))(f => Right(f))
     yield ReadModel(path, draft, StoryValidator.validate(draft, policy), record, measured)
@@ -139,7 +142,9 @@ object ModelInput:
       case None       => Right(DerivationRecord.NotSupplied)
       case Some(file) =>
         slurp(file).flatMap { text =>
-          SourceInput.decodeDerivation(draft, Some(text)).left
+          SourceInput
+            .decodeDerivation(draft, Some(text))
+            .left
             .map(e => s"$file is not the derivation record of $modelPath: $e")
         }
 
@@ -166,11 +171,18 @@ object ModelInput:
         else
           for
             text <- slurp(file)
-            result <- SourceInput.decodeFeatures(draft, Some(text), relative =>
-              val sidecar = dir.resolve(relative)
-              if !Files.isRegularFile(sidecar) then Left(s"$file names $sidecar, which is not beside the model")
-              else slurpBytes(sidecar)
-            ).left.map(e => s"$file is not the feature record of $modelPath: $e")
+            result <- SourceInput
+              .decodeFeatures(
+                draft,
+                Some(text),
+                relative =>
+                  val sidecar = dir.resolve(relative)
+                  if !Files.isRegularFile(sidecar) then
+                    Left(s"$file names $sidecar, which is not beside the model")
+                  else slurpBytes(sidecar)
+              )
+              .left
+              .map(e => s"$file is not the feature record of $modelPath: $e")
           yield result
 
   private[cli] def slurp(path: Path): Either[String, String] =

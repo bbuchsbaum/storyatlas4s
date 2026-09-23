@@ -119,3 +119,9 @@ workspace cannot silently fall back to a source route. `shell.WorkspaceOpen`
 reuses `LatestIntent` for atomic last-request-wins admission and cancellation;
 failed or obsolete reads retain the previous admitted artifact. It stores no
 unadmitted bytes in published snapshots.
+
+`intaglio.MatrixLowering` draws the producer's fixed-cut matrix as a labeled
+numeric plate. Each supplied raw, normalized, transport and posterior-fidelity
+value remains separate. Renderer cell names resolve through the drawing's checked
+row/destination index; they are never saved semantic addresses. Equal-width
+columns are display geometry, not elapsed time or inferred narrative order.

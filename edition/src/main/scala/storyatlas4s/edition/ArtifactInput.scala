@@ -32,11 +32,20 @@ object ArtifactInput:
       utf8(files.head._2).flatMap { value =>
         Canonical.parse(value).left.map(_ => WorkspaceRefusal.UnsupportedContent).flatMap { j =>
           j.hcursor.get[String]("schemaVersion").toOption match
-            case Some(WorkspaceArchiveCodec.SchemaVersion) => WorkspaceCodecs.decode(value).map(ImportedArtifact.Workspace(_))
-            case Some(StoryModel.SchemaVersion) => SourceInput.decode(value).left
-              .map(_ => WorkspaceRefusal.UnsupportedContent).map(ImportedArtifact.Source(_))
+            case Some(WorkspaceArchiveCodec.SchemaVersion) =>
+              WorkspaceCodecs.decode(value).map(ImportedArtifact.Workspace(_))
+            case Some(StoryModel.SchemaVersion) =>
+              SourceInput
+                .decode(value)
+                .left
+                .map(_ => WorkspaceRefusal.UnsupportedContent)
+                .map(ImportedArtifact.Source(_))
             case _ if j.hcursor.get[Int]("schemaVersion").contains(VoyageCodecs.schemaVersion) =>
-              VoyageCodecs.decode(value).left.map(_ => WorkspaceRefusal.UnsupportedContent).map(ImportedArtifact.Voyage(_))
+              VoyageCodecs
+                .decode(value)
+                .left
+                .map(_ => WorkspaceRefusal.UnsupportedContent)
+                .map(ImportedArtifact.Voyage(_))
             case _ => Left(WorkspaceRefusal.UnsupportedVersion)
         }
       }
@@ -48,12 +57,23 @@ object ArtifactInput:
         model <- utf8(bytes)
         derivation <- optional("derivation.json")
         features <- optional("features.json")
-        source <- SourceInput.decode(model, derivation, features,
-          name => supplied.get(name).map(_.toArray).toRight("required sidecar not supplied"))
-          .left.map(_ => WorkspaceRefusal.SemanticJoinMismatch)
+        source <- SourceInput
+          .decode(
+            model,
+            derivation,
+            features,
+            name => supplied.get(name).map(_.toArray).toRight("required sidecar not supplied")
+          )
+          .left
+          .map(_ => WorkspaceRefusal.SemanticJoinMismatch)
         sidecars = source.features match
-          case FeatureRecord.NotSupplied => Set.empty[String]
+          case FeatureRecord.NotSupplied           => Set.empty[String]
           case FeatureRecord.Supplied(artifact, _) => artifact.tracks.map(_.file).toSet
-        _ <- Either.cond(names.toSet.subsetOf(sidecars ++ Set("storymodel.json", "derivation.json", "features.json")),
-          (), WorkspaceRefusal.UnexpectedBytes)
+        _ <- Either.cond(
+          names.toSet.subsetOf(
+            sidecars ++ Set("storymodel.json", "derivation.json", "features.json")
+          ),
+          (),
+          WorkspaceRefusal.UnexpectedBytes
+        )
       yield ImportedArtifact.Source(source)

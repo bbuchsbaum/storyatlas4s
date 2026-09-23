@@ -33,7 +33,7 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
 // The pin moves with the change (docs/plans/2026-09-03-visualization-recovery-plan.md §5): any
 // storymodel4s `view` change bumps this revision in the same slice, so the viewer can never again
 // drift behind the model it draws.
-lazy val storymodel4sRevision = "774fb1e8fa7358de3d8343e78371f5b4d36eb1cf"
+lazy val storymodel4sRevision = "7b2f076a57bde1ec540090c43debfec51c8d44d4"
 lazy val storymodel4sBuild =
   sys.props
     .get("storyatlas4s.storymodel4s.build")
@@ -165,27 +165,35 @@ def pinsGenerator(pkg: String) = Def.task {
 /** The same producer-written bytes are decoded by the external JVM and JavaScript consumers. */
 def workspaceTestData = Def.task {
   val producer = (ProjectRef(storymodel4sBuild, "root") / baseDirectory).value
-  val directory = sys.props.get("storyatlas4s.workspace.fixtures").map(file).getOrElse(
-    producer / "docs" / "refactor" / "evidence" / "workspace-m1-packet-20260922" / "fixtures"
-  )
+  val directory = sys.props
+    .get("storyatlas4s.workspace.fixtures")
+    .map(file)
+    .getOrElse(
+      producer / "docs" / "refactor" / "evidence" / "workspace-m1-packet-20260922" / "fixtures"
+    )
   val fixtures = (directory ** "*.workspace.json").get.sortBy(_.getName)
   require(fixtures.size == 2, "M1 requires both producer-written fixture archives")
   def quoted(value: String): String = "\"" + value.flatMap {
-    case '\\' => "\\\\"
-    case '"' => "\\\""
-    case '\n' => "\\n"
-    case '\r' => "\\r"
-    case '\t' => "\\t"
+    case '\\'                    => "\\\\"
+    case '"'                     => "\\\""
+    case '\n'                    => "\\n"
+    case '\r'                    => "\\r"
+    case '\t'                    => "\\t"
     case c if c < ' ' || c > '~' => f"\\u${c.toInt}%04x"
-    case c => c.toString
+    case c                       => c.toString
   } + "\""
-  val values = fixtures.map { input =>
-    val parts = IO.read(input).grouped(8192).map(quoted).mkString(",\n")
-    quoted(input.getName.stripSuffix(".workspace.json")) + " -> Vector(" + parts + ").mkString"
-  }.mkString(",\n")
+  val values = fixtures
+    .map { input =>
+      val parts = IO.read(input).grouped(8192).map(quoted).mkString(",\n")
+      quoted(input.getName.stripSuffix(".workspace.json")) + " -> Vector(" + parts + ").mkString"
+    }
+    .mkString(",\n")
   val output = (Test / sourceManaged).value / "storyatlas4s" / "edition" / "WorkspaceTestData.scala"
-  IO.write(output, "package storyatlas4s.edition\nprivate[storyatlas4s] object WorkspaceTestData:\n" +
-    "  val archives: Map[String, String] = Map(\n" + values + "\n)\n")
+  IO.write(
+    output,
+    "package storyatlas4s.edition\nprivate[storyatlas4s] object WorkspaceTestData:\n" +
+      "  val archives: Map[String, String] = Map(\n" + values + "\n)\n"
+  )
   Seq(output)
 }
 

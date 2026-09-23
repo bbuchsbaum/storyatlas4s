@@ -130,8 +130,10 @@ object AppCompiler:
       case Left(draft) =>
         ViewProvenance.draftBuild(draft, EditionSpec.compilerVersion, config).left.map(_.message)
       case Right(model) =>
-        ViewProvenance.fixture(model.source.canonicalChecksum, EditionSpec.compilerVersion, config)
-          .left.map(_.message)
+        ViewProvenance
+          .fixture(model.source.canonicalChecksum, EditionSpec.compilerVersion, config)
+          .left
+          .map(_.message)
     for
       state <- CommonViewState
         .of(
@@ -151,10 +153,13 @@ object AppCompiler:
       spec <- CodexSpec.forLens(choice.lens, ChannelBudget.All).left.map(_.message)
       codexConfig = CodexCompiler.configurationChecksum(state, spec)
       codexProvenance <- provenance(codexConfig)
-      flow <- input.fold(
-        draft => CodexCompiler(codexProvenance).compileDraft(draft, state, spec),
-        model => CodexCompiler(codexProvenance).compile(model, state, spec)
-      ).left.map(_.message)
+      flow <- input
+        .fold(
+          draft => CodexCompiler(codexProvenance).compileDraft(draft, state, spec),
+          model => CodexCompiler(codexProvenance).compile(model, state, spec)
+        )
+        .left
+        .map(_.message)
       page <- PageSpec.of(EditionSpec.pageWidthPx, EditionSpec.pageHeightPx).left.map(_.message)
       style <- TextStyle.of(EditionSpec.fontFamily, EditionSpec.fontSizePx).left.map(_.message)
       placed <- Paginator.layout(flow, page, style, measurer).left.map(_.message)
@@ -175,10 +180,13 @@ object AppCompiler:
       atlasSpec = AtlasSpec(choice.zoom, threads)
       atlasConfig = AtlasCompiler.configurationChecksum(state, atlasSpec)
       atlasProvenance <- provenance(atlasConfig)
-      scene <- input.fold(
-        draft => AtlasCompiler(atlasProvenance).compileDraft(draft, state, atlasSpec),
-        model => AtlasCompiler(atlasProvenance).compile(model, state, atlasSpec)
-      ).left.map(_.message)
+      scene <- input
+        .fold(
+          draft => AtlasCompiler(atlasProvenance).compileDraft(draft, state, atlasSpec),
+          model => AtlasCompiler(atlasProvenance).compile(model, state, atlasSpec)
+        )
+        .left
+        .map(_.message)
       trackedAddresses = (choice.selection ++ choice.focus).toVector.sortBy(_.render)
       codexPlacements <- trackedAddresses.traverse(address =>
         flow.selectionPlacements
@@ -344,7 +352,16 @@ object AppCompiler:
         codexProxyCourt,
         codexPlacements,
         atlasPlacements,
-        receipts(receipt.map(_.contentChecksum), state, flow, placed, scene, measurer, codexConfig, atlasConfig)
+        receipts(
+          receipt.map(_.contentChecksum),
+          state,
+          flow,
+          placed,
+          scene,
+          measurer,
+          codexConfig,
+          atlasConfig
+        )
       )
 
   private[shell] def interactionsFor[Mark, Name](

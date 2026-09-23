@@ -28,7 +28,7 @@ final class WorkspaceOpen(publish: OpenSnapshot => Unit):
     gate = next
     accepted.foreach { value =>
       val display = value.result match
-        case Left(problem) => OpenDisplay.Refused(problem)
+        case Left(problem)   => OpenDisplay.Refused(problem)
         case Right(artifact) => current = Some(artifact); OpenDisplay.Opened
       publish(OpenSnapshot(current, display))
     }

@@ -10,13 +10,14 @@ import storymodel4s.core.*
 import storymodel4s.recall.RecallUnitId
 import storymodel4s.view.*
 
-/** External consumer courts: these are producer-written files, never constructed by fixture APIs
-  * in this test process. The identical bytes run through the JVM and JavaScript decoders.
+/** External consumer courts: these are producer-written files, never constructed by fixture APIs in
+  * this test process. The identical bytes run through the JVM and JavaScript decoders.
   */
 class WorkspacePacketSuite extends FunSuite:
   import RecallCodecs.given
   private lazy val archives = WorkspaceTestData.archives
-  private lazy val opened = archives.map((name, text) => name -> WorkspaceCodecs.decode(text).toOption.get)
+  private lazy val opened =
+    archives.map((name, text) => name -> WorkspaceCodecs.decode(text).toOption.get)
   private val a = ArtifactId.unsafe("authored-a")
   private val b = ArtifactId.unsafe("authored-b")
   private val historical = ArtifactId.unsafe("historical-lexical")
@@ -34,14 +35,42 @@ class WorkspacePacketSuite extends FunSuite:
     val path = entry.hcursor.get[String]("path").toOption.get
     val files = archive.hcursor.get[Vector[Json]]("files").toOption.get
     val original = files.find(_.hcursor.get[String]("path").contains(path)).get
-    val changed = Canonical.print(change(Canonical.parse(original.hcursor.get[String]("utf8").toOption.get).toOption.get))
+    val changed = Canonical.print(
+      change(Canonical.parse(original.hcursor.get[String]("utf8").toOption.get).toOption.get)
+    )
     val bytes = changed.getBytes(UTF_8)
-    val metadata = entry.hcursor.downField("disposition").get[Json]("artifact").toOption.get.mapObject(
-      _.add("checksum", Json.fromString(Checksum.ofBytes(bytes).hex)).add("byteLength", Json.fromInt(bytes.length)))
-    val updated = entry.mapObject(_.add("disposition", entry.hcursor.get[Json]("disposition").toOption.get
-      .mapObject(_.add("artifact", metadata))))
-    Canonical.print(archive.mapObject(_.add("entries", Json.fromValues(entries.map(e => if e == entry then updated else e)))
-      .add("files", Json.fromValues(files.map(f => if f == original then f.mapObject(_.add("utf8", Json.fromString(changed))) else f)))))
+    val metadata = entry.hcursor
+      .downField("disposition")
+      .get[Json]("artifact")
+      .toOption
+      .get
+      .mapObject(
+        _.add("checksum", Json.fromString(Checksum.ofBytes(bytes).hex))
+          .add("byteLength", Json.fromInt(bytes.length))
+      )
+    val updated = entry.mapObject(
+      _.add(
+        "disposition",
+        entry.hcursor
+          .get[Json]("disposition")
+          .toOption
+          .get
+          .mapObject(_.add("artifact", metadata))
+      )
+    )
+    Canonical.print(
+      archive.mapObject(
+        _.add("entries", Json.fromValues(entries.map(e => if e == entry then updated else e)))
+          .add(
+            "files",
+            Json.fromValues(
+              files.map(f =>
+                if f == original then f.mapObject(_.add("utf8", Json.fromString(changed))) else f
+              )
+            )
+          )
+      )
+    )
 
   test("both generated packets expose complete fixed cuts and preserve partial source authority") {
     assertEquals(opened.keySet, Set("wog", "bell"))
@@ -49,15 +78,23 @@ class WorkspacePacketSuite extends FunSuite:
       assertEquals(workspace.inventory.units.map(_.ordinal), Vector(0, 1, 2, 3))
       assertEquals(workspace.policies.map(_.id).toSet, Set(a, b, historical))
       assertEquals(workspace.policy(a).get.matrix.rows.size, 4)
-      assertEquals(workspace.policy(a).get.record.policies.universe.targets.size, if name == "wog" then 84 else 3)
-      assertEquals(workspace.policy(a).get.matrix.rows.last.outcome.localization, LocalizationStatus.NotComputed)
+      assertEquals(
+        workspace.policy(a).get.record.policies.universe.targets.size,
+        if name == "wog" then 84 else 3
+      )
+      assertEquals(
+        workspace.policy(a).get.matrix.rows.last.outcome.localization,
+        LocalizationStatus.NotComputed
+      )
     }
     assertEquals(opened("bell").draft.abstentions.size, 3)
     assertEquals(opened("wog").draft.derivation, DerivationRecord.NotSupplied)
     assertNotEquals(opened("bell").recallAddress(u0), opened("wog").recallAddress(u0))
   }
 
-  test("external consumer retains unrenormalized values, missing measures and decoder disagreement") {
+  test(
+    "external consumer retains unrenormalized values, missing measures and decoder disagreement"
+  ) {
     val workspace = opened("bell")
     val row = workspace.policy(a).get.matrix.row(u0).get
     assertEquals(row.cell(Destination.Target(ring)).get.raw.map(_._2), Vector(0.9))
@@ -67,14 +104,28 @@ class WorkspacePacketSuite extends FunSuite:
     assertEquals(row.cell(Destination.Target(ring)).get.posterior, Vector.empty)
     assertEquals(row.outcome.decision.get.rawArgmax.map(_._1), Some(Destination.Target(ring)))
     assertEquals(row.outcome.decision.get.chosen, Some(Destination.Target(quiet)))
-    assertEquals(workspace.policy(b).get.matrix.row(u0).get.cell(Destination.Target(quiet)).get.normalized, Some(0.6))
-    assertEquals(workspace.policy(a).get.matrix.rows(2).outcome.localization, LocalizationStatus.Nonlocalizable)
+    assertEquals(
+      workspace.policy(b).get.matrix.row(u0).get.cell(Destination.Target(quiet)).get.normalized,
+      Some(0.6)
+    )
+    assertEquals(
+      workspace.policy(a).get.matrix.rows(2).outcome.localization,
+      LocalizationStatus.Nonlocalizable
+    )
   }
 
-  test("exact discontiguous evidence, repeated inverse references and policy exports are consumable") {
+  test(
+    "exact discontiguous evidence, repeated inverse references and policy exports are consumable"
+  ) {
     val workspace = opened("bell")
-    assertEquals(workspace.sourceEvidence(ring).toOption.flatten.get.map(_._2), Vector("A bell rang.", "The bell rang again."))
-    assertEquals(workspace.recallEvidence(u0).toOption.get.map(_._2), Vector("A bell rang.", "It rang again."))
+    assertEquals(
+      workspace.sourceEvidence(ring).toOption.flatten.get.map(_._2),
+      Vector("A bell rang.", "The bell rang again.")
+    )
+    assertEquals(
+      workspace.recallEvidence(u0).toOption.get.map(_._2),
+      Vector("A bell rang.", "It rang again.")
+    )
     assertEquals(workspace.inverse(a, ring).toOption.get.map(_.value), Vector("m1:u0", "m1:u1"))
     val selection = Set(workspace.recallAddress(u0).get)
     val first = WorkspaceSubsetCodec.selected(workspace, a, selection).toOption.get
@@ -83,19 +134,39 @@ class WorkspacePacketSuite extends FunSuite:
     assert(second.accessibleText.contains("Policy: authored-b"))
     assert(!first.accessibleText.contains("This note is outside the selected evidence."))
     assertNotEquals(first.dataJson, second.dataJson)
-    assertEquals(WorkspaceSubsetCodec.selected(workspace, a, Set(opened("wog").recallAddress(u0).get)),
-      Left(WorkspaceRefusal.InvalidSelection))
+    assertEquals(
+      WorkspaceSubsetCodec.selected(workspace, a, Set(opened("wog").recallAddress(u0).get)),
+      Left(WorkspaceRefusal.InvalidSelection)
+    )
   }
 
   test("both source packets compile through the existing Codex and Atlas draft compilers") {
     opened.values.foreach { workspace =>
-      val state = CommonViewState.of(Set.empty, None, EpistemicHorizon.Omniscient, EditionSpec.relationLayers).toOption.get
+      val state = CommonViewState
+        .of(Set.empty, None, EpistemicHorizon.Omniscient, EditionSpec.relationLayers)
+        .toOption
+        .get
       val codex = CodexSpec.forLens(CodexLens.Overview, ChannelBudget.All).toOption.get
-      val atlas = AtlasSpec(ZoomLevel(NarrativeLevel.Scene, SurfaceDetail.Hidden), ThreadPolicy.All(PositiveInt.from(12).toOption.get))
-      val cp = ViewProvenance.draftBuild(workspace.draft, EditionSpec.compilerVersion,
-        CodexCompiler.configurationChecksum(state, codex)).toOption.get
-      val ap = ViewProvenance.draftBuild(workspace.draft, EditionSpec.compilerVersion,
-        AtlasCompiler.configurationChecksum(state, atlas)).toOption.get
+      val atlas = AtlasSpec(
+        ZoomLevel(NarrativeLevel.Scene, SurfaceDetail.Hidden),
+        ThreadPolicy.All(PositiveInt.from(12).toOption.get)
+      )
+      val cp = ViewProvenance
+        .draftBuild(
+          workspace.draft,
+          EditionSpec.compilerVersion,
+          CodexCompiler.configurationChecksum(state, codex)
+        )
+        .toOption
+        .get
+      val ap = ViewProvenance
+        .draftBuild(
+          workspace.draft,
+          EditionSpec.compilerVersion,
+          AtlasCompiler.configurationChecksum(state, atlas)
+        )
+        .toOption
+        .get
       val flow = CodexCompiler(cp).compileDraft(workspace.draft, state, codex).toOption.get
       val scene = AtlasCompiler(ap).compileDraft(workspace.draft, state, atlas).toOption.get
       assertEquals(flow.source.canonicalText, workspace.model.source.canonicalText)
@@ -115,13 +186,27 @@ class WorkspacePacketSuite extends FunSuite:
     assertEquals(timed.addresses.keySet, scene.navigation.byAddress.keySet)
     assert(document.provenance.basis.label.contains("synthetic"))
     document.input.matrix.rows.foreach { row =>
-      assertEquals(row.mass, opened("bell").policy(historical).get.record.outcome(row.unit).get.measures.posterior.get.mass)
+      assertEquals(
+        row.mass,
+        opened("bell")
+          .policy(historical)
+          .get
+          .record
+          .outcome(row.unit)
+          .get
+          .measures
+          .posterior
+          .get
+          .mass
+      )
     }
     val untimed = WorkspaceVoyage.from(opened("wog"), historical).toOption.get
     assertEquals(untimed.document, None)
     assertEquals(untimed.units.size, 4)
-    assertEquals(untimed.units.map(_.disposition).distinct,
-      Vector(WorkspaceVoyage.Disposition.Unsupported(WorkspaceVoyage.Unavailable.ClocksNotSupplied)))
+    assertEquals(
+      untimed.units.map(_.disposition).distinct,
+      Vector(WorkspaceVoyage.Disposition.Unsupported(WorkspaceVoyage.Unavailable.ClocksNotSupplied))
+    )
   }
 
   test("unsupported schema and changed member bytes fail before any compiler receives a packet") {
@@ -139,11 +224,21 @@ class WorkspacePacketSuite extends FunSuite:
   }
 
   test("re-signed inspection and export denials are enforced at their distinct boundaries") {
-    val denied = replaceMember(archives("bell"), "Capabilities")(_.mapObject(_.add("inspection", Json.fromString("Denied"))))
+    val denied = replaceMember(archives("bell"), "Capabilities")(
+      _.mapObject(_.add("inspection", Json.fromString("Denied")))
+    )
     assertEquals(WorkspaceCodecs.decode(denied), Left(WorkspaceRefusal.PermissionDenied))
-    val inspectOnly = replaceMember(archives("bell"), "Capabilities")(_.mapObject(_.add("export", Json.fromString("Denied"))))
+    val inspectOnly = replaceMember(archives("bell"), "Capabilities")(
+      _.mapObject(_.add("export", Json.fromString("Denied")))
+    )
     val admitted = WorkspaceCodecs.decode(inspectOnly).toOption.get
     assertEquals(admitted.inventory.units.size, 4)
-    assertEquals(WorkspaceSubsetCodec.selected(admitted, a, Set(admitted.recallAddress(u0).get)), Left(WorkspaceRefusal.PermissionDenied))
-    assertEquals(WorkspaceArchiveCodec.encode(admitted.archive.manifest), Left(WorkspaceRefusal.PermissionDenied))
+    assertEquals(
+      WorkspaceSubsetCodec.selected(admitted, a, Set(admitted.recallAddress(u0).get)),
+      Left(WorkspaceRefusal.PermissionDenied)
+    )
+    assertEquals(
+      WorkspaceArchiveCodec.encode(admitted.archive.manifest),
+      Left(WorkspaceRefusal.PermissionDenied)
+    )
   }
