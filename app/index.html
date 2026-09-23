@@ -185,7 +185,7 @@ nav ul { margin: 0; padding-left: 1.2em; }
 .design-workspace .mapping-matrix .mass-1 { --cell-background:#e6f1ee; background:var(--cell-background); }
 .design-workspace .mapping-matrix .mass-2 { --cell-background:#c4e0d8; background:var(--cell-background); }
 .design-workspace .mapping-matrix .mass-3 { --cell-background:#8cc3b6; background:var(--cell-background); }
-.design-workspace .mapping-matrix .mass-4 { --cell-background:#4c9e8e; background:var(--cell-background); color:#fff; }
+.design-workspace .mapping-matrix .mass-4 { --cell-background:#4c9e8e; background:var(--cell-background); color:var(--ink); }
 .design-workspace .mapping-matrix .mass-5 { --cell-background:#1f7568; background:var(--cell-background); color:#fff; }
 .design-workspace .external-column { border-left:1px solid #9a9589; }
 .design-workspace .external-column .mass-1 { --cell-background:#eeefed; background:var(--cell-background); }
@@ -241,7 +241,9 @@ nav ul { margin: 0; padding-left: 1.2em; }
 @media(prefers-reduced-motion:reduce) { .design-workspace * { scroll-behavior:auto; } }
 
 /* Canvas v7 additions: decision glyph stays legible on dark fills; selection never tints a fill. */
-.design-workspace .mapping-matrix .mass-4 .decision-mark, .design-workspace .mapping-matrix .mass-5 .decision-mark { background:#fff; border-color:var(--ink); }
+.design-workspace .mapping-matrix .mass-5:not(.fill-origin) .decision-mark { background:#fff; border-color:var(--ink); }
+.design-workspace .mapping-matrix .mass-5.fill-origin .decision-mark { background:transparent; border-color:#fff; }
+.design-workspace .task-switch button:focus-visible, .design-workspace .narrow-switch button:focus-visible, .design-workspace .inspector-navigation button:focus-visible { outline:3px solid #215f93; outline-offset:2px; }
 .design-workspace .mapping-matrix .matrix-cell:hover { background:var(--cell-background,transparent); }
 body:has(.design-workspace) { background:#f7f5f0; }
 
