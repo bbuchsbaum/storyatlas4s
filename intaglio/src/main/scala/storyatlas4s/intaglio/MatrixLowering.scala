@@ -49,7 +49,7 @@ object MatrixLowering:
       matrix.rows.flatMap(_.cells).map(lines(_).size * lineHeight + 36).maxOption.getOrElse(104)
     )
     val left = 260
-    val top = 68
+    val top = 28 + columns.map(_.key.grouped(40).size * lineHeight).maxOption.getOrElse(40)
     val cellWidth = 330
     val width = left + math.max(1, columns.size) * cellWidth
     val height = top + math.max(1, matrix.rows.size) * rowHeight + 26
@@ -84,12 +84,10 @@ object MatrixLowering:
         yDirection = ig.YDirection.Down
       )
       headers <- columns.zipWithIndex.traverse { (destination, column) =>
-        ig.Grob.text(
-          destination.key,
-          point(left + column * cellWidth + 10, 40),
-          ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
-          gp = textStyle
-        )
+        destination.key.grouped(40).toVector.zipWithIndex.traverse { (label, line) =>
+          ig.Grob.text(label, point(left + column * cellWidth + 10, 24 + line * lineHeight),
+            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom), gp = textStyle)
+        }.map(ig.Grob.group(_))
       }
       rowLabels <- matrix.rows.zipWithIndex.traverse { (row, index) =>
         Vector(

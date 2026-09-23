@@ -57,10 +57,50 @@ nav ul { margin: 0; padding-left: 1.2em; }
 .error { border: 2px solid #000000; padding: 0.75em; }
 .compiling { border: 1px solid #000000; padding: 0.75em; }
 .codex-interaction-court { position: fixed; left: -10000px; top: 0; width: 520px; height: 800px; overflow: hidden; }
+
+/* Joined local investigation; existing source and Voyage renderers retain their semantics. */
+.workspace-host { max-width: 1600px; margin: auto; }
+.workspace-open-bar, .workspace-actions, .recall-navigation { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 0 0 16px; padding: 12px; border: 1px solid #dce4de; border-radius: 6px; background: #f4f5f1; }
+.workspace-open-bar > strong { color: #173f36; font-size: 18px; margin-right: 12px; }
+.workspace-open-bar [role=status] { flex-basis: 100%; color: #53665e; }
+.joined-workspace { color: #20332e; font: 15px/1.55 system-ui, sans-serif; }
+.joined-workspace h1 { font-size: 24px; margin: 20px 0 4px; }
+.joined-workspace h2 { font-size: 20px; margin: 0 0 12px; }
+.joined-workspace h3 { font-size: 16px; margin: 20px 0 8px; }
+.joined-workspace button, .joined-workspace select, .workspace-open-bar button { min-height: 36px; padding: 6px 10px; font: inherit; color: #173f36; background: #fff; border: 1px solid #9bada5; border-radius: 6px; cursor: pointer; }
+.joined-workspace button[aria-pressed=true] { outline: 2px solid #173f36; outline-offset: -3px; font-weight: 650; }
+.workspace-host :focus-visible { outline: 3px solid #2864bb; outline-offset: 2px; }
+.basis-note { color: #53665e; margin: 0 0 20px; }
+.joined-columns { display: grid; grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); gap: 24px; align-items: start; margin-bottom: 24px; }
+.joined-source, .joined-recall { min-width: 0; border: 1px solid #dce4de; border-radius: 6px; padding: 16px; overflow: auto; max-height: 75vh; }
+.joined-source .workspace { display: flex; flex-direction: column; gap: 16px; }
+.joined-source .controls { border-color: #dce4de; gap: 8px; }
+.joined-source .controls input[type=range] { max-width: 100%; width: 14em; }
+.joined-source .pages { max-width: 100%; overflow: auto; }
+.joined-source .panel { max-width: 100%; }
+.joined-recall ul { list-style: none; margin: 0; padding: 0; }
+.joined-recall li { border-top: 1px solid #dce4de; padding: 8px 0; overflow-wrap: anywhere; }
+.joined-recall li span { display: block; font-size: 13px; }
+.joined-recall blockquote { margin: 12px 0; padding: 8px 12px; border-left: 3px solid #176f5f; background: #f4f5f1; }
+.joined-recall blockquote p { white-space: pre-wrap; }
+.mapping-scroll { max-width: 100%; overflow: auto; max-height: 65vh; border: 1px solid #dce4de; margin-bottom: 24px; }
+.mapping-matrix { border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.mapping-matrix caption { text-align: left; padding: 12px; background: #f4f5f1; }
+.mapping-matrix th, .mapping-matrix td { border-right: 1px solid #dce4de; border-bottom: 1px solid #dce4de; padding: 8px; vertical-align: top; min-width: 180px; max-width: 250px; overflow-wrap: anywhere; }
+.mapping-matrix th { text-align: left; background: #f4f5f1; position: sticky; top: 0; z-index: 1; }
+.mapping-matrix th:first-child { left: 0; z-index: 2; }
+.mapping-matrix .matrix-cell { width: 100%; text-align: left; min-height: 100px; border-color: transparent; }
+.mapping-matrix .measure-kind { display: block; color: #53665e; }
+.mapping-matrix .chosen-label { border-top: 1px solid #dce4de; margin-top: 8px; padding-top: 4px; }
+.row-status { margin-top: 8px; font-weight: normal; }
+.joined-workspace details { border-top: 1px solid #dce4de; padding: 12px 0; }
+.joined-workspace details p, .joined-workspace details pre { overflow-wrap: anywhere; white-space: pre-wrap; font-size: 13px; }
+@media (max-width: 850px) { .joined-columns { grid-template-columns: minmax(0, 1fr); } .joined-source, .joined-recall { max-height: none; } .workspace-open-bar input { max-width: 100%; } .joined-workspace .workspace-actions label, .joined-workspace select { max-width: 100%; } }
+
 </style>
 </head>
 <body>
-<header>
+<header id="fixture-header">
 <h1>storyatlas4s — Narrative Codex and Narrative Atlas</h1>
 <p>Basis: researcher-reviewed narrative acceptance fixture (<em>The War of the Ghosts</em>, storymodel4s
 <code>fixtures</code>). Every artifact below is compiled in storymodel4s in this browser and lowered to
