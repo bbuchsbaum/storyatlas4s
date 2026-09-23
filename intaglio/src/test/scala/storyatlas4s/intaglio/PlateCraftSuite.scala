@@ -166,6 +166,8 @@ class PlateCraftSuite extends FunSuite:
       elements.foreach {
         case ig.DeviceElement.Group(n, _, _, children) =>
           walk(children, n.map(_.value).orElse(name))
+        case ig.DeviceElement.Annotated(_, children) =>
+          walk(children, name)
         case ig.DeviceElement.Mark(primitive) =>
           name.filter(labelled.contains).foreach { _ =>
             primitive match
