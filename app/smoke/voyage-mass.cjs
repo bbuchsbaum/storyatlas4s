@@ -51,6 +51,11 @@ async function verify(page,doc,start,end,label) {
     const b=e.getBBox();return [e.dataset.unit,b.x+b.width/2];
   })));
   check(actual.every(s=>geometryClose(s.x,marks[s.unit])),`${label}: tracks and route share exact recall x coordinates`);
+  const scales=await page.locator('.plate svg text').evaluateAll(es=>es
+    .filter(e=>/^[01]$/.test(e.textContent)).map(e=>{
+      const b=e.getBoundingClientRect();return {top:b.top,bottom:b.bottom};
+    }).sort((a,b)=>a.top-b.top));
+  check(scales.length===4 && scales.every((b,i)=>i===0 || b.top>=scales[i-1].bottom+1),`${label}: both 0–1 scales have readable separated labels`);
   const named=await page.locator('.plate [data-name]').evaluateAll(es=>es.map(e=>e.dataset.name));
   check(new Set(named).size===named.length,`${label}: auxiliary tracks add no duplicate scientific identities`);
   return actual;

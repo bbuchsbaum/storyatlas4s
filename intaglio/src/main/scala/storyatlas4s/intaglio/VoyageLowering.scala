@@ -227,8 +227,10 @@ object VoyageLowering:
       track: Track = Track.Groups
   ): Either[GraphicsError, ig.Scene] =
     window match
-      case _ if track == Track.Masses && box.trackHeight <= 8 =>
-        Left(GraphicsError.InvalidExtent("mass tracks require a height greater than their 8px gap"))
+      case _ if track == Track.Masses && box.trackHeight <= 16 =>
+        Left(
+          GraphicsError.InvalidExtent("mass tracks require a height greater than their 16px gap")
+        )
       case Some(w) if w.start < 0.0 || w.end > scene.recallLength.value =>
         Left(
           GraphicsError.InvalidExtent(
@@ -719,10 +721,10 @@ object VoyageLowering:
       selected: Set[RecallUnitId]
   ): Either[GraphicsError, ig.Grob] =
     val box = sc.box
-    val rowHeight = (box.trackHeight - 8.0) / 2.0
+    val rowHeight = (box.trackHeight - 16.0) / 2.0
     val rows = Vector(
       (Classes.massAnchor, "Drawn anchor", box.trackTop.toDouble),
-      (Classes.massExternal, "External", box.trackTop + rowHeight + 8.0)
+      (Classes.massExternal, "External", box.trackTop + rowHeight + 16.0)
     )
     def sample(
         unit: RecallUnitId,

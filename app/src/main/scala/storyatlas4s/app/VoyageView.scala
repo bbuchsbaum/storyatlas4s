@@ -916,9 +916,9 @@ object VoyageView:
             left = 46,
             right = 128,
             plotHeight = 380,
-            trackHeight = 64
+            trackHeight = 72
           )
-        else VoyageLowering.Box.default.copy(width = width, trackHeight = 64)
+        else VoyageLowering.Box.default.copy(width = width, trackHeight = 72)
       massBox = box.copy(gap = 40)
       lowered <- VoyageLowering
         .lower(

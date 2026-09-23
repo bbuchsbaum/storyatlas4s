@@ -113,7 +113,7 @@ class VoyageLoweringSuite extends FunSuite:
   private def descendants(grob: ig.Grob): Vector[ig.Grob] =
     grob +: grob.children.flatMap(descendants)
 
-  private val massBox = VoyageLowering.Box.default.copy(trackHeight = 64, gap = 40)
+  private val massBox = VoyageLowering.Box.default.copy(trackHeight = 72, gap = 40)
 
   private def massSamples(lowered: ig.Scene): Map[(Int, String), ig.Grob.Annotated] =
     lowered.grobs
