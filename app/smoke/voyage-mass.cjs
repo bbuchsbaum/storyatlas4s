@@ -12,7 +12,7 @@ const out = path.resolve(process.argv[2]);
 const report = {checks:[], errors:[], requests:[]};
 const check = (ok, message) => { assert.ok(ok, message); report.checks.push(message); };
 const number = value => Buffer.from(value.slice(2), 'hex').readDoubleBE();
-const close = (a,b) => Math.abs(a-b)<1e-6;
+const close = (a,b) => Math.abs(a-b)<1e-12;
 // SVG's deterministic renderer rounds coordinates to four decimals; browser
 // getBBox adds float32 error. This tolerance never applies to supplied masses.
 const geometryClose = (a,b) => Math.abs(a-b)<0.0002;
