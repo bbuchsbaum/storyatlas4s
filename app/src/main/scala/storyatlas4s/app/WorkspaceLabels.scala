@@ -38,10 +38,16 @@ private[app] object WorkspaceLabels:
     case Destination.Target(ref)    => ref.key
     case Destination.External(kind) => s"Non-source · $kind"
 
-  def tone(matrix: MappingMatrix, cell: MappingMatrix.Cell, measure: Measure): String =
+  def spoken(cell: Option[MappingMatrix.Cell]): String = cell match
+    case None => "not supplied in this result"
+    case Some(value) =>
+      values(value, Measure.All).map((kind, number) => s"$kind $number").mkString("; ") +
+        (if value.chosen then "; supplied decision" else "")
+
+  def tone(fill: MatrixCells.Fill, cell: MappingMatrix.Cell, measure: Measure): String =
     // The sole color scale is explicitly named normalized score mass on fixed 0–1.
     // Raw scores, transport and separate posterior states remain labeled numbers.
-    if measure != Measure.Normalized || MatrixCells.fill(matrix) != MatrixCells.Fill.Normalized then ""
+    if measure != Measure.Normalized || fill != MatrixCells.Fill.Normalized then ""
     else
       cell.normalized.fold("") { value =>
         s"mass-${MatrixCells.bin(value)}"
