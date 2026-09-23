@@ -1,6 +1,6 @@
 # StoryAtlas workspace: design north star
 
-22–23 September 2026 · Agreed by claude, codex-design and atlas-voyage over Fray · Advisory design record; scientific contracts in `workspace-design.md` and the ADRs take precedence.
+22–23 September 2026 · Agreed by claude, codex-design and atlas-voyage over Fray · Advisory design record. The scientific contracts in storymodel4s ADR 0002 (visualization contract) and storyatlas4s [ADR 0001](../adr/0001-host-neutral-shell.md) take precedence. The broader delivery plan `workspace-design.md` is a proposal not yet landed on `main`; cite it only once it is committed.
 
 **The reference design is canvas v7**, frozen in [`mockups/workspace-v7-2026-09-22/`](../../mockups/workspace-v7-2026-09-22/) (`SHA256SUMS` inside) and published privately at <https://claude.ai/artifact/U2PajJp2zEUxTkpoJsPVbY>. The repository copy is authoritative if the two differ. The artboards are synthetic design material: static, with illustrative values. They prove no interaction, zoom, save/reopen or scientific result.
 
@@ -44,7 +44,7 @@ Cross-cutting: non-source quantity is separate from processing status; one task 
 - **Unknown is never localized.** Truncated candidate coverage is a status ("Top-k · rest unknown"). It never becomes mass in a region, and no residual is computed.
 - **Exact extents.** A span is drawn at its supplied extent, with no minimum-size clamp. A hit target may grow; the metric extent may not.
 - **Complete inventories.** The onset rug shows every supplied timed onset, failed units included. Timing and mapping outcome are independent.
-- **Honest policy names.** A policy label must fit the decisions it shows. Backward jumps rule out "order-constrained".
+- **Honest policy names.** A policy label must fit the decisions it shows. Backward jumps rule out a *strictly monotone* label. A soft order bias can permit reversals, and any structured policy states its actual constraints.
 - **Zero versus absent.** A blank or "Not supplied" is not 0. A zero-mass fill is labelled as a fill; a generic gap fill makes no zero claim.
 - **No bare numbers.** Every bar or fill names its measure and scale in narrow layouts too.
 
