@@ -125,3 +125,14 @@ numeric plate. Each supplied raw, normalized, transport and posterior-fidelity
 value remains separate. Renderer cell names resolve through the drawing's checked
 row/destination index; they are never saved semantic addresses. Equal-width
 columns are display geometry, not elapsed time or inferred narrative order.
+
+`WorkspaceImport` composes checked artifact admission with optional saved-state
+replay as one transaction; `WorkspaceSession` is the admitted host mode. The
+alternative of loading a descriptor into a separate mutable pending-state store
+was rejected because cancellation or a late file read could pair state with the
+wrong packet. `WorkspaceOpen[A]` only publishes a fully admitted host value.
+`WorkspaceExport` checks the producer's export capability first, then packages
+its exact subset with the matrix figure/twin and the identity-bound descriptor.
+The full permitted scientific subset and the recorded presentation horizons are
+labeled separately. The browser owns file picking/downloads; the shell owns no
+filesystem, fetch, provider invocation or new inference.

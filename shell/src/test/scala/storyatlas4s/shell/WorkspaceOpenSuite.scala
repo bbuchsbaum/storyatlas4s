@@ -14,8 +14,8 @@ class WorkspaceOpenSuite extends FunSuite:
   )
 
   test("a late older read cannot replace a later admitted workspace") {
-    var snapshots = Vector.empty[OpenSnapshot]
-    val runtime = new WorkspaceOpen(s => snapshots :+= s)
+    var snapshots = Vector.empty[OpenSnapshot[ImportedArtifact]]
+    val runtime = new WorkspaceOpen[ImportedArtifact](s => snapshots :+= s)
     val older = runtime.begin()
     val later = runtime.begin()
     runtime.complete(later, Right(bell))
@@ -26,8 +26,8 @@ class WorkspaceOpenSuite extends FunSuite:
   }
 
   test("cancellation invalidates pending completions and failure retains the admitted workspace") {
-    var latest = OpenSnapshot(None, OpenDisplay.Idle)
-    val runtime = new WorkspaceOpen(s => latest = s)
+    var latest = OpenSnapshot[ImportedArtifact](None, OpenDisplay.Idle)
+    val runtime = new WorkspaceOpen[ImportedArtifact](s => latest = s)
     runtime.complete(runtime.begin(), Right(bell))
     val pending = runtime.begin()
     runtime.cancel()

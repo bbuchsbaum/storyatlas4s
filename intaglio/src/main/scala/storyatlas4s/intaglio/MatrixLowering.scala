@@ -40,12 +40,15 @@ object MatrixLowering:
     val columns = matrix.targets.map(t => Destination.Target(t.ref)) ++ matrix.externals.map(
       Destination.External(_)
     )
+    def lines(cell: MappingMatrix.Cell): Vector[String] = values(cell).flatMap { (kind, value) =>
+      kind.grouped(40).toVector :+ value
+    }
     val lineHeight = 20
     val rowHeight = math.max(
-      72,
-      matrix.rows.flatMap(_.cells).map(values(_).size * lineHeight + 36).maxOption.getOrElse(72)
+      104,
+      matrix.rows.flatMap(_.cells).map(lines(_).size * lineHeight + 36).maxOption.getOrElse(104)
     )
-    val left = 140
+    val left = 260
     val top = 68
     val cellWidth = 330
     val width = left + math.max(1, columns.size) * cellWidth
@@ -89,12 +92,17 @@ object MatrixLowering:
         )
       }
       rowLabels <- matrix.rows.zipWithIndex.traverse { (row, index) =>
-        ig.Grob.text(
+        Vector(
           s"${row.unit.ordinal + 1}. ${row.unit.id.value}",
-          point(8, top + index * rowHeight + 28),
-          ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
-          gp = textStyle
-        )
+          row.outcome.processing match
+            case ProcessingStatus.Complete => "Processing: complete"
+            case ProcessingStatus.Failed(_) => "Processing: failed"
+            case ProcessingStatus.ExcludedByInputPolicy(_) => "Processing: excluded",
+          s"Localization: ${row.outcome.localization}"
+        ).zipWithIndex.traverse { (label, line) =>
+          ig.Grob.text(label, point(8, top + index * rowHeight + 28 + line * lineHeight),
+            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom), gp = textStyle)
+        }.map(ig.Grob.group(_))
       }
       cells <- matrix.rows.zipWithIndex
         .flatMap { (row, index) =>
@@ -115,9 +123,9 @@ object MatrixLowering:
               ),
               if selected.contains(row.unit.id) then selectedBorder else border
             )
-            texts <- values(cell).zipWithIndex.traverse { case ((kind, value), line) =>
+            texts <- lines(cell).zipWithIndex.traverse { case (label, line) =>
               ig.Grob.text(
-                s"$kind: $value",
+                label,
                 point(x + 10, y + 24 + line * lineHeight),
                 ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
                 gp = textStyle

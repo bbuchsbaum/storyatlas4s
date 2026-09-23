@@ -1,6 +1,5 @@
 package storyatlas4s.shell
 
-import storyatlas4s.edition.ImportedArtifact
 import storymodel4s.view.WorkspaceRefusal
 
 enum OpenDisplay:
@@ -11,11 +10,11 @@ enum OpenDisplay:
 /** Atomic host-neutral Open transaction; a failed/cancelled/stale attempt never replaces the
   * previous admitted artifact. The host schedules I/O and parsing, and publishes this snapshot.
   */
-final case class OpenSnapshot(current: Option[ImportedArtifact], display: OpenDisplay)
+final case class OpenSnapshot[A](current: Option[A], display: OpenDisplay)
 
-final class WorkspaceOpen(publish: OpenSnapshot => Unit):
-  private var gate = LatestIntent.empty[Unit, Either[WorkspaceRefusal, ImportedArtifact]]
-  private var current = Option.empty[ImportedArtifact]
+final class WorkspaceOpen[A](publish: OpenSnapshot[A] => Unit):
+  private var gate = LatestIntent.empty[Unit, Either[WorkspaceRefusal, A]]
+  private var current = Option.empty[A]
 
   def begin(): IntentRevision =
     val (next, intent) = gate.request(())
@@ -23,7 +22,7 @@ final class WorkspaceOpen(publish: OpenSnapshot => Unit):
     publish(OpenSnapshot(current, OpenDisplay.Checking))
     intent.revision
 
-  def complete(revision: IntentRevision, result: Either[WorkspaceRefusal, ImportedArtifact]): Unit =
+  def complete(revision: IntentRevision, result: Either[WorkspaceRefusal, A]): Unit =
     val (next, accepted) = gate.complete(revision, result)
     gate = next
     accepted.foreach { value =>
