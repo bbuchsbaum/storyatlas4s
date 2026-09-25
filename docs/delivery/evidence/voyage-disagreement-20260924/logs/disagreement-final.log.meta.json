@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-25T03:36:05.747628+00:00",
+  "finished_utc": "2026-09-25T03:36:14.315314+00:00",
+  "duration_seconds": 8.558559,
+  "command": [
+    "node",
+    "app/smoke/voyage-disagreement.cjs",
+    "target/disagreement-20260924"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storyatlas4s",
+  "log": "/Users/bbuchsbaum/code/scala/storyatlas4s/target/disagreement-20260924/disagreement-final.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 300.0,
+  "log_bytes": 5525
+}

@@ -1,0 +1,64 @@
+[info] welcome to sbt 1.12.14 (Homebrew Java 25.0.1)
+[info] loading settings for project storyatlas4s-build from plugins.sbt...
+[info] loading project definition from /Users/bbuchsbaum/code/scala/storyatlas4s/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project intaglio-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storyatlas-disagreement-20260924-deps/intaglio/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project storymodel4s-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storyatlas-disagreement-20260924-deps/storymodel4s/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project grakern-build from plugins.sbt...
+[info] loading project definition from /private/tmp/storyatlas-disagreement-20260924-deps/grakern/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project gale-build from plugins.sbt...
+[info] loading project definition from /Users/bbuchsbaum/.sbt/1.0/staging/c6b5fe94c20cf0d05b05/gale/project
+[info] loading settings for project root from build.sbt...
+[info] loading settings for project graph4s-build from plugins.sbt...
+[info] loading project definition from /Users/bbuchsbaum/.sbt/1.0/staging/8d03f2d14a9e2c9f6990/graph4s/project
+[info] loading settings for project root from build.sbt...
+[info] resolving key references (148721 settings) ...
+[info] set current project to root (in build file:/Users/bbuchsbaum/code/scala/storyatlas4s/)
+[info] scalafmt: Formatting 1 Scala sources (/Users/bbuchsbaum/code/scala/storyatlas4s/intaglio/.jvm)...
+[info] scalafmt: Formatting 1 Scala sources (/Users/bbuchsbaum/code/scala/storyatlas4s/intaglio/.js)...
+[info] scalafmt: Reformatted 1 Scala sources
+[info] scalafmt: Reformatted 1 Scala sources
+[success] Total time: 2 s, completed Sep 24, 2026, 11:33:03 p.m.
+[info] compiling 1 Scala source to /Users/bbuchsbaum/code/scala/storyatlas4s/intaglio/.jvm/target/scala-3.7.4/test-classes ...
+[info] done compiling
+Test run storyatlas4s.intaglio.VoyageLoweringSuite started
+storyatlas4s.intaglio.VoyageLoweringSuite: finished 0.28s
+Test run storyatlas4s.intaglio.VoyageLoweringSuite finished: 0 failed, 0 ignored, 35 total 0.287s
+[info] Passed: Total 35, Failed 0, Errors 0, Passed 35
+[success] Total time: 6 s, completed Sep 24, 2026, 11:33:09 p.m.
+[info] compiling 1 Scala source to /Users/bbuchsbaum/code/scala/storyatlas4s/intaglio/.js/target/scala-3.7.4/test-classes ...
+[info] done compiling
+[info] Fast optimizing /Users/bbuchsbaum/code/scala/storyatlas4s/intaglio/.js/target/scala-3.7.4/storyatlas4s-intaglio-test-fastopt
+Test run storyatlas4s.intaglio.VoyageLoweringSuite started
+storyatlas4s.intaglio.VoyageLoweringSuite: finished 0.104s
+Test run storyatlas4s.intaglio.VoyageLoweringSuite finished: 0 failed, 0 ignored, 35 total 0.104s
+[info] Passed: Total 35, Failed 0, Errors 0, Passed 35
+[success] Total time: 8 s, completed Sep 24, 2026, 11:33:17 p.m.
+[success] Total time: 0 s, completed Sep 24, 2026, 11:33:17 p.m.
+[info] running (fork) storyatlas4s.cli.Main voyage --document /Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-full/recall-map-NN03_ANT_202231_final.tsv.voyage.json --out target/disagreement-20260924/nn03-full
+[error] WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+[error] WARNING: sun.misc.Unsafe::objectFieldOffset has been called by scala.runtime.LazyVals$ (file:/Users/bbuchsbaum/code/scala/storyatlas4s/target/bg-jobs/sbt_48c47e81/target/16f4dc48/adca020a/scala3-library_3-3.7.4.jar)
+[error] WARNING: Please consider reporting this to the maintainers of class scala.runtime.LazyVals$
+[error] WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[info] voyage /Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-full/recall-map-NN03_ANT_202231_final.tsv.voyage.json: 173 units, 173 anchored (65 argmax, 64 decode-bound, 44 decode-filled), 0 unanchored, 0 untimed
+[info] target/disagreement-20260924/nn03-full/voyage.svg
+[info] target/disagreement-20260924/nn03-full/voyage.txt
+[info] target/disagreement-20260924/nn03-full/voyage.html
+[info] target/disagreement-20260924/nn03-full/voyage-receipt.json
+[success] Total time: 2 s, completed Sep 24, 2026, 11:33:19 p.m.
+[info] running (fork) storyatlas4s.cli.Main voyage --document /Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-content/recall-map-NN03_ANT_202231_final.tsv.voyage.json --out target/disagreement-20260924/nn03-content
+[error] WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+[error] WARNING: sun.misc.Unsafe::objectFieldOffset has been called by scala.runtime.LazyVals$ (file:/Users/bbuchsbaum/code/scala/storyatlas4s/target/bg-jobs/sbt_48c47e81/target/16f4dc48/adca020a/scala3-library_3-3.7.4.jar)
+[error] WARNING: Please consider reporting this to the maintainers of class scala.runtime.LazyVals$
+[error] WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[info] voyage /Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-content/recall-map-NN03_ANT_202231_final.tsv.voyage.json: 173 units, 173 anchored (61 argmax, 68 decode-bound, 44 decode-filled), 0 unanchored, 0 untimed
+[info] target/disagreement-20260924/nn03-content/voyage.svg
+[info] target/disagreement-20260924/nn03-content/voyage.txt
+[info] target/disagreement-20260924/nn03-content/voyage.html
+[info] target/disagreement-20260924/nn03-content/voyage-receipt.json
+[success] Total time: 1 s, completed Sep 24, 2026, 11:33:20 p.m.

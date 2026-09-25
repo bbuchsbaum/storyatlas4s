@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-25T03:32:49.740944+00:00",
+  "finished_utc": "2026-09-25T03:33:20.779619+00:00",
+  "duration_seconds": 31.038539,
+  "command": [
+    "sbt",
+    "-Dstoryatlas4s.storymodel4s.build=/private/tmp/storyatlas-disagreement-20260924-deps/storymodel4s",
+    "-Dstoryatlas4s.intaglio.build=/private/tmp/storyatlas-disagreement-20260924-deps/intaglio",
+    "-Dstorymodel4s.grakern.build=/private/tmp/storyatlas-disagreement-20260924-deps/grakern",
+    "scalafmtAll",
+    "intaglioJVM/testOnly storyatlas4s.intaglio.VoyageLoweringSuite",
+    "intaglioJS/testOnly storyatlas4s.intaglio.VoyageLoweringSuite",
+    "scalafmtCheckAll",
+    "cli/run voyage --document /Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-full/recall-map-NN03_ANT_202231_final.tsv.voyage.json --out target/disagreement-20260924/nn03-full",
+    "cli/run voyage --document /Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-content/recall-map-NN03_ANT_202231_final.tsv.voyage.json --out target/disagreement-20260924/nn03-content"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storyatlas4s",
+  "log": "/Users/bbuchsbaum/code/scala/storyatlas4s/target/disagreement-20260924/gates-02.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 900.0,
+  "log_bytes": 5717
+}

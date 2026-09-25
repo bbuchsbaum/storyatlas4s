@@ -5,7 +5,7 @@ import com.raquo.laminar.api.L.*
 import org.scalajs.dom
 import scala.scalajs.js
 import storyatlas4s.edition.VoyagePage
-import storyatlas4s.intaglio.{RecallWindow, VoyageLowering}
+import storyatlas4s.intaglio.{RecallWindow, VoyageGroupComparison, VoyageLowering}
 import storyatlas4s.shell.{VoyagePosterior, WorkspaceAction, WorkspaceController}
 import storymodel4s.align.SourceNodeRef
 import storymodel4s.codec.{VoyageCodecs, WorkspaceVoyage}
@@ -38,7 +38,8 @@ object VoyageView:
       ghosts: Boolean,
       allColumns: Boolean,
       width: Option[Int],
-      window: Option[RecallWindow]
+      window: Option[RecallWindow],
+      track: VoyageLowering.Track
   )
 
   /** The plate follows its panel between these widths; narrower and the clocks lose their ticks,
@@ -120,6 +121,7 @@ object VoyageView:
     val tip = Var(Option.empty[(Double, Double)])
     val ghosts = Var(false)
     val allColumns = Var(false)
+    val track = Var(VoyageLowering.Track.Masses)
     val width = Var(Option.empty[Int])
     val preview = Var(Option.empty[(Double, Double)])
     val rangeError = Var(Option.empty[String])
@@ -167,6 +169,7 @@ object VoyageView:
     def chooseUnit(id: RecallUnitId): Unit = dispatch(WorkspaceAction.Jump(id))
     def walk(delta: Int): Unit = dispatch(WorkspaceAction.Walk(delta))
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
+      comparisonUnitAt(target, base).foreach(chooseUnit)
       nameAt(target).flatMap(n => base.navigation.addressOf.get(MarkId.unsafe(n))).foreach {
         legacy =>
           val addresses = projection.workspaceSelection(legacy)
@@ -200,8 +203,8 @@ object VoyageView:
     val sourceCursor = signal.map(_.state.viewport.sourceCursor)
     val recallCursor = signal.map(_.state.viewport.recallCursor)
     val lens = legacySelection
-      .combineWith(ghosts.signal, allColumns.signal, width.signal.distinct, windows)
-      .map { case (s, g, all, w, r) => Lens(s, g, all, w, r) }
+      .combineWith(ghosts.signal, allColumns.signal, width.signal.distinct, windows, track.signal)
+      .map { case (s, g, all, w, r, t) => Lens(s, g, all, w, r, t) }
     val visibleText = signal
       .map(c =>
         base.units
@@ -422,8 +425,9 @@ object VoyageView:
       dataAttr("range-end") <-- windows.map(_.fold("none")(_.end.toString)),
       dataAttr("source-cursor") <-- sourceCursor.map(_.fold("none")(_.value.toString)),
       dataAttr("recall-cursor") <-- recallCursor.map(_.fold("none")(_.value.toString)),
-      header(ghosts, allColumns),
+      header(ghosts, allColumns, track),
       stats(base),
+      child <-- lens.map(l => trackSummary(base, l)),
       div(
         cls("panes"),
         sectionTag(
@@ -506,6 +510,7 @@ object VoyageView:
     val tip = Var(Option.empty[(Double, Double)])
     val ghosts = Var(false)
     val allColumns = Var(false)
+    val track = Var(VoyageLowering.Track.Masses)
     // unmeasured until the panel is laid out, so the plate is lowered once, at its real width
     val width = Var(Option.empty[Int])
     val total = scene.recallLength.value
@@ -514,8 +519,14 @@ object VoyageView:
     val preview = Var(Option.empty[(Double, Double)])
     var dragStart = Option.empty[Double]
     val lens: Signal[Lens] = selection.signal
-      .combineWith(ghosts.signal, allColumns.signal, width.signal.distinct, window.signal)
-      .map { case (s, g, all, w, r) => Lens(s, g, all, w, r) }
+      .combineWith(
+        ghosts.signal,
+        allColumns.signal,
+        width.signal.distinct,
+        window.signal,
+        track.signal
+      )
+      .map { case (s, g, all, w, r, t) => Lens(s, g, all, w, r, t) }
     val frames: Signal[Option[Either[String, Frame]]] =
       lens.map(l => l.width.map(w => compile(document, scene, l, w)))
     val ordered = scene.units.sortBy(_.ordinal)
@@ -526,6 +537,7 @@ object VoyageView:
       Addressable[RecallRef].parse(address).collect { case RecallRef.Unit(id) => id }
 
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
+      comparisonUnitAt(target, scene).foreach(chooseUnit)
       nameAt(target).flatMap(n => scene.navigation.addressOf.get(MarkId.unsafe(n))).foreach {
         addr =>
           selection.update { s =>
@@ -797,8 +809,9 @@ object VoyageView:
       dataAttr("plate-width") <-- width.signal.map(_.fold("unmeasured")(_.toString)),
       dataAttr("range-start") <-- window.signal.map(_.fold("none")(_.start.toString)),
       dataAttr("range-end") <-- window.signal.map(_.fold("none")(_.end.toString)),
-      header(ghosts, allColumns),
+      header(ghosts, allColumns, track),
       stats(scene),
+      child <-- lens.map(l => trackSummary(scene, l)),
       div(
         cls("panes"),
         sectionTag(
@@ -921,23 +934,26 @@ object VoyageView:
             trackHeight = 72
           )
         else VoyageLowering.Box.default.copy(width = width, trackHeight = 72)
-      massBox = box.copy(gap = 40)
+      trackBox = box.copy(
+        gap = 40,
+        trackHeight = if lens.track == VoyageLowering.Track.GroupDisagreements then 144 else 72
+      )
       lowered <- VoyageLowering
         .lower(
           scene,
           alternativesFor = selected,
-          box = massBox,
+          box = trackBox,
           ghosts = lens.ghosts,
           contextFor = context,
           ghostsFor = selected,
           window = lens.window,
           includeUntimed = false,
           visibleRecallText = visibleRecallText,
-          track = VoyageLowering.Track.Masses
+          track = lens.track
         )
         .left
         .map(_.message)
-      options <- SvgOptions(massBox.width, massBox.height, Some("Recall Voyage")).left
+      options <- SvgOptions(trackBox.width, trackBox.height, Some("Recall Voyage")).left
         .map(_.message)
       svg <- SvgRenderer.render(lowered, options).left.map(_.message)
     yield Frame(scene, svg.value)
@@ -948,12 +964,29 @@ object VoyageView:
     val active = dom.document.activeElement
     val keyboardInPlate = active != null && container.contains(active)
     container.innerHTML = frame.svg
-    val named = container.querySelectorAll("[data-name]")
+    val named = container.querySelectorAll("[data-name], [data-comparison-unit]")
     var i = 0
     while i < named.length do
       val el = named(i).asInstanceOf[dom.Element]
       el.setAttribute("tabindex", "0")
       el.setAttribute("role", "button")
+      if el.hasAttribute("data-comparison-unit") then
+        el.setAttribute(
+          "aria-label",
+          Option(el.querySelector("title")).fold("Inspect group comparison")(_.textContent)
+        )
+        val unit = comparisonUnitAt(el, frame.scene)
+        el.setAttribute(
+          "aria-pressed",
+          unit
+            .exists(id =>
+              selection.contains(
+                Addressable[RecallRef].address(RecallRef.Unit(id))
+              )
+            )
+            .toString
+        )
+        el.setAttribute("style", "cursor: pointer")
       i += 1
     decorate(container, frame.scene, selection)
     if keyboardInPlate then
@@ -1004,7 +1037,8 @@ object VoyageView:
 
   private def header(
       ghosts: Var[Boolean],
-      allColumns: Var[Boolean]
+      allColumns: Var[Boolean],
+      track: Var[VoyageLowering.Track]
   ): HtmlElement =
     headerTag(
       cls("top"),
@@ -1021,9 +1055,53 @@ object VoyageView:
       div(
         cls("controls"),
         toggle(ghosts, "all moved-argmax ghosts (selected units always shown)"),
-        toggle(allColumns, "posterior columns for every unit")
+        toggle(allColumns, "posterior columns for every unit"),
+        label(
+          "Under-plot track ",
+          select(
+            aria.label("Under-plot track"),
+            option(value := "mass", "Anchor and external mass"),
+            option(value := "groups", "Group disagreements"),
+            value <-- track.signal.map(t =>
+              if t == VoyageLowering.Track.Masses then "mass" else "groups"
+            ),
+            onChange.mapToValue --> (v =>
+              track.set(
+                if v == "groups" then VoyageLowering.Track.GroupDisagreements
+                else VoyageLowering.Track.Masses
+              )
+            )
+          )
+        )
       )
     )
+
+  private def trackSummary(scene: VoyageScene, lens: Lens): HtmlElement =
+    val records = VoyageGroupComparison.records(scene)
+    def count(status: VoyageGroupComparison.Status): Int = records.count(_.status == status)
+    val shown = records.count(r =>
+      r.status != VoyageGroupComparison.Status.Agreement &&
+        r.onset.exists(t => lens.window.forall(_.contains(t.value)))
+    )
+    p(
+      cls("note group-comparison-summary"),
+      display := (if lens.track == VoyageLowering.Track.GroupDisagreements then "block"
+                  else "none"),
+      s"Whole recall: ${count(VoyageGroupComparison.Status.Disagreement)} different groups · " +
+        s"${count(VoyageGroupComparison.Status.Agreement)} same group · " +
+        s"${count(VoyageGroupComparison.Status.Unknown)} unknown (${records.count(_.onset.isEmpty)} untimed). " +
+        s"$shown timed comparisons in this window. Same-group pairs are omitted from the strip. " +
+        "Group spacing shows order, not time or distance." +
+        (if scene.coding.nonEmpty then " Independent coding stays on the main plot." else "")
+    )
+
+  private def comparisonUnitAt(target: dom.EventTarget, scene: VoyageScene): Option[RecallUnitId] =
+    target match
+      case el: dom.Element =>
+        Option(el.closest("[data-comparison-unit]")).flatMap { mark =>
+          scene.units.find(_.id.value == mark.getAttribute("data-comparison-unit")).map(_.id)
+        }
+      case _ => None
 
   private def toggle(state: Var[Boolean], text: String): HtmlElement =
     label(
@@ -1251,7 +1329,7 @@ object VoyageView:
         ),
         "context: every unit's column, faint, when toggled"
       ),
-      item(visible.nonEmpty)(
+      item(visible.nonEmpty && lens.track == VoyageLowering.Track.Masses)(
         glyph(
           svg.line(
             svg.x1 := "8",
@@ -1270,6 +1348,55 @@ object VoyageView:
         ),
         "mass tracks: drawn anchor and external, each fixed 0–1; not complements or calibrated confidence. " +
           "Baseline tick = zero; cross = no source anchor. Untimed units stay in the unit selector."
+      ),
+      item(
+        lens.track == VoyageLowering.Track.GroupDisagreements &&
+          VoyageGroupComparison
+            .records(scene)
+            .exists(r => visible(r.unit) && r.status == VoyageGroupComparison.Status.Disagreement)
+      )(
+        glyph(
+          svg.line(
+            svg.x1 := "13",
+            svg.x2 := "13",
+            svg.y1 := "3",
+            svg.y2 := "13",
+            svg.style := s"stroke: $Model"
+          ),
+          svg.line(
+            svg.x1 := "9",
+            svg.x2 := "17",
+            svg.y1 := "3",
+            svg.y2 := "3",
+            svg.style := s"stroke: $Model"
+          ),
+          svg.polygon(svg.points := diamondPoints(13, 13, 3), svg.style := s"fill: $Model")
+        ),
+        "group disagreement: shaped endpoint = drawn group; cap = posterior-argmax group. Endpoint size carries no mass."
+      ),
+      item(
+        lens.track == VoyageLowering.Track.GroupDisagreements &&
+          VoyageGroupComparison
+            .records(scene)
+            .exists(r => visible(r.unit) && r.status == VoyageGroupComparison.Status.Unknown)
+      )(
+        glyph(
+          svg.line(
+            svg.x1 := "9",
+            svg.x2 := "17",
+            svg.y1 := "4",
+            svg.y2 := "12",
+            svg.style := s"stroke: $External"
+          ),
+          svg.line(
+            svg.x1 := "9",
+            svg.x2 := "17",
+            svg.y1 := "12",
+            svg.y2 := "4",
+            svg.style := s"stroke: $External"
+          )
+        ),
+        "group unknown: one or both groups are unavailable; not agreement."
       )
     )
 
@@ -1441,6 +1568,7 @@ object VoyageView:
       visibleRecallText: Option[String] = None
   ): HtmlElement =
     val presentation = VoyagePosterior.forUnit(scene, u.id)
+    val comparison = VoyageGroupComparison.records(scene).find(_.unit == u.id)
     val anchor = presentation.map(_.drawn)
     val alternatives = scene.marks.collect { case m: VoyageMark.Alternative if m.unit == u.id => m }
     val absence = scene.marks.collectFirst {
@@ -1507,6 +1635,17 @@ object VoyageView:
           a.argmax.fold("No source argmax supplied.")(r =>
             s"Posterior argmax: ${nodeLabel(scene, r)}."
           )
+        ),
+        p(
+          cls("note selected-group-comparison"),
+          comparison.fold("Group comparison unavailable.") { r =>
+            s"Drawn group: ${groupLabel(scene, r.drawn)}. Posterior-argmax group: ${groupLabel(scene, r.argmax)}. " +
+              (r.status match
+                case VoyageGroupComparison.Status.Agreement =>
+                  "Same group; omitted from the disagreement strip."
+                case VoyageGroupComparison.Status.Disagreement => "Different groups."
+                case VoyageGroupComparison.Status.Unknown => "Comparison unknown, not agreement.")
+          }
         )
       )
     }
@@ -1590,6 +1729,10 @@ object VoyageView:
           p(
             cls("note"),
             "This Voyage projection does not carry the complete posterior for untimed or unanchored units."
+          ),
+          p(
+            cls("note selected-group-comparison"),
+            "Group comparison unknown: this projection does not supply both groups."
           ),
           absence.toVector.collect { case a: VoyageMark.Unanchored =>
             p(cls("note"), "Supplied external mass: ", span(cls("num"), f"${a.externalMass}%.3f"))

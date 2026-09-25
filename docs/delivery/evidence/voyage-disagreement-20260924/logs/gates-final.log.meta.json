@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-25T03:35:18.805241+00:00",
+  "finished_utc": "2026-09-25T03:35:46.424541+00:00",
+  "duration_seconds": 27.61916,
+  "command": [
+    "sbt",
+    "-Dstoryatlas4s.storymodel4s.build=/private/tmp/storyatlas-disagreement-20260924-deps/storymodel4s",
+    "-Dstoryatlas4s.intaglio.build=/private/tmp/storyatlas-disagreement-20260924-deps/intaglio",
+    "-Dstorymodel4s.grakern.build=/private/tmp/storyatlas-disagreement-20260924-deps/grakern",
+    "scalafmtAll",
+    "app/compile",
+    "app/test",
+    "scalafmtCheckAll",
+    "app/fastLinkJS",
+    "app/editionBundle"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storyatlas4s",
+  "log": "/Users/bbuchsbaum/code/scala/storyatlas4s/target/disagreement-20260924/gates-final.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 900.0,
+  "log_bytes": 2709
+}

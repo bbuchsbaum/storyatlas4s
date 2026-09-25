@@ -129,6 +129,153 @@ class VoyageLoweringSuite extends FunSuite:
   private def metadata(grob: ig.Grob.Annotated): Map[String, String] =
     grob.meta.data.map((k, v) => k.value -> v).toMap
 
+  private def groupSamples(lowered: ig.Scene): Vector[ig.Grob.Annotated] =
+    lowered.grobs.flatMap(descendants).collect {
+      case a: ig.Grob.Annotated
+          if a.meta.cssClass.exists(
+            _.value.split(" ").contains(VoyageLowering.Classes.groupComparison)
+          ) =>
+        a
+    }
+
+  test("group comparisons account for every unit without treating missing payloads as agreement") {
+    import VoyageGroupComparison.Status.*
+    val records = VoyageGroupComparison.records(scene)
+    assertEquals(records.map(_.unit), Vector(u1, u2, u3, u4))
+    assertEquals(records.map(_.status), Vector(Disagreement, Unknown, Unknown, Agreement))
+    assertEquals(
+      records.map(r => (r.drawn, r.argmax)),
+      Vector((Some(2), Some(1)), (None, None), (None, None), (Some(2), Some(2)))
+    )
+    assertEquals(records.map(_.onset), units.map(_.onset))
+    val uncoded = ok(
+      VoyageCompiler.compile(
+        ok(RecallVoyageInput.of(units, matrix, timeline, decisions, None, secs(12))),
+        Set.empty,
+        provenance
+      )
+    )
+    assertEquals(
+      VoyageGroupComparison.records(uncoded),
+      records,
+      "coding is not either group decision"
+    )
+  }
+
+  test(
+    "disagreement strip omits agreement, separates unknown and leaves scientific layers intact"
+  ) {
+    val lowered = ok(VoyageLowering.lower(scene, track = VoyageLowering.Track.GroupDisagreements))
+    val samples = groupSamples(lowered)
+    assertEquals(samples.map(s => metadata(s)("comparison-unit")), Vector("u1", "u2"))
+    assertEquals(samples.map(s => metadata(s)("status")), Vector("disagreement", "unknown"))
+    assertEquals(metadata(samples.head)("drawn-group"), "2")
+    assertEquals(metadata(samples.head)("argmax-group"), "1")
+    assertEquals(metadata(samples.head)("onset-bits"), "0x3ff0000000000000")
+    assert(!metadata(samples(1)).contains("drawn-group"))
+    assert(!metadata(samples(1)).contains("argmax-group"))
+    assert(samples.head.meta.cssClass.exists(_.value.contains("origin-filled")))
+    assertEquals(
+      GraphicsNames.collect(lowered),
+      GraphicsNames.collect(ok(VoyageLowering.lower(scene)))
+    )
+    assertEquals(lowered.grobs.slice(1, 4), ok(VoyageLowering.lower(scene)).grobs.slice(1, 4))
+    assert(render(lowered).contains("not time or distance"))
+    assert(!render(lowered).contains("Group model, argmax, coding"))
+  }
+
+  test("disagreement window and selection change display only") {
+    val whole = ok(VoyageLowering.lower(scene, track = VoyageLowering.Track.GroupDisagreements))
+    val focused = ok(
+      VoyageLowering.lower(
+        scene,
+        alternativesFor = Set(u1),
+        window = Some(ok(RecallWindow.of(0, 4))),
+        track = VoyageLowering.Track.GroupDisagreements
+      )
+    )
+    assertEquals(groupSamples(focused).map(metadata), groupSamples(whole).take(1).map(metadata))
+    assertEquals(
+      descendants(groupSamples(focused).head).count(_.isInstanceOf[ig.Grob.Polygon]),
+      1,
+      "selection is an extra outline, independent of origin shape"
+    )
+    assertEquals(descendants(groupSamples(whole).head).count(_.isInstanceOf[ig.Grob.Polygon]), 0)
+    assert(
+      VoyageLowering
+        .lower(
+          scene,
+          box = VoyageLowering.Box.default.copy(trackHeight = 24),
+          track = VoyageLowering.Track.GroupDisagreements
+        )
+        .isLeft
+    )
+  }
+
+  test("missing argmax group is unknown even when both source anchors exist") {
+    val partial = ok(
+      SourceTimeline.of(
+        timeline.nodes.map(n => if n.ref == a then n.copy(group = None) else n),
+        timeline.groups
+      )
+    )
+    val compiled = ok(
+      VoyageCompiler.compile(
+        ok(RecallVoyageInput.of(units, matrix, partial, decisions, None, secs(12))),
+        Set.empty,
+        provenance
+      )
+    )
+    val record = VoyageGroupComparison.records(compiled).head
+    assertEquals(record.drawn, Some(2))
+    assertEquals(record.argmax, None)
+    assertEquals(record.status, VoyageGroupComparison.Status.Unknown)
+    val sample = groupSamples(
+      ok(VoyageLowering.lower(compiled, track = VoyageLowering.Track.GroupDisagreements))
+    ).head
+    assertEquals(metadata(sample)("status"), "unknown")
+    assertEquals(metadata(sample)("drawn-group"), "2")
+    assert(!metadata(sample).contains("argmax-group"))
+  }
+
+  test("group spacing follows inventory order rather than numeric gaps or source duration") {
+    def ordinal(g: Int): Int = if g == 1 then 7 else 200
+    val sparse = ok(
+      SourceTimeline.of(
+        timeline.nodes.map(n => n.copy(group = n.group.map(ordinal))),
+        timeline.groups.map(g => g.copy(ordinal = ordinal(g.ordinal))).reverse
+      )
+    )
+    val compiled = ok(
+      VoyageCompiler.compile(
+        ok(
+          RecallVoyageInput.of(
+            units,
+            matrix,
+            sparse,
+            decisions.map(d => d.copy(group = d.group.map(ordinal))),
+            None,
+            secs(12)
+          )
+        ),
+        Set.empty,
+        provenance
+      )
+    )
+    val old = groupSamples(
+      ok(VoyageLowering.lower(scene, track = VoyageLowering.Track.GroupDisagreements))
+    ).head
+    val changed = groupSamples(
+      ok(VoyageLowering.lower(compiled, track = VoyageLowering.Track.GroupDisagreements))
+    ).head
+    assertEquals(metadata(changed)("drawn-group"), "200")
+    assertEquals(metadata(changed)("argmax-group"), "7")
+    assertEquals(
+      descendants(changed).collect { case line: ig.Grob.Lines => line.points },
+      descendants(old).collect { case line: ig.Grob.Lines => line.points }
+    )
+  }
+
   test("mass tracks distinguish measured zero, missing anchor and untimed placement") {
     val lowered =
       ok(VoyageLowering.lower(scene, box = massBox, track = VoyageLowering.Track.Masses))

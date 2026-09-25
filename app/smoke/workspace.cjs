@@ -322,6 +322,19 @@ function mappingMember(a,id) {
     assert.equal(alternativeState.activeRecall,'m1:u1');
     assert.ok(alternativeState.correspondence?.target && alternativeState.correspondence.target!==anchorTarget);
     check(true,'Voyage alternative activates both qualified recall and exact source evidence');
+    const voyageTrack=page.getByLabel('Under-plot track');
+    await voyageTrack.selectOption('groups');
+    assert.deepEqual(await state(),alternativeState);
+    check(await page.locator('#workspace-voyage .group-comparison-summary').isVisible(),
+      'controlled group track preserves qualified selection and complete workspace state');
+    await page.locator('#workspace-voyage').screenshot({path:path.join(output,'voyage-disagreements.png')});
+    const comparison=page.locator('#workspace-voyage .voyage-group-comparison').first();
+    const comparisonUnit=await comparison.getAttribute('data-comparison-unit');
+    await comparison.click();
+    check((await state()).activeRecall===comparisonUnit,'controlled comparison dispatches through shared recall navigation');
+    await voyageTrack.selectOption('mass');
+    await page.locator('#workspace-recall').selectOption('m1:u1');
+    await page.locator('#workspace-voyage .voyage-alt').first().click();
     check(await page.locator('#workspace-voyage .drawn-choice').count()===1,'controlled Voyage separates drawn choice from ranked posterior');
     const massPresentation=await page.locator('#workspace-voyage .post .bar').evaluate(el=>({
       height:el.getBoundingClientRect().height,

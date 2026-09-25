@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-25T03:33:52.371114+00:00",
+  "finished_utc": "2026-09-25T03:34:01.798293+00:00",
+  "duration_seconds": 9.42702,
+  "command": [
+    "node",
+    "app/smoke/voyage-review.cjs",
+    "target/disagreement-20260924",
+    "target/inspector-20260924"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storyatlas4s",
+  "log": "/Users/bbuchsbaum/code/scala/storyatlas4s/target/disagreement-20260924/display.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 240.0,
+  "log_bytes": 2705
+}

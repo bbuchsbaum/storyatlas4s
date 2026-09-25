@@ -31,7 +31,7 @@ object VoyageLowering:
     * compiler's two supplied quantities, not a new projection or a normalization.
     */
   enum Track:
-    case Groups, Masses
+    case Groups, Masses, GroupDisagreements
 
   /** Pixel geometry of the plate; the defaults are the numbers the owner's reference page uses. */
   final case class Box(
@@ -81,6 +81,7 @@ object VoyageLowering:
     val massExternal = "mass-external"
     val massZero = "mass-zero"
     val massUnavailable = "mass-unavailable"
+    val groupComparison = "voyage-group-comparison"
     def origin(o: AnchorOrigin): String = o match
       case AnchorOrigin.PosteriorArgmax => "origin-argmax"
       case AnchorOrigin.DecodeBound     => "origin-bound"
@@ -231,6 +232,8 @@ object VoyageLowering:
         Left(
           GraphicsError.InvalidExtent("mass tracks require a height greater than their 16px gap")
         )
+      case _ if track == Track.GroupDisagreements && box.trackHeight <= 32 =>
+        Left(GraphicsError.InvalidExtent("group disagreements require room for an unknown rail"))
       case Some(w) if w.start < 0.0 || w.end > scene.recallLength.value =>
         Left(
           GraphicsError.InvalidExtent(
@@ -247,8 +250,9 @@ object VoyageLowering:
           links <- linkLayer(scene, sc, vp, alternativesFor, contextFor, ghosts, ghostsFor, words)
           marks <- markLayer(scene, sc, vp, words, includeUntimed)
           auxiliary <- track match
-            case Track.Groups => trackLayer(scene, sc, vp)
-            case Track.Masses => massLayer(scene, sc, vp, alternativesFor)
+            case Track.Groups             => trackLayer(scene, sc, vp)
+            case Track.Masses             => massLayer(scene, sc, vp, alternativesFor)
+            case Track.GroupDisagreements => disagreementLayer(scene, sc, vp, alternativesFor)
         yield ig.Scene(Vector(ground, bands, links, marks, auxiliary))
 
   // ------------------------------------------------------------------ titles
@@ -834,6 +838,151 @@ object VoyageLowering:
         case _ => Right(Vector.empty[ig.Grob])
       }
     yield ig.Grob.group(guides ++ samples.flatten, viewport = Some(vp))
+
+  /** Categorical group order on y, supplied recall onset on x. Only unequal known pairs have
+    * endpoints. Unknown timed records get a separate non-metric rail; untimed records stay in the
+    * shell's inventory. Decorations carry no new MarkId and cannot replace the source marks.
+    */
+  private def disagreementLayer(
+      scene: VoyageScene,
+      sc: Scales,
+      vp: ig.Viewport,
+      selected: Set[RecallUnitId]
+  ): Either[GraphicsError, ig.Grob] =
+    val box = sc.box
+    val groups = scene.timeline.groups.sortBy(_.ordinal)
+    val indices = groups.zipWithIndex.map((g, i) => g.ordinal -> i).toMap
+    val anchors = scene.marks.collect { case a: VoyageMark.UnitAnchor => a.unit -> a }.toMap
+    val groupHeight = box.trackHeight - 24.0
+    val unknownY = box.trackTop + box.trackHeight - 6.0
+    def y(group: Int): Double =
+      box.trackTop + groupHeight * (1 - (indices(group) + 0.5) / math.max(groups.size, 1))
+    val records = VoyageGroupComparison
+      .records(scene)
+      .flatMap(r =>
+        r.onset
+          .filter(t => sc.visible(t.value))
+          .filter(_ => r.status != VoyageGroupComparison.Status.Agreement)
+          .map(r -> _)
+      )
+    val hasUnknown = records.exists(_._1.status == VoyageGroupComparison.Status.Unknown)
+    for
+      hair <- params(Some(Palette.hair), None)
+      text <- params(None, Some(Palette.ink2), fontPx = 11)
+      line <- params(Some(Palette.ink2), None, width = 1)
+      outline <- params(Some(Palette.ink2), None, width = 1, line = ig.LineType.Dashed)
+      axis <- ig.Grob.lines(
+        Vector(px(box.left, box.trackTop), px(box.left, box.trackTop + groupHeight)),
+        gp = hair
+      )
+      rail <- Option
+        .when(hasUnknown)(
+          ig.Grob.lines(
+            Vector(px(box.left, unknownY), px(box.width - box.right, unknownY)),
+            gp = hair
+          )
+        )
+        .sequence
+      labels <- (0 until 6).toVector
+        .map(i => i * math.max(groups.size - 1, 0) / 5)
+        .distinct
+        .flatMap(groups.lift)
+        .traverse { group =>
+          ig.Grob.text(
+            group.ordinal.toString,
+            px(box.left - 7, y(group.ordinal) + 3),
+            ig.Anchor(ig.HJust.Right, ig.VJust.Bottom),
+            gp = text
+          )
+        }
+      captions <- (Vector("Group order" -> (box.trackTop + 12.0)) ++
+        Option.when(hasUnknown)("Unknown" -> (unknownY + 3))).traverse { (caption, at) =>
+        ig.Grob.text(
+          caption,
+          px(box.width - box.right + 8, at),
+          ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+          gp = text
+        )
+      }
+      samples <- records.traverse { (r, onset) =>
+        val x = sc.x(onset.value)
+        val anchor = anchors.get(r.unit)
+        val pair = for drawn <- r.drawn; raw <- r.argmax yield (y(drawn), y(raw))
+        val origin = anchor.map(_.origin)
+        val hollow = anchor.exists(a => a.externalDominant || a.origin == AnchorOrigin.DecodeFilled)
+        val classes = Vector(
+          Classes.groupComparison,
+          if pair.nonEmpty then "group-disagreement" else "group-unknown"
+        ) ++
+          origin.map(Classes.origin) ++
+          Option.when(anchor.exists(_.externalDominant))(Classes.externalDominant) ++
+          Option.when(anchor.exists(_.level > 0))(Classes.groupLevel)
+        val title = s"Unit ${r.ordinal}: drawn group ${r.drawn.fold("unknown")(_.toString)}; " +
+          s"posterior-argmax group ${r.argmax.fold("unknown")(_.toString)}. " +
+          (if pair.nonEmpty then "Different groups." else "Comparison unknown, not agreement.") +
+          " Group spacing is ordinal, not time or distance; endpoint size carries no mass."
+        for
+          gp <- params(
+            Some(if hollow then Palette.ink2 else Palette.model),
+            if hollow then None else Some(Palette.model),
+            width = 1.4,
+            line =
+              if origin.contains(AnchorOrigin.DecodeFilled) then ig.LineType.Dashed
+              else ig.LineType.Solid
+          )
+          marks <- pair match
+            case Some((drawn, raw)) =>
+              for
+                stem <- ig.Grob.lines(Vector(px(x, drawn), px(x, raw)), gp = line)
+                cap <- ig.Grob.lines(Vector(px(x - 4, raw), px(x + 4, raw)), gp = line)
+                endpoint <- ig.Grob.points(
+                  Vector(px(x, drawn)),
+                  ig.ExtentExpr.nativeUnsafe(3.5),
+                  if origin.contains(AnchorOrigin.PosteriorArgmax) then ig.PointShape.Circle
+                  else ig.PointShape.Diamond,
+                  gp
+                )
+              yield Vector(stem, cap, endpoint)
+            case None =>
+              ig.Grob
+                .points(
+                  Vector(px(x, unknownY)),
+                  ig.ExtentExpr.nativeUnsafe(3),
+                  ig.PointShape.Cross,
+                  line
+                )
+                .map(Vector(_))
+          focus <- Option
+            .when(selected(r.unit)) {
+              val (low, high) =
+                pair.fold((unknownY, unknownY))((a, b) => (math.min(a, b), math.max(a, b)))
+              ig.Grob.polygon(
+                Vector(
+                  px(x - 6, low - 6),
+                  px(x + 6, low - 6),
+                  px(x + 6, high + 6),
+                  px(x - 6, high + 6)
+                ),
+                gp = outline
+              )
+            }
+            .sequence
+          result <- annotated(
+            ig.Grob.group(marks ++ focus),
+            Some(title),
+            classes.mkString(" "),
+            (Vector(
+              "unit" -> r.ordinal.toString,
+              "comparison-unit" -> r.unit.value,
+              "status" -> r.status.toString.toLowerCase,
+              "onset-bits" -> Score.hexBits(onset.value)
+            ) ++
+              r.drawn.map(g => "drawn-group" -> g.toString) ++ r.argmax
+                .map(g => "argmax-group" -> g.toString))*
+          )
+        yield result
+      }
+    yield ig.Grob.group(Vector(axis) ++ rail ++ labels ++ captions ++ samples, viewport = Some(vp))
 
   private def trackLayer(
       scene: VoyageScene,

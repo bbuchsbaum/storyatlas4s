@@ -1,0 +1,122 @@
+{
+  "scope": "Optional browser group disagreement track; static Groups and browser Masses defaults preserved",
+  "mote": "bd-01M35M21SFKS0ZJFSECJFCQBE4",
+  "parent": "94ba5c3e3dc4fb0875931032c6b4963c4f160e42",
+  "dependencies": {
+    "storymodel4s": "7b2f076a57bde1ec540090c43debfec51c8d44d4",
+    "intaglio": "4eb566d9208f474d64d61e778e084dee2ddbaa76",
+    "grakern": "0329c43c88a0b71e9aa4456723bb16bac2fa3841"
+  },
+  "codeSha256": {
+    "intaglio/src/main/scala/storyatlas4s/intaglio/VoyageGroupComparison.scala": "2d6706d08b5dd09dfaecf0f8000d3898014c3f7db47c4665ee5d4fae23ef834c",
+    "intaglio/src/main/scala/storyatlas4s/intaglio/VoyageLowering.scala": "27dff8cd64034805cdf36c85403c5ce18b247c4788708caf345c05d8ae253c5e",
+    "intaglio/src/test/scala/storyatlas4s/intaglio/VoyageLoweringSuite.scala": "77806f07bc76ece327ab9c20970df2f77c5a44e00476872390b8efdce800bc8a",
+    "app/src/main/scala/storyatlas4s/app/VoyageView.scala": "91e582fb7ed3deb9fddd6f8e54c5e8400f0d49c93dc07e1ed7d5ab95c934361a",
+    "app/smoke/voyage-disagreement.cjs": "03c9f61d2878d341448f9f2b3fdb6dac27c155758c05a03e2ffbf8778a275e7e",
+    "app/smoke/workspace.cjs": "84cab526bf11d6047289e304edf154f03341ff18f6cdabdc814669c49651ca85"
+  },
+  "inputs": {
+    "full": {
+      "file": "/Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-full/recall-map-NN03_ANT_202231_final.tsv.voyage.json",
+      "sha256": "d2eeb592cf9ac562d174e2430aedff0d157afa36d5e7a1f505f13588d51cb2aa"
+    },
+    "content": {
+      "file": "/Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-content/recall-map-NN03_ANT_202231_final.tsv.voyage.json",
+      "sha256": "f11351f280616d9a4376ba56161c4f1dfd3572041c8a7a4ef03257849d287c37"
+    }
+  },
+  "staticByteIdentity": {
+    "full/voyage.svg": "7afb2b6e5c24a6a7b109dc0c30ef09c0a70acfe115242daa60457aa38a3c9d65",
+    "full/voyage.txt": "2721a930e97a902404912bcddc509ae74cdad64aa7d363d1ccd3723b27d03b0a",
+    "content/voyage.svg": "0cc5a31d425df73aed353daef4e65d9e1ecb1833fdf6853b5eb64a7c0577eeb6",
+    "content/voyage.txt": "6c6eaa2dfc29ff7567e8a68ee90282bdc3813305d8072fabd2e8efb685389568"
+  },
+  "checks": {
+    "browser-review.json": {
+      "checks": 62,
+      "errors": 0
+    },
+    "mass-browser.json": {
+      "checks": 69,
+      "errors": 0
+    },
+    "inspector-browser.json": {
+      "checks": 171,
+      "errors": 0
+    },
+    "workspace-browser.json": {
+      "checks": 100,
+      "errors": 0
+    },
+    "viewport-browser.json": {
+      "checks": 61,
+      "errors": 0
+    },
+    "disagreement-browser.json": {
+      "checks": 82,
+      "errors": 0
+    }
+  },
+  "browser": {
+    "playwright": "1.55.1",
+    "chromiumRevision": "1193",
+    "chromiumVersion": "140.0.7339.186",
+    "deviceWidths": [
+      1600,
+      390
+    ],
+    "audit": "No automated top-level browser processes found."
+  },
+  "scala": {
+    "fullGatePassed": 420,
+    "finalLoweringSuitePerPlatform": 35,
+    "newCasesAfterFullGatePerPlatform": 2,
+    "distinctTestsCovered": 424,
+    "finalAppTests": 4,
+    "compilerWarnings": 0,
+    "runtimeWarning": "Java 25 sun.misc.Unsafe deprecation from Scala runtime during CLI generation"
+  },
+  "counts": {
+    "nn03-full whole": {
+      "disagreement": 108,
+      "agreement": 65,
+      "unknown": 0
+    },
+    "nn03-full detail": {
+      "disagreement": 108,
+      "agreement": 65,
+      "unknown": 0
+    },
+    "nn03-full compact": {
+      "disagreement": 108,
+      "agreement": 65,
+      "unknown": 0
+    },
+    "nn03-content whole": {
+      "disagreement": 112,
+      "agreement": 61,
+      "unknown": 0
+    },
+    "nn03-content detail": {
+      "disagreement": 112,
+      "agreement": 61,
+      "unknown": 0
+    },
+    "nn03-content compact": {
+      "disagreement": 112,
+      "agreement": 61,
+      "unknown": 0
+    },
+    "synthetic coding/untimed/unanchored": {
+      "disagreement": 107,
+      "agreement": 64,
+      "unknown": 2
+    }
+  },
+  "limitations": [
+    "Legacy group metadata only; no native media support added",
+    "Frozen Sherlock documents; no inference rerun or scientific validation",
+    "Group track is a local display preference, not a new scientific policy or persisted workspace field",
+    "Compact view retains existing zoom and ordinal unit selector; no general shell redesign"
+  ]
+}

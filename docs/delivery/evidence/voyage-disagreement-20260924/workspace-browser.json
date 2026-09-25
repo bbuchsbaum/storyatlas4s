@@ -1,0 +1,409 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "description": "bell: all four outcomes rendered"
+    },
+    {
+      "ok": true,
+      "description": "bell: old fixture authority removed"
+    },
+    {
+      "ok": true,
+      "description": "bell: canonical walk reaches ordinal0"
+    },
+    {
+      "ok": true,
+      "description": "bell: canonical walk reaches ordinal1"
+    },
+    {
+      "ok": true,
+      "description": "bell: canonical walk reaches ordinal2"
+    },
+    {
+      "ok": true,
+      "description": "bell: canonical walk reaches ordinal3"
+    },
+    {
+      "ok": true,
+      "description": "bell: inspection metadata retains Candidate coverage"
+    },
+    {
+      "ok": true,
+      "description": "bell: inspection metadata retains Fixed target universe"
+    },
+    {
+      "ok": true,
+      "description": "bell: inspection metadata retains Normalization universe"
+    },
+    {
+      "ok": true,
+      "description": "bell: inspection metadata retains prior:"
+    },
+    {
+      "ok": true,
+      "description": "bell: inspection metadata retains temperature:"
+    },
+    {
+      "ok": true,
+      "description": "bell: non-complete candidate coverage stays explicitly unknown"
+    },
+    {
+      "ok": true,
+      "description": "bell: authored term support stays not computed"
+    },
+    {
+      "ok": true,
+      "description": "bell: inspection metadata renders stage digests, not raw stage objects"
+    },
+    {
+      "ok": true,
+      "description": "bell: historical non-applicable term support remains distinct"
+    },
+    {
+      "ok": true,
+      "description": "bell: historical assessed term support remains distinct"
+    },
+    {
+      "ok": true,
+      "description": "bell: keyboard candidate activation restores its semantic control"
+    },
+    {
+      "ok": true,
+      "description": "bell: keyboard inverse activation restores its semantic control"
+    },
+    {
+      "ok": true,
+      "description": "bell: recall horizon exposes whole producer fragments only at their exact boundary"
+    },
+    {
+      "ok": true,
+      "description": "bell: source projection retains selection"
+    },
+    {
+      "ok": true,
+      "description": "bell: checked policy switched"
+    },
+    {
+      "ok": true,
+      "description": "bell: independent producer subset/twin/receipt byte parity and export hashes"
+    },
+    {
+      "ok": true,
+      "description": "bell: save and exact-artifact reopen reproduces full state including viewport"
+    },
+    {
+      "ok": true,
+      "description": "bell: switching back restores exact original values"
+    },
+    {
+      "ok": true,
+      "description": "wog: all four outcomes rendered"
+    },
+    {
+      "ok": true,
+      "description": "wog: old fixture authority removed"
+    },
+    {
+      "ok": true,
+      "description": "wog: canonical walk reaches ordinal0"
+    },
+    {
+      "ok": true,
+      "description": "wog: canonical walk reaches ordinal1"
+    },
+    {
+      "ok": true,
+      "description": "wog: canonical walk reaches ordinal2"
+    },
+    {
+      "ok": true,
+      "description": "wog: canonical walk reaches ordinal3"
+    },
+    {
+      "ok": true,
+      "description": "wog: inspection metadata retains Candidate coverage"
+    },
+    {
+      "ok": true,
+      "description": "wog: inspection metadata retains Fixed target universe"
+    },
+    {
+      "ok": true,
+      "description": "wog: inspection metadata retains Normalization universe"
+    },
+    {
+      "ok": true,
+      "description": "wog: inspection metadata retains prior:"
+    },
+    {
+      "ok": true,
+      "description": "wog: inspection metadata retains temperature:"
+    },
+    {
+      "ok": true,
+      "description": "wog: non-complete candidate coverage stays explicitly unknown"
+    },
+    {
+      "ok": true,
+      "description": "wog: authored term support stays not computed"
+    },
+    {
+      "ok": true,
+      "description": "wog: inspection metadata renders stage digests, not raw stage objects"
+    },
+    {
+      "ok": true,
+      "description": "wog: historical non-applicable term support remains distinct"
+    },
+    {
+      "ok": true,
+      "description": "wog: historical assessed term support remains distinct"
+    },
+    {
+      "ok": true,
+      "description": "wog: keyboard candidate activation restores its semantic control"
+    },
+    {
+      "ok": true,
+      "description": "wog: keyboard inverse activation restores its semantic control"
+    },
+    {
+      "ok": true,
+      "description": "wog: recall horizon exposes whole producer fragments only at their exact boundary"
+    },
+    {
+      "ok": true,
+      "description": "wog: source projection retains selection"
+    },
+    {
+      "ok": true,
+      "description": "wog: checked policy switched"
+    },
+    {
+      "ok": true,
+      "description": "wog: independent producer subset/twin/receipt byte parity and export hashes"
+    },
+    {
+      "ok": true,
+      "description": "wog: actual source and matrix scroll viewports update semantic state"
+    },
+    {
+      "ok": true,
+      "description": "wog: save and exact-artifact reopen reproduces full state including viewport"
+    },
+    {
+      "ok": true,
+      "description": "wog: switching back restores exact original values"
+    },
+    {
+      "ok": true,
+      "description": "matrix arrow key changes canonical row"
+    },
+    {
+      "ok": true,
+      "description": "matrix keeps visible keyboard focus"
+    },
+    {
+      "ok": true,
+      "description": "admitted WOG control proves the denied-content sentinel detector"
+    },
+    {
+      "ok": true,
+      "description": "current admitted Bell export excludes the WOG-only sentinel"
+    },
+    {
+      "ok": true,
+      "description": "foreign recall refuses before replacing current investigation"
+    },
+    {
+      "ok": true,
+      "description": "re-signed inspection-denied WOG preserves the admitted Bell state"
+    },
+    {
+      "ok": true,
+      "description": "inspection-denied WOG packet creates no download"
+    },
+    {
+      "ok": true,
+      "description": "inspection-denied WOG sentinel is absent from DOM including SVG titles"
+    },
+    {
+      "ok": true,
+      "description": "inspection-denied WOG sentinel is absent from accessible text and attributes"
+    },
+    {
+      "ok": true,
+      "description": "inspection-denied WOG sentinel is absent from browser console and error capture"
+    },
+    {
+      "ok": true,
+      "description": "permitted Bell export after denied WOG remains byte-identical and sentinel-free"
+    },
+    {
+      "ok": true,
+      "description": "foreign saved state refuses"
+    },
+    {
+      "ok": true,
+      "description": "re-signed export-denied packet blocks download"
+    },
+    {
+      "ok": true,
+      "description": "delayed FileReader stale response cannot replace the latest admitted view"
+    },
+    {
+      "ok": true,
+      "description": "cancelled delayed FileReader response preserves the prior view"
+    },
+    {
+      "ok": true,
+      "description": "Voyage has one controlled SVG projection"
+    },
+    {
+      "ok": true,
+      "description": "Voyage alternative activates both qualified recall and exact source evidence"
+    },
+    {
+      "ok": true,
+      "description": "controlled group track preserves qualified selection and complete workspace state"
+    },
+    {
+      "ok": true,
+      "description": "controlled comparison dispatches through shared recall navigation"
+    },
+    {
+      "ok": true,
+      "description": "controlled Voyage separates drawn choice from ranked posterior"
+    },
+    {
+      "ok": true,
+      "description": "controlled Voyage shares visible fixed-scale inspector bars with standalone edition"
+    },
+    {
+      "ok": true,
+      "description": "Voyage inspector and SVG titles respect recall evidence horizon"
+    },
+    {
+      "ok": true,
+      "description": "cropped Voyage selection remains identified as OffProjection"
+    },
+    {
+      "ok": true,
+      "description": "untimed unit stays reachable in Voyage"
+    },
+    {
+      "ok": true,
+      "description": "independent clocks and recall window survive policy projection and saved-state replay"
+    },
+    {
+      "ok": true,
+      "description": "mobile: no document horizontal overflow"
+    },
+    {
+      "ok": true,
+      "description": "zoom200: no document horizontal overflow"
+    },
+    {
+      "ok": true,
+      "description": "source-only opening presents reading without an empty matrix"
+    },
+    {
+      "ok": true,
+      "description": "attaching a foreign edition refuses and keeps the current source"
+    },
+    {
+      "ok": true,
+      "description": "compatible recall attachment preserves the exact source reading position"
+    },
+    {
+      "ok": true,
+      "description": "Back and Return restore qualified selection and actual matrix viewport"
+    },
+    {
+      "ok": true,
+      "description": "directory preserves exact nested sidecars and agrees with filesystem consumer"
+    },
+    {
+      "ok": true,
+      "description": "missing sidecar refuses and retains the previous admitted source"
+    },
+    {
+      "ok": true,
+      "description": "DPR2 keyboard focus retains qualified matrix identity"
+    },
+    {
+      "ok": true,
+      "description": "DPR2 keyboard focus has a visible non-color-only outline"
+    },
+    {
+      "ok": true,
+      "description": "workspace primary text meets measured contrast floor"
+    },
+    {
+      "ok": true,
+      "description": "navigator represents every recall unit exactly once"
+    },
+    {
+      "ok": true,
+      "description": "navigator range buttons cover the whole inventory in transcript order"
+    },
+    {
+      "ok": true,
+      "description": "range readout states exactly the rows and columns wholly displayed"
+    },
+    {
+      "ok": true,
+      "description": "narrow viewport shows a partial range, so paging is exercised"
+    },
+    {
+      "ok": true,
+      "description": "Next columns pages the displayed columns and the readout follows"
+    },
+    {
+      "ok": true,
+      "description": "Previous columns pages the displayed columns back and the readout follows"
+    },
+    {
+      "ok": true,
+      "description": "navigator reveals the last unit, including a failed outcome row"
+    },
+    {
+      "ok": true,
+      "description": "clicking a source target cell focuses a correspondence"
+    },
+    {
+      "ok": true,
+      "description": "Reveal selected brings the focused correspondence into the displayed range"
+    },
+    {
+      "ok": true,
+      "description": "range navigation leaves focus, selection and correspondence unchanged"
+    },
+    {
+      "ok": true,
+      "description": "range controls work from the keyboard and keep the readout exact"
+    },
+    {
+      "ok": true,
+      "description": "Whole story returns the camera exactly to the first rows and columns"
+    },
+    {
+      "ok": true,
+      "description": "every cell value and the mapping result are identical after range navigation"
+    },
+    {
+      "ok": true,
+      "description": "no browser or console errors"
+    },
+    {
+      "ok": true,
+      "description": "no network request from the local workspace"
+    }
+  ],
+  "errors": [],
+  "console": [],
+  "requests": [],
+  "playwright": "1.55.1",
+  "exit": 0
+}
