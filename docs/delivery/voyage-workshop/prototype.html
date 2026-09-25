@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Recall voyage · V7</title>
+<style>
+:root{--paper:#f7f5f0;--surface:#fcfbf8;--ink:#1c2622;--ink2:#4a5550;--ink3:#5f6a65;--rule:#dcd8ce;--line:#8a8477;--teal:#1f7568;--focus:#215f93;--serif:"Iowan Old Style",Charter,Georgia,serif;--sans:-apple-system,"SF Pro Text",system-ui,sans-serif}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:13px/18px var(--sans);font-variant-numeric:tabular-nums}
+.page{max-width:1600px;padding:24px 32px}
+svg.fit{display:block;width:1120px;min-width:1120px;height:auto}
+#plot,#overview{overflow-x:auto;max-width:100%}
+@media (max-width:480px){td{white-space:normal}.page{padding:8px}.pop{width:min(520px,90vw)}}
+@media (max-width:1540px){.cols{grid-template-columns:minmax(0,1fr)!important}.page{padding:16px}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.small{font-size:11px;line-height:14px;color:var(--ink3)}
+.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;min-height:28px;margin-bottom:8px}
+h1{font:600 22px/28px var(--serif);margin:0}
+.cols{display:grid;grid-template-columns:minmax(0,1120px) minmax(320px,384px);gap:32px}
+.row{display:flex;align-items:center;gap:8px;min-height:32px;flex-wrap:wrap;row-gap:4px}
+.pill{font:inherit;border:1px solid var(--line);border-radius:14px;background:transparent;padding:0 12px;height:28px;color:var(--ink);cursor:pointer;white-space:nowrap}
+.pill[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.pill:disabled{opacity:.55;cursor:default}
+:focus-visible{outline:2px dashed var(--focus);outline-offset:2px}
+.popwrap{position:relative}
+.pop{position:absolute;top:34px;left:0;z-index:5;width:520px;border:1px solid var(--line);background:var(--surface);padding:12px 16px;display:grid;grid-template-columns:auto auto;gap:8px 16px;box-shadow:0 4px 16px rgba(28,38,34,.12)}
+.pop input[type=number]{width:72px;font:inherit;padding:2px 6px;border:1px solid var(--line);border-radius:4px;background:#fff}
+#plot:focus-visible{outline:2px dashed var(--focus);outline-offset:2px}#plot.kbd .focusring{display:block}.focusring{display:none}
+aside{position:sticky;top:16px;align-self:start}
+aside h2{font:600 13px/18px var(--sans);margin:24px 0 8px}
+.q{font:18px/24px var(--serif);margin:8px 0}
+.nb{margin:0;color:var(--ink3);font-size:11px;line-height:14px}
+dl{display:grid;grid-template-columns:120px 1fr;gap:4px 8px;margin:16px 0 0}
+dt{color:var(--ink3)}dd{margin:0}
+table{border-collapse:collapse;width:100%}
+caption{text-align:left;font:600 13px/18px var(--sans);padding:16px 0 8px}
+th{text-align:left;font-size:11px;font-weight:400;color:var(--ink3);border-bottom:1px solid var(--line);padding:0 8px 4px 0}
+td{padding:4px 8px 4px 0;border-bottom:1px solid #ece8df;white-space:nowrap}
+td.m,th.m{text-align:right}
+.tag{font-size:11px;border:1px solid var(--ink);border-radius:3px;padding:0 4px}
+details summary{cursor:pointer}
+.untimed button{font:inherit;background:none;border:0;border-bottom:1px dotted var(--line);padding:0;margin:0 12px 0 0;color:var(--ink);cursor:pointer}
+</style></head><body>
+<div class="page">
+<div class="top"><h1>Recall voyage</h1><span class="small">The Silent River · Recall P01 · decisions as supplied · model mass is not calibrated confidence</span><span style="flex:1"></span><span class="small" id="summary"></span></div>
+<div class="cols">
+<main>
+<div class="row" role="group" aria-label="Inspection filter" style="flex-wrap:wrap;row-gap:4px">
+  <span class="small">Inspection filter</span>
+  <span id="chips" style="display:contents"></span>
+  <span class="popwrap"><button class="pill" id="more" aria-expanded="false" aria-controls="criteria">Thresholds ▾</button>
+  <div class="pop" id="criteria" hidden role="group" aria-label="Thresholds">
+    <label for="thA">argmax mass below</label><input type="number" id="thA" min="0" max="1" step="0.05" placeholder="none">
+    <label for="thE">external mass above</label><input type="number" id="thE" min="0" max="1" step="0.05" placeholder="none">
+    <label for="thL">localizability below</label><input type="number" id="thL" min="0" max="1" step="0.05" placeholder="none">
+    <span>combine</span><span role="radiogroup" aria-label="Combine criteria"><label><input type="radio" name="mode" value="any" checked> any</label> <label><input type="radio" name="mode" value="all"> all</label></span>
+    <span class="small" style="grid-column:1/3">No threshold applies until you set one. Localizability is 1 − H/log K over the unit's admitted anchors (K = all timeline nodes), as supplied.</span>
+  </div></span>
+  <span style="flex-basis:100%;height:0"></span>
+  <span class="small" style="width:82px"></span><span class="small" id="count" role="status" aria-live="polite"></span>
+</div>
+<div id="overview" tabindex="0" role="slider" aria-label="Recall window start" aria-valuemin="0" style="margin-top:8px;outline-offset:4px"></div>
+<div class="small" id="absent" style="margin:4px 0 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span id="absentText"></span><span style="flex:1"></span><button class="pill" id="export"></button><button class="pill" id="exportAnchors">Export admitted anchors · TSV</button></div>
+<div class="row" style="margin-bottom:4px">
+  <b id="dtitle"></b><span class="small" id="dsub"></span><span style="flex:1"></span>
+  <button class="pill" id="yfit" aria-pressed="true">Fit to window</button><button class="pill" id="ywhole" aria-pressed="false">Whole film</button>
+  <span style="width:8px"></span>
+  <button class="pill" id="earlier">Earlier</button><button class="pill" id="later">Later</button><button class="pill" id="narrower" aria-label="− narrower window">−</button><button class="pill" id="wider" aria-label="+ wider window">+</button><button class="pill" id="whole">Whole recall</button>
+</div>
+<div id="key"></div>
+<div id="plot" tabindex="0" role="listbox" aria-label="Recall units in the window" aria-describedby="keys"></div>
+<p class="small" id="keys" style="margin:4px 0 0">Plot keys: ← → previous/next unit (pages the window at its edges) · Home End · M / Shift+M next/previous filter match · Enter: anchor table</p>
+<details class="small untimed" style="margin-top:12px" id="untimed"></details>
+<details class="small" style="margin-top:8px"><summary>Text view of this window</summary><div id="twin" style="margin-top:8px"></div></details>
+</main>
+<aside id="insp" aria-label="Selected unit"></aside>
+</div>
+<p class="small" id="prov" style="margin-top:16px;overflow-wrap:anywhere"></p>
+<div id="live" class="sr" aria-live="polite"></div>
+</div>
+<script src="data.js"></script>
+<script>
+const V=window.VOYAGE, U=V.units, G=id=>V.groups[id-1];
+V.checksum='742d09b5c1a2e7f39d4e8b06a1c5f2e4d7b93a0c6e18f45a2b7d90c3e5f1e91a'; V.participant='P01'; V.recall='recall:P01:s1'; V.film='film:silent-river:ed1';
+const ANCH=U.filter(u=>u.kind==='anchor'), TIMED=U.filter(u=>u.onset!=null);
+const TEAL='#1f7568', INK='#1c2622', LINE='#8a8477', DIM='#8a8477', DIM_STROKE='#8a8477', FOCUS='#215f93', PAPER='#f7f5f0';
+const isGroup=n=>!!n.segments, refName=n=>isGroup(n)?`group ${n.id}`:`seg ${n.id}`, sceneOf=n=>isGroup(n)?n:G(n.group);
+const fm=m=>m===0?'0':m<0.001?m.toExponential(1):m.toFixed(3);
+const S={units:U.length,anchored:ANCH.length,unanchored:U.filter(u=>u.kind==='unanchored').length,untimed:U.filter(u=>u.kind==='untimed').length,
+  argmax:ANCH.filter(u=>u.origin==='argmax').length,bound:ANCH.filter(u=>u.origin==='decode-bound').length,filled:ANCH.filter(u=>u.origin==='decode-filled').length,ext:ANCH.filter(u=>u.externalDominant).length};
+const st={win:[240,600],y:'fit',sel:null,kbd:false,crit:{bound:false,filled:false,ext:false,group:false,untimed:false,unanchored:false},thA:null,thE:null,thL:null,mode:'any'};
+const LABEL={bound:'decode-bound',filled:'decode-filled',ext:'external-dominant',group:'group-grain',untimed:'untimed',unanchored:'unanchored'};
+function activeCount(){return Object.values(st.crit).filter(Boolean).length+[st.thA,st.thE,st.thL].filter(x=>x!=null).length;}
+function matches(u){const n=activeCount(); if(n===0) return null; const c=[], cr=st.crit;
+  if(u.kind==='untimed'){ if(cr.untimed) c.push('untimed'); }
+  else if(u.kind==='unanchored'){ if(cr.unanchored) c.push('unanchored'); }
+  else { if(cr.bound&&u.origin==='decode-bound')c.push('decode-bound'); if(cr.filled&&u.origin==='decode-filled')c.push('decode-filled');
+    if(cr.ext&&u.externalDominant)c.push('external-dominant'); if(cr.group&&u.grain==='group')c.push('group-grain');
+    if(st.thA!=null&&u.argmaxMass<st.thA)c.push(`argmax mass < ${st.thA}`); if(st.thE!=null&&u.external>st.thE)c.push(`external mass > ${st.thE}`); if(st.thL!=null&&u.localizability<st.thL)c.push(`localizability < ${st.thL}`); }
+  return (st.mode==='any'?c.length>0:c.length===n)?c:[];}
+const isMatch=u=>{const m=matches(u);return !!(m&&m.length);};
+const inWin=()=>TIMED.filter(u=>u.onset>=st.win[0]&&u.onset<=st.win[1]);
+const cur=()=>U.find(u=>u.ordinal===st.sel);
+function setWin(a,w){w=Math.min(w,V.RECALL_END); a=Math.max(0,Math.min(a,V.RECALL_END-w)); st.win=[a,a+w];}
+// container glyph: outline = mass 1.0; inner area ∝ mass; circle and diamond have equal areas
+function glyph(u,cx,cy,dim){const R=7, fillC=dim?DIM:(u.origin==='argmax'?TEAL:INK), strokeC=dim?DIM_STROKE:LINE;
+  const R2=R+2.6, halo=!u.externalDominant?'':(u.origin==='argmax'?`<circle cx="${cx}" cy="${cy}" r="${R2}" fill="none" stroke="${strokeC}" stroke-width=".9"/>`:`<rect x="${cx-R2*.886}" y="${cy-R2*.886}" width="${R2*1.772}" height="${R2*1.772}" transform="rotate(45 ${cx} ${cy})" fill="none" stroke="${strokeC}" stroke-width=".9"/>`);
+  if(u.origin==='decode-filled') return halo+`<rect x="${cx-R*.886}" y="${cy-R*.886}" width="${R*1.772}" height="${R*1.772}" transform="rotate(45 ${cx} ${cy})" fill="none" stroke="${strokeC}" stroke-width="1" stroke-dasharray="2.5 1.5"/>`;
+  const r=u.drawnMass>0?R*Math.sqrt(u.drawnMass):0;
+  // external-dominant (external > source, supplied): hollow core (V-U5, same area) and a second outline, so the flag reads at any mass, even 0
+  const inner=u.externalDominant?`fill="${PAPER}" stroke="${fillC}" stroke-width="1.2"`:`fill="${fillC}"`;
+  if(u.origin==='argmax') return halo+`<circle cx="${cx}" cy="${cy}" r="${R}" fill="${PAPER}" stroke="${strokeC}" stroke-width="1"/>`+(r?`<circle cx="${cx}" cy="${cy}" r="${r}" ${inner}/>`:'');
+  return halo+`<rect x="${cx-R*.886}" y="${cy-R*.886}" width="${R*1.772}" height="${R*1.772}" transform="rotate(45 ${cx} ${cy})" fill="${PAPER}" stroke="${strokeC}" stroke-width="1"/>`+(r?`<rect x="${cx-r*.886}" y="${cy-r*.886}" width="${r*1.772}" height="${r*1.772}" transform="rotate(45 ${cx} ${cy})" ${inner}/>`:'');}
+// ---------------- geometry shared by overview and plot (one left edge) ----------------
+const PL=64, PW=730, GX=PL+PW+16, GW=170, RX=GX+GW+4, PT=34, PH=580;
+function overview(){const OW=PW, OH=48, RB=12;
+  const ox=s=>PL+s/V.RECALL_END*OW, oy=s=>OH-2-s/V.SOURCE_END*(OH-4);
+  let o=`<svg class="fit" viewBox="0 0 1120 ${OH+RB+22}" preserveAspectRatio="xMinYMin meet" font-family="var(--sans)" font-size="11" role="none">`;
+  o+=`<line x1="${PL}" x2="${PL+OW}" y1="${OH}" y2="${OH}" stroke="${INK}" stroke-width=".75"/><line x1="${PL}" x2="${PL}" y1="0" y2="${OH}" stroke="${INK}" stroke-width=".75"/>`;
+  ANCH.forEach(u=>{const cx=ox(u.onset), c=(activeCount()&&!isMatch(u))?DIM:INK;
+    if(u.grain==='group') o+=`<line x1="${cx}" x2="${cx}" y1="${oy(u.drawn.end)}" y2="${oy(u.drawn.start)}" stroke="${c}" stroke-width="1"/>`;
+    else o+=`<circle cx="${cx}" cy="${(oy(u.drawn.end)+oy(u.drawn.start))/2}" r="1.3" fill="${c}"/>`;});
+  U.filter(u=>u.kind==='unanchored').forEach(u=>{const cx=ox(u.onset), c=(activeCount()&&!isMatch(u))?DIM:INK; o+=`<line x1="${cx-2.5}" x2="${cx+2.5}" y1="4.5" y2="-0.5" stroke="${c}" stroke-width="1.2"/>`;});
+  const s=cur(); if(s&&s.onset!=null) o+=`<line x1="${ox(s.onset)}" x2="${ox(s.onset)}" y1="0" y2="${OH}" stroke="${INK}" stroke-width="1.5"/>`;
+  const x0=ox(st.win[0]),x1=ox(st.win[1]);
+  o+=`<rect id="brush" x="${x0}" y="0" width="${x1-x0}" height="${OH+RB+2}" fill="${INK}" fill-opacity=".05" stroke="${INK}" stroke-width="1" style="cursor:grab;touch-action:none"/>`;
+  [['l',x0],['r',x1]].forEach(([k,x])=>o+=`<g data-h="${k}" style="cursor:ew-resize;touch-action:none"><rect x="${x-12}" y="${OH/2-12}" width="24" height="24" fill="transparent"/><rect x="${x-4}" y="${OH/2-9}" width="8" height="18" rx="2" fill="${PAPER}" stroke="${INK}"/></g>`);
+  o+=`<text x="${PL-8}" y="9" text-anchor="end" fill="#5f6a65">49:30</text><text x="${PL-8}" y="${OH}" text-anchor="end" fill="#5f6a65">0:00</text>`;
+  const RT=OH+2; o+=`<text x="${PL-8}" y="${RT+RB}" text-anchor="end" fill="#5f6a65">loc.</text>`;
+  ANCH.forEach(u=>{const cx=ox(u.onset); o+=`<line x1="${cx}" x2="${cx}" y1="${RT+RB}" y2="${RT+RB-u.localizability*RB}" stroke="${LINE}" stroke-width="1"/>`;});
+  [0,2,4,6,8,10,12,14,16].forEach(m=>o+=`<text x="${ox(m*60)}" y="${RT+RB+14}" text-anchor="middle" fill="#5f6a65">${m}:00</text>`);
+  o+=`<text x="${PL+OW}" y="${RT+RB+14}" text-anchor="end" fill="#5f6a65">17:48</text>`;
+  o+=`<text x="${PL+OW+12}" y="14" fill="#5f6a65">whole recall</text><text x="${PL+OW+12}" y="28" fill="#5f6a65">onset × placed anchor · ⁄ unanchored</text><text x="${PL+OW+12}" y="${RT+RB}" fill="#5f6a65">localizability 0–1, supplied</text></svg>`;
+  const el=document.getElementById('overview'); el.innerHTML=o;
+  el.setAttribute('aria-valuemax',String(Math.round(V.RECALL_END-(st.win[1]-st.win[0])))); el.setAttribute('aria-valuenow',String(Math.round(st.win[0])));
+  el.setAttribute('aria-valuetext',`window ${fmt(st.win[0])} to ${fmt(st.win[1])} of 17:48`);
+  // drag: brush body pans, handles resize (viewport only)
+  const svg=el.querySelector('svg'), sc=1120/svg.getBoundingClientRect().width, px2s=dx=>dx*sc/OW*V.RECALL_END;
+  const drag=(ev,mode)=>{ev.preventDefault(); const start=ev.clientX, w0=[...st.win];
+    const mv=e=>{const d=px2s(e.clientX-start);
+      if(mode==='pan') setWin(w0[0]+d,w0[1]-w0[0]);
+      else if(mode==='l'){const a=Math.max(0,Math.min(w0[0]+d,w0[1]-30)); st.win=[a,w0[1]];}
+      else {const b=Math.min(V.RECALL_END,Math.max(w0[1]+d,w0[0]+30)); st.win=[w0[0],b];}
+      render();};
+    const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);};
+    window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up);};
+  svg.querySelector('#brush').addEventListener('pointerdown',e=>drag(e,'pan'));
+  svg.querySelectorAll('[data-h]').forEach(h=>h.addEventListener('pointerdown',e=>drag(e,h.dataset.h)));}
+function domain(){ if(st.y==='whole') return [0,V.SOURCE_END];
+  const ns=[]; inWin().forEach(u=>{ if(u.kind==='anchor'){ns.push(u.drawn,u.argmax);} });
+  if(!ns.length) return [0,V.SOURCE_END];
+  const lo=Math.min(...ns.map(n=>n.start)), hi=Math.max(...ns.map(n=>n.end));
+  return [V.groups.find(g=>g.end>lo).start,[...V.groups].reverse().find(g=>g.start<hi).end];}
+function plot(){
+  const [d0,d1]=domain(), [W0,W1]=st.win, win=inWin(), sel=cur();
+  const x=s=>PL+(s-W0)/(W1-W0)*PW, y=s=>PT+PH-(s-d0)/(d1-d0)*PH;
+  let p=`<svg class="fit" viewBox="0 0 1120 ${PT+PH+64}" preserveAspectRatio="xMinYMin meet" font-family="var(--sans)" font-size="11" role="none">`;
+  // locator folded into the y-label gutter
+  const ly=s=>PT+PH-s/V.SOURCE_END*PH;
+  if(d1-d0<V.SOURCE_END-1) p+=`<rect x="${PL-12}" y="${PT}" width="4" height="${PH}" fill="#d8d3c8"/><rect x="${PL-13}" y="${ly(d1)}" width="6" height="${ly(d0)-ly(d1)}" fill="${INK}"/>`;
+  const step=(d1-d0)>1800?300:120;
+  for(let s=Math.ceil(d0/step)*step;s<=d1;s+=step) p+=`<line x1="${PL}" x2="${PL+PW}" y1="${y(s)}" y2="${y(s)}" stroke="${INK}" stroke-opacity=".08" stroke-width=".5"/><text x="${PL-18}" y="${y(s)+4}" text-anchor="end" fill="#5f6a65">${fmt(s)}</text>`;
+  p+=`<line x1="${PL}" x2="${PL}" y1="${PT}" y2="${PT+PH}" stroke="${INK}" stroke-width=".75"/><line x1="${PL}" x2="${PL+PW}" y1="${PT+PH}" y2="${PT+PH}" stroke="${INK}" stroke-width=".75"/>`;
+  for(let s=Math.ceil(W0/60)*60;s<=W1;s+=60) p+=`<text x="${x(s)}" y="${PT+PH+16}" text-anchor="middle" fill="#5f6a65">${fmt(s)}</text>`;
+  p+=`<text x="${PL+PW}" y="${PT+PH+32}" text-anchor="end" fill="#5f6a65">recall onset (word onset, not duration)</text>`;
+  const fl=Object.entries(st.crit).filter(e=>e[1]).map(e=>LABEL[e[0]]);
+  p+=`<text x="${PL}" y="${PT+PH+50}" fill="${INK}">${V.recall} · ${V.film} · source ${V.checksum.slice(0,12)}… · mass is model posterior mass, not calibrated confidence · dashed diamonds are decode fills with mass 0, not posterior evidence</text>`;
+  p+=`<text x="${PL}" y="${PT+PH+63}" fill="#5f6a65">returns and omissions are outside this contract · ${activeCount()?`filter (${st.mode}): ${[...fl,...[['argmax mass <',st.thA],['external >',st.thE],['localizability <',st.thL]].filter(t=>t[1]!=null).map(t=>t.join(' '))].join(', ')}; grey marks do not match`:'no filter set'}</text>`;
+  // top row: unanchored units only (no film anchor)
+  p+=`<line x1="${PL}" x2="${PL+PW}" y1="19" y2="19" stroke="${LINE}" stroke-width=".75"/><text x="${PL+4}" y="12" fill="#5f6a65">unanchored units (no film anchor)</text>`;
+  if(sel&&sel.onset!=null&&sel.onset>=W0&&sel.onset<=W1) p+=`<rect x="${x(sel.onset)-12}" y="${PT}" width="24" height="${PH}" fill="${INK}" fill-opacity=".04"/>`;
+  const opts=[];
+  win.forEach(u=>{const cx=x(u.onset), dim=activeCount()>0&&!isMatch(u);
+    let g=`<g id="u${u.ordinal}" role="option" aria-selected="${u.ordinal===st.sel}" aria-label="${twin(u)}">`;
+    if(u.kind==='unanchored'){g+=`<circle cx="${cx}" cy="19" r="5" fill="${PAPER}" stroke="${dim?DIM:INK}" stroke-width="1.2"/><line x1="${cx-3.5}" x2="${cx+3.5}" y1="22.5" y2="15.5" stroke="${dim?DIM:INK}" stroke-width="1.2"/>`; opts.push([u,cx,19]);}
+    else {const n=u.drawn, top=y(n.end), bot=y(n.start), cy=(top+bot)/2;
+      g+=`<line x1="${cx}" x2="${cx}" y1="${top}" y2="${bot}" stroke="${dim?DIM:INK}" stroke-width="${isGroup(n)?3:1.5}"/>`+glyph(u,cx,cy,dim);
+      if(isMatch(u)) g+=`<rect x="${cx-4}" y="${cy+12}" width="8" height="2" fill="${INK}"/>`;
+      opts.push([u,cx,cy]);}
+    p+=g+`</g>`;});
+  // selection: ring, argmax ghost (thin neutral ring) with the declared route, guides, focus ring
+  if(sel&&sel.kind==='anchor'&&sel.onset>=W0&&sel.onset<=W1){const cx=x(sel.onset), pn=sel.drawn, pcy=(y(pn.end)+y(pn.start))/2, an=sel.argmax, acy=(y(an.end)+y(an.start))/2;
+    if(sel.origin!=='argmax'){p+=`<line x1="${cx}" x2="${cx}" y1="${pcy}" y2="${acy}" stroke="${INK}" stroke-width="1" stroke-dasharray="4 3"/><circle cx="${cx}" cy="${acy}" r="9" fill="none" stroke="#5f6a65" stroke-width="1.2"/>`;
+      p+=`<line x1="${cx+11}" x2="${GX}" y1="${acy}" y2="${acy}" stroke="${LINE}" stroke-width=".75" stroke-dasharray="2 3"/>`;}
+    p+=`<line x1="${cx+13}" x2="${GX}" y1="${pcy}" y2="${pcy}" stroke="${LINE}" stroke-width=".75" stroke-dasharray="2 3"/>`;
+    p+=`<circle cx="${cx}" cy="${pcy}" r="12" fill="none" stroke="${INK}" stroke-width="2"/><circle class="focusring" cx="${cx}" cy="${pcy}" r="16" fill="none" stroke="${FOCUS}" stroke-width="1.6" stroke-dasharray="3 2"/>`;
+    p+=`<line x1="${cx}" x2="${cx}" y1="${PT+PH}" y2="${PT+PH+7}" stroke="${INK}" stroke-width="2.5"/>`;}
+  else if(sel&&sel.kind==='unanchored'&&sel.onset>=W0&&sel.onset<=W1){const cx=x(sel.onset); p+=`<circle cx="${cx}" cy="19" r="9" fill="none" stroke="${INK}" stroke-width="2"/><circle class="focusring" cx="${cx}" cy="19" r="13" fill="none" stroke="${FOCUS}" stroke-width="1.6" stroke-dasharray="3 2"/>`;}
+  // gutter: the selected unit's admitted anchors on the film axis (aria-hidden: the inspector table is its accessible twin)
+  const bold=new Set();
+  if(sel&&sel.kind==='anchor'){p+=`<g aria-hidden="true"><text x="${GX}" y="10" fill="#5f6a65">R${sel.ordinal} admitted anchors · 100px = mass 1.0</text>`;
+    p+=`<rect x="${GX+6}" y="16" width="${sel.external*100}" height="6" fill="#6b6558"/><text x="${GX+10+sel.external*100}" y="23" fill="${INK}">${fm(sel.external)} <tspan fill="#5f6a65">external</tspan></text>`;
+    let out=0; const labels=[];
+    sel.candidates.forEach(c=>{const n=c.node; if(n.end<=d0||n.start>=d1){out++;return;} const top=y(Math.min(n.end,d1)), bot=y(Math.max(n.start,d0)), cy=(top+bot)/2, w=c.mass*100;
+      const role=n===sel.argmax?(n===sel.drawn?'argmax · placed':'argmax'):(n===sel.drawn?'placed':'');
+      p+=`<rect x="${GX}" y="${top}" width="3" height="${Math.max(1,bot-top)}" fill="${TEAL}"/><rect x="${GX+6}" y="${cy-3}" width="${w}" height="6" fill="${TEAL}"/>`;
+      if(role) bold.add(sceneOf(n).id);
+      labels.push({cy,v:fm(c.mass),role,pri:role?0:1,m:c.mass,x:GX+10+w});});
+    if(sel.origin==='decode-filled'){const n=sel.drawn, top=y(n.end), bot=y(n.start), cy=(top+bot)/2;
+      p+=`<rect x="${GX+.5}" y="${top}" width="2.5" height="${Math.max(1,bot-top)}" fill="none" stroke="${INK}"/>`; bold.add(sceneOf(n).id); labels.push({cy,v:'0',role:'placed · fill',pri:0,m:0,x:GX+8});}
+    // every value is printed: labels keep a 12px pitch, displaced ones carry a leader to their bar end
+    labels.forEach(l=>l.ly=l.cy); labels.sort((a,b)=>a.cy-b.cy);
+    for(let k=1;k<labels.length;k++) labels[k].ly=Math.max(labels[k].ly,labels[k-1].ly+12);
+    const over=labels.length?labels[labels.length-1].ly-(PT+PH):0; if(over>0) labels.forEach(l=>l.ly-=over);
+    for(let k=labels.length-2;k>=0;k--) labels[k].ly=Math.min(labels[k].ly,labels[k+1].ly-12);
+    const lx=labels.length?Math.max(...labels.filter(l=>Math.abs(l.ly-l.cy)>1).map(l=>l.x),0):0;
+    labels.forEach(l=>{const moved=Math.abs(l.ly-l.cy)>1, x=moved?Math.max(lx,l.x)+8:l.x;
+      if(moved) p+=`<polyline points="${l.x-3},${l.cy} ${x-10},${l.cy} ${x-3},${l.ly}" fill="none" stroke="${LINE}" stroke-width=".75"/>`;
+      p+=`<text x="${x}" y="${l.ly+4}" fill="${INK}" font-weight="${l.role?600:400}">${l.v}${l.role?' '+l.role:''}</text>`;});
+    if(out) p+=`<text x="${GX}" y="${PT+PH+16}" fill="#5f6a65">+${out} anchor${out>1?'s':''} outside the shown film · Whole film</text>`;
+    p+=`</g>`;}
+  // scene rail: names only; selected scenes first and never dropped; crowded neighbours merge into ranges
+  const scenes=V.groups.filter(g=>g.end>d0&&g.start<d1).map(g=>({g,cy:(y(Math.min(g.end,d1))+y(Math.max(g.start,d0)))/2,b:bold.has(g.id)}));
+  scenes.forEach(s=>p+=`<line x1="${RX}" x2="${RX+4}" y1="${y(Math.max(s.g.start,d0))}" y2="${y(Math.max(s.g.start,d0))}" stroke="${LINE}" stroke-width=".75"/>`);
+  // every scene in view is named or inside a printed range. Clusters start as single scenes at their own
+  // position and merge only with a neighbour they collide with (12px pitch); a bold (selected) scene keeps its
+  // name and position and absorbs a colliding neighbour as a suffix. Nothing is dropped.
+  let cl=scenes.slice().sort((a,b)=>a.cy-b.cy).map(s=>({y:s.cy,b:s.b,m:[s]}));
+  const clash=()=>{for(let k=1;k<cl.length;k++) if(cl[k].y-cl[k-1].y<12&&!(cl[k].b&&cl[k-1].b)) return k; return -1;};
+  for(let k=clash();k>=0;k=clash()){const a=cl[k-1], b=cl[k], m=[...a.m,...b.m], bold=a.b?a:b.b?b:null;
+    cl.splice(k-1,2,{y:bold?bold.y:m.reduce((t,s)=>t+s.cy,0)/m.length,b:!!bold,m});}
+  for(let k=1;k<cl.length;k++) if(cl[k].y-cl[k-1].y<12) cl[k].y=cl[k-1].y+12; // two selected scenes side by side
+  const nm=s=>`${s.g.id} ${s.g.name}`, ids=ms=>ms.map(s=>s.g.id).sort((a,b)=>a-b), rng=ms=>{const v=ids(ms); return v.length===1?String(v[0]):`${v[0]}–${v[v.length-1]}`;};
+  const railLabels=cl.map(c=>{ if(!c.b) return {y:c.y,b:false,ids:ids(c.m),t:c.m.length===1?nm(c.m[0]):rng(c.m)};
+    const main=c.m.filter(s=>s.b), rest=c.m.filter(s=>!s.b);
+    return {y:c.y,b:true,ids:ids(c.m),t:main.map(nm).join(' · ')+(rest.length?` · ${rng(rest)}`:'')};});
+  railLabels.forEach(r=>p+=`<text x="${RX+12}" y="${r.y+4}" fill="${r.b?INK:'#5f6a65'}"${r.b?' font-weight="600"':''} data-scenes="${r.ids.join(' ')}">${r.t}</text>`);
+  p+='</svg>';
+  const el=document.getElementById('plot'); el.innerHTML=p; el.classList.toggle('kbd',st.kbd);
+  if(sel&&document.getElementById(`u${sel.ordinal}`)) el.setAttribute('aria-activedescendant',`u${sel.ordinal}`); else el.removeAttribute('aria-activedescendant');
+  el.onclick=e=>{const r=el.querySelector('svg').getBoundingClientRect(), k=1120/r.width, mx=(e.clientX-r.left)*k, my=(e.clientY-r.top)*k; let best=null,bd=1e9;
+    opts.forEach(([u,cx,cy])=>{const d=Math.hypot(cx-mx,cy-my); if(d<bd){bd=d;best=u;}}); if(best&&bd<24*k) select(best.ordinal,false);};
+  document.getElementById('dtitle').textContent=`Detail ${fmt(W0)}–${fmt(W1)}`;
+  document.getElementById('dsub').textContent=`${win.length} marks in window (counted by view) · film ${fmt(d0)}–${fmt(d1)} of 49:30${st.y==='fit'?', fitted to the window’s placed and argmax anchors, snapped to scene bounds':''} · route: selected unit only`;}
+function twin(u){ if(u.kind==='untimed') return `R${u.ordinal}, untimed, ${u.ordinal} of ${U.length}. No anchor, origin or mass is supplied for an untimed unit.`;
+  if(u.kind==='unanchored') return `R${u.ordinal}, ${fmt(u.onset)}, ${u.ordinal} of ${U.length}. Unanchored: source mass ${fm(u.sourceMass)}, external ${fm(u.external)}.`;
+  const n=u.drawn; return `R${u.ordinal}, ${fmt(u.onset)}, ${u.ordinal} of ${U.length}. ${u.origin}${u.origin==='decode-filled'?', anchor mass 0 (a fill outside the posterior)':`, anchor mass ${fm(u.drawnMass)}`}: placed in ${sceneOf(n).id} ${sceneOf(n).name}, ${refName(n)}, ${fmt(n.start)} to ${fmt(n.end)}. ${u.origin!=='argmax'?`Posterior argmax ${sceneOf(u.argmax).id} ${sceneOf(u.argmax).name}, ${refName(u.argmax)}, ${fm(u.argmaxMass)}. `:''}${u.candidates.length} admitted anchors. External ${fm(u.external)}${u.externalDominant?', external-dominant':''}. Localizability ${u.localizability.toFixed(2)}.`;}
+// ---------------- inspector ----------------
+function inspector(){const u=cur(), el=document.getElementById('insp'); if(!u){el.innerHTML='<p class="small">Select a unit.</p>';return;}
+  const i=U.indexOf(u), pv=U[i-1], nx=U[i+1], m=matches(u);
+  const nb=(w,t)=>w?`<p class="nb">${t} by ordinal · R${w.ordinal} · ${w.onset==null?'untimed':fmt(w.onset)} — ${w.text}</p>`:'';
+  let body='';
+  if(u.kind==='untimed') body=`<dl><dt>Untimed</dt><dd>no anchor, origin or mass is supplied for an untimed unit</dd><dt>Filter</dt><dd>${m==null?'no filter set':m.length?'matches: '+m.join(', '):'does not match'}</dd></dl>`;
+  else if(u.kind==='unanchored') body=`<dl><dt>Unanchored</dt><dd>no film anchor · source ${fm(u.sourceMass)} · external ${fm(u.external)}</dd><dt>Localizability</dt><dd>not defined without source anchors</dd><dt>Filter</dt><dd>${m==null?'no filter set':m.length?'matches: '+m.join(', '):'does not match'}</dd></dl>`;
+  else {const n=u.drawn, an=u.argmax;
+    const rows=u.candidates.map(c=>`<tr><td class="m">${fm(c.mass)}</td><td>${sceneOf(c.node).id} ${sceneOf(c.node).name}</td><td class="small">${refName(c.node)}</td><td>${c.node===an?'<span class="tag">argmax</span> ':''}${c.node===n?'<span class="tag">placed</span>':''}</td></tr>`).join('');
+    body=`<dl><dt>Placed</dt><dd><b>${sceneOf(n).id} ${sceneOf(n).name}</b> · ${refName(n)} · ${fmt(n.start)}–${fmt(n.end)}</dd>
+    <dt>Origin</dt><dd>${u.origin==='decode-filled'?'decode-filled · mass 0 (outside posterior)':u.origin==='decode-bound'?`decode-bound · mass ${fm(u.drawnMass)}`:`posterior argmax · mass ${fm(u.drawnMass)}`}</dd>
+    ${u.origin!=='argmax'?`<dt>Posterior argmax</dt><dd>${sceneOf(an).id} ${sceneOf(an).name} · ${refName(an)} · <b>${fm(u.argmaxMass)}</b></dd>`:''}
+    <dt>Source · external</dt><dd>${fm(u.sourceMass)} · ${fm(u.external)}${u.externalDominant?' · external-dominant':''}</dd>
+    <dt>Localizability</dt><dd>${u.localizability.toFixed(2)} <span class="small">(1 − H/log K; H over admitted anchors, K = ${V.groups.length+V.segments.length} timeline nodes)</span></dd>
+    <dt>Filter</dt><dd>${m==null?'no filter set':m.length?'matches: '+m.join(', '):'does not match'}</dd></dl>
+    <table id="anchors" tabindex="-1"><caption>Drawn anchor and alternatives <span class="small" style="display:block;font-weight:400">all ${u.candidates.length} admitted anchors, ranked by mass</span></caption>
+    <thead><tr><th class="m" scope="col">Mass</th><th scope="col">Scene</th><th scope="col">Ref</th><th scope="col">Role</th></tr></thead><tbody>${rows}</tbody></table>
+    ${u.origin==='decode-filled'?`<p class="small">The placement, ${refName(n)}, is a decode fill in a scene carrying no posterior mass; it is not an admitted anchor.</p>`:''}`;}
+  el.innerHTML=`<div class="row"><b>R${u.ordinal}</b><span class="small">${u.onset==null?'untimed':fmt(u.onset)} · ${u.ordinal} of ${U.length}</span><span style="flex:1"></span><button class="pill" id="prev" aria-label="Previous unit by ordinal">‹</button><button class="pill" id="next" aria-label="Next unit by ordinal">›</button></div>
+  ${nb(pv,'previous')}<p class="q">“${u.text}”</p>${nb(nx,'next')}${body}`;
+  document.getElementById('prev').onclick=()=>stepOrd(-1); document.getElementById('next').onclick=()=>stepOrd(1);}
+// ---------------- filter row, counts, export, absences ----------------
+function controls(){
+  document.getElementById('summary').textContent=`${S.units} units · ${S.anchored} anchored · argmax ${S.argmax} · coded agreement not supplied`;
+  const defs=[['bound','Decode-bound',S.bound],['filled','Decode-filled',S.filled],['ext','External-dominant',S.ext],['group','Group-grain',null],['untimed','Untimed',S.untimed],['unanchored','Unanchored',S.unanchored]];
+  const box=document.getElementById('chips');
+  if(!box.children.length){box.innerHTML=defs.map(([k,t,n])=>`<button class="pill" id="chip-${k}" data-k="${k}" aria-pressed="false"${n!=null?` aria-label="${t}, ${n} units"`:''}>${t}${n!=null?' '+n:''}</button>`).join('');
+    box.querySelectorAll('.pill').forEach(b=>b.onclick=()=>{st.crit[b.dataset.k]=!st.crit[b.dataset.k];render();});}
+  box.querySelectorAll('.pill').forEach(b=>b.setAttribute('aria-pressed',String(st.crit[b.dataset.k])));
+  const ms=U.filter(isMatch), ex=document.getElementById('export'), any=activeCount()>0;
+  const ct=any?`${st.mode} · ${ms.length} of ${U.length} units match`:'no filter set', ce=document.getElementById('count'); if(ce.textContent!==ct) ce.textContent=ct;
+  ex.textContent=any?`Export all ${U.length} rows (${ms.length} matched) · TSV`:`Export all ${U.length} rows · TSV`;
+  document.getElementById('absentText').textContent='Returns and omissions are outside the Recall Voyage contract (ADR 0002 §14): this view shows neither.';
+  document.getElementById('prov').textContent=`Basis: alignment run (synthetic fixture) · participant ${V.participant} · ${V.recall} · ${V.film} · source checksum ${V.checksum} · compiler voyage-v1 · header counts are VoyageSummary fields; window counts are made by this view.`;}
+function exportTsv(){const esc=v=>v==null?'':String(v);
+  const crit=Object.entries(st.crit).filter(e=>e[1]).map(e=>LABEL[e[0]]);
+  const head=['# StoryAtlas recall voyage export',`# basis: alignment run (synthetic fixture); participant ${V.participant}; recall ${V.recall}; film ${V.film}`,`# source checksum: ${V.checksum}; compiler: voyage-v1; exported: ${new Date().toISOString()}`,
+   '# time base: onset_s = seconds from the start of the recall audio; unit duration is not supplied',
+   '# localizability = 1 - H(admitted anchors, source-normalised) / log K, K = all timeline nodes; empty when undefined',
+   `# filter (${st.mode}): ${crit.length?crit.join(', '):'no category'}; thresholds: argmax mass below ${st.thA??'none'}, external mass above ${st.thE??'none'}, localizability below ${st.thL??'none'}`,
+   '# derived by this view: timed (onset present), admitted_anchors (count of the ranked list), matched and matched_by (from the filter); every other column is supplied. The ranked alternatives are in the admitted-anchors export. Masses are not calibrated confidence.'];
+  const cols=['unit_ordinal','kind','timed','onset_s','origin','grain','placed_grain','placed_id','placed_start_s','placed_end_s','anchor_mass','argmax_grain','argmax_id','argmax_start_s','argmax_end_s','argmax_mass','source_mass','external_mass','external_dominant','localizability','admitted_anchors','matched','matched_by'];
+  const g=n=>n?(isGroup(n)?'group':'segment'):null;
+  const rows=U.map(u=>{const a=u.kind==='anchor', m=matches(u);
+    return [u.ordinal,u.kind,u.onset!=null,u.onset,a?u.origin:null,a?u.grain:null,a?g(u.drawn):null,a?u.drawn.id:null,a?u.drawn.start:null,a?u.drawn.end:null,a?u.drawnMass:null,a?g(u.argmax):null,a?u.argmax.id:null,a?u.argmax.start:null,a?u.argmax.end:null,a?u.argmaxMass:null,u.kind==='untimed'?null:u.sourceMass,u.kind==='untimed'?null:u.external,a?u.externalDominant:null,a?u.localizability:null,a?u.candidates.length:null,m==null?null:m.length>0,m&&m.length?m.join('|'):null].map(esc).join('\t');});
+  const text=head.join('\n')+'\n'+cols.join('\t')+'\n'+rows.join('\n')+'\n'; window.__lastExport=text;
+  save(text,'voyage-units.tsv');}
+function save(text,name){const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/tab-separated-values'})); a.download=name; a.click();}
+function exportAnchors(){const g=n=>isGroup(n)?'group':'segment';
+  const head=['# StoryAtlas recall voyage export: admitted anchors, long format',`# basis: alignment run (synthetic fixture); participant ${V.participant}; recall ${V.recall}; film ${V.film}`,`# source checksum: ${V.checksum}; compiler: voyage-v1`,
+   '# one row per admitted anchor, in the supplied rank order; masses unrounded and not calibrated confidence; derived by this view: rank (row position), is_argmax, is_placed'];
+  const rows=[]; ANCH.forEach(u=>u.candidates.forEach((c,i)=>rows.push([u.ordinal,i+1,g(c.node),c.node.id,c.node.start,c.node.end,c.mass,c.node===u.argmax,c.node===u.drawn].join('\t'))));
+  save(head.join('\n')+'\n'+['unit_ordinal','rank','grain','node_id','start_s','end_s','mass','is_argmax','is_placed'].join('\t')+'\n'+rows.join('\n')+'\n','voyage-anchors.tsv');}
+document.getElementById('exportAnchors').onclick=exportAnchors;
+function keyRow(){const k=(g,t)=>`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px">${g}<span>${t}</span></span>`;
+  const sv=(w,inner)=>`<svg width="${w}" height="18" role="none">${inner}</svg>`;
+  const u=(o,m)=>({origin:o,drawnMass:m});
+  document.getElementById('key').innerHTML=`<div class="small" style="display:flex;flex-wrap:wrap;align-items:center;margin:0 0 4px ${PL}px">`+
+   k(sv(64,glyph(u('argmax',1),9,9)+glyph(u('argmax',.5),27,9)+glyph(u('argmax',.1),45,9)+glyph(u('argmax',.01),61,9)),'argmax · mass 1 .5 .1 .01, uncalibrated')+
+   k(sv(18,glyph(u('decode-bound',.4),9,9)),'decode-bound')+k(sv(18,glyph(u('decode-filled',0),9,9)),'decode-filled (0)')+
+   k(sv(12,`<line x1="6" x2="6" y1="2" y2="16" stroke="${INK}" stroke-width="3"/>`),'group span')+
+   k(sv(22,glyph({origin:'argmax',drawnMass:.5,externalDominant:true},11,9)),'double = external &gt; source')+
+   k(sv(14,`<circle cx="7" cy="9" r="5" fill="${PAPER}" stroke="${INK}" stroke-width="1.2"/><line x1="3.5" x2="10.5" y1="12.5" y2="5.5" stroke="${INK}" stroke-width="1.2"/>`),'unanchored')+
+   k(sv(26,`<circle cx="13" cy="9" r="8" fill="none" stroke="${INK}" stroke-width="2"/>`),'selected')+k(sv(22,`<circle cx="11" cy="9" r="8" fill="none" stroke="#5f6a65" stroke-width="1.2"/>`),'its argmax')+
+   (activeCount()?k(sv(14,`<rect x="2" y="8" width="10" height="2" fill="${INK}"/>`),'matches filter')+k(sv(18,glyph(u('argmax',.5),9,9,true)),'does not match'):'')+`</div>`;}
+function untimedList(){const us=U.filter(u=>u.kind==='untimed'); const el=document.getElementById('untimed');
+  if(!el.children.length){el.innerHTML=`<summary>Untimed units (${us.length}) · not placed on the recall axis</summary><div style="margin-top:8px">${us.map(u=>`<button data-o="${u.ordinal}">R${u.ordinal}</button>`).join('')}</div>`;
+    el.querySelectorAll('button').forEach(b=>b.onclick=()=>select(+b.dataset.o,false));}}
+function twinView(){const w=inWin(); document.getElementById('twin').innerHTML=`<p>Detail ${fmt(st.win[0])}–${fmt(st.win[1])}: ${w.length} timed units (argmax ${w.filter(u=>u.origin==='argmax').length}, decode-bound ${w.filter(u=>u.origin==='decode-bound').length}, decode-filled ${w.filter(u=>u.origin==='decode-filled').length}, unanchored ${w.filter(u=>u.kind==='unanchored').length}). Counts in this sentence are made by this view. Returns and omissions are outside the Recall Voyage contract.</p><ol>${w.map(u=>`<li>${twin(u)}</li>`).join('')}</ol>`;}
+// ---------------- navigation ----------------
+function reveal(u){ if(u.onset!=null&&(u.onset<st.win[0]||u.onset>st.win[1])){const w=st.win[1]-st.win[0]; setWin(u.onset-w/2,w);} }
+function select(ord,fromKey){st.sel=ord; st.kbd=!!fromKey; const u=cur(); reveal(u); render(); announce(brief(u));}
+function brief(u){return `R${u.ordinal}, ${u.onset==null?'untimed':fmt(u.onset)}, ${u.kind==='anchor'?u.origin+(u.externalDominant?', external-dominant':''):u.kind}${isMatch(u)?', matches filter':''}.`;}
+function announce(t){const l=document.getElementById('live'); l.textContent=''; requestAnimationFrame(()=>l.textContent=t);}
+function stepOrd(d){const i=U.indexOf(cur()), n=U[i+d]; if(n) select(n.ordinal,false); else announce(d>0?'This is the last unit.':'This is the first unit.');}
+function stepWin(d){const w=inWin(); const u=cur(); let i=w.findIndex(x=>x.ordinal===u.ordinal);
+  if(i>=0&&w[i+d]) return select(w[i+d].ordinal,true);
+  const pool=TIMED.filter(x=>d>0?x.onset>(u.onset??-1):x.onset<(u.onset??1e9)); const n=d>0?pool[0]:pool[pool.length-1];
+  if(n) select(n.ordinal,true); else announce(d>0?'No later timed unit.':'No earlier timed unit.');}
+function stepMatch(d){ if(activeCount()===0) return announce('No filter set. Choose criteria in the inspection filter first.');
+  const pool=TIMED.filter(isMatch); if(!pool.length){ const ut=U.filter(isMatch).length; return announce(ut?`The ${ut} matching units are untimed; see the untimed list.`:'No unit matches the filter.'); }
+  const u=cur(), o=u.ordinal; const n=d>0?pool.find(x=>x.ordinal>o):[...pool].reverse().find(x=>x.ordinal<o);
+  if(n) select(n.ordinal,true); else announce(d>0?'No further match after this unit.':'No earlier match before this unit.');}
+const plotEl=document.getElementById('plot');
+plotEl.addEventListener('focus',()=>{ if(!plotEl.matches(':focus-visible')) return; st.kbd=true; plotEl.classList.add('kbd');
+  const u=cur(), w=inWin(); if(w.length&&!(u&&u.onset!=null&&u.onset>=st.win[0]&&u.onset<=st.win[1])) select(w[0].ordinal,true); });
+plotEl.addEventListener('keydown',e=>{ const w=inWin();
+  if(e.key==='ArrowRight'){stepWin(1);e.preventDefault();} else if(e.key==='ArrowLeft'){stepWin(-1);e.preventDefault();}
+  else if(e.key==='Home'&&w.length){ select(w[0].ordinal,true); e.preventDefault();} else if(e.key==='End'&&w.length){ select(w[w.length-1].ordinal,true); e.preventDefault();}
+  else if(e.key==='m'||e.key==='M'){stepMatch(e.shiftKey?-1:1);e.preventDefault();}
+  else if(e.key==='Enter'){const t=document.getElementById('anchors'); if(t) t.focus(); else announce(`No anchor table: R${cur().ordinal} is ${cur().kind}.`); e.preventDefault();}
+  else if(e.key==='Home'||e.key==='End'){ if(!w.length){ announce('No timed unit in this window.'); e.preventDefault(); } }});
+document.getElementById('insp').addEventListener('keydown',e=>{ if(e.key==='Escape'&&e.target.id==='anchors'){plotEl.focus(); e.preventDefault();}});
+document.getElementById('overview').addEventListener('keydown',e=>{const w=st.win[1]-st.win[0];
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft'){setWin(st.win[0]+(e.shiftKey?60:w/2)*(e.key==='ArrowRight'?1:-1),w);render();e.preventDefault();}
+  else if(e.key==='Home'){setWin(0,w);render();e.preventDefault();} else if(e.key==='End'){setWin(V.RECALL_END,w);render();e.preventDefault();}
+  else if(e.key==='PageDown'||e.key==='-'){resize(1/1.5);e.preventDefault();} else if(e.key==='PageUp'||e.key==='+'||e.key==='='){resize(1.5);e.preventDefault();}});
+function resize(f){const [a,b]=st.win, c=(a+b)/2, w=Math.max(30,Math.min(V.RECALL_END,(b-a)*f)); setWin(c-w/2,w); render(); announce(`Window ${fmt(st.win[0])} to ${fmt(st.win[1])}.`);}
+document.getElementById('narrower').onclick=()=>resize(1/1.5); document.getElementById('wider').onclick=()=>resize(1.5);
+document.getElementById('export').onclick=exportTsv;
+document.getElementById('more').onclick=e=>{const p=document.getElementById('criteria'); p.hidden=!p.hidden; e.currentTarget.setAttribute('aria-expanded',String(!p.hidden)); if(!p.hidden) document.getElementById('thA').focus();};
+const closePop=(refocus)=>{const p=document.getElementById('criteria'); if(p.hidden) return; p.hidden=true; const m=document.getElementById('more'); m.setAttribute('aria-expanded','false'); if(refocus) m.focus();};
+document.querySelector('.popwrap').addEventListener('focusout',e=>{ if(!e.currentTarget.contains(e.relatedTarget)) closePop(false); });
+document.addEventListener('pointerdown',e=>{ if(!document.querySelector('.popwrap').contains(e.target)) closePop(false); });
+document.getElementById('criteria').addEventListener('keydown',e=>{ if(e.key==='Escape'){document.getElementById('criteria').hidden=true; const m=document.getElementById('more'); m.setAttribute('aria-expanded','false'); m.focus();}});
+[['thA','thA'],['thE','thE'],['thL','thL']].forEach(([id,k])=>document.getElementById(id).oninput=e=>{const v=e.target.value; st[k]=v===''?null:+v; render();});
+document.querySelectorAll('input[name=mode]').forEach(r=>r.onchange=()=>{st.mode=r.value;render();});
+const ytog=v=>{st.y=v;document.getElementById('yfit').setAttribute('aria-pressed',String(v==='fit'));document.getElementById('ywhole').setAttribute('aria-pressed',String(v==='whole'));render();};
+document.getElementById('yfit').onclick=()=>ytog('fit'); document.getElementById('ywhole').onclick=()=>ytog('whole');
+document.getElementById('earlier').onclick=()=>{const w=st.win[1]-st.win[0]; setWin(st.win[0]-w/2,w); render();};
+document.getElementById('later').onclick=()=>{const w=st.win[1]-st.win[0]; setWin(st.win[0]+w/2,w); render();};
+document.getElementById('whole').onclick=()=>{setWin(0,V.RECALL_END); render();};
+// render keeps focus on the same control (by id) across updates
+function render(){const f=document.activeElement, fid=f&&f.id;
+  controls();overview();plot();inspector();keyRow();untimedList();twinView();
+  if(fid&&document.activeElement!==document.getElementById(fid)) document.getElementById(fid)?.focus();}
+const init=ANCH.filter(u=>u.onset>330&&u.onset<480&&u.grain==='segment').find(u=>u.origin==='decode-filled')||ANCH.find(u=>u.onset>330&&u.origin==='decode-bound');
+st.sel=init.ordinal; if(location.hash==='#kbd') st.kbd=true; if(location.hash==='#filter'){st.crit.bound=true;st.crit.filled=true;} render();
+</script></body></html>
