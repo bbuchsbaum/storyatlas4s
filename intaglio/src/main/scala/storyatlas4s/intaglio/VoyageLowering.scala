@@ -88,6 +88,10 @@ object VoyageLowering:
     val groupLabel = "voyage-group-label"
     val groupRange = "voyage-group-range"
     val gutter = "voyage-gutter"
+    val matched = "matched"
+    val unmatched = "unmatched"
+    val matchTick = "voyage-match-tick"
+    val caption = "voyage-caption"
     val gutterLabels = "voyage-gutter-labels"
     val groupBand = "voyage-group-band"
     val mass = "voyage-mass"
@@ -303,7 +307,9 @@ object VoyageLowering:
       includeUntimed: Boolean = true,
       visibleRecallText: Option[Map[RecallUnitId, String]] = None,
       track: Track = Track.Groups,
-      film: Option[FilmWindow] = None
+      film: Option[FilmWindow] = None,
+      inspection: Option[Set[RecallUnitId]] = None,
+      caption: Vector[String] = Vector.empty
   ): Either[GraphicsError, ig.Scene] =
     window match
       case _ if track == Track.Masses && box.trackHeight <= 16 =>
@@ -332,12 +338,13 @@ object VoyageLowering:
           ground <- groundLayer(scene, sc, vp, alternativesFor, track)
           bands <- codingLayer(scene, sc, vp, words)
           links <- linkLayer(scene, sc, vp, alternativesFor, contextFor, ghosts, ghostsFor, words)
-          marks <- markLayer(scene, sc, vp, words, includeUntimed)
+          marks <- markLayer(scene, sc, vp, words, includeUntimed, inspection)
           auxiliary <- track match
             case Track.Groups             => trackLayer(scene, sc, vp)
             case Track.Masses             => massLayer(scene, sc, vp, alternativesFor)
             case Track.GroupDisagreements => disagreementLayer(scene, sc, vp, alternativesFor)
-        yield ig.Scene(Vector(ground, bands, links, marks, auxiliary))
+          captionLayer <- captionGrobs(caption, sc, vp)
+        yield ig.Scene(Vector(ground, bands, links, marks, auxiliary) ++ captionLayer.toVector)
 
   // ------------------------------------------------------------------ titles
 
@@ -1011,7 +1018,8 @@ object VoyageLowering:
       sc: Scales,
       vp: ig.Viewport,
       words: Words,
-      includeUntimed: Boolean
+      includeUntimed: Boolean,
+      inspection: Option[Set[RecallUnitId]]
   ): Either[GraphicsError, ig.Grob] =
     val box = sc.box
     val anchorAt = scene.marks.collect { case a: VoyageMark.UnitAnchor =>
@@ -1037,10 +1045,11 @@ object VoyageLowering:
             Classes.anchor,
             Classes.origin(m.origin)
           ) ++ Option.when(externalDominant)(Classes.externalDominant) ++
-            Option.when(m.level > 0)(Classes.groupLevel)
+            Option.when(m.level > 0)(Classes.groupLevel) ++
+            inspection.map(set => if set(m.unit) then Classes.matched else Classes.unmatched)
           for
             name <- GraphicsNames.ofMark(m.identity.mark)
-            grob <- anchorGlyph(m, x, sc, name)
+            grob <- anchorGlyph(m, x, sc, name, inspection.map(_(m.unit)))
             titled <- annotated(
               grob,
               Some(words.anchor(m)),
@@ -1457,14 +1466,21 @@ object VoyageLowering:
       m: VoyageMark.UnitAnchor,
       x: Double,
       sc: Scales,
-      name: ig.GraphicsName
+      name: ig.GraphicsName,
+      matched: Option[Boolean]
   ): Either[GraphicsError, ig.Grob] =
     val cy = sc.y(m.span.midpoint)
     val shape =
       if m.origin == AnchorOrigin.PosteriorArgmax then ig.PointShape.Circle
       else ig.PointShape.Diamond
     val filled = m.origin == AnchorOrigin.DecodeFilled
-    val core = if m.origin == AnchorOrigin.PosteriorArgmax then Palette.model else Palette.ink2
+    // an inspection filter's non-match keeps its shape and container but loses its hue: the core is
+    // drawn in the container grey (3.8:1), never so pale that the mark disappears
+    val dimmed = matched.contains(false)
+    val core =
+      if dimmed then Palette.container
+      else if m.origin == AnchorOrigin.PosteriorArgmax then Palette.model
+      else Palette.ink2
     def dot(size: Double, gp: ig.GraphicParams) =
       ig.Grob.points(Vector(px(x, cy)), ig.ExtentExpr.nativeUnsafe(size), shape, gp)
     for
@@ -1497,10 +1513,54 @@ object VoyageLowering:
           gp.flatMap(dot(radius(m.mass), _)).flatMap(annotated(_, None, Classes.glyphCore))
         }
         .sequence
+      tick <- Option
+        .when(matched.contains(true))(
+          params(None, Some(Palette.ink2)).flatMap(gp =>
+            ig.Grob
+              .polygon(
+                Vector(
+                  px(x - 4, cy + haloRadius + 3),
+                  px(x + 4, cy + haloRadius + 3),
+                  px(x + 4, cy + haloRadius + 5),
+                  px(x - 4, cy + haloRadius + 5)
+                ),
+                gp = gp
+              )
+              .flatMap(annotated(_, None, Classes.matchTick))
+          )
+        )
+        .sequence
     yield ig.Grob.group(
-      Vector(extentPart) ++ halo.toVector ++ Vector(container) ++ inner.toVector,
+      Vector(extentPart) ++ halo.toVector ++ Vector(container) ++ inner.toVector ++ tick.toVector,
       name = Some(name)
     )
+
+  /** Caption lines the shell supplies (identities, caveats, filter state), drawn in the plate's
+    * bottom margin so they travel with a cropped figure. The lowering draws them; it composes none.
+    * The host gives the box a bottom margin of at least 16px per line.
+    */
+  private def captionGrobs(
+      lines: Vector[String],
+      sc: Scales,
+      vp: ig.Viewport
+  ): Either[GraphicsError, Option[ig.Grob]] =
+    val box = sc.box
+    Option
+      .when(lines.nonEmpty) {
+        for
+          gp <- params(None, Some(Palette.ink2))
+          texts <- lines.zipWithIndex.traverse { (line, i) =>
+            ig.Grob.text(
+              line,
+              px(box.left, box.height - box.bottom + 18 + 14 * i),
+              ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+              gp = gp
+            )
+          }
+          g <- annotated(ig.Grob.group(texts, viewport = Some(vp)), None, Classes.caption)
+        yield g
+      }
+      .sequence
 
   private def ticks(from: Double, to: Double, step: Double): Vector[Double] =
     if to <= from then Vector(from)

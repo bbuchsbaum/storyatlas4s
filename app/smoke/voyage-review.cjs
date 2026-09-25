@@ -69,6 +69,30 @@ async function inspect(page, arm) {
   const gutterBars = await page.locator('.plate .voyage-gutter').count();
   check(gutterBars >= 1, `${arm}: the selected unit's admitted anchors sit in the gutter (${gutterBars})`);
   check(await page.locator('.plate .voyage-alt:not(.voyage-gutter)').count() === 0, `${arm}: no admitted anchor is drawn on the recall axis beside the gutter`);
+  // inspection filter: supplied chip counts, dimming without dropping, a tick per match, M steps
+  const fills = page.getByRole('button', { name: /^Decode-filled, 44 units/ });
+  check(await fills.count() === 1, `${arm}: the decode-filled chip carries the supplied count`);
+  check(await page.locator('.plate .unmatched, .plate .matched').count() === 0, `${arm}: no dimming before a filter is set`);
+  await fills.click();
+  await page.waitForTimeout(150);
+  check((await page.locator('.filter-count').textContent()) === 'any · 44 of 173 units match', `${arm}: the live count reports the matches`);
+  check(await page.locator('.plate .voyage-anchor.matched').count() === 44, `${arm}: every fill is marked as a match`);
+  check(await page.locator('.plate .voyage-anchor.unmatched').count() === 173 - 44, `${arm}: every other mark is dimmed, none dropped`);
+  check(await page.locator('.plate .voyage-anchor.matched .voyage-match-tick').count() === 44, `${arm}: each match carries a tick`);
+  check((await page.locator('.plate .voyage-caption').textContent()).includes('filter (any): decode-filled; 44 of 173 units match'), `${arm}: the caption carries the filter state`);
+  await page.locator('section[aria-label="Recall Voyage"]').focus();
+  await page.keyboard.press('m');
+  await page.waitForTimeout(150);
+  check(/matches: decode-filled/.test(await page.locator('.sr-only[role=status]').textContent()), `${arm}: M steps to a match and says why it matches`);
+  await fills.click();
+  await page.waitForTimeout(150);
+  check(await page.locator('.plate .unmatched').count() === 0 && (await page.locator('.filter-count').textContent()) === 'no filter set', `${arm}: clearing the chip clears the dimming`);
+  await page.locator('section[aria-label="Recall Voyage"]').focus();
+  await page.keyboard.press('m');
+  await page.waitForTimeout(100);
+  check(/No filter set/.test(await page.locator('.sr-only[role=status]').textContent()), `${arm}: M with no filter says so`);
+  await page.locator(`.plate .voyage-anchor[data-unit="${doc.units[5].ordinal}"] [data-name]`).first().dispatchEvent('click');
+  await page.waitForTimeout(150);
   // y camera: Fit to window states its rule; choosing another unit never rescales the axis
   const yLabels = () => page.locator('.plate svg text').evaluateAll(ts => ts.map(t => t.textContent).filter(t => /^\d+:\d\d$/.test(t)).join(' '));
   const whole = await yLabels();

@@ -6,7 +6,7 @@ import org.scalajs.dom
 import scala.scalajs.js
 import storyatlas4s.edition.VoyagePage
 import storyatlas4s.intaglio.{RecallWindow, VoyageGroupComparison, VoyageLowering}
-import storyatlas4s.shell.{VoyagePosterior, WorkspaceAction, WorkspaceController}
+import storyatlas4s.shell.{VoyageFilter, VoyagePosterior, WorkspaceAction, WorkspaceController}
 import storymodel4s.align.SourceNodeRef
 import storymodel4s.codec.{VoyageCodecs, WorkspaceVoyage}
 import storymodel4s.core.{Address, Addressable}
@@ -43,7 +43,9 @@ object VoyageView:
       /** The y camera: fitted to the recall window's placed and argmax anchors, or the whole film.
         * A display choice only; the selection never changes it.
         */
-      fitFilm: Boolean = false
+      fitFilm: Boolean = false,
+      /** The inspection filter: a display choice that dims non-matches, never a selection. */
+      filter: VoyageFilter = VoyageFilter.none
   )
 
   /** The plate follows its panel between these widths; narrower and the clocks lose their ticks,
@@ -525,6 +527,8 @@ object VoyageView:
     val allColumns = Var(false)
     val track = Var(VoyageLowering.Track.Masses)
     val fitFilm = Var(false)
+    val filter = Var(VoyageFilter.none)
+    val announcement = Var("")
     // unmeasured until the panel is laid out, so the plate is lowered once, at its real width
     val width = Var(Option.empty[Int])
     val total = scene.recallLength.value
@@ -539,9 +543,10 @@ object VoyageView:
         width.signal.distinct,
         window.signal,
         track.signal,
-        fitFilm.signal
+        fitFilm.signal,
+        filter.signal
       )
-      .map { case (s, g, all, w, r, t, f) => Lens(s, g, all, w, r, t, f) }
+      .map { case (s, g, all, w, r, t, f, i) => Lens(s, g, all, w, r, t, f, i) }
     val frames: Signal[Option[Either[String, Frame]]] =
       lens.map(l => l.width.map(w => compile(document, scene, l, w)))
     val ordered = scene.units.sortBy(_.ordinal)
@@ -572,6 +577,27 @@ object VoyageView:
     def chooseUnit(id: RecallUnitId): Unit =
       selection.set(Set(unitAddress(id)))
       focus.set(Some(id))
+
+    // M / Shift+M: the next or previous filter match in recall order, and why when there is none
+    def stepMatch(forward: Boolean): Unit =
+      filter.now().step(scene, focus.now(), forward) match
+        case VoyageFilter.Step.To(id) =>
+          chooseUnit(id)
+          val reasons = scene.marks
+            .find(m => m.unit == id && !m.isInstanceOf[VoyageMark.Alternative])
+            .map(filter.now().reasons(scene, _))
+            .getOrElse(Vector.empty)
+          val ordinal = scene.units.find(_.id == id).map(_.ordinal).getOrElse(-1)
+          announcement.set(s"Unit $ordinal matches: ${reasons.mkString(", ")}.")
+        case VoyageFilter.Step.NotSet =>
+          announcement.set("No filter set. Choose criteria in the inspection filter first.")
+        case VoyageFilter.Step.NoMatch       => announcement.set("No unit matches the filter.")
+        case VoyageFilter.Step.AllUntimed(n) =>
+          announcement.set(
+            s"The $n matching units are untimed; they are listed in the unit selector."
+          )
+        case VoyageFilter.Step.NoFurther => announcement.set("No further match after this unit.")
+        case VoyageFilter.Step.NoEarlier => announcement.set("No earlier match before this unit.")
 
     def fit(el: dom.Element): Unit =
       val w = el.clientWidth
@@ -837,7 +863,10 @@ object VoyageView:
           div(
             cls("head"),
             h2("Recall time against source time"),
-            span(cls("hint"), "choose a unit · click to inspect · ← → all units")
+            span(
+              cls("hint"),
+              "choose a unit · click to inspect · ← → all units · M next filter match"
+            )
           ),
           onClick --> (ev => activate(ev.target, ev.shiftKey)),
           onKeyDown --> { ev =>
@@ -848,10 +877,20 @@ object VoyageView:
               ev.key match
                 case "ArrowRight" => ev.preventDefault(); walk(1)
                 case "ArrowLeft"  => ev.preventDefault(); walk(-1)
-                case "Enter"      => activate(ev.target, ev.shiftKey)
-                case _            => ()
+                case "m" | "M"    =>
+                  ev.preventDefault()
+                  stepMatch(!ev.shiftKey)
+                case "Enter" => activate(ev.target, ev.shiftKey)
+                case _       => ()
           },
           rangeControls,
+          filterControls(scene, filter),
+          span(
+            cls("sr-only"),
+            role("status"),
+            aria.live("polite"),
+            child.text <-- announcement.signal
+          ),
           div(
             cls("scroller"),
             onMountCallback(ctx => fit(ctx.thisNode.ref)),
@@ -953,6 +992,7 @@ object VoyageView:
         // wide plates carry the gutter: the selected unit's admitted anchors on the film axis
         else VoyageLowering.Box.default.copy(width = width, trackHeight = 72, gutter = 170)
       trackBox = box.copy(
+        bottom = box.bottom + 46,
         gap = 40,
         trackHeight = if lens.track == VoyageLowering.Track.GroupDisagreements then 144 else 72
       )
@@ -968,7 +1008,9 @@ object VoyageView:
           includeUntimed = false,
           visibleRecallText = visibleRecallText,
           track = lens.track,
-          film = if lens.fitFilm then VoyageLowering.fitFilm(scene, lens.window) else None
+          film = if lens.fitFilm then VoyageLowering.fitFilm(scene, lens.window) else None,
+          inspection = Option.when(lens.filter.isSet)(lens.filter.matches(scene).keySet),
+          caption = caption(scene, lens.filter)
         )
         .left
         .map(_.message)
@@ -1469,6 +1511,95 @@ object VoyageView:
           )
         ),
         "group unknown: one or both groups are unavailable; not agreement."
+      )
+    )
+
+  /** The figure's own caption, under the plot, so identities, caveats and the filter state travel
+    * with a cropped figure (workshop ruling 13). Every count it prints is the filter's own.
+    */
+  private def caption(scene: VoyageScene, filter: VoyageFilter): Vector[String] =
+    val prov = scene.provenance
+    val state =
+      if !filter.isSet then "no filter set"
+      else
+        val labels = filter.criteria.toVector.sortBy(_.ordinal).map(_.label) ++
+          filter.argmaxMassBelow.map(t => s"argmax mass < $t") ++
+          filter.externalMassAbove.map(t => s"external mass > $t") ++
+          filter.localizabilityBelow.map(t => s"localizability < $t")
+        val mode = filter.combine.toString.toLowerCase
+        s"filter ($mode): ${labels.mkString(", ")}; ${filter.matches(scene).size} of ${scene.units.size} units match; grey marks do not match"
+    Vector(
+      s"source ${prov.sourceChecksum.hex.take(12)}… · ${prov.compilerVersion} · mass is model posterior mass, not calibrated confidence",
+      "dashed diamonds are decode fills with mass 0, not posterior evidence · returns and omissions are outside the Recall Voyage contract",
+      state
+    )
+
+  /** The inspection filter's controls: criteria with their counts, how they combine, thresholds
+    * that start unset, and a status line written only when it changes.
+    */
+  private def filterControls(scene: VoyageScene, filter: Var[VoyageFilter]): HtmlElement =
+    def threshold(labelText: String, set: (VoyageFilter, Option[Double]) => VoyageFilter) =
+      label(
+        cls("threshold"),
+        labelText,
+        input(
+          typ("number"),
+          minAttr("0"),
+          maxAttr("1"),
+          stepAttr("0.05"),
+          placeholder("none"),
+          onInput.mapToValue --> (v =>
+            filter.update(f => set(f, v.trim.toDoubleOption.filter(x => x >= 0 && x <= 1)))
+          )
+        )
+      )
+    div(
+      cls("inspection-filter"),
+      role("group"),
+      aria.label("Inspection filter"),
+      span(cls("hint"), "Inspection filter"),
+      VoyageFilter.Criterion.values.toVector.map { c =>
+        val n = VoyageFilter.count(scene, c)
+        val name = c.label.capitalize
+        button(
+          typ("button"),
+          cls("chip"),
+          s"$name ${n.value}" + (if n.countedByView then " (view count)" else ""),
+          aria.label(
+            s"$name, ${n.value} units" + (if n.countedByView then ", counted by this view" else "")
+          ),
+          aria.pressed <-- filter.signal.map(_.criteria(c).toString),
+          onClick --> (_ => filter.update(_.toggled(c)))
+        )
+      },
+      label(
+        cls("threshold"),
+        "combine ",
+        select(
+          option(value("any"), "any"),
+          option(value("all"), "all"),
+          onChange.mapToValue --> (v =>
+            filter.update(
+              _.copy(combine =
+                if v == "all" then VoyageFilter.Combine.All else VoyageFilter.Combine.Any
+              )
+            )
+          )
+        )
+      ),
+      threshold("argmax mass below ", (f, v) => f.copy(argmaxMassBelow = v)),
+      threshold("external mass above ", (f, v) => f.copy(externalMassAbove = v)),
+      threshold("localizability below ", (f, v) => f.copy(localizabilityBelow = v)),
+      span(
+        cls("filter-count"),
+        role("status"),
+        child.text <-- filter.signal
+          .map(f =>
+            if !f.isSet then "no filter set"
+            else
+              s"${f.combine.toString.toLowerCase} · ${f.matches(scene).size} of ${scene.units.size} units match"
+          )
+          .distinct
       )
     )
 

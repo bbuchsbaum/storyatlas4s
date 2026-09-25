@@ -124,6 +124,11 @@ object VoyagePage:
       |.strip { display: grid; gap: 4px; }
       |.scroller svg .selected { stroke: var(--ink); stroke-width: 2px; }
       |.scroller svg .focused { stroke: var(--ink); stroke-width: 2.5px; }
+      |.inspection-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 8px 16px 0; font-size: 13px; }
+      |.inspection-filter .chip[aria-pressed=true] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+      |.inspection-filter .threshold input { width: 64px; }
+      |.filter-count { color: var(--ink-2); font-size: 12px; }
+      |.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
       |.camera-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 0; }
       |.camera-actions button[aria-pressed=true] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
       |.camera-rule { font-size: 12px; color: var(--ink-2); }

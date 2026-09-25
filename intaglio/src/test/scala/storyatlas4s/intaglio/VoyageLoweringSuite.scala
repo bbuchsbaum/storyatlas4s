@@ -749,6 +749,30 @@ class VoyageLoweringSuite extends FunSuite:
     assert(x.contains("<polyline"), "a displaced label carries a leader")
   }
 
+  test("an inspection keeps every mark; non-matches lose hue, matches gain a tick") {
+    val lowered = ok(VoyageLowering.lower(scene, inspection = Some(Set(u1))))
+    val x = render(lowered)
+    import VoyageLowering.Classes.*
+    assertEquals(glyphParts(lowered, 0), Vector(glyphExtent, glyphContainer, matchTick))
+    assertEquals(glyphParts(lowered, 3), Vector(glyphExtent, glyphContainer, glyphCore))
+    assert(x.contains("origin-filled matched") || x.contains(" matched\""), "u1 is classed matched")
+    assert(x.contains(" unmatched"), "u4 is classed unmatched")
+    scene.marks.foreach { m =>
+      if !m.isInstanceOf[VoyageMark.Alternative] && !m.isInstanceOf[VoyageMark.Untimed] then
+        assert(x.contains(s"""data-name="${m.identity.mark.value}""""), "no mark is dropped")
+    }
+    val unset = render(ok(VoyageLowering.lower(scene)))
+    assert(!unset.contains("matched"), "no inspection, no dimming")
+  }
+
+  test("caption lines the shell supplies are drawn in the bottom margin, verbatim") {
+    val box = VoyageLowering.Box.default.copy(bottom = 60)
+    val lines = Vector("recall r · film f · mass is not calibrated confidence", "no filter set")
+    val x = render(ok(VoyageLowering.lower(scene, box = box, caption = lines)))
+    lines.foreach(l => assert(x.contains(s">$l</text>"), l))
+    assert(x.contains(VoyageLowering.Classes.caption))
+  }
+
   test("a printed range never names an ordinal it does not hold") {
     assertEquals(VoyageLowering.ordinalRuns(Vector(17, 18, 20, 21, 22, 23, 24)), "17–18, 20–24")
     assertEquals(VoyageLowering.ordinalRuns(Vector(5)), "5")
