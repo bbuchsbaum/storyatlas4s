@@ -129,6 +129,8 @@ object VoyagePage:
       |.inspection-filter .threshold input { width: 64px; }
       |.filter-count { color: var(--ink-2); font-size: 12px; }
       |.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      |.export-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 16px 0; }
+      |.neighbour { margin: 2px 0; }
       |.camera-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 0; }
       |.camera-actions button[aria-pressed=true] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
       |.camera-rule { font-size: 12px; color: var(--ink-2); }

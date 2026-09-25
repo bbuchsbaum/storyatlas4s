@@ -6,7 +6,13 @@ import org.scalajs.dom
 import scala.scalajs.js
 import storyatlas4s.edition.VoyagePage
 import storyatlas4s.intaglio.{RecallWindow, VoyageGroupComparison, VoyageLowering}
-import storyatlas4s.shell.{VoyageFilter, VoyagePosterior, WorkspaceAction, WorkspaceController}
+import storyatlas4s.shell.{
+  VoyageExport,
+  VoyageFilter,
+  VoyagePosterior,
+  WorkspaceAction,
+  WorkspaceController
+}
 import storymodel4s.align.SourceNodeRef
 import storymodel4s.codec.{VoyageCodecs, WorkspaceVoyage}
 import storymodel4s.core.{Address, Addressable}
@@ -885,6 +891,7 @@ object VoyageView:
           },
           rangeControls,
           filterControls(scene, filter),
+          exportControls(scene, filter),
           span(
             cls("sr-only"),
             role("status"),
@@ -946,18 +953,20 @@ object VoyageView:
         asideTag(
           cls("panel inspector"),
           aria.live("polite"),
-          child <-- focusedUnit.map(
-            _.fold[HtmlElement](
-              div(
-                cls("empty"),
-                "Click a mark to inspect a unit; ",
-                span(cls("kbd"), "←"),
-                " ",
-                span(cls("kbd"), "→"),
-                " walk the recall in time order."
-              )
-            )(u => inspector(scene, u))
-          )
+          child <-- focusedUnit
+            .combineWith(filter.signal)
+            .map((focused, f) =>
+              focused.fold[HtmlElement](
+                div(
+                  cls("empty"),
+                  "Click a mark to inspect a unit; ",
+                  span(cls("kbd"), "←"),
+                  " ",
+                  span(cls("kbd"), "→"),
+                  " walk the recall in time order."
+                )
+              )(u => inspector(scene, u, filter = f))
+            )
         )
       ),
       provenance(scene)
@@ -1603,6 +1612,37 @@ object VoyageView:
       )
     )
 
+  /** Both exports, generated from the scene the pane compiled and the live filter. */
+  private def exportControls(scene: VoyageScene, filter: Var[VoyageFilter]): HtmlElement =
+    def save(name: String, text: String): Unit =
+      val blob = new dom.Blob(
+        js.Array(text),
+        new dom.BlobPropertyBag { `type` = "text/tab-separated-values" }
+      )
+      val url = dom.URL.createObjectURL(blob)
+      val a = dom.document.createElement("a").asInstanceOf[dom.HTMLAnchorElement]
+      a.href = url
+      a.setAttribute("download", name)
+      a.click()
+      dom.URL.revokeObjectURL(url)
+    div(
+      cls("export-actions"),
+      button(
+        typ("button"),
+        child.text <-- filter.signal.map(f =>
+          if f.isSet then
+            s"Export all ${scene.units.size} units (${f.matches(scene).size} matched) · TSV"
+          else s"Export all ${scene.units.size} units · TSV"
+        ),
+        onClick --> (_ => save("voyage-units.tsv", VoyageExport.units(scene, filter.now())))
+      ),
+      button(
+        typ("button"),
+        "Export admitted anchors · TSV",
+        onClick --> (_ => save("voyage-anchors.tsv", VoyageExport.anchors(scene, filter.now())))
+      )
+    )
+
   private def provenance(scene: VoyageScene): HtmlElement =
     val prov = scene.provenance
     footerTag(
@@ -1617,6 +1657,21 @@ object VoyageView:
     )
 
   // ------------------------------------------------------------------ hover and inspector
+
+  /** The unit before or after by ordinal, as context for reading the selected one. Drawn only when
+    * the whole recall text is in view; under a reader horizon a neighbour's words may not be.
+    */
+  private def neighbour(scene: VoyageScene, u: VoyageUnit, delta: Int, show: Boolean): Node =
+    scene.units
+      .find(_.ordinal == u.ordinal + delta)
+      .filter(_ => show)
+      .fold[Node](emptyNode)(n =>
+        p(
+          cls("note neighbour"),
+          s"${if delta < 0 then "previous" else "next"} · unit ${n.ordinal} · " +
+            n.onset.fold("untimed")(t => clockInput(t.value)) + s" — ${n.text}"
+        )
+      )
 
   private def markOf(scene: VoyageScene, id: MarkId): Option[VoyageMark] =
     scene.marks.find(_.identity.mark == id)
@@ -1768,7 +1823,8 @@ object VoyageView:
   private def inspector(
       scene: VoyageScene,
       u: VoyageUnit,
-      visibleRecallText: Option[String] = None
+      visibleRecallText: Option[String] = None,
+      filter: VoyageFilter = VoyageFilter.none
   ): HtmlElement =
     val presentation = VoyagePosterior.forUnit(scene, u.id)
     val comparison = VoyageGroupComparison.records(scene).find(_.unit == u.id)
@@ -1800,7 +1856,14 @@ object VoyageView:
             else "does not exceed the source mass"
           ),
           div(cls("k"), "localizability"),
-          div(cls("v"), a.localizability.fold("—")(l => f"$l%.2f"))
+          div(
+            cls("v"),
+            a.localizability.fold("—")(l => f"$l%.2f"),
+            span(
+              cls("note"),
+              s" 1 − H/log K over the admitted anchors; K = ${scene.timeline.nodes.size} timeline nodes (counted by this view)"
+            )
+          )
         )
       case None =>
         Vector(
@@ -1919,10 +1982,26 @@ object VoyageView:
       cls("inspector-content"),
       div(
         div(cls("where"), s"Unit ${u.ordinal} · ", span(cls("num"), onsetText), " into the recall"),
-        p(cls("quote"), s"“${visibleRecallText.getOrElse(u.text)}”")
+        neighbour(scene, u, -1, visibleRecallText.isEmpty),
+        p(cls("quote"), s"“${visibleRecallText.getOrElse(u.text)}”"),
+        neighbour(scene, u, 1, visibleRecallText.isEmpty)
       ),
       decision,
-      div(cls("kv"), placement),
+      div(
+        cls("kv"),
+        placement,
+        div(cls("k"), "filter"),
+        div(
+          cls("v filter-reasons"),
+          if !filter.isSet then "no filter set"
+          else
+            scene.marks
+              .find(m => m.unit == u.id && !m.isInstanceOf[VoyageMark.Alternative])
+              .map(filter.reasons(scene, _))
+              .filter(_.nonEmpty)
+              .fold("does not match")(r => s"matches: ${r.mkString(", ")}")
+        )
+      ),
       anchor.toVector.flatMap(a => withinGroup(scene, a, alternatives)),
       posterior,
       if anchor.isEmpty then

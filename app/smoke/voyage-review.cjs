@@ -84,6 +84,22 @@ async function inspect(page, arm) {
   await page.keyboard.press('m');
   await page.waitForTimeout(150);
   check(/matches: decode-filled/.test(await page.locator('.sr-only[role=status]').textContent()), `${arm}: M steps to a match and says why it matches`);
+  // exports: every unit, every admitted anchor, provenance header, matched rows equal the filter
+  const download = async name => { const [d] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name }).click()]); return fs.readFileSync(await d.path(), 'utf8'); };
+  const unitsTsv = await download(/^Export all 173 units \(44 matched\)/);
+  const unitRows = unitsTsv.trim().split('\n').filter(l => !l.startsWith('#'));
+  const cols = unitRows[0].split('\t');
+  check(unitRows.length - 1 === 173, `${arm}: the units export has one row per unit`);
+  check(unitsTsv.includes(`# source checksum: `) && /# derived by this view: timed/.test(unitsTsv) && unitsTsv.includes('not calibrated confidence'), `${arm}: the units export names provenance and derived columns`);
+  check(unitRows.slice(1).filter(r => r.split('\t')[cols.indexOf('matched')] === 'true').length === 44, `${arm}: matched rows equal the on-screen matches`);
+  check(!cols.includes('unit_address'), `${arm}: no invented address column`);
+  const anchorsTsv = await download('Export admitted anchors · TSV');
+  const anchorRows = anchorsTsv.trim().split('\n').filter(l => !l.startsWith('#')).slice(1);
+  check(anchorRows.length > 173 && anchorRows.every(r => Number(r.split('\t')[8]) > 0), `${arm}: the anchors export lists admitted anchors with posterior mass only (${anchorRows.length})`);
+  // inspector: filter reasons, K stated as a view count, neighbours by ordinal
+  check(/matches: decode-filled|does not match/.test(await page.locator('.inspector .filter-reasons').textContent()), `${arm}: the inspector states the filter result`);
+  check((await page.locator('.inspector').innerText()).includes('counted by this view'), `${arm}: K is labelled as counted by the view`);
+  check(await page.locator('.inspector .neighbour').count() >= 1, `${arm}: neighbouring units by ordinal are shown`);
   await fills.click();
   await page.waitForTimeout(150);
   check(await page.locator('.plate .unmatched').count() === 0 && (await page.locator('.filter-count').textContent()) === 'no filter set', `${arm}: clearing the chip clears the dimming`);
@@ -135,7 +151,7 @@ async function inspect(page, arm) {
   let browser;
   try {
     browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 1 });
+    const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 1, acceptDownloads: true });
     try {
       const page = await context.newPage();
       page.on('pageerror', e => report.errors.push(String(e)));
