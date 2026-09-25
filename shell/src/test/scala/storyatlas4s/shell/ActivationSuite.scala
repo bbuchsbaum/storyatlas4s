@@ -124,3 +124,23 @@ class ActivationSuite extends FunSuite:
     compiled.pages.headOption.foreach { page =>
       assertEquals(Activation(start, page.overlay, rendered, extend = false), None)
     }
+
+  test("a Codex hit resolves through its own page, and the pages together lose no fragment"):
+    val c = compiled
+    assert(c.pages.length > 1, "the cross-page refusal needs more than one page")
+    assertEquals(c.pages.flatMap(_.targets.names).toSet, c.fragmentTargets.names)
+    for
+      page <- c.pages
+      rendered <- page.targets.renderedNames.toVector.sorted
+    do
+      val expected = c.fragmentTargets.resolve(rendered).map(_._2)
+      assertEquals(Activation.hit(page.overlay, rendered), expected, rendered)
+      assertEquals(
+        Activation(start, page.overlay, rendered, extend = true).map(_.selection),
+        expected.map(start.activate(_, extend = true).selection),
+        rendered
+      )
+      c.pages.filterNot(_.index == page.index).foreach { other =>
+        if !other.targets.renderedNames.contains(rendered) then
+          assertEquals(Activation.hit(other.overlay, rendered), None, rendered)
+      }

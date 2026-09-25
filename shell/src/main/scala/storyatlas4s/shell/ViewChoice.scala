@@ -46,24 +46,31 @@ final case class ViewChoice(
   * select an address by parsing or guessing a renderer identity.
   */
 object Activation:
-  def apply[Name](
-      choice: ViewChoice,
-      targets: RenderedTargetIndex[Name],
-      renderedName: String,
-      extend: Boolean
-  ): Option[ViewChoice] =
-    targets.resolve(renderedName).map((_, address) => choice.activate(address, extend))
-
-  /** A hit on one plate, resolved through that plate's own index. Hosts prefer this form: the
-    * pairing makes resolving a name against another plate's index unrepresentable.
+  /** The address a hit on `plate` names, resolved through that plate's own index. A host whose
+    * choice has another writer (a workspace controller) hands this address to that writer.
     */
+  def hit[Name](plate: TargetedPlate[Name], renderedName: String): Option[Address] =
+    plate.targets.resolve(renderedName).map(_._2)
+
+  /** A hit on one plate, resolved through that plate's own index. */
   def apply[Name](
       choice: ViewChoice,
       plate: TargetedPlate[Name],
       renderedName: String,
       extend: Boolean
   ): Option[ViewChoice] =
-    apply(choice, plate.targets, renderedName, extend)
+    hit(plate, renderedName).map(choice.activate(_, extend))
+
+  /** Resolution against a bare index, kept for the shell's own suites. Hosts go through a plate:
+    * the index a host holds is then the one drawn with the plate it hit.
+    */
+  private[shell] def apply[Name](
+      choice: ViewChoice,
+      targets: RenderedTargetIndex[Name],
+      renderedName: String,
+      extend: Boolean
+  ): Option[ViewChoice] =
+    targets.resolve(renderedName).map((_, address) => choice.activate(address, extend))
 
 object ViewChoice:
   val initial: ViewChoice =

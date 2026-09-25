@@ -294,8 +294,6 @@ object AppView:
     val resolvedFragmentIds = c.fragmentTargets.names.toVector.map(_.value).sorted
     val lineHeightPx = receipt.lineHeight.toDouble / receipt.unitsPerPixel
     val font = s"${receipt.style.sizePx}px/${lineHeightPx}px ${receipt.style.cssFamily}"
-    def activate(target: dom.EventTarget, extend: Boolean): Unit =
-      activateAt(choice, c.fragmentTargets, target, extend)
     sectionTag(
       cls("codex"),
       aria.label("Narrative Codex"),
@@ -314,17 +312,20 @@ object AppView:
         " Direct interaction and visible-ancestor proxy interaction use distinct line and SVG " +
           "patterns."
       ),
-      onClick --> (ev => activate(ev.target, ev.shiftKey)),
-      onKeyDown.filter(ev => ev.key == "Enter" || ev.key == " ") --> { ev =>
-        ev.preventDefault()
-        activate(ev.target, ev.shiftKey)
-      },
       div(
         cls("pages"),
         c.pages.map { page =>
+          // A hit resolves through the overlay of the page it landed on, never the whole Codex.
+          def activate(target: dom.EventTarget, extend: Boolean): Unit =
+            activateAt(choice, page.overlay, target, extend)
           sectionTag(
             cls("page"),
             dataAttr("page") := page.index.toString,
+            onClick --> (ev => activate(ev.target, ev.shiftKey)),
+            onKeyDown.filter(ev => ev.key == "Enter" || ev.key == " ") --> { ev =>
+              ev.preventDefault()
+              activate(ev.target, ev.shiftKey)
+            },
             styleAttr := s"width:${receipt.page.widthPx}px;height:${receipt.page.heightPx}px",
             // The rail: one span per placed line, nothing else, so the spans' concatenated text
             // content is the canonical text exactly (V-T2).
@@ -379,7 +380,7 @@ object AppView:
     val markIds = c.scene.marks.map(_.identity.mark.value).sorted
     val resolvedMarkIds = c.atlasTargets.names.map(_.value).toVector.sorted
     def activate(target: dom.EventTarget, extend: Boolean): Unit =
-      activateAt(choice, c.atlas.targets, target, extend)
+      activateAt(choice, c.atlas, target, extend)
     sectionTag(
       cls("atlas"),
       aria.label("Narrative Atlas"),
@@ -425,7 +426,7 @@ object AppView:
         )
       ) { court =>
         def activate(target: dom.EventTarget, extend: Boolean): Unit =
-          activateAt(choice, court.overlay.targets, target, extend)
+          activateAt(choice, court.overlay, target, extend)
         sectionTag(
           cls("codex-interaction-court"),
           aria.label("Diagnostic Codex interaction court"),
@@ -452,19 +453,19 @@ object AppView:
         )
       }
 
-  /** The web host's hit-test (the nearest named DOM ancestor) handed to the shell's one activation
-    * route; a name the plate's index does not know changes nothing.
+  /** The web host's hit-test (the nearest named DOM ancestor) resolved through the index of the
+    * plate that was hit (`Activation.hit`); a name that plate does not draw changes nothing.
     */
   private def activateAt[Name](
       choice: ChoiceBinding,
-      targets: RenderedTargetIndex[Name],
+      plate: TargetedPlate[Name],
       target: dom.EventTarget,
       extend: Boolean
   ): Unit =
     SvgDom
       .nameAt(target)
-      .flatMap(targets.resolve)
-      .foreach((_, address) => choice.activate(address, extend))
+      .flatMap(Activation.hit(plate, _))
+      .foreach(choice.activate(_, extend))
 
   /** The web host draws a shell plate as SVG; rendering and interaction failures are both shown. */
   private def mountSvg[Name](

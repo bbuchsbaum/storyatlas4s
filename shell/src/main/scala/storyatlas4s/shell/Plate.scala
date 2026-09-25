@@ -22,10 +22,11 @@ final case class Plate(scene: Scene, widthPx: Int, heightPx: Int, title: String)
 
 /** A plate together with the checked index of the names drawn on it.
   *
-  * A host resolves a hit only through the index of the plate it hit (StoryAtlas ADR 0001). Keeping
-  * the two in one value makes that the only thing a host can do: the pair is built only when the
-  * plate's rendered names and the index's names are exactly the same set, so a name picked on this
-  * plate can never be resolved against another plate's index.
+  * A host resolves a hit only through the index of the plate it hit (StoryAtlas ADR 0001), through
+  * `Activation.hit`. The pair is built only when the plate's rendered names and the index's names
+  * are exactly the same set, so the index a host holds beside a plate is the one drawn with it. The
+  * index stays public for rendering, so this makes resolving against another plate's index
+  * unnatural, not impossible.
   */
 final class TargetedPlate[Name] private (val plate: Plate, val targets: RenderedTargetIndex[Name]):
   override def equals(other: Any): Boolean = other match

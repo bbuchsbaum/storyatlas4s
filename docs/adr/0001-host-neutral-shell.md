@@ -78,8 +78,12 @@ shell decision*. Additional hosts are allowed; duplicated decisions are not. The
    measurer. The shell only carries the choice (the measurer itself is injected), but a second
    host needs it generalized to a host-supplied live measurer.
 4. **Plate and index travel separately.** Resolved: every plate the compiler returns is a
-   `TargetedPlate`, built only when the names drawn on it equal its index's names, and hosts
-   activate through `Activation(choice, plate, name, extend)`.
+   `TargetedPlate`, built only when the names drawn on it equal its index's names. Hosts resolve
+   a hit through the plate it landed on, `Activation.hit(plate, name)` (or
+   `Activation(choice, plate, name, extend)` when the host owns the choice); the web host does so
+   for the Atlas, each Codex page and the diagnostic court. The bare-index overload is
+   `private[shell]`. This makes a mismatched pairing hard to reach, not unrepresentable: a plate's
+   index stays public for rendering, so a host could still resolve against the wrong one.
 5. **Recall Voyage.** `VoyageView`'s pure parts (compile under a selection, unit ordering and
    walking, inspector and hover-card content) move into `shell` in a follow-up, after the current
    Voyage presentation work releases those paths.
