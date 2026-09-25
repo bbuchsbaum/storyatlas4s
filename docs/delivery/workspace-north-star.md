@@ -13,6 +13,8 @@
 | `RevealReturn.dc.html` | Reveal moves only the column window; Return restores it exactly. |
 | `Narrow.dc.html` | 1280px at 200% zoom: list-first, labelled mass bars, 44px targets. |
 
+**The delivery plan toward this north star** is [`docs/plans/2026-09-25-north-star-plan.md`](../plans/2026-09-25-north-star-plan.md) (owner-approved 2026-09-25): graphics in Intaglio, a design-replication court, and phased Mote work.
+
 **The Voyage component has its own workshop.** The canvas's second page, *Voyage workshop*, records a critic-panel iteration of the Recall Voyage component (V0–V7, 24–25 September 2026). Its converged prototype and 18 rulings are in [`voyage-workshop/`](voyage-workshop/README.md), and they are the design authority for the component inside the `TimeVoyage` artboard's frame. Where the two differ on how a unit or its alternatives are drawn, the workshop rulings win. Three examples:
 
 - the container glyph;
