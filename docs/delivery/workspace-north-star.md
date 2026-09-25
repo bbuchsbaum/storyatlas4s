@@ -13,6 +13,14 @@
 | `RevealReturn.dc.html` | Reveal moves only the column window; Return restores it exactly. |
 | `Narrow.dc.html` | 1280px at 200% zoom: list-first, labelled mass bars, 44px targets. |
 
+**The Voyage component has its own workshop.** The canvas's second page, *Voyage workshop*, records a critic-panel iteration of the Recall Voyage component (V0–V7, 24–25 September 2026). Its converged prototype and 18 rulings are in [`voyage-workshop/`](voyage-workshop/README.md), and they are the design authority for the component inside the `TimeVoyage` artboard's frame. Where the two differ on how a unit or its alternatives are drawn, the workshop rulings win. Three examples:
+
+- the container glyph;
+- the admitted-anchor gutter in place of in-plot alternatives;
+- the external-dominance outline.
+
+The artboard still fixes the Voyage's place in the workspace: its own clock window, identity kept across projections, and Reveal. The Scala port of the rulings landed on `main` at `3336462`; its deliberate departures are listed in that README.
+
 ## Decisions D1–D5 (joint record, Fray #1 seq28–30)
 
 1. **Orientation.** Matrix and ordinal route: source across, recall down, on the same cut and ordinal domain. The Time voyage is a separate named projection that keeps its clock axes and orientation. Switching keeps identities, quote, inspector and Reveal, and never turns categories into seconds. Source columns scale to presentation extent only under a provider-declared projection, as an explicit axis choice with a legend: width is extent, fill is the named measure, and area is not additive.
