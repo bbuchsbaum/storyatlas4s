@@ -42,6 +42,8 @@ async function inspect(page, arm) {
   check(await page.locator('.voyage-ghost').count() === 1, `${arm}: only selected moved unit has a ghost`);
   check(await page.locator('.voyage-ghost').getAttribute('data-unit') === '5', `${arm}: ghost belongs to selected unit`);
   check((await legend()).includes('ghost:'), `${arm}: visible ghost has key`);
+  const selStroke = await page.locator('.plate .selected .voyage-container').evaluateAll(es => es.map(e => getComputedStyle(e.querySelector('circle,polygon,path') || e).strokeWidth));
+  check(selStroke.length === 1 && selStroke[0] === '2px', `${arm}: the selected mark's container carries the selection stroke (${selStroke})`);
   check((await page.locator('.inspector .quote').textContent()) === `“${doc.units[5].text}”`, `${arm}: exact selected text`);
   check((await page.locator('.inspector').innerText()).includes('0.000'), `${arm}: zero-mass inspector witness`);
   const label = page.locator('.voyage-group-label[data-group="4"]');

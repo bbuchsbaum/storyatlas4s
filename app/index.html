@@ -265,6 +265,8 @@ body:has(.design-workspace) { background:#f7f5f0; }
 #workspace-voyage .panes { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 16px; }
 #workspace-voyage .page { padding: 16px; width: auto; height: auto; box-shadow: none; }
 #workspace-voyage .scroller { position: relative; overflow: auto; min-width: 0; }
+#workspace-voyage .scroller svg .selected .voyage-container > * { stroke: var(--ink); stroke-width: 2px; }
+#workspace-voyage .scroller svg .focused .voyage-container > * { stroke: var(--ink); stroke-width: 2.5px; stroke-dasharray: 3 2; }
 #workspace-voyage .plate svg { display: block; }
 #workspace-voyage .range-form, #workspace-voyage .cursor-form, #workspace-voyage .range-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 #workspace-voyage input { max-width: 7em; font: inherit; padding: 6px; }

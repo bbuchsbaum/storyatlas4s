@@ -124,6 +124,8 @@ object VoyagePage:
       |.strip { display: grid; gap: 4px; }
       |.scroller svg .selected { stroke: var(--ink); stroke-width: 2px; }
       |.scroller svg .focused { stroke: var(--ink); stroke-width: 2.5px; }
+      |.scroller svg .selected .voyage-container > * { stroke: var(--ink); stroke-width: 2px; }
+      |.scroller svg .focused .voyage-container > * { stroke: var(--ink); stroke-width: 2.5px; stroke-dasharray: 3 2; }
       |.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--ground); padding: 6px 9px; border-radius: 6px; font-size: 12px; max-width: 320px; line-height: 1.35; z-index: 2; }
       |.tip .q { font-family: var(--serif); font-size: 13px; }
       |.tip .m { font-family: var(--mono); font-size: 11px; opacity: 0.85; }
