@@ -27,8 +27,12 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   `VoyageScene` (ADR 0002 §14, the Recall Voyage) into five layers — ground
   and axes, coding bands, links, marks, group-index track — in one pixel
   viewport; every mark's `data-name` is its `MarkId`, coding bands carry no
-  name, a unit's origin is its shape (circle, diamond, hollow dashed diamond;
-  the diamond has the circle's area for the same mass), the posterior column
+  name, a unit anchor is a container glyph (outline = mass 1.0, inner area =
+  anchor mass with no floor, the exact extent as a rule), its origin is its
+  shape (circle, diamond of the circle's area, empty dashed diamond for a
+  zero-mass fill), an external-dominant unit has a hollow core and a second
+  outline, unanchored units sit on a labelled row above the plot (rulings in
+  `docs/delivery/voyage-workshop`), the posterior column
   is drawn only for the units the shell names, and the ghosts of moved
   argmaxes unless the shell withholds them. Every mark is annotated (intaglio
   `GrobMeta`): a title restating the mark for native tooltips, a class per

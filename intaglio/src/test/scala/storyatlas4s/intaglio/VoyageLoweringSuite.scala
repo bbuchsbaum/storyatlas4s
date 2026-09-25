@@ -521,9 +521,9 @@ class VoyageLoweringSuite extends FunSuite:
     assert(x.contains("descriptive label"), "the end is visible text, not only a tooltip")
     assert(!x.contains("…"))
     val expectedY = VoyageLowering.scales(s, VoyageLowering.Box.default).y(25.0)
-    assertEquals(expectedY, 104.0)
+    assertEquals(expectedY, 124.0)
     // The leader tick remains at the supplied group's midpoint, not a redistributed label row.
-    assert(x.contains("901,104 909,104"), x)
+    assert(x.contains("901,124 909,124"), x)
   }
 
   test("context columns are drawn faint and classed as context; focused ones are not") {
@@ -555,6 +555,98 @@ class VoyageLoweringSuite extends FunSuite:
       "the surrogate pair stays together in visible text, not just the title"
     )
     assert(x.contains(">tail</text>"))
+  }
+
+  /** The classes on the parts of unit `ordinal`'s anchor glyph. */
+  private def glyphParts(lowered: ig.Scene, ordinal: Int): Vector[String] =
+    val anchor = lowered.grobs
+      .flatMap(descendants)
+      .collectFirst {
+        case a: ig.Grob.Annotated
+            if a.meta.cssClass.exists(_.value.split(" ").contains(VoyageLowering.Classes.anchor))
+              && metadata(a).get("unit").contains(ordinal.toString) =>
+          a
+      }
+      .getOrElse(fail(s"no anchor for unit $ordinal"))
+    descendants(anchor).drop(1).collect { case a: ig.Grob.Annotated =>
+      a.meta.cssClass.map(_.value).getOrElse("")
+    }
+
+  private def variant(rows: Vector[AlignmentRow], ds: Vector[VoyageDecision]): VoyageScene =
+    ok(
+      VoyageCompiler.compile(
+        ok(
+          RecallVoyageInput.of(units, okA(AlignmentMatrix.of(rows)), timeline, ds, None, secs(12.0))
+        ),
+        Set.empty,
+        provenance
+      )
+    )
+
+  test("a unit anchor is a container glyph: extent rule, mass-1.0 outline, and an inner mark") {
+    val lowered = ok(VoyageLowering.lower(scene))
+    import VoyageLowering.Classes.*
+    // u1: decode-filled, mass 0 — an empty container, never an inner mark
+    assertEquals(glyphParts(lowered, 0), Vector(glyphExtent, glyphContainer))
+    // u4: group-level argmax — the same glyph; the extent rule spans the group
+    assertEquals(glyphParts(lowered, 3), Vector(glyphExtent, glyphContainer, glyphCore))
+  }
+
+  test("external-dominant has a second outline at any mass, including a zero-mass fill") {
+    val ext = AlignState.External(ExternalState.Association)
+    val s = variant(
+      Vector(
+        okA(AlignmentRow.of(u1, Map(AlignState.Source(a) -> 0.1, ext -> 0.9))),
+        okA(AlignmentRow.of(u2, Map(AlignState.External(ExternalState.Unranked) -> 1.0))),
+        okA(AlignmentRow.of(u3, Map(AlignState.Source(c) -> 1.0))),
+        okA(AlignmentRow.of(u4, Map(AlignState.Source(g2) -> 0.001, ext -> 0.999)))
+      ),
+      decisions
+    )
+    val lowered = ok(VoyageLowering.lower(s))
+    import VoyageLowering.Classes.*
+    assertEquals(glyphParts(lowered, 0), Vector(glyphExtent, glyphHalo, glyphContainer))
+    assertEquals(glyphParts(lowered, 3), Vector(glyphExtent, glyphHalo, glyphContainer, glyphCore))
+    // no renderer floor: a mass of 0.001 draws an inner mark of radius R·√0.001
+    val x = render(lowered)
+    val radii = """ r="([0-9.]+)"""".r.findAllMatchIn(x).map(_.group(1).toDouble).toVector
+    val want = VoyageLowering.radius(0.001)
+    assert(want < 0.3, s"R·√0.001 is sub-pixel, not a floored size: $want")
+    assert(radii.exists(r => math.abs(r - want) < 1e-3), s"expected r=$want among $radii")
+    assert(radii.exists(r => math.abs(r - VoyageLowering.haloRadius) < 1e-3), "the halo is fixed")
+  }
+
+  test("the container outline stands for mass 1.0: radius(1) is the container") {
+    assertEquals(VoyageLowering.radius(1.0), VoyageLowering.containerRadius)
+    assertEquals(VoyageLowering.radius(0.0), 0.0)
+    assertEqualsDouble(VoyageLowering.radius(0.25), VoyageLowering.containerRadius / 2, 1e-12)
+  }
+
+  test("unanchored units sit on the labelled row above the plot, clear of the x-axis labels") {
+    val x = render(ok(VoyageLowering.lower(scene)))
+    val box = VoyageLowering.Box.default
+    assert(x.contains("unanchored units (no film anchor)"))
+    assert(x.contains(VoyageLowering.Classes.unanchoredRow))
+    val rowY = box.top - VoyageLowering.unanchoredRowOffset
+    assert(rowY > 0 && rowY < box.top, s"row at $rowY lies above the plot top ${box.top}")
+    val noRow = variant(
+      Vector(
+        okA(AlignmentRow.of(u1, Map(AlignState.Source(a) -> 1.0))),
+        okA(AlignmentRow.of(u2, Map(AlignState.Source(b) -> 1.0))),
+        okA(AlignmentRow.of(u3, Map(AlignState.Source(c) -> 1.0))),
+        okA(AlignmentRow.of(u4, Map(AlignState.Source(g2) -> 1.0)))
+      ),
+      Vector(
+        VoyageDecision(u1, Some(a), Some(1), AnchorOrigin.PosteriorArgmax),
+        VoyageDecision(u2, Some(b), Some(1), AnchorOrigin.PosteriorArgmax),
+        VoyageDecision(u3, Some(c), Some(2), AnchorOrigin.PosteriorArgmax),
+        VoyageDecision(u4, Some(g2), Some(2), AnchorOrigin.PosteriorArgmax)
+      )
+    )
+    assert(
+      !render(ok(VoyageLowering.lower(noRow))).contains("unanchored units"),
+      "the row is drawn only when the scene carries unanchored units"
+    )
   }
 
   test("a point's size is the device radius: u1's mass-0.5 alternative ring has r = radius(0.5)") {

@@ -49,7 +49,8 @@ async function inspect(page, arm) {
   check((await label.locator('title').textContent()) === '4. Watson Morning', `${arm}: original numbered label`);
   const g4 = doc.timeline.groups.find(g => g.ordinal === 4);
   const sourceEnd = Math.max(...[...doc.timeline.nodes, ...doc.timeline.groups].map(n => number(n.span.end)));
-  const expectedY = 14 + 540 - 540 * ((number(g4.span.start) + number(g4.span.end)) / 2) / sourceEnd;
+  // plate top is 34 (VoyageLowering.Box.default.top): the unanchored row sits above the plot
+  const expectedY = 34 + 540 - 540 * ((number(g4.span.start) + number(g4.span.end)) / 2) / sourceEnd;
   const tick = (await label.locator('polyline').getAttribute('points')).split(' ')[0].split(',').map(Number);
   check(Math.abs(tick[1] - expectedY) < 0.001, `${arm}: label at supplied span, not redistributed row`);
   const allGhosts = page.locator('.controls input').nth(0);
@@ -114,7 +115,7 @@ async function inspect(page, arm) {
       await page.locator('.plate svg').waitFor();
       const key = await page.locator('.legend-row').innerText();
       check(key.includes('independent coding:'), 'synthetic: present independent coding has key');
-      check(key.includes('absence rail:'), 'synthetic: present unanchored mark has key');
+      check(key.includes('unanchored row:'), 'synthetic: present unanchored mark has key');
       check(!(key.includes('margin row:')), 'synthetic: no margin key for untimed units outside the plot');
       check((await page.locator('#voyage-unit option').allTextContents()).some(t => t.includes('untimed')), 'synthetic: untimed units remain in the selector');
       check(await page.locator('.voyage-coding').count() === 1, 'synthetic: coding band retained');

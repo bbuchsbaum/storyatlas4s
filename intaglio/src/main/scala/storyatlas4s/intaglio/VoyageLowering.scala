@@ -9,12 +9,16 @@ import storymodel4s.view.*
 
 /** Pure lowering `VoyageScene → intaglio.Scene` (ADR 0002 §14 D4).
   *
-  * It draws exactly the marks the compiler placed: a unit anchor as a point whose area is the
-  * anchor's posterior mass, its origin as shape (circle for the posterior argmax, diamond for a
-  * decode-bound anchor, hollow dashed diamond for a decode-filled one), a group-level anchor as the
-  * group's span, an external-dominant unit hollow, an unanchored unit on the absence rail, and an
-  * untimed unit in the margin row with its reason. Coded intervals from the independent coding are
-  * bands; they are not marks and carry no name. Every mark's `data-name` is its `MarkId`.
+  * It draws exactly the marks the compiler placed. A unit anchor is a container glyph (the Recall
+  * Voyage workshop rulings, `docs/delivery/voyage-workshop`): a fixed outline that stands for mass
+  * 1.0, an inner mark whose area is the anchor's posterior mass (no floor), and the anchor's exact
+  * source extent as a rule (heavier for a group-level anchor). Origin is shape: circle for the
+  * posterior argmax, diamond of equal area for a decode-bound anchor, an empty dashed diamond for a
+  * decode-filled one (its mass is zero). An external-dominant unit has a hollow inner mark and a
+  * second outline, so the flag reads at any mass. An unanchored unit sits on the labelled row above
+  * the plot, and an untimed unit in the margin row with its reason. Coded intervals from the
+  * independent coding are bands; they are not marks and carry no name. Every mark's `data-name` is
+  * its `MarkId`.
   *
   * Every mark also carries intaglio metadata that survives every backend: a title (the unit's words
   * and the row's numbers, so a static plate has native tooltips), a class naming its kind and
@@ -53,7 +57,7 @@ object VoyageLowering:
       width = 1100,
       left = 62,
       right = 196,
-      top = 14,
+      top = 34,
       bottom = 28,
       plotHeight = 540,
       trackHeight = 110,
@@ -82,6 +86,11 @@ object VoyageLowering:
     val massZero = "mass-zero"
     val massUnavailable = "mass-unavailable"
     val groupComparison = "voyage-group-comparison"
+    val glyphContainer = "voyage-container"
+    val glyphCore = "voyage-core"
+    val glyphHalo = "voyage-halo"
+    val glyphExtent = "voyage-extent"
+    val unanchoredRow = "voyage-unanchored-row"
     def origin(o: AnchorOrigin): String = o match
       case AnchorOrigin.PosteriorArgmax => "origin-argmax"
       case AnchorOrigin.DecodeBound     => "origin-bound"
@@ -102,6 +111,8 @@ object VoyageLowering:
     val ink2 = ig.Rgba.unsafe(0x4b, 0x56, 0x5f)
     val hair = ig.Rgba.unsafe(0xd5, 0xda, 0xd8)
     val surface = ig.Rgba.unsafe(0xff, 0xff, 0xff)
+    // container outlines: 3.8:1 on the white plate, above the 3:1 non-text minimum
+    val container = ig.Rgba.unsafe(0x7b, 0x85, 0x8d)
 
   private def params(
       stroke: Option[ig.Rgba],
@@ -199,15 +210,19 @@ object VoyageLowering:
       window.map(_.end)
     )
 
-  /** Radius in pixels for a mass: area grows with mass, and a zero-mass anchor keeps a legible
-    * hollow shape rather than vanishing.
-    */
-  def radius(mass: Double): Double = 2.6 + 8.0 * math.sqrt(math.max(0.0, mass))
+  /** The container's radius: its outline stands for mass 1.0. */
+  val containerRadius: Double = 8.0
 
-  /** The fixed radius of a decode-filled mark: its mass is zero by definition, so no area encodes
-    * it.
+  /** Radius in pixels for a mass: the area is the mass's share of the container, with no floor. A
+    * renderer-chosen minimum would be a threshold the model never supplied.
     */
-  val filledRadius: Double = 4.5
+  def radius(mass: Double): Double = containerRadius * math.sqrt(math.max(0.0, mass))
+
+  /** The second outline of an external-dominant mark: fixed, so the flag never depends on mass. */
+  val haloRadius: Double = containerRadius + 2.6
+
+  /** The unanchored row sits this far above the plot. */
+  val unanchoredRowOffset: Double = 12.0
 
   /** Lower a scene. `alternativesFor` names the units whose posterior columns are drawn in full;
     * `contextFor` names units whose columns are drawn faint, as context behind the focused ones;
@@ -448,6 +463,28 @@ object VoyageLowering:
           gp = label
         )
       ).sequence
+      // the unanchored row: named once, and drawn only when the scene carries unanchored units
+      unanchoredRow <- Option
+        .when(scene.marks.exists {
+          case _: VoyageMark.Unanchored => true
+          case _                        => false
+        }) {
+          val rowY = box.top - unanchoredRowOffset
+          for
+            rule <- ig.Grob.lines(
+              Vector(px(box.left, rowY), px(box.left + box.plotWidth, rowY)),
+              gp = hair
+            )
+            caption <- ig.Grob.text(
+              "unanchored units (no film anchor)",
+              px(box.left + 4, rowY - 7),
+              ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+              gp = label
+            )
+            row <- annotated(ig.Grob.group(Vector(rule, caption)), None, Classes.unanchoredRow)
+          yield row
+        }
+        .sequence
       trackName <- Option
         .when(track == Track.Groups)(
           ig.Grob.text(
@@ -462,7 +499,8 @@ object VoyageLowering:
         boundaries ++ groupLabels ++ Vector(
           yAxis,
           xAxis
-        ) ++ yTicks ++ yLabels ++ xTicks ++ xLabels ++ axisNames ++ trackName,
+        ) ++ yTicks ++ yLabels ++ xTicks ++ xLabels ++ axisNames ++ unanchoredRow.toVector ++
+          trackName,
         viewport = Some(vp)
       )
     yield layer
@@ -605,7 +643,6 @@ object VoyageLowering:
       grobs <- displayed.traverse {
         case m: VoyageMark.UnitAnchor =>
           val x = sc.x(m.at.value)
-          val cy = sc.y(m.span.midpoint)
           // external-dominant is the compiler's fact about the row, read from the mark (V-U5)
           val externalDominant = m.externalDominant
           val classes = Vector(
@@ -616,49 +653,7 @@ object VoyageLowering:
             Option.when(m.level > 0)(Classes.groupLevel)
           for
             name <- GraphicsNames.ofMark(m.identity.mark)
-            grob <-
-              if m.level > 0 then
-                // a group-level anchor spans its whole group; its width carries the mass, its
-                // outline the origin and the external share, exactly as a point does
-                val half = radius(m.mass) * 0.6
-                val hollow = externalDominant || m.origin == AnchorOrigin.DecodeFilled
-                params(
-                  if hollow then Some(if externalDominant then Palette.external else Palette.model)
-                  else Some(Palette.surface),
-                  if hollow then None else Some(Palette.model),
-                  width = if hollow then 1.4 else 1.0,
-                  line =
-                    if m.origin == AnchorOrigin.DecodeFilled then ig.LineType.Dashed
-                    else ig.LineType.Solid
-                ).flatMap(gp =>
-                  ig.Grob.polygon(
-                    Vector(
-                      px(x - half, sc.y(m.span.end.value)),
-                      px(x + half, sc.y(m.span.end.value)),
-                      px(x + half, sc.y(m.span.start.value)),
-                      px(x - half, sc.y(m.span.start.value))
-                    ),
-                    gp,
-                    name = Some(name)
-                  )
-                )
-              else
-                m.origin match
-                  case AnchorOrigin.DecodeFilled =>
-                    params(Some(Palette.model), None, width = 1.4, line = ig.LineType.Dashed)
-                      .flatMap(gp => point(x, cy, filledRadius, ig.PointShape.Diamond, gp, name))
-                  case AnchorOrigin.DecodeBound =>
-                    val fill = if externalDominant then None else Some(Palette.model)
-                    val stroke =
-                      if externalDominant then Some(Palette.external) else Some(Palette.surface)
-                    params(stroke, fill, width = if externalDominant then 1.6 else 1.2)
-                      .flatMap(gp => point(x, cy, radius(m.mass), ig.PointShape.Diamond, gp, name))
-                  case AnchorOrigin.PosteriorArgmax =>
-                    val fill = if externalDominant then None else Some(Palette.model)
-                    val stroke =
-                      if externalDominant then Some(Palette.external) else Some(Palette.surface)
-                    params(stroke, fill, width = if externalDominant then 1.6 else 1.2)
-                      .flatMap(gp => point(x, cy, radius(m.mass), ig.PointShape.Circle, gp, name))
+            grob <- anchorGlyph(m, x, sc, name)
             titled <- annotated(
               grob,
               Some(words.anchor(m)),
@@ -671,13 +666,13 @@ object VoyageLowering:
           // alternatives are drawn by the link layer only for the units the shell names
           GraphicsNames.ofMark(a.identity.mark).map(_ => ig.Grob.group(Vector.empty))
         case m: VoyageMark.Unanchored =>
-          // the absence rail, just below the plot: a cross, hollow, at the unit's recall time
+          // the unanchored row above the plot: a cross, hollow, at the unit's recall time
           for
             name <- GraphicsNames.ofMark(m.identity.mark)
             gp <- params(Some(Palette.external), None, width = 1.4)
             // a cross lowers to two strokes, and each would carry the name; the group carries it once
             cross <- ig.Grob.points(
-              Vector(px(sc.x(m.at.value), box.top + box.plotHeight + 8)),
+              Vector(px(sc.x(m.at.value), box.top - unanchoredRowOffset)),
               ig.ExtentExpr.nativeUnsafe(3.5),
               ig.PointShape.Cross,
               gp
@@ -1066,22 +1061,57 @@ object VoyageLowering:
 
   // ------------------------------------------------------------------ helpers
 
-  /** One named point mark; `size` is intaglio's point size, the device radius; a diamond of that
-    * size has the circle's area.
+  /** One unit anchor as a single named group: the exact extent rule, the second outline when the
+    * row is external-dominant, the container (mass 1.0), and the inner mark (the anchor mass). Each
+    * part carries a class, so a stylesheet can restyle the container of a selected mark without
+    * touching its mass.
     */
-  private def point(
+  private def anchorGlyph(
+      m: VoyageMark.UnitAnchor,
       x: Double,
-      cy: Double,
-      size: Double,
-      shape: ig.PointShape,
-      gp: ig.GraphicParams,
+      sc: Scales,
       name: ig.GraphicsName
   ): Either[GraphicsError, ig.Grob] =
-    ig.Grob.points(
-      Vector(px(x, cy)),
-      ig.ExtentExpr.nativeUnsafe(size),
-      shape,
-      gp,
+    val cy = sc.y(m.span.midpoint)
+    val shape =
+      if m.origin == AnchorOrigin.PosteriorArgmax then ig.PointShape.Circle
+      else ig.PointShape.Diamond
+    val filled = m.origin == AnchorOrigin.DecodeFilled
+    val core = if m.origin == AnchorOrigin.PosteriorArgmax then Palette.model else Palette.ink2
+    def dot(size: Double, gp: ig.GraphicParams) =
+      ig.Grob.points(Vector(px(x, cy)), ig.ExtentExpr.nativeUnsafe(size), shape, gp)
+    for
+      extentGp <- params(Some(Palette.container), None, width = if m.level > 0 then 3.0 else 1.5)
+      extent <- ig.Grob.lines(
+        Vector(px(x, sc.y(m.span.end.value)), px(x, sc.y(m.span.start.value))),
+        gp = extentGp
+      )
+      extentPart <- annotated(extent, None, Classes.glyphExtent)
+      halo <- Option
+        .when(m.externalDominant)(
+          params(Some(Palette.container), None, width = 0.9)
+            .flatMap(dot(haloRadius, _))
+            .flatMap(annotated(_, None, Classes.glyphHalo))
+        )
+        .sequence
+      containerGp <- params(
+        Some(Palette.container),
+        Some(Palette.surface),
+        line = if filled then ig.LineType.Dashed else ig.LineType.Solid
+      )
+      container <- dot(containerRadius, containerGp).flatMap(
+        annotated(_, None, Classes.glyphContainer)
+      )
+      inner <- Option
+        .when(!filled && m.mass > 0.0) {
+          val gp =
+            if m.externalDominant then params(Some(core), Some(Palette.surface), width = 1.2)
+            else params(None, Some(core))
+          gp.flatMap(dot(radius(m.mass), _)).flatMap(annotated(_, None, Classes.glyphCore))
+        }
+        .sequence
+    yield ig.Grob.group(
+      Vector(extentPart) ++ halo.toVector ++ Vector(container) ++ inner.toVector,
       name = Some(name)
     )
 

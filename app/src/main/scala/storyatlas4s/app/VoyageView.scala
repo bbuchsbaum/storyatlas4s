@@ -1135,11 +1135,11 @@ object VoyageView:
         s.decodeFilled.toString,
         "drawn outside posterior support; mass remains zero"
       ),
-      ("unanchored", s.unanchored.toString, "no source anchor; drawn on the absence rail"),
+      ("unanchored", s.unanchored.toString, "no source anchor; drawn on the row above the plot"),
       (
         "external-dominant",
         s.externalDominant.toString,
-        "external mass exceeds source mass; drawn hollow"
+        "external mass exceeds source mass; hollow core and a second outline"
       )
     )
     sectionTag(
@@ -1157,6 +1157,9 @@ object VoyageView:
   private val Raw = "var(--raw)"
   private val GoldBand = "var(--gold-band)"
   private val Surface = "var(--surface)"
+  // the lowering's container outline (3.8:1 on the plate)
+  private val Container = "#7b858d"
+  private val Ink2 = "var(--ink-2)"
 
   private def glyph(shapes: Modifier[SvgElement]*): SvgElement =
     svg.svg(
@@ -1203,48 +1206,66 @@ object VoyageView:
             svg.cx := "13",
             svg.cy := "8",
             svg.r := "6",
-            svg.style := s"fill: $Model; stroke: $Surface; stroke-width: 1.2"
-          )
+            svg.style := s"fill: $Surface; stroke: $Container"
+          ),
+          svg.circle(svg.cx := "13", svg.cy := "8", svg.r := "4.24", svg.style := s"fill: $Model")
         ),
-        "posterior argmax; area is the anchor's posterior mass"
+        "posterior argmax; the outline is mass 1.0, the filled area the anchor's posterior mass (not calibrated confidence)"
       ),
       item(anchors.exists(_.origin == AnchorOrigin.DecodeBound))(
         glyph(
-          svg.polygon(svg.points := diamondPoints(13, 8, 7.5), svg.style := s"fill: $Model")
+          svg.polygon(
+            svg.points := diamondPoints(13, 8, 6 * 1.2533),
+            svg.style := s"fill: $Surface; stroke: $Container"
+          ),
+          svg
+            .polygon(svg.points := diamondPoints(13, 8, 4.24 * 1.2533), svg.style := s"fill: $Ink2")
         ),
         "decode-bound: the scene decode chose it, with posterior mass"
       ),
       item(anchors.exists(_.origin == AnchorOrigin.DecodeFilled))(
         glyph(
           svg.polygon(
-            svg.points := diamondPoints(13, 8, 5.6),
-            svg.style := s"fill: none; stroke: $Model; stroke-width: 1.4; stroke-dasharray: 2 1.5"
+            svg.points := diamondPoints(13, 8, 6 * 1.2533),
+            svg.style := s"fill: $Surface; stroke: $Container; stroke-dasharray: 3 2"
           )
         ),
-        "decode-filled: mass zero, outside the posterior"
+        "decode-filled: an empty container; mass zero, outside the posterior, not posterior evidence"
       ),
       item(anchors.exists(_.level > 0))(
         glyph(
-          svg.rect(
-            svg.x := "10",
-            svg.y := "1",
-            svg.width := "6",
-            svg.height := "14",
-            svg.style := s"fill: $Model"
+          svg.line(
+            svg.x1 := "13",
+            svg.y1 := "1",
+            svg.x2 := "13",
+            svg.y2 := "15",
+            svg.style := s"stroke: $Container; stroke-width: 3"
           )
         ),
-        "group-level anchor: the model stops at the group; width is mass"
+        "group-level anchor: the model stops at the group; the heavy rule is the group's extent"
       ),
       item(anchors.exists(_.externalDominant))(
         glyph(
           svg.circle(
             svg.cx := "13",
             svg.cy := "8",
-            svg.r := "6",
-            svg.style := s"fill: none; stroke: $External; stroke-width: 1.6"
+            svg.r := "7.6",
+            svg.style := s"fill: none; stroke: $Container; stroke-width: 0.9"
+          ),
+          svg.circle(
+            svg.cx := "13",
+            svg.cy := "8",
+            svg.r := "5.6",
+            svg.style := s"fill: $Surface; stroke: $Container"
+          ),
+          svg.circle(
+            svg.cx := "13",
+            svg.cy := "8",
+            svg.r := "3.9",
+            svg.style := s"fill: $Surface; stroke: $Model; stroke-width: 1.2"
           )
         ),
-        "hollow: the row's external mass exceeds its source mass"
+        "hollow: the row's external mass exceeds its source mass; a second outline marks it at any mass"
       ),
       item(alternatives.exists(a => selected(a.unit)))(
         glyph(
@@ -1309,7 +1330,7 @@ object VoyageView:
             svg.style := s"stroke: $External; stroke-width: 1.4"
           )
         ),
-        "cross on the absence rail: anchored nowhere in the source"
+        "unanchored row: a cross above the plot, anchored nowhere in the source"
       ),
       item(lens.allColumns && alternatives.exists(a => !selected(a.unit)))(
         glyph(
