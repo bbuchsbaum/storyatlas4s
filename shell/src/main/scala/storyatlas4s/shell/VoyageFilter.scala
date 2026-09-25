@@ -153,9 +153,7 @@ object VoyageFilter:
         }
     )
 
-  /** A threshold as the user typed it, printed without a platform-dependent `Double.toString`. */
-  private def threshold(t: Double): String =
-    val scaled = math.round(t * 1000)
-    val whole = scaled / 1000
-    val frac = f"${scaled % 1000}%03d".reverse.dropWhile(_ == '0').reverse
-    if frac.isEmpty then whole.toString else s"$whole.$frac"
+  /** A threshold printed as the exports print numbers: the shortest plain decimal, identically on
+    * every platform and never rounded to a different value.
+    */
+  private def threshold(t: Double): String = VoyageExport.number(t)

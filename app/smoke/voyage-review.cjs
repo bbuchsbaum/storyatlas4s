@@ -72,7 +72,7 @@ async function inspect(page, arm) {
   // the plot is one tab stop: a listbox of unit options with the selection as active descendant
   const plate = page.locator('.plate[role=listbox]');
   check(await plate.count() === 1 && await plate.getAttribute('tabindex') === '0', `${arm}: the plot is a focusable listbox`);
-  check(await page.locator('.plate [data-name][tabindex="0"]').count() === 0, `${arm}: marks are not separate tab stops`);
+  check(await page.locator('.plate [tabindex="0"]').count() === 0, `${arm}: nothing inside the plot is a separate tab stop`);
   const optionCount = await page.locator('.plate [role=option]').count();
   check(optionCount === 173, `${arm}: every unit mark in view is an option (${optionCount})`);
   const activeId = await plate.getAttribute('aria-activedescendant');
@@ -128,8 +128,8 @@ async function inspect(page, arm) {
   const anchorRows = anchorsTsv.trim().split('\n').filter(l => !l.startsWith('#')).slice(1);
   check(anchorRows.length > 173 && anchorRows.every(r => Number(r.split('\t')[8]) > 0), `${arm}: the anchors export lists admitted anchors with posterior mass only (${anchorRows.length})`);
   // inspector: filter reasons, K stated as a view count, neighbours by ordinal
-  check(/matches: decode-filled|does not match/.test(await page.locator('.inspector .filter-reasons').textContent()), `${arm}: the inspector states the filter result`);
-  check((await page.locator('.inspector').innerText()).includes('counted by this view'), `${arm}: K is labelled as counted by the view`);
+  check((await page.locator('.inspector .filter-reasons').textContent()) === `matches: decode-filled`, `${arm}: the inspector states why the selected fill matches`);
+  check((await page.locator('.inspector').innerText()).includes("which this document does not supply") && !/K = \d/.test(await page.locator('.inspector').innerText()), `${arm}: localizability states the model's rule and claims no K it cannot vouch for`);
   check(await page.locator('.inspector .neighbour').count() >= 1, `${arm}: neighbouring units by ordinal are shown`);
   await fills.click();
   await page.waitForTimeout(150);
@@ -142,21 +142,35 @@ async function inspect(page, arm) {
   await page.waitForTimeout(150);
   // y camera: Fit to window states its rule; choosing another unit never rescales the axis
   const yLabels = () => page.locator('.plate svg text').evaluateAll(ts => ts.map(t => t.textContent).filter(t => /^\d+:\d\d$/.test(t)).join(' '));
+  // the camera, in 4:00–8:00, where the window's anchors do not span the whole film
+  await page.getByLabel('Detail start (m:ss)').fill('240');
+  await page.getByLabel('Detail end (m:ss)').fill('480');
+  await page.getByRole('button', { name: 'Apply range', exact: true }).click();
+  await page.waitForTimeout(150);
+  // a unit outside the window has no option; choosing it says so
+  const outside = doc.units.find(u => u.onset && number(u.onset) > 490);
+  await page.getByLabel('Inspect recall unit').selectOption(outside.id);
+  await page.waitForTimeout(150);
+  check(/outside the detail window/.test(await page.locator('.sr-only[role=status]').textContent()), `${arm}: choosing a unit outside the window is announced`);
+  const inWindow = doc.units.filter(u => u.onset && number(u.onset) >= 250 && number(u.onset) <= 470);
+  await page.getByLabel('Inspect recall unit').selectOption(inWindow[0].id);
+  await page.waitForTimeout(150);
   const whole = await yLabels();
   await page.getByRole('button', { name: 'Fit to window', exact: true }).click();
   await page.waitForTimeout(150);
   check(await page.getByRole('button', { name: 'Fit to window', exact: true }).getAttribute('aria-pressed') === 'true', `${arm}: Fit to window is pressed`);
   check((await page.locator('.camera-rule').textContent()).includes('snapped to scene bounds'), `${arm}: the fit rule is printed`);
   const fitted = await yLabels();
-  const home = doc.units[5].ordinal;
-  await page.locator(`.plate .voyage-anchor[data-unit="${home + 1}"] [data-name], .plate .voyage-anchor[data-unit="${home - 1}"] [data-name]`).first().dispatchEvent('click');
+  check(fitted !== whole, `${arm}: in 4:00–8:00 the fitted axis differs from the whole film`);
+  await page.getByLabel('Inspect recall unit').selectOption(inWindow.at(-1).id);
   await page.waitForTimeout(150);
-  check(await page.locator('.page[data-focus]').getAttribute('data-focus') !== doc.units[5].id, `${arm}: another unit is selected`);
+  check(await page.locator('.page[data-focus]').getAttribute('data-focus') === inWindow.at(-1).id, `${arm}: another unit in the window is selected`);
   check(await yLabels() === fitted, `${arm}: selecting another unit does not rescale the fitted film axis`);
   await page.getByRole('button', { name: 'Whole film', exact: true }).click();
   await page.waitForTimeout(150);
   check(await yLabels() === whole, `${arm}: Whole film restores the whole-film axis`);
-  await page.locator(`.plate .voyage-anchor[data-unit="${home}"] [data-name]`).first().dispatchEvent('click');
+  await page.getByRole('button', { name: 'Whole recall', exact: true }).click();
+  await page.getByLabel('Inspect recall unit').selectOption(doc.units[5].id);
   await page.waitForTimeout(150);
   check(await page.locator('.page[data-focus]').getAttribute('data-focus') === doc.units[5].id, `${arm}: the original unit is selected again`);
   await page.screenshot({ path: path.join(dir, 'desktop.png'), fullPage: true });

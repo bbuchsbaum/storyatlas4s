@@ -93,6 +93,7 @@ object VoyageLowering:
     val matchTick = "voyage-match-tick"
     val caption = "voyage-caption"
     val gutterLabels = "voyage-gutter-labels"
+    val gutterLeader = "voyage-gutter-leader"
     val groupBand = "voyage-group-band"
     val mass = "voyage-mass"
     val massAnchor = "mass-anchor"
@@ -294,7 +295,11 @@ object VoyageLowering:
     * `contextFor` names units whose columns are drawn faint, as context behind the focused ones;
     * `ghosts` opts into all moved argmaxes; otherwise only `ghostsFor` are shown. Labels prioritize
     * the groups of `alternativesFor`, then the number of drawn anchors, without moving their source
-    * coordinates. These are display choices only; `box` is the plate.
+    * coordinates. `film` is the y camera (see `fitFilm`); `inspection` names the units an
+    * inspection filter matched, so the rest are drawn without hue and none is dropped; `caption` is
+    * the shell's own caption, drawn verbatim in the bottom margin; a `box.gutter` of at least 180px
+    * holds the one selected unit's admitted anchors. These are display choices only; `box` is the
+    * plate.
     */
   def lower(
       scene: VoyageScene,
@@ -706,7 +711,7 @@ object VoyageLowering:
     // the gutter shows one unit's admitted anchors, when the plate has room for it
     val gutterUnit =
       Option
-        .when(sc.box.gutter >= 120 && alternativesFor.size == 1)(alternativesFor.head)
+        .when(sc.box.gutter >= 180 && alternativesFor.size == 1)(alternativesFor.head)
         .flatMap(anchorOf.get)
     val moved = anchors
       .filter(m => m.origin != AnchorOrigin.PosteriorArgmax && (ghosts || ghostsFor(m.unit)))
@@ -802,9 +807,12 @@ object VoyageLowering:
     if m == 0.0 then "0"
     else if m >= 0.001 then f"$m%.3f"
     else
-      val e = math.floor(math.log10(m)).toInt
-      val mantissa = m / math.pow(10, e)
-      f"$mantissa%.1fe$e"
+      // two significant digits by decimal rounding, not by log10/pow, whose last bits may differ
+      // between the JVM and JavaScript and whose rounding can print a mantissa of 10.0
+      val rounded = BigDecimal(m).round(new java.math.MathContext(2)).bigDecimal
+      val digits = rounded.unscaledValue.abs.toString.padTo(2, '0')
+      val exponent = rounded.precision - rounded.scale - 1
+      s"${digits.head}.${digits(1)}e$exponent"
 
   /** The gutter: the selected unit's admitted anchors on the film axis, beside the plot. Each is
     * its `Alternative` mark (named, so selection and hit-testing work), drawn as its exact extent
@@ -822,7 +830,8 @@ object VoyageLowering:
   ): Either[GraphicsError, Vector[ig.Grob]] =
     val box = sc.box
     val gx = box.plotRight + 12.0
-    val scale = math.min(100.0, box.gutter - 70.0)
+    // the bar scale leaves room for the longest label ("0.900 argmax · placed") before the rail
+    val scale = math.min(100.0, box.gutter - 140.0)
     // the placed anchor is the unit's own mark (its name is on the glyph); the compiler lists every
     // other admitted anchor as an Alternative. A decode fill's placement has no posterior mass and
     // is not an admitted anchor, so it is drawn apart, below.
@@ -870,15 +879,19 @@ object VoyageLowering:
           true
         )
       )
-    // every label printed: pitch pass down, then up from the plot floor
-    val down = labels0.sortBy(_.cy).foldLeft(Vector.empty[(Label, Double)]) { (acc, l) =>
-      acc :+ (l -> acc.lastOption.fold(l.cy)((_, prev) => math.max(l.cy, prev + 12)))
-    }
+    // every label printed, inside the plot's height: a label moves only as far as its neighbours
+    // demand (down from the plot top, then up from the plot floor), never by a shared shift, so an
+    // isolated label stays at its bar; a stack taller than the plot shares the height evenly
+    val ceiling = box.top + 4.0
     val floor = (box.top + box.plotHeight).toDouble
-    val overflow = down.lastOption.fold(0.0)((_, y) => math.max(0.0, y - floor))
-    val placed = down.map((l, y) => l -> (y - overflow)).foldRight(Vector.empty[(Label, Double)]) {
-      case ((l, y), acc) =>
-        (l -> acc.headOption.fold(y)((_, next) => math.min(y, next - 12))) +: acc
+    val pitch = math.min(12.0, (floor - ceiling) / math.max(1, labels0.size - 1))
+    val down = labels0.sortBy(_.cy).foldLeft(Vector.empty[(Label, Double)]) { (acc, l) =>
+      val lowest = acc.lastOption.fold(ceiling)((_, prev) => prev + pitch)
+      acc :+ (l -> math.max(l.cy, lowest))
+    }
+    val placed = down.foldRight(Vector.empty[(Label, Double)]) { case ((l, y), acc) =>
+      val highest = acc.headOption.fold(floor)((_, next) => next - pitch)
+      (l -> math.min(y, highest)) +: acc
     }
     val leaderX = placed.filter((l, y) => math.abs(y - l.cy) > 1).map(_._1.x).maxOption
     for
@@ -977,6 +990,7 @@ object VoyageLowering:
             .when(moved)(
               ig.Grob
                 .lines(Vector(px(l.x - 3, l.cy), px(x - 10, l.cy), px(x - 3, y)), gp = leaderGp)
+                .flatMap(annotated(_, None, Classes.gutterLeader))
             )
             .sequence
           t <- ig.Grob.text(

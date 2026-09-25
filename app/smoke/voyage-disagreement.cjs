@@ -77,7 +77,10 @@ async function verify(page,doc,start,end,label) {
       assert.ok(selected,'unit5 has a group disagreement');
       await page.locator('.voyage-group-comparison[data-unit="5"]').click();
       check(await page.locator('.page').getAttribute('data-focus')===selected.id,`${arm}: comparison click selects exact recall unit`);
-      check(await page.locator('.voyage-group-comparison[data-unit="5"]').getAttribute('aria-pressed')==='true',`${arm}: selected comparison has accessible state`);
+      // the comparison is a pointer shortcut to a unit that is already a listbox option (its
+      // accessible state is the option's aria-selected); the comparison shows its own state as data
+      check(await page.locator('.voyage-group-comparison[data-unit="5"]').getAttribute('data-selected')==='true',`${arm}: selected comparison shows its state`);
+      check(await page.locator('.plate [role=option][aria-selected=true]').count()===1,`${arm}: the selected unit is the listbox's selected option`);
       check((await page.locator('.selected-group-comparison').innerText()).includes('Different groups.'),`${arm}: inspector explains selected group comparison`);
       const other=shown.find(r=>r.unit!==5);
       await page.locator(`.voyage-group-comparison[data-unit="${other.unit}"]`).focus();await page.keyboard.press('Enter');

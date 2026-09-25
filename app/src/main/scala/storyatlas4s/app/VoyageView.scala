@@ -135,6 +135,7 @@ object VoyageView:
     val allColumns = Var(false)
     val track = Var(VoyageLowering.Track.Masses)
     val fitFilm = Var(false)
+    val workspaceNote = Var("")
     val width = Var(Option.empty[Int])
     val preview = Var(Option.empty[(Double, Double)])
     val rangeError = Var(Option.empty[String])
@@ -331,7 +332,7 @@ object VoyageView:
           onClick --> (_ => setWindow(RecallWindow.bounded(0, total, total)))
         )
       ),
-      cameraControls(fitFilm),
+      cameraControls(fitFilm, windows.map(w => VoyageLowering.fitFilm(base, w).nonEmpty)),
       child.maybe <-- rangeError.signal.map(_.map(e => p(cls("range-error"), role("alert"), e))),
       child.maybe <-- cursorError.signal.map(_.map(e => p(cls("range-error"), role("alert"), e))),
       div(
@@ -438,6 +439,18 @@ object VoyageView:
 
     div(
       cls("page"),
+      span(
+        cls("sr-only"),
+        role("status"),
+        aria.live("polite"),
+        child.text <-- workspaceNote.signal
+      ),
+      active.changes.withCurrentValueOf(windows) --> { (idOpt, w) =>
+        idOpt
+          .flatMap(id => base.units.find(_.id == id))
+          .flatMap(u => placementNote(u, w))
+          .foreach(workspaceNote.set)
+      },
       styleTag(VoyagePage.inspectorCss),
       dataAttr("marks") := base.marks.size.toString,
       dataAttr("selection") <-- legacySelection.map(_.toVector.map(_.render).sorted.mkString(" ")),
@@ -720,7 +733,7 @@ object VoyageView:
             disabled := window.now().isEmpty
           )
         ),
-        cameraControls(fitFilm)
+        cameraControls(fitFilm, window.signal.map(w => VoyageLowering.fitFilm(scene, w).nonEmpty))
       ),
       child.maybe <-- rangeError.signal.map(_.map(e => p(cls("range-error"), role("alert"), e))),
       div(
@@ -853,6 +866,14 @@ object VoyageView:
 
     div(
       cls("page"),
+      // a unit with no drawn option (untimed, or outside the window) is announced here, since the
+      // listbox has no active option to speak for it
+      focus.signal.changes --> { idOpt =>
+        idOpt
+          .flatMap(id => scene.units.find(_.id == id))
+          .flatMap(u => placementNote(u, window.now()))
+          .foreach(announcement.set)
+      },
       dataAttr("marks") := scene.marks.size.toString,
       dataAttr("selection") <-- selection.signal.map(
         _.toVector.map(_.render).sorted.mkString(" ")
@@ -1019,7 +1040,7 @@ object VoyageView:
           )
         else if width < 1000 then VoyageLowering.Box.default.copy(width = width, trackHeight = 72)
         // wide plates carry the gutter: the selected unit's admitted anchors on the film axis
-        else VoyageLowering.Box.default.copy(width = width, trackHeight = 72, gutter = 170)
+        else VoyageLowering.Box.default.copy(width = width, trackHeight = 72, gutter = 240)
       trackBox = box.copy(
         bottom = box.bottom + 46,
         gap = 40,
@@ -1051,7 +1072,7 @@ object VoyageView:
   /** The y camera. Fit to window reads only the recall window's supplied placements and argmaxes,
     * snapped to group bounds, and it states that rule; selecting a unit never rescales the axis.
     */
-  private def cameraControls(fitFilm: Var[Boolean]): HtmlElement =
+  private def cameraControls(fitFilm: Var[Boolean], fits: Signal[Boolean]): HtmlElement =
     div(
       cls("camera-actions"),
       role("group"),
@@ -1068,14 +1089,18 @@ object VoyageView:
         aria.pressed <-- fitFilm.signal.map(on => (!on).toString),
         onClick --> (_ => fitFilm.set(false))
       ),
-      child.maybe <-- fitFilm.signal.map(on =>
-        Option.when(on)(
-          span(
-            cls("camera-rule"),
-            "film fitted to the window's placed and argmax anchors, snapped to scene bounds"
+      child.maybe <-- fitFilm.signal
+        .combineWith(fits)
+        .map((on, fitted) =>
+          Option.when(on)(
+            span(
+              cls("camera-rule"),
+              if fitted then
+                "film fitted to the window's placed and argmax anchors, snapped to scene bounds"
+              else "no placed anchor in this window: the whole film is shown"
+            )
           )
         )
-      )
     )
 
   private def mount(container: dom.Element, frame: Frame, selection: Set[Address]): Unit =
@@ -1099,22 +1124,20 @@ object VoyageView:
       val unitMark = el.closest(".voyage-anchor, .voyage-unanchored") != null
       if unitMark then
         el.setAttribute("role", "option")
-        el.setAttribute("id", optionId(el.getAttribute("data-name")))
+        el.setAttribute("id", s"voyage-option-$i")
         Option(el.parentNode)
           .collect { case p: dom.Element => p }
           .flatMap(p => Option(p.querySelector(":scope > title")))
           .foreach(t => el.setAttribute("aria-label", t.textContent))
       else if !el.hasAttribute("data-comparison-unit") then el.setAttribute("role", "none")
       if el.hasAttribute("data-comparison-unit") then
-        el.setAttribute("tabindex", "0")
-        el.setAttribute("role", "button")
-        el.setAttribute(
-          "aria-label",
-          Option(el.querySelector("title")).fold("Inspect group comparison")(_.textContent)
-        )
+        // the comparison names a unit that is already an option; inside the listbox it is a pointer
+        // shortcut, not a second tab stop or an interactive child
+        el.setAttribute("tabindex", "-1")
+        el.setAttribute("role", "none")
         val unit = comparisonUnitAt(el, frame.scene)
         el.setAttribute(
-          "aria-pressed",
+          "data-selected",
           unit
             .exists(id =>
               selection.contains(
@@ -1154,10 +1177,6 @@ object VoyageView:
           .flatMap(page => Option(page.querySelector(".plate[role=listbox]")))
           .foreach(_.asInstanceOf[js.Dynamic].focus())
       case _ => ()
-
-  /** A DOM id for a mark's option: its `MarkId`, reduced to id-safe characters, with a prefix. */
-  private def optionId(name: String): String =
-    "voyage-option-" + name.map(c => if c.isLetterOrDigit || c == '-' then c else '_')
 
   private def decorate(container: dom.Element, scene: VoyageScene, selection: Set[Address]): Unit =
     val selectedMarks = selection.toVector.flatMap(scene.navigation.marksFor).map(_.value).toSet
@@ -1589,6 +1608,14 @@ object VoyageView:
       )
     )
 
+  /** What to say when the selection lands on a unit the plot draws no option for. */
+  private def placementNote(u: VoyageUnit, window: Option[RecallWindow]): Option[String] =
+    u.onset match
+      case None => Some(s"Unit ${u.ordinal}: untimed, not placed on the plot.")
+      case Some(t) if window.exists(w => !w.contains(t.value)) =>
+        Some(s"Unit ${u.ordinal} at ${clockInput(t.value)}: outside the detail window.")
+      case _ => None
+
   /** The figure's own caption, under the plot, so identities, caveats and the filter state travel
     * with a cropped figure (workshop ruling 13). Every count it prints is the filter's own.
     */
@@ -1598,9 +1625,9 @@ object VoyageView:
       if !filter.isSet then "no filter set"
       else
         val labels = filter.criteria.toVector.sortBy(_.ordinal).map(_.label) ++
-          filter.argmaxMassBelow.map(t => s"argmax mass < $t") ++
-          filter.externalMassAbove.map(t => s"external mass > $t") ++
-          filter.localizabilityBelow.map(t => s"localizability < $t")
+          filter.argmaxMassBelow.map(t => s"argmax mass < ${VoyageExport.number(t)}") ++
+          filter.externalMassAbove.map(t => s"external mass > ${VoyageExport.number(t)}") ++
+          filter.localizabilityBelow.map(t => s"localizability < ${VoyageExport.number(t)}")
         val mode = filter.combine.toString.toLowerCase
         s"filter ($mode): ${labels.mkString(", ")}; ${filter.matches(scene).size} of ${scene.units.size} units match; grey marks do not match"
     Vector(
@@ -1689,8 +1716,10 @@ object VoyageView:
       val a = dom.document.createElement("a").asInstanceOf[dom.HTMLAnchorElement]
       a.href = url
       a.setAttribute("download", name)
+      dom.document.body.appendChild(a)
       a.click()
-      dom.URL.revokeObjectURL(url)
+      dom.document.body.removeChild(a)
+      val _ = js.timers.setTimeout(1000)(dom.URL.revokeObjectURL(url))
     div(
       cls("export-actions"),
       button(
@@ -1927,7 +1956,7 @@ object VoyageView:
             a.localizability.fold("—")(l => f"$l%.2f"),
             span(
               cls("note"),
-              s" 1 − H/log K over the admitted anchors; K = ${scene.timeline.nodes.size} timeline nodes (counted by this view)"
+              " as supplied by the model (1 − H/log K; K is the model's own timeline size, which this document does not supply)"
             )
           )
         )

@@ -683,6 +683,35 @@ class VoyageLoweringSuite extends FunSuite:
     val late = ok(RecallWindow.of(8.5, 12.0).left.map(identity))
     val fitLate = VoyageLowering.fitFilm(scene, Some(late)).getOrElse(fail("u4 is in view"))
     assertEquals((fitLate.start, fitLate.end), (20.0, 30.0))
+    // a placement inside a group (b, 10–20) is widened to that group's bounds (0–20)
+    val inside = ok(
+      VoyageCompiler.compile(
+        ok(
+          RecallVoyageInput.of(
+            units,
+            okA(
+              AlignmentMatrix.of(
+                Vector(
+                  okA(AlignmentRow.of(u1, Map(AlignState.Source(b) -> 1.0))),
+                  okA(AlignmentRow.of(u2, Map(AlignState.External(ExternalState.Unranked) -> 1.0))),
+                  okA(AlignmentRow.of(u3, Map(AlignState.Source(c) -> 1.0))),
+                  okA(AlignmentRow.of(u4, Map(AlignState.Source(g2) -> 1.0)))
+                )
+              )
+            ),
+            timeline,
+            decisions
+              .updated(0, VoyageDecision(u1, Some(b), Some(1), AnchorOrigin.PosteriorArgmax)),
+            None,
+            secs(12.0)
+          )
+        ),
+        Set.empty,
+        provenance
+      )
+    )
+    val snapped = VoyageLowering.fitFilm(inside, Some(w)).getOrElse(fail("u1 is in view"))
+    assertEquals((snapped.start, snapped.end), (0.0, 20.0), "10–20 snapped out to group 1")
     // nothing anchored in view: no fit, so the shell keeps the whole film
     val empty = ok(RecallWindow.of(5.5, 6.0).left.map(identity))
     assertEquals(VoyageLowering.fitFilm(scene, Some(empty)), None)
@@ -708,7 +737,7 @@ class VoyageLoweringSuite extends FunSuite:
     )
   }
 
-  private val gutterBox = VoyageLowering.Box.default.copy(right = 150, gutter = 170)
+  private val gutterBox = VoyageLowering.Box.default.copy(right = 150, gutter = 240)
 
   test("the gutter draws the selected unit's admitted anchors as named bars, every value printed") {
     val x = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u4), box = gutterBox)))
@@ -742,11 +771,34 @@ class VoyageLoweringSuite extends FunSuite:
   test("crowded gutter values keep a 12px pitch with leaders; none is dropped") {
     val squeezed = gutterBox.copy(plotHeight = 30)
     val lowered = ok(VoyageLowering.lower(scene, alternativesFor = Set(u1), box = squeezed))
-    val x = render(lowered)
+    val x = ok(SvgRenderer.render(lowered, ok(SvgOptions(squeezed.width, squeezed.height)))).value
     Vector(">0 placed · fill</text>", ">0.500 argmax</text>", ">0.200</text>").foreach(t =>
       assert(x.contains(t), t)
     )
-    assert(x.contains("<polyline"), "a displaced label carries a leader")
+    assert(x.contains(VoyageLowering.Classes.gutterLeader), "a displaced label carries a leader")
+    // the labels keep the pitch and stay inside the plot's height
+    val gutter = x.substring(x.indexOf(VoyageLowering.Classes.gutterLabels))
+    val ys = """<text[^>]* y="([0-9.]+)"[^>]*>(0\.500 argmax|0\.200|0 placed · fill)</text>""".r
+      .findAllMatchIn(gutter)
+      .map(_.group(1).toDouble)
+      .toVector
+      .sorted
+    assertEquals(ys.size, 3, gutter)
+    ys.sliding(2).foreach(p => assert(p(1) - p(0) >= 11.99, s"pitch ${p(1) - p(0)} in $ys"))
+    assert(
+      ys.head - 3.5 >= squeezed.top + 4 - 1e-9 && ys.last - 3.5 <= squeezed.top + 30 + 1e-9,
+      s"$ys"
+    )
+  }
+
+  test("an isolated gutter label stays at its bar: no leader when nothing crowds it") {
+    val x = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u4), box = gutterBox)))
+    val gutter = x.substring(x.indexOf(VoyageLowering.Classes.gutterLabels))
+    assert(
+      !x.contains(VoyageLowering.Classes.gutterLeader),
+      "two anchors 20 s apart on a 540px plot never collide, so neither label moves"
+    )
+    assert(gutter.nonEmpty)
   }
 
   test("an inspection keeps every mark; non-matches lose hue, matches gain a tick") {
@@ -755,8 +807,18 @@ class VoyageLoweringSuite extends FunSuite:
     import VoyageLowering.Classes.*
     assertEquals(glyphParts(lowered, 0), Vector(glyphExtent, glyphContainer, matchTick))
     assertEquals(glyphParts(lowered, 3), Vector(glyphExtent, glyphContainer, glyphCore))
-    assert(x.contains("origin-filled matched") || x.contains(" matched\""), "u1 is classed matched")
-    assert(x.contains(" unmatched"), "u4 is classed unmatched")
+    def classesOf(ordinal: Int): Set[String] =
+      lowered.grobs
+        .flatMap(descendants)
+        .collectFirst {
+          case g: ig.Grob.Annotated
+              if g.meta.cssClass.exists(_.value.split(" ").contains(anchor)) &&
+                metadata(g).get("unit").contains(ordinal.toString) =>
+            g.meta.cssClass.map(_.value.split(" ").toSet).getOrElse(Set.empty)
+        }
+        .getOrElse(fail(s"no anchor for unit $ordinal"))
+    assert(classesOf(0)(matched) && !classesOf(0)(unmatched), "u1 is classed matched")
+    assert(classesOf(3)(unmatched) && !classesOf(3)(matched), "u4 is classed unmatched")
     scene.marks.foreach { m =>
       if !m.isInstanceOf[VoyageMark.Alternative] && !m.isInstanceOf[VoyageMark.Untimed] then
         assert(x.contains(s"""data-name="${m.identity.mark.value}""""), "no mark is dropped")
@@ -784,6 +846,12 @@ class VoyageLoweringSuite extends FunSuite:
     assertEquals(VoyageLowering.massLabel(0.0), "0")
     assertEquals(VoyageLowering.massLabel(0.00012), "1.2e-4")
     assertEquals(VoyageLowering.massLabel(0.001), "0.001")
+    assertEquals(
+      VoyageLowering.massLabel(0.000996),
+      "1.0e-3",
+      "rounding never prints a mantissa of 10"
+    )
+    assertEquals(VoyageLowering.massLabel(9.96e-7), "1.0e-6")
   }
 
   test("a moved argmax is a thin ring joined to the placement by the dashed declared route") {

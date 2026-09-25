@@ -34,6 +34,10 @@ class VoyageFilterSuite extends FunSuite:
     val low = VoyageFilter(argmaxMassBelow = Some(0.4)).matches(scene)
     assertEquals(low.keySet, Set(u5), "u5's argmax a carries 0.3; u1's carries 0.5")
     assertEquals(low(u5), Vector("argmax mass below 0.4"))
+    assertEquals(
+      VoyageFilter(externalMassAbove = Some(0.00005)).matches(scene)(u5),
+      Vector("external mass above 0.00005")
+    )
     assertEquals(VoyageFilter(externalMassAbove = Some(0.5)).matches(scene).keySet, Set(u5))
     assertEquals(
       VoyageFilter(localizabilityBelow = Some(1.01)).matches(scene).keySet,
