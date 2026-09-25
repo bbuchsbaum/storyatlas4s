@@ -173,3 +173,27 @@ producer rules:
 - external-dominant means `external > source`;
 - every onset is ≥ 0;
 - mass ties are broken by key.
+
+## Port status (Scala, branch `claude/voyage-v6`)
+
+The Scala port implements rulings 1–18 in `VoyageLowering`, `shell/VoyageFilter`,
+`shell/VoyageExport`, and `VoyageView`. It departs from the prototype where the
+provider or the existing product requires, as follows:
+
+- **Localizability's K.** The prototype printed K. The scene does not supply
+  it, and the model's K can differ from the timeline this view receives. The
+  inspector therefore restates the model's rule and prints no K.
+- **Y camera default.** The default is *Whole film*, and *Fit to window* is an
+  explicit choice. The existing viewport court pins the invariant that zooming
+  the recall window never moves marks vertically.
+- **Group-comparison marks.** These marks, in the optional disagreement track,
+  are pointer shortcuts inside the plot's listbox. The unit they name is
+  already a listbox option.
+- **Compact plates** (below 640px wide) are re-lowered at real pixel sizes, as
+  before. Text never shrinks, which is what ruling 18 protects. The gutter
+  appears only on plates at least 1000px wide.
+- **Not ported.**
+  - The prototype's count line in place of the KPI cards.
+  - The paper, ink and teal palette. The plate keeps the lowering's own
+    palette, which a stylesheet can restyle by class.
+  - The overview's localizability ribbon.
