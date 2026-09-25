@@ -39,7 +39,11 @@ object VoyageView:
       allColumns: Boolean,
       width: Option[Int],
       window: Option[RecallWindow],
-      track: VoyageLowering.Track
+      track: VoyageLowering.Track,
+      /** The y camera: fitted to the recall window's placed and argmax anchors, or the whole film.
+        * A display choice only; the selection never changes it.
+        */
+      fitFilm: Boolean = false
   )
 
   /** The plate follows its panel between these widths; narrower and the clocks lose their ticks,
@@ -122,6 +126,7 @@ object VoyageView:
     val ghosts = Var(false)
     val allColumns = Var(false)
     val track = Var(VoyageLowering.Track.Masses)
+    val fitFilm = Var(false)
     val width = Var(Option.empty[Int])
     val preview = Var(Option.empty[(Double, Double)])
     val rangeError = Var(Option.empty[String])
@@ -203,8 +208,15 @@ object VoyageView:
     val sourceCursor = signal.map(_.state.viewport.sourceCursor)
     val recallCursor = signal.map(_.state.viewport.recallCursor)
     val lens = legacySelection
-      .combineWith(ghosts.signal, allColumns.signal, width.signal.distinct, windows, track.signal)
-      .map { case (s, g, all, w, r, t) => Lens(s, g, all, w, r, t) }
+      .combineWith(
+        ghosts.signal,
+        allColumns.signal,
+        width.signal.distinct,
+        windows,
+        track.signal,
+        fitFilm.signal
+      )
+      .map { case (s, g, all, w, r, t, f) => Lens(s, g, all, w, r, t, f) }
     val visibleText = signal
       .map(c =>
         base.units
@@ -311,6 +323,7 @@ object VoyageView:
           onClick --> (_ => setWindow(RecallWindow.bounded(0, total, total)))
         )
       ),
+      cameraControls(fitFilm),
       child.maybe <-- rangeError.signal.map(_.map(e => p(cls("range-error"), role("alert"), e))),
       child.maybe <-- cursorError.signal.map(_.map(e => p(cls("range-error"), role("alert"), e))),
       div(
@@ -511,6 +524,7 @@ object VoyageView:
     val ghosts = Var(false)
     val allColumns = Var(false)
     val track = Var(VoyageLowering.Track.Masses)
+    val fitFilm = Var(false)
     // unmeasured until the panel is laid out, so the plate is lowered once, at its real width
     val width = Var(Option.empty[Int])
     val total = scene.recallLength.value
@@ -524,9 +538,10 @@ object VoyageView:
         allColumns.signal,
         width.signal.distinct,
         window.signal,
-        track.signal
+        track.signal,
+        fitFilm.signal
       )
-      .map { case (s, g, all, w, r, t) => Lens(s, g, all, w, r, t) }
+      .map { case (s, g, all, w, r, t, f) => Lens(s, g, all, w, r, t, f) }
     val frames: Signal[Option[Either[String, Frame]]] =
       lens.map(l => l.width.map(w => compile(document, scene, l, w)))
     val ordered = scene.units.sortBy(_.ordinal)
@@ -668,7 +683,8 @@ object VoyageView:
             onClick --> (_ => setWindow(RecallWindow.bounded(0, total, total))),
             disabled := window.now().isEmpty
           )
-        )
+        ),
+        cameraControls(fitFilm)
       ),
       child.maybe <-- rangeError.signal.map(_.map(e => p(cls("range-error"), role("alert"), e))),
       div(
@@ -933,7 +949,9 @@ object VoyageView:
             plotHeight = 380,
             trackHeight = 72
           )
-        else VoyageLowering.Box.default.copy(width = width, trackHeight = 72)
+        else if width < 1000 then VoyageLowering.Box.default.copy(width = width, trackHeight = 72)
+        // wide plates carry the gutter: the selected unit's admitted anchors on the film axis
+        else VoyageLowering.Box.default.copy(width = width, trackHeight = 72, gutter = 170)
       trackBox = box.copy(
         gap = 40,
         trackHeight = if lens.track == VoyageLowering.Track.GroupDisagreements then 144 else 72
@@ -949,7 +967,8 @@ object VoyageView:
           window = lens.window,
           includeUntimed = false,
           visibleRecallText = visibleRecallText,
-          track = lens.track
+          track = lens.track,
+          film = if lens.fitFilm then VoyageLowering.fitFilm(scene, lens.window) else None
         )
         .left
         .map(_.message)
@@ -957,6 +976,36 @@ object VoyageView:
         .map(_.message)
       svg <- SvgRenderer.render(lowered, options).left.map(_.message)
     yield Frame(scene, svg.value)
+
+  /** The y camera. Fit to window reads only the recall window's supplied placements and argmaxes,
+    * snapped to group bounds, and it states that rule; selecting a unit never rescales the axis.
+    */
+  private def cameraControls(fitFilm: Var[Boolean]): HtmlElement =
+    div(
+      cls("camera-actions"),
+      role("group"),
+      aria.label("Film axis"),
+      button(
+        typ("button"),
+        "Fit to window",
+        aria.pressed <-- fitFilm.signal.map(_.toString),
+        onClick --> (_ => fitFilm.set(true))
+      ),
+      button(
+        typ("button"),
+        "Whole film",
+        aria.pressed <-- fitFilm.signal.map(on => (!on).toString),
+        onClick --> (_ => fitFilm.set(false))
+      ),
+      child.maybe <-- fitFilm.signal.map(on =>
+        Option.when(on)(
+          span(
+            cls("camera-rule"),
+            "film fitted to the window's placed and argmax anchors, snapped to scene bounds"
+          )
+        )
+      )
+    )
 
   private def mount(container: dom.Element, frame: Frame, selection: Set[Address]): Unit =
     // a mark reached by Tab and activated with Enter is about to be replaced; remember that the
@@ -1283,7 +1332,9 @@ object VoyageView:
             svg.style := s"fill: none; stroke: $Model; stroke-width: 1.2; stroke-dasharray: 2 1.5"
           )
         ),
-        "posterior column of the focused unit: dashed rings, area is mass"
+        if lens.width.exists(_ >= 1000) then
+          "admitted anchors of the selected unit: bars in the gutter beside the plot, 100px = mass 1.0"
+        else "posterior column of the focused unit: dashed rings, area is mass"
       ),
       item(hasCoding)(
         glyph(

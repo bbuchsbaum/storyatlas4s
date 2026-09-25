@@ -649,6 +649,130 @@ class VoyageLoweringSuite extends FunSuite:
     )
   }
 
+  test("the scene rail never drops a group: crowded names become printed ranges") {
+    // a plate so short that the two groups' names collide
+    val squeezed = VoyageLowering.Box.default.copy(plotHeight = 12)
+    val lowered = ok(VoyageLowering.lower(scene, box = squeezed))
+    val annotatedAll = lowered.grobs.flatMap(descendants).collect { case a: ig.Grob.Annotated => a }
+    def classed(c: String) =
+      annotatedAll.filter(_.meta.cssClass.exists(_.value.split(" ").contains(c)))
+    val named = classed(VoyageLowering.Classes.groupLabel).map(a => metadata(a)("group").toInt)
+    val ranged = classed(VoyageLowering.Classes.groupRange)
+      .flatMap(a => metadata(a)("groups").split(" ").map(_.toInt))
+    assert(ranged.nonEmpty, "the collision produced a range, not a silent drop")
+    assertEquals((named ++ ranged).sorted, timeline.groups.map(_.ordinal).sorted)
+    assert(named.intersect(ranged).isEmpty, "a group is named once or ranged once")
+    // at the default size both names fit and no range is printed
+    val roomy = ok(VoyageLowering.lower(scene)).grobs.flatMap(descendants).collect {
+      case a: ig.Grob.Annotated
+          if a.meta.cssClass.exists(
+            _.value.split(" ").contains(VoyageLowering.Classes.groupRange)
+          ) =>
+        a
+    }
+    assert(roomy.isEmpty)
+  }
+
+  test("fit to window reads only the window's placed and argmax spans, snapped to groups") {
+    // the window 0–6 s holds u1 (decode-filled at c, argmax a) and u2 (unanchored)
+    val w = ok(RecallWindow.of(0.0, 6.0).left.map(identity))
+    val fit = VoyageLowering.fitFilm(scene, Some(w)).getOrElse(fail("an anchor is in view"))
+    // c is 20–30 (group 2), a is 0–10 (group 1, 0–20): the fit spans both groups exactly
+    assertEquals((fit.start, fit.end), (0.0, 30.0))
+    // the window 8.5–12 s holds only u4, whose group-level anchor g2 is group 2 (20–30)
+    val late = ok(RecallWindow.of(8.5, 12.0).left.map(identity))
+    val fitLate = VoyageLowering.fitFilm(scene, Some(late)).getOrElse(fail("u4 is in view"))
+    assertEquals((fitLate.start, fitLate.end), (20.0, 30.0))
+    // nothing anchored in view: no fit, so the shell keeps the whole film
+    val empty = ok(RecallWindow.of(5.5, 6.0).left.map(identity))
+    assertEquals(VoyageLowering.fitFilm(scene, Some(empty)), None)
+  }
+
+  test("a film window rescales the y axis and clips groups without moving x") {
+    val film = ok(FilmWindow.of(20.0, 30.0).left.map(identity))
+    val sc = VoyageLowering.scales(scene, VoyageLowering.Box.default, None, Some(film))
+    val box = VoyageLowering.Box.default
+    assertEquals(sc.y(30.0), box.top.toDouble)
+    assertEquals(sc.y(20.0), (box.top + box.plotHeight).toDouble)
+    assertEquals(sc.yc(0.0), (box.top + box.plotHeight).toDouble, "clamped to the window")
+    val x = render(ok(VoyageLowering.lower(scene, film = Some(film))))
+    assert(x.contains("data-group=\"2\""), "group 2 is shown")
+    assert(
+      !x.contains("voyage-group-label\" data-group=\"1\""),
+      "group 1 lies outside the film window"
+    )
+    val tooLong = ok(FilmWindow.of(0.0, 31.0).left.map(identity))
+    assert(
+      VoyageLowering.lower(scene, film = Some(tooLong)).isLeft,
+      "a window past the source is refused"
+    )
+  }
+
+  private val gutterBox = VoyageLowering.Box.default.copy(right = 150, gutter = 170)
+
+  test("the gutter draws the selected unit's admitted anchors as named bars, every value printed") {
+    val x = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u4), box = gutterBox)))
+    assert(x.contains("voyage-gutter"), "gutter bars are drawn")
+    assert(
+      x.contains(">0.600 argmax · placed</text>"),
+      """>[^<]*</text>""".r.findAllIn(x).mkString("\n")
+    )
+    assert(x.contains(">0.400</text>"))
+    assert(x.contains("unit 3 admitted anchors · 100px = mass 1.0"))
+    // each admitted anchor keeps its name exactly once, now in the gutter and not on the recall axis
+    scene.marks.collect { case a: VoyageMark.Alternative if a.unit == u4 => a }.foreach { a =>
+      val needle = s"""data-name="${a.identity.mark.value}""""
+      assertEquals(x.sliding(needle.length).count(_ == needle), 1, needle)
+    }
+    val inPlot = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u4))))
+    assert(!inPlot.contains("voyage-gutter"), "without a gutter the plate keeps its in-plot column")
+  }
+
+  test("a decode fill's placement is printed as mass 0 beside its argmax, never as an anchor") {
+    val x = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u1), box = gutterBox)))
+    assert(x.contains(">0 placed · fill</text>"))
+    assert(x.contains(">0.500 argmax</text>"))
+    assert(x.contains(">0.200</text>"))
+    assert(
+      x.contains(">0.300 external</text>"),
+      "the supplied external mass sits above the anchors"
+    )
+  }
+
+  test("crowded gutter values keep a 12px pitch with leaders; none is dropped") {
+    val squeezed = gutterBox.copy(plotHeight = 30)
+    val lowered = ok(VoyageLowering.lower(scene, alternativesFor = Set(u1), box = squeezed))
+    val x = render(lowered)
+    Vector(">0 placed · fill</text>", ">0.500 argmax</text>", ">0.200</text>").foreach(t =>
+      assert(x.contains(t), t)
+    )
+    assert(x.contains("<polyline"), "a displaced label carries a leader")
+  }
+
+  test("a printed range never names an ordinal it does not hold") {
+    assertEquals(VoyageLowering.ordinalRuns(Vector(17, 18, 20, 21, 22, 23, 24)), "17–18, 20–24")
+    assertEquals(VoyageLowering.ordinalRuns(Vector(5)), "5")
+    assertEquals(VoyageLowering.ordinalRuns(Vector(9, 7, 8, 3)), "3, 7–9")
+  }
+
+  test("masses print without a rounded zero, identically on every platform") {
+    assertEquals(VoyageLowering.massLabel(0.5), "0.500")
+    assertEquals(VoyageLowering.massLabel(0.0), "0")
+    assertEquals(VoyageLowering.massLabel(0.00012), "1.2e-4")
+    assertEquals(VoyageLowering.massLabel(0.001), "0.001")
+  }
+
+  test("a moved argmax is a thin ring joined to the placement by the dashed declared route") {
+    val x = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u1), ghostsFor = Set(u1))))
+    assert(x.contains("voyage-ghost"))
+    assert(
+      x.contains("stroke-dasharray=\"4 3\"") || x.contains("stroke-dasharray=\"4,3\""),
+      "dashed route"
+    )
+    val ring = VoyageLowering.containerRadius + 2
+    assert(x.contains(s""" r="${ring.toInt}""""), s"ghost ring r=$ring")
+  }
+
   test("a point's size is the device radius: u1's mass-0.5 alternative ring has r = radius(0.5)") {
     val x = render(ok(VoyageLowering.lower(scene, alternativesFor = Set(u1))))
     val radii = """ r="([0-9.]+)"""".r.findAllMatchIn(x).map(_.group(1).toDouble).toVector

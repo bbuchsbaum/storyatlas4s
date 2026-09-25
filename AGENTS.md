@@ -32,7 +32,11 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   shape (circle, diamond of the circle's area, empty dashed diamond for a
   zero-mass fill), an external-dominant unit has a hollow core and a second
   outline, unanchored units sit on a labelled row above the plot (rulings in
-  `docs/delivery/voyage-workshop`), the posterior column
+  `docs/delivery/voyage-workshop`). A `Box.gutter` holds the one selected
+  unit's admitted anchors on the film axis (named bars, every value printed);
+  a `FilmWindow` is the y camera, and `fitFilm` fits it to the recall
+  window's placed and argmax spans, never to the selection. The scene rail
+  names every group or prints it in a range; nothing is dropped. The posterior column
   is drawn only for the units the shell names, and the ghosts of moved
   argmaxes unless the shell withholds them. Every mark is annotated (intaglio
   `GrobMeta`): a title restating the mark for native tooltips, a class per

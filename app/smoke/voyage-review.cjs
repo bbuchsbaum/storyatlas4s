@@ -65,6 +65,29 @@ async function inspect(page, arm) {
   await page.locator('.controls input').nth(1).uncheck();
   check(!(await legend()).includes('context:'), `${arm}: context key removed`);
   check(await page.locator('.page[data-focus]').getAttribute('data-focus') === doc.units[5].id, `${arm}: controls preserve focus identity`);
+  // the gutter holds the selected unit's admitted anchors; every in-view value is printed
+  const gutterBars = await page.locator('.plate .voyage-gutter').count();
+  check(gutterBars >= 1, `${arm}: the selected unit's admitted anchors sit in the gutter (${gutterBars})`);
+  check(await page.locator('.plate .voyage-alt:not(.voyage-gutter)').count() === 0, `${arm}: no admitted anchor is drawn on the recall axis beside the gutter`);
+  // y camera: Fit to window states its rule; choosing another unit never rescales the axis
+  const yLabels = () => page.locator('.plate svg text').evaluateAll(ts => ts.map(t => t.textContent).filter(t => /^\d+:\d\d$/.test(t)).join(' '));
+  const whole = await yLabels();
+  await page.getByRole('button', { name: 'Fit to window', exact: true }).click();
+  await page.waitForTimeout(150);
+  check(await page.getByRole('button', { name: 'Fit to window', exact: true }).getAttribute('aria-pressed') === 'true', `${arm}: Fit to window is pressed`);
+  check((await page.locator('.camera-rule').textContent()).includes('snapped to scene bounds'), `${arm}: the fit rule is printed`);
+  const fitted = await yLabels();
+  const home = doc.units[5].ordinal;
+  await page.locator(`.plate .voyage-anchor[data-unit="${home + 1}"] [data-name], .plate .voyage-anchor[data-unit="${home - 1}"] [data-name]`).first().dispatchEvent('click');
+  await page.waitForTimeout(150);
+  check(await page.locator('.page[data-focus]').getAttribute('data-focus') !== doc.units[5].id, `${arm}: another unit is selected`);
+  check(await yLabels() === fitted, `${arm}: selecting another unit does not rescale the fitted film axis`);
+  await page.getByRole('button', { name: 'Whole film', exact: true }).click();
+  await page.waitForTimeout(150);
+  check(await yLabels() === whole, `${arm}: Whole film restores the whole-film axis`);
+  await page.locator(`.plate .voyage-anchor[data-unit="${home}"] [data-name]`).first().dispatchEvent('click');
+  await page.waitForTimeout(150);
+  check(await page.locator('.page[data-focus]').getAttribute('data-focus') === doc.units[5].id, `${arm}: the original unit is selected again`);
   await page.screenshot({ path: path.join(dir, 'desktop.png'), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForFunction(() => Number(document.querySelector('.page[data-plate-width]')?.dataset.plateWidth) < 390);

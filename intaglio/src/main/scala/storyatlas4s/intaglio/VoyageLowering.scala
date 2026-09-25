@@ -4,6 +4,7 @@ import _root_.intaglio as ig
 import _root_.intaglio.GraphicsError
 import cats.syntax.all.*
 import storymodel4s.core.Score
+import storymodel4s.align.SourceNodeRef
 import storymodel4s.recall.RecallUnitId
 import storymodel4s.view.*
 
@@ -46,9 +47,15 @@ object VoyageLowering:
       bottom: Int,
       plotHeight: Int,
       trackHeight: Int,
-      gap: Int
+      gap: Int,
+      gutter: Int = 0
   ):
-    def plotWidth: Int = width - left - right
+    /** The plot's width; a gutter (the selected unit's admitted anchors) sits between it and the
+      * scene rail.
+      */
+    def plotWidth: Int = width - left - right - gutter
+    def plotRight: Int = left + plotWidth
+    def railLeft: Int = width - right
     def height: Int = top + plotHeight + gap + trackHeight + bottom
     def trackTop: Int = top + plotHeight + gap
 
@@ -79,6 +86,9 @@ object VoyageLowering:
     val externalDominant = "external-dominant"
     val groupLevel = "level-group"
     val groupLabel = "voyage-group-label"
+    val groupRange = "voyage-group-range"
+    val gutter = "voyage-gutter"
+    val gutterLabels = "voyage-gutter-labels"
     val groupBand = "voyage-group-band"
     val mass = "voyage-mass"
     val massAnchor = "mass-anchor"
@@ -106,13 +116,17 @@ object VoyageLowering:
     val groupBand = ig.Rgba.unsafe(0xf4, 0xf6, 0xf5)
     val external = ig.Rgba.unsafe(0x8a, 0x93, 0x9d)
     val raw = ig.Rgba.unsafe(0x9a, 0xa3, 0xab)
-    val ghostLine = ig.Rgba.unsafe(0x9a, 0xa3, 0xab, 0.2)
-    val ghostDot = ig.Rgba.unsafe(0x9a, 0xa3, 0xab, 0.7)
     val ink2 = ig.Rgba.unsafe(0x4b, 0x56, 0x5f)
     val hair = ig.Rgba.unsafe(0xd5, 0xda, 0xd8)
     val surface = ig.Rgba.unsafe(0xff, 0xff, 0xff)
     // container outlines: 3.8:1 on the white plate, above the 3:1 non-text minimum
     val container = ig.Rgba.unsafe(0x7b, 0x85, 0x8d)
+
+  /** The workshop's dash rhythms, stated rather than chosen from the two named ones. */
+  private object Dash:
+    val fill: ig.LineType = ig.LineType.Custom(ig.DashPattern.unsafe(3.0, 2.0))
+    val route: ig.LineType = ig.LineType.Custom(ig.DashPattern.unsafe(4.0, 3.0))
+    val guide: ig.LineType = ig.LineType.Custom(ig.DashPattern.unsafe(2.0, 3.0))
 
   private def params(
       stroke: Option[ig.Rgba],
@@ -189,26 +203,74 @@ object VoyageLowering:
       recallLength: Double,
       sourceEnd: Double,
       recallStart: Double = 0.0,
-      recallEnd: Option[Double] = None
+      recallEnd: Option[Double] = None,
+      filmStart: Double = 0.0,
+      filmEnd: Option[Double] = None
   ):
     def rangeStart: Double = recallStart
     def rangeEnd: Double = recallEnd.getOrElse(recallLength)
     def visible(t: Double): Boolean = t >= rangeStart && t <= rangeEnd
     def x(t: Double): Double =
       box.left + box.plotWidth * ((t - rangeStart) / math.max(rangeEnd - rangeStart, 1e-9))
+    def filmLow: Double = filmStart
+    def filmHigh: Double = filmEnd.getOrElse(sourceEnd)
     def y(s: Double): Double =
-      box.top + box.plotHeight - box.plotHeight * (s / math.max(sourceEnd, 1e-9))
+      box.top + box.plotHeight - box.plotHeight * ((s - filmLow) / math.max(
+        filmHigh - filmLow,
+        1e-9
+      ))
+
+    /** A source time pinned to the shown film window, for extents that run past it. */
+    def yc(s: Double): Double = y(math.max(filmLow, math.min(filmHigh, s)))
+    def filmVisible(s: Double): Boolean = s >= filmLow && s <= filmHigh
+    def filmIntersects(start: Double, end: Double): Boolean = end > filmLow && start < filmHigh
+
+    /** The midpoint of the part of an extent the film window shows. */
+    def shownMidpoint(start: Double, end: Double): Double =
+      (math.max(start, filmLow) + math.min(end, filmHigh)) / 2
     def track(group: Int, groupCount: Int): Double =
       box.trackTop + box.trackHeight - box.trackHeight * ((group - 0.5) / math.max(groupCount, 1))
 
-  def scales(scene: VoyageScene, box: Box, window: Option[RecallWindow] = None): Scales =
+  def scales(
+      scene: VoyageScene,
+      box: Box,
+      window: Option[RecallWindow] = None,
+      film: Option[FilmWindow] = None
+  ): Scales =
     Scales(
       box,
       scene.recallLength.value,
       scene.timeline.end,
       window.fold(0.0)(_.start),
-      window.map(_.end)
+      window.map(_.end),
+      film.fold(0.0)(_.start),
+      film.map(_.end)
     )
+
+  /** The "fit to window" y camera: the film extent of the placed and posterior-argmax anchors of
+    * the units whose onsets the recall window shows, widened to the bounds of the groups that
+    * contain its ends. It reads only supplied spans, and it depends on the recall window, never on
+    * the selection, so choosing a unit never rescales the axis. `None` when no anchor is in view.
+    */
+  def fitFilm(scene: VoyageScene, window: Option[RecallWindow]): Option[FilmWindow] =
+    val spans = scene.marks.collect {
+      case m: VoyageMark.UnitAnchor if window.forall(_.contains(m.at.value)) =>
+        Vector(m.span) ++ m.argmax.flatMap(scene.timeline.node).map(_.span).toVector
+    }.flatten
+    Option
+      .when(spans.nonEmpty) {
+        val lo = spans.map(_.start.value).min
+        val hi = spans.map(_.end.value).max
+        val groups = scene.timeline.groups.sortBy(_.span.start.value)
+        val snappedLo =
+          groups.find(g => g.span.end.value > lo).fold(lo)(g => math.min(lo, g.span.start.value))
+        val snappedHi =
+          groups.reverse
+            .find(g => g.span.start.value < hi)
+            .fold(hi)(g => math.max(hi, g.span.end.value))
+        FilmWindow.of(snappedLo, snappedHi).toOption
+      }
+      .flatten
 
   /** The container's radius: its outline stands for mass 1.0. */
   val containerRadius: Double = 8.0
@@ -240,7 +302,8 @@ object VoyageLowering:
       window: Option[RecallWindow] = None,
       includeUntimed: Boolean = true,
       visibleRecallText: Option[Map[RecallUnitId, String]] = None,
-      track: Track = Track.Groups
+      track: Track = Track.Groups,
+      film: Option[FilmWindow] = None
   ): Either[GraphicsError, ig.Scene] =
     window match
       case _ if track == Track.Masses && box.trackHeight <= 16 =>
@@ -255,8 +318,14 @@ object VoyageLowering:
             s"recall window ${w.start}–${w.end} lies outside recall extent 0–${scene.recallLength.value}"
           )
         )
+      case _ if film.exists(_.end > scene.timeline.end) =>
+        Left(
+          GraphicsError.InvalidExtent(
+            s"film window ends after the source extent 0–${scene.timeline.end}"
+          )
+        )
       case _ =>
-        val sc = scales(scene, box, window)
+        val sc = scales(scene, box, window, film)
         val words = Words(scene, visibleRecallText)
         for
           vp <- viewport(box)
@@ -322,12 +391,16 @@ object VoyageLowering:
       track: Track
   ): Either[GraphicsError, ig.Grob] =
     val box = sc.box
-    val groups = scene.timeline.groups.sortBy(_.ordinal)
+    // the groups the film window shows; a clipped group is labelled at the middle of its shown part
+    val groups = scene.timeline.groups
+      .sortBy(_.ordinal)
+      .filter(g => sc.filmIntersects(g.span.start.value, g.span.end.value))
+    def mid(g: SourceTimelineGroup): Double =
+      sc.shownMidpoint(g.span.start.value, g.span.end.value)
     val anchors = scene.marks.collect {
       case a: VoyageMark.UnitAnchor if sc.visible(a.at.value) => a
     }
     val selectedGroups = anchors.filter(a => selected(a.unit)).flatMap(_.group).toSet
-    val density = anchors.flatMap(_.group).groupMapReduce(identity)(_ => 1)(_ + _)
     // Fixed-width font; wrap instead of losing the end of a supplied label. Only the choice of
     // visible labels is layout policy. Their centers stay exactly at the supplied span midpoint.
     val columns = math.max(8, (box.right - 18) / 7)
@@ -351,35 +424,74 @@ object VoyageLowering:
             lines.init :+ (lines.last + " " + word)
           else lines :+ word
         }
-    val candidates = groups
-      .map(g => (g, wrap(g.label)))
-      .sortBy { case (g, _) =>
-        (if selectedGroups(g.ordinal) then 0 else 1, -density.getOrElse(g.ordinal, 0), g.ordinal)
-      }
-    val labels = candidates
-      .foldLeft(Vector.empty[(SourceTimelineGroup, Vector[String])]) {
-        case (kept, candidate @ (g, lines)) =>
-          val y = sc.y(g.span.midpoint)
-          val overlaps = kept.exists { case (other, otherLines) =>
-            math.abs(y - sc.y(other.span.midpoint)) < (lines.size + otherLines.size) * 6.5 + 3
-          }
-          if overlaps then kept else kept :+ candidate
-      }
-      .sortBy(_._1.ordinal)
+    val density = anchors.flatMap(_.group).groupMapReduce(identity)(_ => 1)(_ + _)
+    // The rail (the workshop's ruling): every group in view is named or covered by a printed range,
+    // and nothing is dropped. Each group starts as its own named label at its supplied midpoint;
+    // only neighbours that collide merge. A merged cluster keeps one named head — a selected group
+    // first, otherwise the group with the most anchors in view — and prints the rest as a range
+    // line just below it; groups with no anchor in view that collide become one range line.
+    final case class Cluster(
+        members: Vector[SourceTimelineGroup],
+        head: Option[SourceTimelineGroup],
+        y: Double,
+        h: Double
+    )
+    def lines(g: SourceTimelineGroup): Double = wrap(g.label).size * 13.0
+    def rank(g: SourceTimelineGroup): (Int, Int) =
+      (if selectedGroups(g.ordinal) then 1 else 0, density.getOrElse(g.ordinal, 0))
+    def isSelected(c: Cluster): Boolean = c.head.exists(g => selectedGroups(g.ordinal))
+    @annotation.tailrec
+    def settle(cs: Vector[Cluster]): Vector[Cluster] =
+      cs.indices.drop(1).find { k =>
+        val (a, b) = (cs(k - 1), cs(k))
+        !(isSelected(a) && isSelected(b)) && b.y - a.y < (a.h + b.h) / 2 + 3
+      } match
+        case None    => cs
+        case Some(k) =>
+          val (a, b) = (cs(k - 1), cs(k))
+          val members = a.members ++ b.members
+          val head = (a.head.toVector ++ b.head.toVector)
+            .filter(g => rank(g) != (0, 0))
+            .sortBy(g => (-rank(g)._1, -rank(g)._2, g.ordinal))
+            .headOption
+          val merged = head match
+            case Some(g) => Cluster(members, Some(g), sc.y(mid(g)), lines(g) + 26)
+            case None    =>
+              Cluster(members, None, members.map(g => sc.y(mid(g))).sum / members.size, 13.0)
+          settle(cs.patch(k - 1, Vector(merged), 2))
+    val clusters = settle(
+      groups.sortBy(g => sc.y(mid(g))).map(g => Cluster(Vector(g), Some(g), sc.y(mid(g)), lines(g)))
+    )
+    // two selected groups too close to merge keep their names; their ticks stay at their midpoints
+    val labels = clusters.flatMap(_.head).map(g => (g, wrap(g.label))).sortBy(_._1.ordinal)
+    val ranges = clusters.flatMap { c =>
+      val rest = c.members.filterNot(c.head.contains).sortBy(_.ordinal)
+      if rest.isEmpty then Vector.empty
+      else
+        c.head match
+          case None    => Vector(rest -> c.y)
+          case Some(g) => Vector(rest -> (sc.y(mid(g)) + wrap(g.label).size * 6.5 + 9))
+    }
+    // whole film keeps its five-minute ticks; a fitted window of half an hour or less ticks every two
+    val filmStep = if sc.filmHigh - sc.filmLow > 1800.0 then 300.0 else 120.0
+    val filmTicks =
+      ticks(math.ceil(sc.filmLow / filmStep) * filmStep, sc.filmHigh, filmStep)
+        .filter(sc.filmVisible)
     for
       hair <- params(Some(Palette.hair), None)
       band <- params(None, Some(Palette.groupBand))
       label <- params(None, Some(Palette.ink2))
       groupLabel <- params(None, Some(Palette.ink2), fontPx = 11)
+      selectedLabel = groupLabel.withFontWeight(ig.FontWeight.unsafe(600))
       boundaries <- groups.zipWithIndex.filter(_._2 % 2 == 0).traverse { case (g, _) =>
-        val top = sc.y(g.span.end.value)
-        val bottom = sc.y(g.span.start.value)
+        val top = sc.yc(g.span.end.value)
+        val bottom = sc.yc(g.span.start.value)
         ig.Grob
           .polygon(
             Vector(
               px(box.left, top),
-              px(box.width - box.right, top),
-              px(box.width - box.right, bottom),
+              px(box.plotRight, top),
+              px(box.plotRight, bottom),
               px(box.left, bottom)
             ),
             gp = band
@@ -387,18 +499,18 @@ object VoyageLowering:
           .flatMap(annotated(_, Some(g.label), Classes.groupBand, "group" -> g.ordinal.toString))
       }
       groupLabels <- labels.traverse { case (g, lines) =>
-        val y = sc.y(g.span.midpoint)
+        val y = sc.y(mid(g))
         for
           tick <- ig.Grob.lines(
-            Vector(px(box.width - box.right - 3, y), px(box.width - box.right + 5, y)),
+            Vector(px(box.railLeft - 3, y), px(box.railLeft + 5, y)),
             gp = hair
           )
           text <- lines.zipWithIndex.traverse { case (line, i) =>
             ig.Grob.text(
               line,
-              px(box.width - box.right + 9, y + (i - (lines.size - 1) / 2.0) * 13 + 3.5),
+              px(box.railLeft + 9, y + (i - (lines.size - 1) / 2.0) * 13 + 3.5),
               ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
-              gp = groupLabel
+              gp = if selectedGroups(g.ordinal) then selectedLabel else groupLabel
             )
           }
           result <- annotated(
@@ -409,6 +521,32 @@ object VoyageLowering:
           )
         yield result
       }
+      rangeLabels <- ranges.traverse { case (run, y) =>
+        val ys = run.map(g => sc.y(mid(g)))
+        val text =
+          ordinalRuns(run.map(_.ordinal))
+        for
+          bracket <- ig.Grob.lines(
+            Vector(
+              px(box.railLeft + 2, ys.min),
+              px(box.railLeft + 2, ys.max)
+            ),
+            gp = hair
+          )
+          label <- ig.Grob.text(
+            text,
+            px(box.railLeft + 9, y + 3.5),
+            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+            gp = groupLabel
+          )
+          result <- annotated(
+            ig.Grob.group(Vector(bracket, label)),
+            Some(run.map(_.label).mkString("; ")),
+            Classes.groupRange,
+            "groups" -> run.map(_.ordinal).mkString(" ")
+          )
+        yield result
+      }
       yAxis <- ig.Grob.lines(
         Vector(px(box.left, box.top), px(box.left, box.top + box.plotHeight)),
         gp = hair
@@ -416,14 +554,14 @@ object VoyageLowering:
       xAxis <- ig.Grob.lines(
         Vector(
           px(box.left, box.top + box.plotHeight),
-          px(box.width - box.right, box.top + box.plotHeight)
+          px(box.plotRight, box.top + box.plotHeight)
         ),
         gp = hair
       )
-      yTicks <- ticks(0.0, sc.sourceEnd, 300.0).traverse { s =>
+      yTicks <- filmTicks.traverse { s =>
         ig.Grob.lines(Vector(px(box.left - 4, sc.y(s)), px(box.left, sc.y(s))), gp = hair)
       }
-      yLabels <- ticks(0.0, sc.sourceEnd, 300.0).traverse { s =>
+      yLabels <- filmTicks.traverse { s =>
         ig.Grob.text(
           clock(s),
           px(box.left - 7, sc.y(s) + 3.5),
@@ -496,7 +634,7 @@ object VoyageLowering:
         )
         .sequence
       layer = ig.Grob.group(
-        boundaries ++ groupLabels ++ Vector(
+        boundaries ++ groupLabels ++ rangeLabels ++ Vector(
           yAxis,
           xAxis
         ) ++ yTicks ++ yLabels ++ xTicks ++ xLabels ++ axisNames ++ unanchoredRow.toVector ++
@@ -524,8 +662,8 @@ object VoyageLowering:
               // A coding may run past the last word (its coder heard the recording end). Its geometry
               // is clipped to this display window; the interval itself remains compiler-owned data.
               val x1 = sc.x(math.min(iv.recall.end.value, sc.rangeEnd))
-              val y0 = sc.y(g.span.end.value)
-              val y1 = sc.y(g.span.start.value)
+              val y0 = sc.yc(g.span.end.value)
+              val y1 = sc.yc(g.span.start.value)
               ig.Grob
                 .polygon(Vector(px(x0, y0), px(x1, y0), px(x1, y1), px(x0, y1)), band)
                 .flatMap(
@@ -558,30 +696,42 @@ object VoyageLowering:
         m
     }
     val anchorOf = anchors.map(m => m.unit -> m).toMap
+    // the gutter shows one unit's admitted anchors, when the plate has room for it
+    val gutterUnit =
+      Option
+        .when(sc.box.gutter >= 120 && alternativesFor.size == 1)(alternativesFor.head)
+        .flatMap(anchorOf.get)
     val moved = anchors
       .filter(m => m.origin != AnchorOrigin.PosteriorArgmax && (ghosts || ghostsFor(m.unit)))
       .flatMap(m => m.argmax.flatMap(scene.timeline.node).map(n => m -> n))
+      .filter { case (m, n) => sc.filmVisible(m.span.midpoint) && sc.filmVisible(n.span.midpoint) }
     for
-      ghostLine <- params(Some(Palette.ghostLine), None, width = 0.7)
-      ghostDot <- params(None, Some(Palette.ghostDot))
       altLine <- params(Some(Palette.model), None, width = 0.8, alpha = 0.7)
       altRing <- params(Some(Palette.model), None, width = 1.2, line = ig.LineType.Dashed)
       // context columns are the same marks, drawn so faint that the focused column still leads
       faintLine <- params(Some(Palette.model), None, width = 0.6, alpha = 0.22)
       faintRing <-
         params(Some(Palette.model), None, width = 0.9, line = ig.LineType.Dashed, alpha = 0.3)
+      // the moved argmax: a thin neutral ring where the posterior put the unit, joined to the placed
+      // container by the declared route (dashed); never a filled mark, since it is not a placement
+      routeLine <- params(Some(Palette.ink2), None, width = 1.0, line = Dash.route)
+      ghostRing <- params(Some(Palette.ink2), None, width = 1.2)
       ghostGrobs <- moved.traverse { case (m, n) =>
         val x = sc.x(m.at.value)
+        val from = sc.y(n.span.midpoint)
+        val to = sc.y(m.span.midpoint)
+        val gap = containerRadius + 1
+        val dir = if to > from then 1.0 else -1.0
         for
           line <- ig.Grob.lines(
-            Vector(px(x, sc.y(n.span.midpoint)), px(x, sc.y(m.span.midpoint))),
-            gp = ghostLine
+            Vector(px(x, from + dir * (containerRadius + 3)), px(x, to - dir * gap)),
+            gp = routeLine
           )
           dot <- ig.Grob.points(
-            Vector(px(x, sc.y(n.span.midpoint))),
-            ig.ExtentExpr.nativeUnsafe(2.0),
+            Vector(px(x, from)),
+            ig.ExtentExpr.nativeUnsafe(containerRadius + 2),
             ig.PointShape.Circle,
-            ghostDot
+            ghostRing
           )
           g <- annotated(
             ig.Grob.group(Vector(line, dot)),
@@ -591,9 +741,13 @@ object VoyageLowering:
           )
         yield g
       }
-      alts <- alternatives.traverse { a =>
+      alts <- alternatives.filterNot(a => gutterUnit.exists(_.unit == a.unit)).traverse { a =>
         anchorOf.get(a.unit) match
-          case None    => Right(ig.Grob.group(Vector.empty))
+          case None => Right(ig.Grob.group(Vector.empty))
+          case Some(m) if !sc.filmVisible(a.span.midpoint) || !sc.filmVisible(m.span.midpoint) =>
+            // an alternative outside the shown film keeps its name (the inspector lists it) but draws
+            // nothing on the plate
+            GraphicsNames.ofMark(a.identity.mark).map(_ => ig.Grob.group(Vector.empty))
           case Some(m) =>
             val x = sc.x(m.at.value)
             val focused = alternativesFor.contains(a.unit)
@@ -618,8 +772,239 @@ object VoyageLowering:
               )
             yield g
       }
-      layer = ig.Grob.group(ghostGrobs ++ alts, viewport = Some(vp))
+      gutter <- gutterUnit.fold(Right(Vector.empty))(m =>
+        gutterGrobs(m, alternatives.filter(_.unit == m.unit), sc, words, scene)
+      )
+      layer = ig.Grob.group(ghostGrobs ++ alts ++ gutter, viewport = Some(vp))
     yield layer
+
+  /** Ordinals as printed runs: `3–5, 7, 9–10`. A range never names an ordinal it does not hold. */
+  private[intaglio] def ordinalRuns(ordinals: Vector[Int]): String =
+    ordinals.distinct.sorted
+      .foldLeft(Vector.empty[(Int, Int)]) {
+        case (acc, o) if acc.nonEmpty && acc.last._2 + 1 == o => acc.init :+ (acc.last._1 -> o)
+        case (acc, o)                                         => acc :+ (o -> o)
+      }
+      .map((a, b) => if a == b then a.toString else s"$a–$b")
+      .mkString(", ")
+
+  /** A mass as the gutter prints it: three decimals, and a small non-zero mass in scientific form
+    * rather than a rounded zero. Built by hand so JVM and Scala.js print the same bytes.
+    */
+  private[intaglio] def massLabel(m: Double): String =
+    if m == 0.0 then "0"
+    else if m >= 0.001 then f"$m%.3f"
+    else
+      val e = math.floor(math.log10(m)).toInt
+      val mantissa = m / math.pow(10, e)
+      f"$mantissa%.1fe$e"
+
+  /** The gutter: the selected unit's admitted anchors on the film axis, beside the plot. Each is
+    * its `Alternative` mark (named, so selection and hit-testing work), drawn as its exact extent
+    * and a bar whose length is its mass (100px = 1.0 when the gutter has room). Every value in view
+    * is printed at its bar end; crowded labels keep a 12px pitch and carry a leader back to their
+    * bar. A decode fill's placement is not an admitted anchor, so it is drawn as a dashed extent
+    * with mass 0 and no name. The external mass the row supplies sits above, as its own bar.
+    */
+  private def gutterGrobs(
+      m: VoyageMark.UnitAnchor,
+      alts: Vector[VoyageMark.Alternative],
+      sc: Scales,
+      words: Words,
+      scene: VoyageScene
+  ): Either[GraphicsError, Vector[ig.Grob]] =
+    val box = sc.box
+    val gx = box.plotRight + 12.0
+    val scale = math.min(100.0, box.gutter - 70.0)
+    // the placed anchor is the unit's own mark (its name is on the glyph); the compiler lists every
+    // other admitted anchor as an Alternative. A decode fill's placement has no posterior mass and
+    // is not an admitted anchor, so it is drawn apart, below.
+    final case class Entry(
+        anchor: SourceNodeRef,
+        span: ClockSpan,
+        mass: Double,
+        alternative: Option[VoyageMark.Alternative]
+    )
+    val entries =
+      Option
+        .when(m.origin != AnchorOrigin.DecodeFilled)(Entry(m.anchor, m.span, m.mass, None))
+        .toVector ++ alts.map(a => Entry(a.anchor, a.span, a.mass, Some(a)))
+    val (shown, outside) =
+      entries.partition(e => sc.filmIntersects(e.span.start.value, e.span.end.value))
+    def role(a: Entry): String =
+      val argmax = m.argmax.contains(a.anchor)
+      val placed = a.anchor == m.anchor
+      if argmax && placed then "argmax · placed"
+      else if argmax then "argmax"
+      else if placed then "placed"
+      else ""
+    final case class Label(cy: Double, x: Double, text: String, strong: Boolean)
+    val fill = Option.when(
+      m.origin == AnchorOrigin.DecodeFilled && sc.filmIntersects(
+        m.span.start.value,
+        m.span.end.value
+      )
+    )(m)
+    val labels0 =
+      shown.map { a =>
+        val cy = sc.y(sc.shownMidpoint(a.span.start.value, a.span.end.value))
+        val r = role(a)
+        Label(
+          cy,
+          gx + 10 + a.mass * scale,
+          massLabel(a.mass) + (if r.isEmpty then "" else s" $r"),
+          r.nonEmpty
+        )
+      } ++ fill.map(f =>
+        Label(
+          sc.y(sc.shownMidpoint(f.span.start.value, f.span.end.value)),
+          gx + 8,
+          "0 placed · fill",
+          true
+        )
+      )
+    // every label printed: pitch pass down, then up from the plot floor
+    val down = labels0.sortBy(_.cy).foldLeft(Vector.empty[(Label, Double)]) { (acc, l) =>
+      acc :+ (l -> acc.lastOption.fold(l.cy)((_, prev) => math.max(l.cy, prev + 12)))
+    }
+    val floor = (box.top + box.plotHeight).toDouble
+    val overflow = down.lastOption.fold(0.0)((_, y) => math.max(0.0, y - floor))
+    val placed = down.map((l, y) => l -> (y - overflow)).foldRight(Vector.empty[(Label, Double)]) {
+      case ((l, y), acc) =>
+        (l -> acc.headOption.fold(y)((_, next) => math.min(y, next - 12))) +: acc
+    }
+    val leaderX = placed.filter((l, y) => math.abs(y - l.cy) > 1).map(_._1.x).maxOption
+    for
+      ink <- params(None, Some(Palette.ink2))
+      strong = ink.withFontWeight(ig.FontWeight.unsafe(600))
+      muted <- params(None, Some(Palette.container))
+      bar <- params(None, Some(Palette.model))
+      extentGp <- params(Some(Palette.model), None, width = 3.0)
+      fillGp <- params(Some(Palette.ink2), None, width = 1.5, line = Dash.fill)
+      leaderGp <- params(Some(Palette.container), None, width = 0.75)
+      externalGp <- params(None, Some(Palette.container))
+      guideGp <- params(Some(Palette.container), None, width = 0.75, line = Dash.guide)
+      // guides from the selected mark (and its moved argmax) across to the gutter
+      guideYs = (Vector(m.span.midpoint) ++ m.argmax
+        .filter(_ != m.anchor)
+        .flatMap(scene.timeline.node)
+        .map(_.span.midpoint)
+        .toVector).filter(sc.filmVisible).map(sc.y)
+      guides <- guideYs.traverse(y =>
+        ig.Grob.lines(
+          Vector(px(sc.x(m.at.value) + containerRadius + 5, y), px(gx - 3, y)),
+          gp = guideGp
+        )
+      )
+      heading <- ig.Grob.text(
+        s"unit ${m.unitOrdinal} admitted anchors · ${scale.toInt}px = mass 1.0",
+        px(gx, box.top - 22),
+        ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+        gp = muted
+      )
+      external <- ig.Grob.polygon(
+        Vector(
+          px(gx + 6, box.top - 15),
+          px(gx + 6 + m.externalMass * scale, box.top - 15),
+          px(gx + 6 + m.externalMass * scale, box.top - 9),
+          px(gx + 6, box.top - 9)
+        ),
+        gp = externalGp
+      )
+      externalText <- ig.Grob.text(
+        s"${massLabel(m.externalMass)} external",
+        px(gx + 10 + m.externalMass * scale, box.top - 8),
+        ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+        gp = muted
+      )
+      bars <- shown.traverse { a =>
+        val top = sc.yc(a.span.end.value)
+        val bottom = sc.yc(a.span.start.value)
+        val cy = (top + bottom) / 2
+        val w = a.mass * scale
+        for
+          extent <- ig.Grob.lines(Vector(px(gx, top), px(gx, bottom)), gp = extentGp)
+          length <- ig.Grob.polygon(
+            Vector(
+              px(gx + 6, cy - 3),
+              px(gx + 6 + w, cy - 3),
+              px(gx + 6 + w, cy + 3),
+              px(gx + 6, cy + 3)
+            ),
+            gp = bar
+          )
+          g <- a.alternative match
+            case Some(alt) =>
+              GraphicsNames
+                .ofMark(alt.identity.mark)
+                .flatMap(name =>
+                  annotated(
+                    ig.Grob.group(Vector(extent, length), name = Some(name)),
+                    Some(words.alternative(alt)),
+                    s"${Classes.mark} ${Classes.alternative} ${Classes.gutter}",
+                    "unit" -> words.ordinal(alt.unit).toString,
+                    "rank" -> alt.rank.toString
+                  )
+                )
+            case None =>
+              // the placed anchor's bar restates the glyph's own mass; it carries no second name
+              annotated(
+                ig.Grob.group(Vector(extent, length)),
+                None,
+                s"${Classes.gutter} gutter-placed",
+                "unit" -> m.unitOrdinal.toString
+              )
+        yield g
+      }
+      fillMark <- fill.traverse(f =>
+        ig.Grob.lines(
+          Vector(px(gx + 1, sc.yc(f.span.end.value)), px(gx + 1, sc.yc(f.span.start.value))),
+          gp = fillGp
+        )
+      )
+      texts <- placed.traverse { (l, y) =>
+        val moved = math.abs(y - l.cy) > 1
+        val x = if moved then leaderX.fold(l.x)(lx => math.max(lx, l.x)) + 8 else l.x
+        for
+          leader <- Option
+            .when(moved)(
+              ig.Grob
+                .lines(Vector(px(l.x - 3, l.cy), px(x - 10, l.cy), px(x - 3, y)), gp = leaderGp)
+            )
+            .sequence
+          t <- ig.Grob.text(
+            l.text,
+            px(x, y + 3.5),
+            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+            gp = if l.strong then strong else ink
+          )
+        yield leader.toVector :+ t
+      }
+      outsideNote <- Option
+        .when(outside.nonEmpty)(
+          ig.Grob.text(
+            s"+${outside.size} admitted anchor${
+                if outside.size > 1 then "s" else ""
+              } outside the shown film",
+            px(gx, floor + 30),
+            ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
+            gp = muted
+          )
+        )
+        .sequence
+      decoration <- annotated(
+        ig.Grob.group(
+          guides ++ Vector(
+            heading,
+            external,
+            externalText
+          ) ++ fillMark.toVector ++ texts.flatten ++ outsideNote.toVector
+        ),
+        None,
+        Classes.gutterLabels,
+        "unit" -> m.unitOrdinal.toString
+      )
+    yield bars :+ decoration
 
   private def markLayer(
       scene: VoyageScene,
@@ -633,7 +1018,9 @@ object VoyageLowering:
       a.unit -> a.at.value
     }.toMap
     val displayed = scene.marks.filter {
-      case m: VoyageMark.UnitAnchor  => sc.visible(m.at.value)
+      // an anchor placed outside the shown film is not drawn; "fit to window" never does this,
+      // because its film window covers every placement in the recall window
+      case m: VoyageMark.UnitAnchor  => sc.visible(m.at.value) && sc.filmVisible(m.span.midpoint)
       case m: VoyageMark.Unanchored  => sc.visible(m.at.value)
       case m: VoyageMark.Alternative => anchorAt.get(m.unit).exists(sc.visible)
       case _: VoyageMark.Untimed     => includeUntimed
@@ -796,16 +1183,16 @@ object VoyageLowering:
       guides <- rows.traverse { case (_, title, top) =>
         for
           baseline <- ig.Grob.lines(
-            Vector(px(box.left, top + rowHeight), px(box.width - box.right, top + rowHeight)),
+            Vector(px(box.left, top + rowHeight), px(box.plotRight, top + rowHeight)),
             gp = hair
           )
           ceiling <- ig.Grob.lines(
-            Vector(px(box.left, top), px(box.width - box.right, top)),
+            Vector(px(box.left, top), px(box.plotRight, top)),
             gp = hair
           )
           name <- ig.Grob.text(
             title,
-            px(box.width - box.right + 8, top + 12),
+            px(box.plotRight + 8, top + 12),
             ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
             gp = label
           )
@@ -873,7 +1260,7 @@ object VoyageLowering:
       rail <- Option
         .when(hasUnknown)(
           ig.Grob.lines(
-            Vector(px(box.left, unknownY), px(box.width - box.right, unknownY)),
+            Vector(px(box.left, unknownY), px(box.plotRight, unknownY)),
             gp = hair
           )
         )
@@ -894,7 +1281,7 @@ object VoyageLowering:
         Option.when(hasUnknown)("Unknown" -> (unknownY + 3))).traverse { (caption, at) =>
         ig.Grob.text(
           caption,
-          px(box.width - box.right + 8, at),
+          px(box.plotRight + 8, at),
           ig.Anchor(ig.HJust.Left, ig.VJust.Bottom),
           gp = text
         )
@@ -1083,7 +1470,7 @@ object VoyageLowering:
     for
       extentGp <- params(Some(Palette.container), None, width = if m.level > 0 then 3.0 else 1.5)
       extent <- ig.Grob.lines(
-        Vector(px(x, sc.y(m.span.end.value)), px(x, sc.y(m.span.start.value))),
+        Vector(px(x, sc.yc(m.span.end.value)), px(x, sc.yc(m.span.start.value))),
         gp = extentGp
       )
       extentPart <- annotated(extent, None, Classes.glyphExtent)
@@ -1097,7 +1484,7 @@ object VoyageLowering:
       containerGp <- params(
         Some(Palette.container),
         Some(Palette.surface),
-        line = if filled then ig.LineType.Dashed else ig.LineType.Solid
+        line = if filled then Dash.fill else ig.LineType.Solid
       )
       container <- dot(containerRadius, containerGp).flatMap(
         annotated(_, None, Classes.glyphContainer)

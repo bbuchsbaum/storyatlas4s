@@ -124,6 +124,9 @@ object VoyagePage:
       |.strip { display: grid; gap: 4px; }
       |.scroller svg .selected { stroke: var(--ink); stroke-width: 2px; }
       |.scroller svg .focused { stroke: var(--ink); stroke-width: 2.5px; }
+      |.camera-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 0; }
+      |.camera-actions button[aria-pressed=true] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+      |.camera-rule { font-size: 12px; color: var(--ink-2); }
       |.scroller svg .selected .voyage-container > * { stroke: var(--ink); stroke-width: 2px; }
       |.scroller svg .focused .voyage-container > * { stroke: var(--ink); stroke-width: 2.5px; stroke-dasharray: 3 2; }
       |.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--ground); padding: 6px 9px; border-radius: 6px; font-size: 12px; max-width: 320px; line-height: 1.35; z-index: 2; }
