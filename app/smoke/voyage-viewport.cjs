@@ -100,9 +100,10 @@ function observe(page) {
         check(true, `${arm}: zoom controls preserve center`);
         const last = expected.at(-1);
         const boundaryMark=page.locator(`.plate .voyage-anchor[data-unit="${last}"] [data-name]`);
-        await boundaryMark.focus();
-        check(await boundaryMark.evaluate(e=>document.activeElement===e),`${arm}: boundary test begins on the keyboard-focusable mark`);
-        await page.keyboard.press('Enter');
+        // the plot is one tab stop (a listbox); the boundary unit is selected, then the walk starts
+        await boundaryMark.dispatchEvent('click');
+        await page.locator('.plate[role=listbox]').focus();
+        check(await boundaryMark.evaluate(e=>document.activeElement===e.closest('.plate')&&document.activeElement.getAttribute('aria-activedescendant')===e.id),`${arm}: boundary test begins with the boundary unit as the listbox's active option`);
         await page.keyboard.press('ArrowRight');
         check(await selected(page)===doc.units[last+1].id,`${arm}: keyboard crosses visible boundary`);
         await page.keyboard.press('ArrowRight');

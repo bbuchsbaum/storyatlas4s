@@ -117,7 +117,11 @@ address it selects is a `storymodel4s.core.Address`; every figure carries the
   never fetched), compiled under the live selection by `VoyageCompiler`,
   lowered by `VoyageLowering`, drawn by intaglio, and decorated with the hover
   card, click and keyboard selection through `data-name = MarkId`, and an
-  inspector that prints the scene's own numbers. It computes nothing.
+  inspector that prints the scene's own numbers. The plot is one tab stop: a
+  listbox whose options are the unit marks, with the selection as
+  `aria-activedescendant`; Enter opens the inspector and Escape returns. The
+  inspection filter (`shell/VoyageFilter`) and the exports
+  (`shell/VoyageExport`) are host-neutral. It computes nothing.
 - Sibling sources are immutable git-SHA `ProjectRef` pins declared in
   `build.sbt` (`storymodel4sRevision`, `intaglioRevision`). No `../sibling`
   composite builds, no `-SNAPSHOT` dependencies.

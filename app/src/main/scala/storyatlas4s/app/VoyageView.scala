@@ -468,8 +468,12 @@ object VoyageView:
               ev.key match
                 case "ArrowRight" => ev.preventDefault(); walk(1)
                 case "ArrowLeft"  => ev.preventDefault(); walk(-1)
-                case "Enter"      => activate(ev.target, ev.shiftKey)
-                case _            => ()
+                case "Enter"      =>
+                  ev.preventDefault()
+                  if nameAt(ev.target).nonEmpty || comparisonUnitAt(ev.target, base).nonEmpty then
+                    activate(ev.target, ev.shiftKey)
+                  else openInspector(ev.currentTarget)
+                case _ => ()
           },
           rangeControls,
           div(
@@ -512,7 +516,7 @@ object VoyageView:
         ),
         asideTag(
           cls("panel inspector"),
-          aria.live("polite"),
+          onKeyDown --> (ev => if ev.key == "Escape" then returnToPlot(ev.currentTarget)),
           child <-- active.combineWith(visibleText).map { (id, text) =>
             id.flatMap(id => base.units.find(_.id == id))
               .fold[HtmlElement](
@@ -886,8 +890,12 @@ object VoyageView:
                 case "m" | "M"    =>
                   ev.preventDefault()
                   stepMatch(!ev.shiftKey)
-                case "Enter" => activate(ev.target, ev.shiftKey)
-                case _       => ()
+                case "Enter" =>
+                  ev.preventDefault()
+                  if nameAt(ev.target).nonEmpty || comparisonUnitAt(ev.target, scene).nonEmpty then
+                    activate(ev.target, ev.shiftKey)
+                  else openInspector(ev.currentTarget)
+                case _ => ()
           },
           rangeControls,
           filterControls(scene, filter),
@@ -921,6 +929,18 @@ object VoyageView:
             },
             div(
               cls("plate"),
+              // arriving on the plot with the selection outside the window selects the first unit
+              // in view, so the active option is always one the reader can see
+              // (keyboard arrival only: a pointer press must never move the selection it is making)
+              onFocus --> { ev =>
+                val byKeyboard = ev.target match
+                  case el: dom.Element => el.matches(":focus-visible")
+                  case _               => false
+                val inView =
+                  ordered.filter(u => u.onset.exists(t => window.now().forall(_.contains(t.value))))
+                if byKeyboard && !focus.now().exists(id => inView.exists(_.id == id)) then
+                  inView.headOption.foreach(u => chooseUnit(u.id))
+              },
               inContext { node =>
                 frames --> {
                   case None                => ()
@@ -952,7 +972,7 @@ object VoyageView:
         ),
         asideTag(
           cls("panel inspector"),
-          aria.live("polite"),
+          onKeyDown --> (ev => if ev.key == "Escape" then returnToPlot(ev.currentTarget)),
           child <-- focusedUnit
             .combineWith(filter.signal)
             .map((focused, f) =>
@@ -1062,15 +1082,32 @@ object VoyageView:
     // a mark reached by Tab and activated with Enter is about to be replaced; remember that the
     // keyboard was in the plate, so the walk can continue from the selected mark
     val active = dom.document.activeElement
-    val keyboardInPlate = active != null && container.contains(active)
+    val keyboardInPlate = active != null && (container.contains(active) || container == active)
     container.innerHTML = frame.svg
+    // the plot is one tab stop: a listbox whose options are the unit marks, with the selection as
+    // its active descendant (workshop ruling 16); gutter bars and decorations are not options
+    container.setAttribute("role", "listbox")
+    container.setAttribute("tabindex", "0")
+    container.setAttribute(
+      "aria-label",
+      "Recall units in the plot. Arrow keys move, M steps through filter matches, Enter opens the inspector."
+    )
     val named = container.querySelectorAll("[data-name], [data-comparison-unit]")
     var i = 0
     while i < named.length do
       val el = named(i).asInstanceOf[dom.Element]
-      el.setAttribute("tabindex", "0")
-      el.setAttribute("role", "button")
+      val unitMark = el.closest(".voyage-anchor, .voyage-unanchored") != null
+      if unitMark then
+        el.setAttribute("role", "option")
+        el.setAttribute("id", optionId(el.getAttribute("data-name")))
+        Option(el.parentNode)
+          .collect { case p: dom.Element => p }
+          .flatMap(p => Option(p.querySelector(":scope > title")))
+          .foreach(t => el.setAttribute("aria-label", t.textContent))
+      else if !el.hasAttribute("data-comparison-unit") then el.setAttribute("role", "none")
       if el.hasAttribute("data-comparison-unit") then
+        el.setAttribute("tabindex", "0")
+        el.setAttribute("role", "button")
         el.setAttribute(
           "aria-label",
           Option(el.querySelector("title")).fold("Inspect group comparison")(_.textContent)
@@ -1089,10 +1126,38 @@ object VoyageView:
         el.setAttribute("style", "cursor: pointer")
       i += 1
     decorate(container, frame.scene, selection)
-    if keyboardInPlate then
-      val target = Option(container.querySelector(s".${SvgDom.SelectedClass}"))
-        .orElse(Option(container.closest("section[aria-label='Recall Voyage']")))
-      target.foreach(_.asInstanceOf[js.Dynamic].focus())
+    Option(container.querySelector(s"[role=option].${SvgDom.SelectedClass}")) match
+      case Some(el) => container.setAttribute("aria-activedescendant", el.getAttribute("id"))
+      case None     => container.removeAttribute("aria-activedescendant")
+    if keyboardInPlate then container.asInstanceOf[dom.HTMLElement].focus()
+
+  /** Enter on the plot opens the inspector: focus moves to the ranked anchor table when the unit
+    * has one, otherwise to the inspector itself. Escape there returns to the plot.
+    */
+  private def openInspector(from: dom.EventTarget): Unit =
+    from match
+      case el: dom.Element =>
+        Option(el.closest(".page"))
+          .flatMap(page =>
+            Option(page.querySelector(".inspector table, .inspector .inspector-content"))
+          )
+          .foreach { t =>
+            t.setAttribute("tabindex", "-1")
+            t.asInstanceOf[js.Dynamic].focus()
+          }
+      case _ => ()
+
+  private def returnToPlot(from: dom.EventTarget): Unit =
+    from match
+      case el: dom.Element =>
+        Option(el.closest(".page"))
+          .flatMap(page => Option(page.querySelector(".plate[role=listbox]")))
+          .foreach(_.asInstanceOf[js.Dynamic].focus())
+      case _ => ()
+
+  /** A DOM id for a mark's option: its `MarkId`, reduced to id-safe characters, with a prefix. */
+  private def optionId(name: String): String =
+    "voyage-option-" + name.map(c => if c.isLetterOrDigit || c == '-' then c else '_')
 
   private def decorate(container: dom.Element, scene: VoyageScene, selection: Set[Address]): Unit =
     val selectedMarks = selection.toVector.flatMap(scene.navigation.marksFor).map(_.value).toSet
@@ -1103,7 +1168,8 @@ object VoyageView:
       val on = selectedMarks.contains(el.getAttribute("data-name"))
       if on then el.classList.add(SvgDom.SelectedClass)
       else el.classList.remove(SvgDom.SelectedClass)
-      el.setAttribute("aria-pressed", on.toString)
+      if el.getAttribute("role") == "option" then el.setAttribute("aria-selected", on.toString)
+      else if !el.hasAttribute("data-comparison-unit") then el.removeAttribute("aria-pressed")
       i += 1
 
   private def nameAt(target: dom.EventTarget): Option[String] =

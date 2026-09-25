@@ -69,6 +69,37 @@ async function inspect(page, arm) {
   const gutterBars = await page.locator('.plate .voyage-gutter').count();
   check(gutterBars >= 1, `${arm}: the selected unit's admitted anchors sit in the gutter (${gutterBars})`);
   check(await page.locator('.plate .voyage-alt:not(.voyage-gutter)').count() === 0, `${arm}: no admitted anchor is drawn on the recall axis beside the gutter`);
+  // the plot is one tab stop: a listbox of unit options with the selection as active descendant
+  const plate = page.locator('.plate[role=listbox]');
+  check(await plate.count() === 1 && await plate.getAttribute('tabindex') === '0', `${arm}: the plot is a focusable listbox`);
+  check(await page.locator('.plate [data-name][tabindex="0"]').count() === 0, `${arm}: marks are not separate tab stops`);
+  const optionCount = await page.locator('.plate [role=option]').count();
+  check(optionCount === 173, `${arm}: every unit mark in view is an option (${optionCount})`);
+  const activeId = await plate.getAttribute('aria-activedescendant');
+  check(!!activeId && await page.locator(`#${activeId}`).getAttribute('aria-selected') === 'true', `${arm}: the active descendant is the selected option`);
+  check(/\S/.test(await page.locator(`#${activeId}`).getAttribute('aria-label')), `${arm}: the active option has a label`);
+  check(await page.locator('.inspector[aria-live]').count() === 0, `${arm}: the inspector is not re-announced on every move`);
+  // arriving by keyboard with the selection outside the window selects a unit in view
+  await page.getByLabel('Detail start (m:ss)').fill('15:00');
+  await page.getByLabel('Detail end (m:ss)').fill('17:00');
+  await page.getByRole('button', { name: 'Apply range', exact: true }).click();
+  await page.waitForTimeout(150);
+  await page.getByRole('button', { name: 'Whole film', exact: true }).focus();
+  for (let i = 0; i < 40 && !(await page.evaluate(() => document.activeElement.matches('.plate[role=listbox]'))); i++) await page.keyboard.press('Tab');
+  await page.waitForTimeout(150);
+  const arrived = await page.locator('.page[data-focus]').getAttribute('data-focus');
+  const arrivedOnset = doc.units.find(u => u.id === arrived)?.onset;
+  check(arrived !== doc.units[5].id && arrivedOnset && number(arrivedOnset) >= 900 && number(arrivedOnset) <= 1020, `${arm}: tabbing onto the plot selects a unit in the window`);
+  await page.getByRole('button', { name: 'Whole recall', exact: true }).click();
+  await page.locator(`.plate .voyage-anchor[data-unit="${doc.units[5].ordinal}"] [data-name]`).first().dispatchEvent('click');
+  await page.waitForTimeout(150);
+  await plate.focus();
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(100);
+  check(await page.evaluate(() => !!document.activeElement.closest('.inspector')), `${arm}: Enter on the plot opens the inspector`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(100);
+  check(await page.evaluate(() => document.activeElement.matches('.plate[role=listbox]')), `${arm}: Escape returns to the plot`);
   // inspection filter: supplied chip counts, dimming without dropping, a tick per match, M steps
   const fills = page.getByRole('button', { name: /^Decode-filled, 44 units/ });
   check(await fills.count() === 1, `${arm}: the decode-filled chip carries the supplied count`);
