@@ -48,6 +48,38 @@ object VoyagePage:
   private def escape(s: String): String =
     s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
 
+  /** Shared by the standalone edition and the joined workspace, scoped to the inspector so it
+    * cannot restyle the surrounding source reader or matrix.
+    */
+  val inspectorCss: String =
+    """.inspector-content { --model: #1B7FA3; --model-soft: rgba(27,127,163,0.16); --raw: #9AA3AB; --external: #8A939D; --hair: #D5DAD8; --surface-2: #EDEFEC; display: grid; gap: 16px; min-width: 0; color: #1B2126; }
+      |.inspector-content h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #4B565F; margin: 0; }
+      |.inspector-content .num { font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+      |.inspector-content .where { color: #4B565F; font-size: 12px; }
+      |.inspector-content .quote { font-family: Georgia, "Times New Roman", serif; font-size: 17px; line-height: 1.45; margin: 0; }
+      |.inspector-content .kv { display: grid; grid-template-columns: max-content minmax(0,1fr); gap: 4px 12px; font-size: 13px; }
+      |.inspector-content .kv .k { color: #4B565F; }
+      |.inspector-content .segtext { font-size: 13px; color: #4B565F; padding: 2px 0; margin: 0; }
+      |.inspector-content .segtext .lab { display: block; font-size: 12px; margin-bottom: 2px; }
+      |.inspector-content .post, .inspector-content .strip { display: grid; gap: 6px; }
+      |.inspector-content .drawn-choice { padding: 12px; border: 1px solid var(--hair); border-radius: 6px; display: grid; gap: 6px; }
+      |.inspector-content .choice-target { margin: 0; overflow-wrap: anywhere; }
+      |.inspector-content .group-extents, .inspector-content .mass-extents { display: flex; justify-content: space-between; font-size: 12px; color: #4B565F; }
+      |.inspector-content .strip svg { width: 100%; height: 44px; }
+      |.inspector-content .post .bar { display: flex; height: 14px; border-radius: 4px; overflow: hidden; background: var(--surface-2); }
+      |.inspector-content .post .bar span { display: block; height: 100%; flex-shrink: 0; }
+      |.inspector-content .post .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: #4B565F; margin: 0; }
+      |.inspector-content .post .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
+      |.inspector-content .posterior-candidates > summary { cursor: pointer; font-size: 13px; font-weight: 600; padding: 8px 0; }
+      |.inspector-content .posterior-candidates .note { margin: 4px 0 8px; }
+      |.inspector-content table.alts { border-collapse: collapse; font-size: 12px; width: 100%; table-layout: fixed; overflow-wrap: anywhere; }
+      |.inspector-content table.alts th { text-align: left; font-weight: 500; color: #4B565F; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px 4px 0; }
+      |.inspector-content table.alts th:first-child { width: 3.5em; }
+      |.inspector-content table.alts th:nth-child(2) { width: 5.5em; }
+      |.inspector-content table.alts td { padding: 2px 8px 2px 0; border-top: 1px solid var(--hair); vertical-align: top; }
+      |.inspector-content .note { font-size: 12px; color: #4B565F; margin: 0; }
+      |""".stripMargin
+
   val css: String =
     """:root {
       |  --ground: #F4F5F3; --surface: #FFFFFF; --surface-2: #EDEFEC; --ink: #1B2126; --ink-2: #4B565F; --muted: #7A858F;
@@ -96,21 +128,6 @@ object VoyagePage:
       |.tip .q { font-family: var(--serif); font-size: 13px; }
       |.tip .m { font-family: var(--mono); font-size: 11px; opacity: 0.85; }
       |.inspector { display: grid; gap: 14px; padding: 12px 16px 16px; }
-      |.inspector .where { color: var(--muted); font-size: 12px; }
-      |.quote { font-family: var(--serif); font-size: 17px; line-height: 1.45; margin: 0; }
-      |.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 13px; }
-      |.kv .k { color: var(--muted); }
-      |.segtext { font-size: 13px; color: var(--ink-2); border-left: 3px solid var(--model-soft); padding: 2px 0 2px 10px; margin: 0; }
-      |.segtext.ru { border-left-color: var(--hair); }
-      |.segtext .lab { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 2px; }
-      |.post { display: grid; gap: 6px; }
-      |.post .bar { display: flex; height: 14px; border-radius: 4px; overflow: hidden; gap: 2px; background: var(--surface-2); }
-      |.post .bar span { display: block; height: 100%; }
-      |.post .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); }
-      |.post .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
-      |table.alts { border-collapse: collapse; font-size: 12px; width: 100%; }
-      |table.alts th { text-align: left; font-weight: 500; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px 4px 0; }
-      |table.alts td { padding: 2px 8px 2px 0; border-top: 1px solid var(--hair-2); vertical-align: top; }
       |.note { font-size: 12px; color: var(--ink-2); margin: 0; }
       |.empty { color: var(--muted); font-size: 13px; }
       |.legend-row { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 12px; color: var(--ink-2); padding: 8px 16px 12px; border-top: 1px solid var(--hair-2); }
@@ -162,8 +179,6 @@ object VoyagePage:
       |  .recall-picker select { font-size: 16px; }
       |  .recall-picker button { justify-self: start; }
       |  .inspector { padding: 12px 10px; }
-      |  .kv { grid-template-columns: max-content minmax(0,1fr); }
-      |  table.alts { table-layout: fixed; overflow-wrap: anywhere; }
       |  .legend-row { display: grid; font-size: 13px; }
       |}
-      |""".stripMargin
+      |""".stripMargin + inspectorCss

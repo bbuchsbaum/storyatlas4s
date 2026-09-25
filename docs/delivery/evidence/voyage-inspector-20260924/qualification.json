@@ -1,0 +1,60 @@
+{
+  "source_parent": "39b7f27844674197546610c87cae79102b4c5e73",
+  "changed_file_sha256": {
+    "app/src/main/scala/storyatlas4s/app/VoyageView.scala": "8e1f1ce127946506e0a59b8d85dcbb2e9e8ed94053199eefa7f51c7c5eee0467",
+    "app/smoke/voyage-inspector.cjs": "6c060695797073037f2e167a200d402971ac1540f1513b6e33495ce4cf2487b4",
+    "app/smoke/workspace.cjs": "afcf8f7faef20f2c8abcb4fa3d64208a91e6d26426ca33a59cf6a2ab0a031c2d",
+    "edition/src/main/scala/storyatlas4s/edition/VoyagePage.scala": "7ef651c1069e8441ac2096504d1d3e6655de1b45aa333e643af797817799d5c4",
+    "shell/src/main/scala/storyatlas4s/shell/VoyagePosterior.scala": "68932149a86ecc1e0183966d4b525c358c6d1fc8c4d8310bd5c10670f0a413c5",
+    "shell/src/test/scala/storyatlas4s/shell/VoyagePosteriorSuite.scala": "1375b81e80d0e94b88a5e9dcbc753bb897983f8c5a06e32e4d83ca821bc0fec6"
+  },
+  "pins": {
+    "storymodel4s": "7b2f076a57bde1ec540090c43debfec51c8d44d4",
+    "intaglio": "4eb566d9208f474d64d61e778e084dee2ddbaa76",
+    "grakern": "0329c43c88a0b71e9aa4456723bb16bac2fa3841"
+  },
+  "scala_gate_totals": [
+    22,
+    26,
+    77,
+    77,
+    13,
+    13,
+    62,
+    62,
+    58,
+    4
+  ],
+  "final_span_app_tests": 4,
+  "browser_counts": {
+    "inspector-browser.json": 171,
+    "workspace-browser.json": 98,
+    "voyage-review.json": 62,
+    "voyage-viewport.json": 61,
+    "voyage-mass.json": 69
+  },
+  "browser": {
+    "playwright": "1.55.1",
+    "chromium": "140.0.7339.186",
+    "build": 1193
+  },
+  "document_sha256": {
+    "nn03-full": "d2eeb592cf9ac562d174e2430aedff0d157afa36d5e7a1f505f13588d51cb2aa",
+    "nn03-content": "f11351f280616d9a4376ba56161c4f1dfd3572041c8a7a4ef03257849d287c37"
+  },
+  "static_unchanged": {
+    "nn03-full": {
+      "voyage.svg": true,
+      "voyage.txt": true
+    },
+    "nn03-content": {
+      "voyage.svg": true,
+      "voyage.txt": true
+    }
+  },
+  "limits": [
+    "Frozen Sherlock artifacts; no inference rerun or native-media qualification.",
+    "Untimed and unanchored Voyage marks do not carry a complete posterior.",
+    "Full gate precedes final annotation-span presentation addition; affected app checks and inspector/workspace browser courts were repeated after that addition."
+  ]
+}

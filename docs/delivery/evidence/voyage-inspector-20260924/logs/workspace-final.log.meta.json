@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-25T02:53:33.795313+00:00",
+  "finished_utc": "2026-09-25T02:54:00.214467+00:00",
+  "duration_seconds": 26.42946,
+  "command": [
+    "node",
+    "app/smoke/workspace.cjs",
+    "target/edition/index.html",
+    "target/inspector-20260924/fixtures",
+    "target/inspector-20260924/workspace-browser-final",
+    "target/inspector-20260924/source-feature-bundle"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storyatlas4s",
+  "log": "/Users/bbuchsbaum/code/scala/storyatlas4s/target/inspector-20260924/logs/workspace-final.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 180.0,
+  "log_bytes": 38
+}

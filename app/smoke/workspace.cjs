@@ -322,6 +322,14 @@ function mappingMember(a,id) {
     assert.equal(alternativeState.activeRecall,'m1:u1');
     assert.ok(alternativeState.correspondence?.target && alternativeState.correspondence.target!==anchorTarget);
     check(true,'Voyage alternative activates both qualified recall and exact source evidence');
+    check(await page.locator('#workspace-voyage .drawn-choice').count()===1,'controlled Voyage separates drawn choice from ranked posterior');
+    const massPresentation=await page.locator('#workspace-voyage .post .bar').evaluate(el=>({
+      height:el.getBoundingClientRect().height,
+      bars:[...el.children].map(c=>({mass:Number(c.dataset.mass),fraction:c.getBoundingClientRect().width/el.getBoundingClientRect().width,color:getComputedStyle(c).backgroundColor}))
+    }));
+    check(massPresentation.height===14 && massPresentation.bars.every(b=>Math.abs(b.mass-b.fraction)<.001 && b.color!=='rgba(0, 0, 0, 0)'),
+      'controlled Voyage shares visible fixed-scale inspector bars with standalone edition');
+    await page.locator('#workspace-voyage .inspector').screenshot({path:path.join(output,'voyage-inspector.png')});
     const quote=await page.locator('#workspace-voyage .quote').textContent();
     assert.ok(quote.length>2,'Voyage horizon witness starts with supplied quotation');
     await setRange('#recall-horizon',0);

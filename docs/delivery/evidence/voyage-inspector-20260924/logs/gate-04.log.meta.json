@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-25T02:47:40.649139+00:00",
+  "finished_utc": "2026-09-25T02:49:37.873768+00:00",
+  "duration_seconds": 117.22366,
+  "command": [
+    "sbt",
+    "-Dstoryatlas4s.storymodel4s.build=/private/tmp/storyatlas-inspector-20260924-deps/storymodel4s",
+    "-Dstoryatlas4s.intaglio.build=/private/tmp/storyatlas-inspector-20260924-deps/intaglio",
+    "-Dstorymodel4s.grakern.build=/private/tmp/storyatlas-inspector-20260924-deps/grakern",
+    "scalafmtAll",
+    "compileAll",
+    "testAll",
+    "scalafmtCheckAll",
+    "app/fastLinkJS",
+    "cli/run edition --out target/edition",
+    "app/editionBundle",
+    "cli/run voyage --document /Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-full/recall-map-NN03_ANT_202231_final.tsv.voyage.json --out target/inspector-20260924/nn03-full",
+    "cli/run voyage --document /Users/bbuchsbaum/code/scala/storymodel4s/data/study/recall-to-video/ladder-content/recall-map-NN03_ANT_202231_final.tsv.voyage.json --out target/inspector-20260924/nn03-content"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storyatlas4s",
+  "log": "/Users/bbuchsbaum/code/scala/storyatlas4s/target/inspector-20260924/logs/gate-04.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 1200.0,
+  "log_bytes": 19851
+}

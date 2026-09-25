@@ -1,0 +1,262 @@
+ok   initial: rail has text (2180 code units)
+ok   initial: rail sha256 equals source receipt
+ok   initial: rail sha256 equals layout source receipt
+ok   rail has layout.lines spans (47)
+ok   the DOM canvas measurer is in use (dom-canvas/1/1000/1200)
+ok   the panel reports the DOM measurer available
+ok   the receipts print the Atlas box
+ok   one DOM page per layout page (2)
+ok   omniscient Atlas: live identities are unique
+ok   omniscient Atlas: compiled identities are unique
+ok   omniscient Atlas: every compiled identity resolves
+ok   omniscient Atlas: live identities equal compiled identities
+ok   omniscient Atlas: identity set is non-empty
+ok   omniscient Codex: live identities are unique
+ok   omniscient Codex: compiled identities are unique
+ok   omniscient Codex: every compiled identity resolves
+ok   omniscient Codex: live identities equal compiled identities
+ok   omniscient Codex: identity set is non-empty
+ok   Atlas identity count agrees with its compiled count
+ok   Codex identity count agrees with its compiled count
+ok   initial exact zoom is Scene/Hidden
+ok   #surface-zoom: Scene/Hidden
+ok   #surface-zoom: receipt names Scene/Hidden
+ok   sub-threshold surface motion does not request compilation
+ok   #surface-zoom: Scene/Sentences
+ok   #surface-zoom: receipt names Scene/Sentences
+ok   Scene/Sentences Atlas: live identities are unique
+ok   Scene/Sentences Atlas: compiled identities are unique
+ok   Scene/Sentences Atlas: every compiled identity resolves
+ok   Scene/Sentences Atlas: live identities equal compiled identities
+ok   Scene/Sentences Atlas: identity set is non-empty
+ok   Sentences adds provider-compiled marks
+ok   Scene/Sentences: rail has text (2180 code units)
+ok   Scene/Sentences: rail sha256 equals source receipt
+ok   Scene/Sentences: rail sha256 equals layout source receipt
+ok   Scene/Sentences: canonical rail is unchanged
+ok   #surface-zoom: Scene/Sentences
+ok   #surface-zoom: receipt names Scene/Sentences
+ok   #surface-zoom: Scene/Sentences
+ok   #surface-zoom: receipt names Scene/Sentences
+ok   #surface-zoom: Scene/Sentences
+ok   #surface-zoom: receipt names Scene/Sentences
+ok   #surface-zoom: Scene/Sentences
+ok   #surface-zoom: receipt names Scene/Sentences
+ok   #surface-zoom: Scene/Sentences
+ok   #surface-zoom: receipt names Scene/Sentences
+ok   surface threshold jitter is absorbed by hysteresis
+ok   #surface-zoom: Scene/Tokens
+ok   #surface-zoom: receipt names Scene/Tokens
+ok   Scene/Tokens Atlas: live identities are unique
+ok   Scene/Tokens Atlas: compiled identities are unique
+ok   Scene/Tokens Atlas: every compiled identity resolves
+ok   Scene/Tokens Atlas: live identities equal compiled identities
+ok   Scene/Tokens Atlas: identity set is non-empty
+ok   Tokens adds provider-compiled token marks
+ok   Scene/Tokens Codex: live identities are unique
+ok   Scene/Tokens Codex: compiled identities are unique
+ok   Scene/Tokens Codex: every compiled identity resolves
+ok   Scene/Tokens Codex: live identities equal compiled identities
+ok   Scene/Tokens Codex: identity set is non-empty
+ok   Scene/Tokens: rail has text (2180 code units)
+ok   Scene/Tokens: rail sha256 equals source receipt
+ok   Scene/Tokens: rail sha256 equals layout source receipt
+ok   Scene/Tokens: canonical rail is unchanged
+ok   #surface-zoom: Scene/Hidden
+ok   #surface-zoom: receipt names Scene/Hidden
+ok   restored Scene/Hidden Atlas: live identities are unique
+ok   restored Scene/Hidden Atlas: compiled identities are unique
+ok   restored Scene/Hidden Atlas: every compiled identity resolves
+ok   restored Scene/Hidden Atlas: live identities equal compiled identities
+ok   restored Scene/Hidden Atlas: identity set is non-empty
+ok   Hidden Atlas identities restore exactly
+ok   restored Scene/Hidden: rail has text (2180 code units)
+ok   restored Scene/Hidden: rail sha256 equals source receipt
+ok   restored Scene/Hidden: rail sha256 equals layout source receipt
+ok   restored Scene/Hidden: canonical rail is unchanged
+ok   reader at 0 Atlas: live identities are unique
+ok   reader at 0 Atlas: compiled identities are unique
+ok   reader at 0 Atlas: every compiled identity resolves
+ok   reader at 0 Atlas: live identities equal compiled identities
+ok   reader at 0 Codex: live identities are unique
+ok   reader at 0 Codex: compiled identities are unique
+ok   reader at 0 Codex: every compiled identity resolves
+ok   reader at 0 Codex: live identities equal compiled identities
+ok   reader at 0: Atlas identity set is empty
+ok   reader at 0: Codex identity set is empty
+ok   reader at 0: rail has text (2180 code units)
+ok   reader at 0: rail sha256 equals source receipt
+ok   reader at 0: rail sha256 equals layout source receipt
+ok   reader at 0: canonical rail is unchanged
+ok   reader at 1090 Atlas: live identities are unique
+ok   reader at 1090 Atlas: compiled identities are unique
+ok   reader at 1090 Atlas: every compiled identity resolves
+ok   reader at 1090 Atlas: live identities equal compiled identities
+ok   reader at 1090 Atlas: identity set is non-empty
+ok   reader at 1090 Codex: live identities are unique
+ok   reader at 1090 Codex: compiled identities are unique
+ok   reader at 1090 Codex: every compiled identity resolves
+ok   reader at 1090 Codex: live identities equal compiled identities
+ok   reader at 1090 Codex: identity set is non-empty
+ok   reader at 1090: Atlas identity capacity is below omniscient
+ok   reader at 1090: Codex identity capacity is below omniscient
+ok   reader at 1090: rail has text (2180 code units)
+ok   reader at 1090: rail sha256 equals source receipt
+ok   reader at 1090: rail sha256 equals layout source receipt
+ok   reader at 1090: canonical rail is unchanged
+ok   restored omniscient Atlas: live identities are unique
+ok   restored omniscient Atlas: compiled identities are unique
+ok   restored omniscient Atlas: every compiled identity resolves
+ok   restored omniscient Atlas: live identities equal compiled identities
+ok   restored omniscient Atlas: identity set is non-empty
+ok   restored omniscient Codex: live identities are unique
+ok   restored omniscient Codex: compiled identities are unique
+ok   restored omniscient Codex: every compiled identity resolves
+ok   restored omniscient Codex: live identities equal compiled identities
+ok   restored omniscient Codex: identity set is non-empty
+ok   omniscient Atlas identities restore exactly
+ok   omniscient Codex identities restore exactly
+ok   restored omniscient: rail has text (2180 code units)
+ok   restored omniscient: rail sha256 equals source receipt
+ok   restored omniscient: rail sha256 equals layout source receipt
+ok   restored omniscient: canonical rail is unchanged
+ok   Reading Codex: live identities are unique
+ok   Reading Codex: compiled identities are unique
+ok   Reading Codex: every compiled identity resolves
+ok   Reading Codex: live identities equal compiled identities
+ok   Reading lens: Codex identity set is empty
+ok   Reading Atlas: live identities are unique
+ok   Reading Atlas: compiled identities are unique
+ok   Reading Atlas: every compiled identity resolves
+ok   Reading Atlas: live identities equal compiled identities
+ok   Reading Atlas: identity set is non-empty
+ok   Reading lens: rail has text (2180 code units)
+ok   Reading lens: rail sha256 equals source receipt
+ok   Reading lens: rail sha256 equals layout source receipt
+ok   Reading lens: canonical rail is unchanged
+ok   monospace Atlas: live identities are unique
+ok   monospace Atlas: compiled identities are unique
+ok   monospace Atlas: every compiled identity resolves
+ok   monospace Atlas: live identities equal compiled identities
+ok   monospace Atlas: identity set is non-empty
+ok   monospace Codex: live identities are unique
+ok   monospace Codex: compiled identities are unique
+ok   monospace Codex: every compiled identity resolves
+ok   monospace Codex: live identities equal compiled identities
+ok   monospace Codex: identity set is non-empty
+ok   monospace measurer: rail has text (2180 code units)
+ok   monospace measurer: rail sha256 equals source receipt
+ok   monospace measurer: rail sha256 equals layout source receipt
+ok   monospace measurer: canonical rail is unchanged
+ok   monospace measurer: line count matches its receipt
+ok   restored DOM measurer: rail has text (2180 code units)
+ok   restored DOM measurer: rail sha256 equals source receipt
+ok   restored DOM measurer: rail sha256 equals layout source receipt
+ok   restored DOM measurer: canonical rail is unchanged
+ok   before selection Atlas: live identities are unique
+ok   before selection Atlas: compiled identities are unique
+ok   before selection Atlas: every compiled identity resolves
+ok   before selection Atlas: live identities equal compiled identities
+ok   before selection Atlas: identity set is non-empty
+ok   selected address story/situation/wog:sit:ym2-enters-canoe
+ok   Atlas placement as text: Atlas: on-mark (mark:ff1b1924c360)
+ok   Codex placement as text: Codex: on-mark (annotation:cc5ad97d102f)
+ok   selected mark(s) marked in the Atlas (1)
+ok   focused mark(s) marked in the Atlas (1)
+ok   semantic focus is the Address
+ok   selected Atlas: live identities are unique
+ok   selected Atlas: compiled identities are unique
+ok   selected Atlas: every compiled identity resolves
+ok   selected Atlas: live identities equal compiled identities
+ok   selected Atlas: identity set is non-empty
+ok   selection does not change the Atlas identity set
+ok   on-mark selection: rail has text (2180 code units)
+ok   on-mark selection: rail sha256 equals source receipt
+ok   on-mark selection: rail sha256 equals layout source receipt
+ok   on-mark selection: canonical rail is unchanged
+ok   aria-pressed matches the selected marks
+ok   aria-current matches the focused marks
+ok   #narrative-zoom: Story/Hidden
+ok   #narrative-zoom: receipt names Story/Hidden
+ok   Story zoom: Atlas: via-ancestor (story/segment/wog:seg:ep2-expedition)
+ok   Codex retains its own compiled placement: Codex: on-mark (annotation:cc5ad97d102f)
+ok   zoom preserves the semantic selection address
+ok   zoom preserves semantic focus
+ok   Story zoom Atlas: live identities are unique
+ok   Story zoom Atlas: compiled identities are unique
+ok   Story zoom Atlas: every compiled identity resolves
+ok   Story zoom Atlas: live identities equal compiled identities
+ok   Story zoom Atlas: identity set is non-empty
+ok   Story zoom exposes selection proxy (1)
+ok   Story zoom exposes focus proxy (1)
+ok   Story zoom does not misstate the ancestor as directly selected
+ok   Story zoom does not misstate the ancestor as direct semantic focus
+ok   Story zoom proxy is not aria-pressed as the original address
+ok   Story zoom proxy is not aria-current as the original address
+ok   selection proxy names the preserved address
+ok   selection proxy accessibly explains original and visible addresses
+ok   Codex proxy court is explicit
+ok   Codex proxy court preserves the original semantic address
+ok   Codex proxy court names the visible ancestor (story/segment/wog:seg:ep2-expedition)
+ok   real paginated Codex fragment receives ViaAncestor proxy treatment
+ok   proxy-only Codex court does not claim direct selection
+ok   Codex ViaAncestor fragment is not aria-pressed as the original
+ok   Codex ViaAncestor label names original and visible addresses
+ok   Codex proxy has a non-colour halo (drop-shadow(rgb(0, 0, 0) 0px 0px 1px) drop-shadow(rgb(0, 0, 0) 0px 0px 2px))
+ok   via-ancestor selection: rail has text (2180 code units)
+ok   via-ancestor selection: rail sha256 equals source receipt
+ok   via-ancestor selection: rail sha256 equals layout source receipt
+ok   via-ancestor selection: canonical rail is unchanged
+ok   fixture exposes a visible-ancestor/hidden-selection horizon
+ok   independent Codex placement remains compiled: Codex: on-mark (annotation:cc5ad97d102f)
+ok   reader at 2090: selection persists without leaking placement
+ok   reader at 2090 Atlas: live identities are unique
+ok   reader at 2090 Atlas: compiled identities are unique
+ok   reader at 2090 Atlas: every compiled identity resolves
+ok   reader at 2090 Atlas: live identities equal compiled identities
+ok   reader at 2090 Atlas: identity set is non-empty
+ok   off-projection selection has no direct or proxy Atlas treatment
+ok   reader at 2090 Codex: live identities are unique
+ok   reader at 2090 Codex: compiled identities are unique
+ok   reader at 2090 Codex: every compiled identity resolves
+ok   reader at 2090 Codex: live identities equal compiled identities
+ok   reader at 2090 Codex: identity set is non-empty
+ok   reader at 2090 hidden selection: rail has text (2180 code units)
+ok   reader at 2090 hidden selection: rail sha256 equals source receipt
+ok   reader at 2090 hidden selection: rail sha256 equals layout source receipt
+ok   reader at 2090 hidden selection: canonical rail is unchanged
+ok   #narrative-zoom: Scene/Hidden
+ok   #narrative-zoom: receipt names Scene/Hidden
+ok   restored Scene zoom returns the selection to on-mark
+ok   restored Scene zoom removes ancestor proxy treatment
+ok   restored Scene zoom returns direct selection treatment
+ok   restored selected Scene: rail has text (2180 code units)
+ok   restored selected Scene: rail sha256 equals source receipt
+ok   restored selected Scene: rail sha256 equals layout source receipt
+ok   restored selected Scene: canonical rail is unchanged
+ok   #narrative-zoom: Story/Hidden
+ok   #narrative-zoom: receipt names Story/Hidden
+ok   ancestor proxy receives keyboard focus
+ok   Atlas direct+proxy keeps halo and direct dash ({"filter":"drop-shadow(rgb(0, 0, 0) 0px 0px 1px) drop-shadow(rgb(0, 0, 0) 0px 0px 3px)","dash":"6px, 3px"})
+ok   Codex direct+proxy keeps halo and direct dash ({"filter":"drop-shadow(rgb(0, 0, 0) 0px 0px 1px) drop-shadow(rgb(0, 0, 0) 0px 0px 2px)","dash":"3px, 2px"})
+ok   Codex composite still names the proxied original
+ok   Codex composite truthfully reports the visible ancestor's direct selection
+ok   Codex composite label preserves both semantic roles
+ok   activating the proxy restores ordinary direct Codex treatment
+ok   direct restoration carries no stale Codex proxy class
+ok   direct restoration from Codex proxy: rail has text (2180 code units)
+ok   direct restoration from Codex proxy: rail sha256 equals source receipt
+ok   direct restoration from Codex proxy: rail sha256 equals layout source receipt
+ok   direct restoration from Codex proxy: canonical rail is unchanged
+ok   #narrative-zoom: Scene/Hidden
+ok   #narrative-zoom: receipt names Scene/Hidden
+ok   keyboard-selected address story/context/wog:ctx:speech-ym1-b
+ok   keyboard selection: Atlas on-mark
+ok   keyboard selection: rail has text (2180 code units)
+ok   keyboard selection: rail sha256 equals source receipt
+ok   keyboard selection: rail sha256 equals layout source receipt
+ok   keyboard selection: canonical rail is unchanged
+ok   no page error 
+ok   no console error 
+
+smoke passed

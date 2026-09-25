@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-25T02:51:27.612024+00:00",
+  "finished_utc": "2026-09-25T02:51:30.398996+00:00",
+  "duration_seconds": 2.78682,
+  "command": [
+    "node",
+    "app/smoke/smoke.cjs",
+    "target/edition/index.html"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storyatlas4s",
+  "log": "/Users/bbuchsbaum/code/scala/storyatlas4s/target/inspector-20260924/logs/shell-smoke.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 180.0,
+  "log_bytes": 14846
+}

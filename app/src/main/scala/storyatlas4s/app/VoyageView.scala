@@ -4,8 +4,9 @@ import _root_.intaglio.svg.{SvgOptions, SvgRenderer}
 import com.raquo.laminar.api.L.*
 import org.scalajs.dom
 import scala.scalajs.js
+import storyatlas4s.edition.VoyagePage
 import storyatlas4s.intaglio.{RecallWindow, VoyageLowering}
-import storyatlas4s.shell.{WorkspaceAction, WorkspaceController}
+import storyatlas4s.shell.{VoyagePosterior, WorkspaceAction, WorkspaceController}
 import storymodel4s.align.SourceNodeRef
 import storymodel4s.codec.{VoyageCodecs, WorkspaceVoyage}
 import storymodel4s.core.{Address, Addressable}
@@ -413,6 +414,7 @@ object VoyageView:
 
     div(
       cls("page"),
+      styleTag(VoyagePage.inspectorCss),
       dataAttr("marks") := base.marks.size.toString,
       dataAttr("selection") <-- legacySelection.map(_.toVector.map(_.render).sorted.mkString(" ")),
       dataAttr("focus") <-- active.map(_.fold("none")(_.value)),
@@ -1407,13 +1409,29 @@ object VoyageView:
           svg.svg(
             svg.viewBox := "0 0 300 44",
             svg.preserveAspectRatio := "none",
+            svg.role := "img",
+            svg.titleTag(
+              s"${group.label}: display clock (legacy), ${clockInput(s0)}–${clockInput(group.span.end.value)}"
+            ),
             base,
             ticks,
             soft,
             left,
             drawn
           ),
-          p(cls("segtext"), span(cls("lab"), group.label), where)
+          div(
+            cls("group-extents num"),
+            span(clockInput(s0)),
+            span(clockInput(group.span.end.value))
+          ),
+          p(cls("segtext"), span(cls("lab"), group.label), where),
+          p(
+            cls("note"),
+            "Display clock (legacy). Width represents the supplied annotation span, not verified media support. ",
+            if a.level > 0 then "This choice locates the whole group, not an individual segment."
+            else
+              "Ticks mark segment starts; the solid span is the drawn choice. Pale spans are alternatives; a dashed outline marks a moved argmax in this group."
+          )
         )
     }
 
@@ -1422,7 +1440,8 @@ object VoyageView:
       u: VoyageUnit,
       visibleRecallText: Option[String] = None
   ): HtmlElement =
-    val anchor = scene.marks.collectFirst { case m: VoyageMark.UnitAnchor if m.unit == u.id => m }
+    val presentation = VoyagePosterior.forUnit(scene, u.id)
+    val anchor = presentation.map(_.drawn)
     val alternatives = scene.marks.collect { case m: VoyageMark.Alternative if m.unit == u.id => m }
     val absence = scene.marks.collectFirst {
       case m: VoyageMark.Unanchored if m.unit == u.id => m: VoyageMark
@@ -1434,21 +1453,6 @@ object VoyageView:
       case Some(a) =>
         val coded = scene.codedGroupAt(a.at)
         Vector(
-          div(cls("k"), "placed at"),
-          div(
-            cls("v"),
-            s"${nodeLabel(scene, a.anchor)} · ${clock(a.span.start.value)}–${clock(a.span.end.value)} · " +
-              groupLabel(scene, a.group)
-          ),
-          div(cls("k"), "origin"),
-          div(
-            cls("v"),
-            a.origin.label + (
-              if a.origin != AnchorOrigin.PosteriorArgmax then
-                a.argmax.fold("")(r => s" · posterior argmax was ${nodeLabel(scene, r)}")
-              else ""
-            )
-          ),
           div(cls("k"), "coding"),
           div(
             cls("v"),
@@ -1462,7 +1466,7 @@ object VoyageView:
           div(
             cls("v"),
             if a.externalDominant then "dominant: more mass outside the source than in it"
-            else "below the source mass"
+            else "does not exceed the source mass"
           ),
           div(cls("k"), "localizability"),
           div(cls("v"), a.localizability.fold("—")(l => f"$l%.2f"))
@@ -1479,50 +1483,89 @@ object VoyageView:
             }
           )
         )
-    // The bar's segments are the masses the marks carry, nothing derived: the anchor, then each
-    // alternative in rank order, then the external mass. Widths are shares of what is shown.
-    val posterior: Vector[HtmlElement] = anchor.toVector.flatMap { a =>
-      val parts =
-        Vector(("anchor", a.mass, Model)) ++
-          alternatives.zipWithIndex.map((alt, i) =>
-            (s"alternative ${alt.rank}", alt.mass, if i == 0 then ModelSoft else "var(--hair)")
-          ) :+ ("external", a.externalMass, External)
-      val shown = parts.map(_._2).sum
-      val legendParts = (parts.take(2) :+ parts.last).distinct
+    val decision = anchor.toVector.map { a =>
+      div(
+        cls("drawn-choice"),
+        dataAttr("source-key") := a.anchor.key,
+        h2("Drawn choice"),
+        p(cls("choice-target"), b(nodeLabel(scene, a.anchor)), " · ", groupLabel(scene, a.group)),
+        p(
+          cls("note choice-span"),
+          dataAttr("span-start") := a.span.start.value.toString,
+          dataAttr("span-end") := a.span.end.value.toString,
+          s"Annotation span ${clockInput(a.span.start.value)}–${clockInput(a.span.end.value)} · display clock (legacy)"
+        ),
+        p(cls("note"), a.origin.label),
+        p(
+          cls("note"),
+          "Supplied anchor mass ",
+          span(cls("num"), f"${a.mass}%.3f"),
+          if a.mass == 0 then " · drawn (not in posterior)" else " · also ranked below"
+        ),
+        p(
+          cls("note"),
+          a.argmax.fold("No source argmax supplied.")(r =>
+            s"Posterior argmax: ${nodeLabel(scene, r)}."
+          )
+        )
+      )
+    }
+    // These two totals are supplied by the compiler, not summed or normalized by the viewer.
+    // All positive source candidates remain in the table, including a supported drawn choice.
+    val posterior: Vector[HtmlElement] = presentation.toVector.flatMap { record =>
+      val a = record.drawn
+      val parts = Vector(("Source", a.sourceMass, Model), ("External", a.externalMass, External))
+      val topAlternative = record.candidates.find(!_.drawn)
       Vector(
         div(
           cls("post"),
-          h2("Posterior mass"),
+          h2("Supplied posterior mass"),
+          p(cls("note"), "Fixed 0–1 scale · model mass, not calibrated confidence."),
           div(
             cls("bar"),
-            parts.map((_, v, c) =>
-              span(width := f"${100 * v / math.max(shown, 1e-9)}%.1f%%", backgroundColor := c)
+            role("img"),
+            aria.label(
+              f"Source mass ${a.sourceMass}%.3f; external mass ${a.externalMass}%.3f; fixed zero to one scale"
+            ),
+            parts.map((label, v, c) =>
+              span(
+                dataAttr("mass-kind") := label.toLowerCase,
+                dataAttr("mass") := v.toString,
+                width := s"${100 * v}%",
+                backgroundColor := c
+              )
             )
           ),
+          div(cls("mass-extents num"), span("0"), span("1")),
           div(
             cls("legend"),
-            legendParts.map((k, v, c) =>
-              span(i(backgroundColor := c), s"$k ", span(cls("num"), f"$v%.2f"))
+            parts.map((k, v, c) =>
+              span(i(backgroundColor := c), s"$k ", span(cls("num"), f"$v%.3f"))
+            )
+          ),
+          p(
+            cls("note top-alternative"),
+            topAlternative.fold("No other source candidate has positive mass.")(alt =>
+              f"Top alternative: ${nodeLabel(scene, alt.ref)} · mass ${alt.mass}%.3f"
             )
           )
         ),
-        div(
-          cls("post"),
-          h2("The posterior, ranked"),
+        detailsTag(
+          cls("post posterior-candidates"),
+          summaryTag(s"All ${record.candidates.size} source candidates, ranked"),
+          p(cls("note"), VoyagePosterior.orderingNote, " External mass is reported separately."),
           table(
             cls("alts"),
-            thead(tr(th("mass"), th("anchor"), th("group"))),
+            thead(tr(th("Rank"), th("Mass"), th("Source target"), th("Group"))),
             tbody(
-              tr(
-                td(cls("num"), f"${a.mass}%.3f"),
-                td(b(nodeLabel(scene, a.anchor)), " · drawn"),
-                td(groupLabel(scene, a.group))
-              ),
-              alternatives.map(alt =>
+              record.candidates.zipWithIndex.map((candidate, i) =>
                 tr(
-                  td(cls("num"), f"${alt.mass}%.3f"),
-                  td(nodeLabel(scene, alt.anchor)),
-                  td(groupLabel(scene, alt.group))
+                  dataAttr("source-key") := candidate.ref.key,
+                  dataAttr("mass") := candidate.mass.toString,
+                  td(cls("num"), (i + 1).toString),
+                  td(cls("num"), f"${candidate.mass}%.3f"),
+                  td(nodeLabel(scene, candidate.ref), if candidate.drawn then " · drawn" else ""),
+                  td(groupLabel(scene, candidate.group))
                 )
               )
             )
@@ -1531,11 +1574,26 @@ object VoyageView:
       )
     }
     div(
+      cls("inspector-content"),
       div(
         div(cls("where"), s"Unit ${u.ordinal} · ", span(cls("num"), onsetText), " into the recall"),
         p(cls("quote"), s"“${visibleRecallText.getOrElse(u.text)}”")
       ),
+      decision,
       div(cls("kv"), placement),
       anchor.toVector.flatMap(a => withinGroup(scene, a, alternatives)),
-      posterior
+      posterior,
+      if anchor.isEmpty then
+        div(
+          cls("post posterior-unavailable"),
+          h2("Posterior detail unavailable"),
+          p(
+            cls("note"),
+            "This Voyage projection does not carry the complete posterior for untimed or unanchored units."
+          ),
+          absence.toVector.collect { case a: VoyageMark.Unanchored =>
+            p(cls("note"), "Supplied external mass: ", span(cls("num"), f"${a.externalMass}%.3f"))
+          }
+        )
+      else emptyNode
     )

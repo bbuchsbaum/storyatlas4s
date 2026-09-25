@@ -1,0 +1,6 @@
+{
+  "checks": [],
+  "errors": [],
+  "requests": [],
+  "failure": "AssertionError [ERR_ASSERTION]: nn03-full unit 5: posterior starts with the largest supplied mass, not the drawn choice"
+}

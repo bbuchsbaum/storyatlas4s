@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-25T02:51:21.792350+00:00",
+  "finished_utc": "2026-09-25T02:51:27.492171+00:00",
+  "duration_seconds": 5.69926,
+  "command": [
+    "node",
+    "app/smoke/voyage-mass.cjs",
+    "target/inspector-20260924"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storyatlas4s",
+  "log": "/Users/bbuchsbaum/code/scala/storyatlas4s/target/inspector-20260924/logs/voyage-mass.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 180.0,
+  "log_bytes": 4558
+}

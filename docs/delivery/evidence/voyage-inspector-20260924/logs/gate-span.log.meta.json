@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-09-25T02:52:19.708250+00:00",
+  "finished_utc": "2026-09-25T02:52:55.993013+00:00",
+  "duration_seconds": 36.284395,
+  "command": [
+    "sbt",
+    "-Dstoryatlas4s.storymodel4s.build=/private/tmp/storyatlas-inspector-20260924-deps/storymodel4s",
+    "-Dstoryatlas4s.intaglio.build=/private/tmp/storyatlas-inspector-20260924-deps/intaglio",
+    "-Dstorymodel4s.grakern.build=/private/tmp/storyatlas-inspector-20260924-deps/grakern",
+    "scalafmtAll",
+    "app/test",
+    "scalafmtCheckAll",
+    "app/fastLinkJS",
+    "app/editionBundle"
+  ],
+  "cwd": "/Users/bbuchsbaum/code/scala/storyatlas4s",
+  "log": "/Users/bbuchsbaum/code/scala/storyatlas4s/target/inspector-20260924/logs/gate-span.log",
+  "exit_code": 0,
+  "child_returncode": 0,
+  "reason": "exited",
+  "detail": null,
+  "timeout_seconds": 600.0,
+  "log_bytes": 2636
+}
