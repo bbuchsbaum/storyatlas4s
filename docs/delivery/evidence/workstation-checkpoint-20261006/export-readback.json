@@ -1,0 +1,54 @@
+[
+  {
+    "output": "target/edition",
+    "files": 32,
+    "bytes": 19671059,
+    "receipt_bound_files": 29,
+    "hashes": {
+      "app.js": "09dab363b1f04a8ca35d2b12537e726fed364a0ced254c6db8c8819af4267f4f",
+      "atlas-episode-hidden.svg": "d6c4aa38a4ec451e27dafde69148a914444dad7f80a725b3a55eb0ea11f064c5",
+      "atlas-episode-hidden.txt": "548d0e556fe7daebb987fb57d5550dba083ca426dfa97425a9a377ee0e9e2c98",
+      "atlas-episode-sentences.svg": "c08e6f4e79933c160d26b345d6b487cb1dbaf4f90fd191c0ec47dc28e8495e75",
+      "atlas-episode-sentences.txt": "23db0dbc2feede6517c5da82f765d6fd88be18f27d24f15004ad5e286d4958ec",
+      "atlas-episode-tokens.svg": "982f611cf0a7cd448aec2a8d662db045188ef3b3a660ff15bfaa2023cd3f51e3",
+      "atlas-episode-tokens.txt": "934da27891ffe6bb07e4634946105b1e583462548d233e9647c034be4cd2bac2",
+      "atlas-scene-hidden.svg": "18aaca152ec9533b570d0c5caa70385996e3bf55f03171dbd64a21b322a8d1cf",
+      "atlas-scene-hidden.txt": "394d024c24bc3c843245d911b2ad070431fb524049e0e60b51e91f65b6bf9e90",
+      "atlas-scene-sentences.svg": "8980fe0213429a502b4989788db78ba4c7be1526a09d046ffe1bb02feda52aac",
+      "atlas-scene-sentences.txt": "5c8405dd3c52d39d4975b49efca04c37bda2cd4f9af8cda6045be14e71bfef0c",
+      "atlas-scene-tokens.svg": "87d36cfc0c3704a0df386552fcd17c9345d4be442005f5b891600078df9402f9",
+      "atlas-scene-tokens.txt": "92d97c54c84c2480ad7a7ead8c0deabc074dc29426c1d77bc4ea12ec49a9755e",
+      "atlas-story-hidden.svg": "0e0303ffa92ef0b47550f20f5ab651fcea1219ec5b0d00acee74f48ae17d857a",
+      "atlas-story-hidden.txt": "281b016750df2931fa5978cf51d3f7f814952181f206a92bfaedf2a5678c3da4",
+      "atlas-story-sentences.svg": "99c7f8fc0937dff4bc44647b2c2b36bb3d64693dcbacf139ef26d159b23ac106",
+      "atlas-story-sentences.txt": "2653eb62c6f5d01e2c1df0d4dd64839d3e6f83e3d4a2ebd35ec0bc0df50bbbd0",
+      "atlas-story-tokens.svg": "2e605818d091c250959737e931480c4847b2c3a61c21922972ba84d9dd4f1e1b",
+      "atlas-story-tokens.txt": "4757f788bff9859d15d750261ae25b83a3a5dcbc162a2a39bb23b154716c7920",
+      "codex-overview-pages.txt": "e87ebd4fb8b218dc0ca3e3bc093689f04bedf8f92d85b1a4aad1cb3a73a1f8c2",
+      "codex-overview.html": "72a804260b4c3bd0d2833d9ba2ffa7a0577d2730ae069bbbc35180b80f8a527e",
+      "codex-overview.svg": "2c333328a04e9248fbd7b9dcd6aafdb6f2a6537119cc556cfcc31091e2d36316",
+      "codex-overview.txt": "90d9ff379feabcf2054d224efcfcd3680b5b44bcbf40c54d4c27f31c52e96f7d",
+      "codex-reading-pages.txt": "ac00bb472419b0200f01743d1bb36dfc213c5ee986f124bc1015e015fe4ccd1e",
+      "codex-reading.html": "9113ed5e1321ffe54e279deac516ca55ede203d83963d6d5fa3400df60a95f14",
+      "codex-reading.svg": "6ddb3d2a9d2d33cb36a00067f0b905387b17118853a46db0a1067d8f351b31bc",
+      "codex-reading.txt": "4c49239368a6b6c5485ecdf7e45385545e1c7509f158164c0c412925c0cc7ad5",
+      "features.html": "461f9e834d5641578cfec9578ea20b02bc448535841cdbded11b0597f5b73d73",
+      "index.html": "bb07bdd81c399bccfa35d7de6891aefa1cbaadb4d2450dce82157fce72453f33",
+      "preview.html": "72a804260b4c3bd0d2833d9ba2ffa7a0577d2730ae069bbbc35180b80f8a527e",
+      "preview.txt": "e87ebd4fb8b218dc0ca3e3bc093689f04bedf8f92d85b1a4aad1cb3a73a1f8c2",
+      "receipt.json": "b14d5e9c530a0291a0a817284726b7c2a49fc855bd76fea9e14f5c858cfafdbf"
+    }
+  },
+  {
+    "output": "target/bell-voyage",
+    "files": 4,
+    "bytes": 33602,
+    "receipt_bound_files": 3,
+    "hashes": {
+      "voyage-receipt.json": "fd25c927d2973b5034ca40db2eb81286874f4d24449c31e87e50bd8abf927832",
+      "voyage.html": "6323eefc713886b58107dccaf8acb7224647f728408bf90e369ace09ead04d17",
+      "voyage.svg": "7869fd5ba97cf98bcca2e6285b92b2d19fa3570513b48288af01630715beb905",
+      "voyage.txt": "2345cfe698a72aa661b337c744e91b998f18cc91eb9b7ec9cf6f7ba1e180f007"
+    }
+  }
+]

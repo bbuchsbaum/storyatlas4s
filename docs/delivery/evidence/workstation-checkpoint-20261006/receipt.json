@@ -1,0 +1,152 @@
+{
+  "candidate": "419b636762778117c751dd86c20d4b4797a71e4b",
+  "producer": "9339172694484aad98e2a75f961728dbdb0012b5",
+  "intaglio": "2fa5c682f4a95b8e73daad78dd9302d7aff46e11",
+  "actual_sbt_java": "Homebrew25.0.1",
+  "run": {
+    "schema_version": 1,
+    "started_utc": "2026-10-06T17:36:24.616159+00:00",
+    "finished_utc": "2026-10-06T17:39:22.227809+00:00",
+    "duration_seconds": 177.611707,
+    "command": [
+      "sbt",
+      "-batch",
+      "-Dstoryatlas4s.storymodel4s.build=/private/tmp/storymodel4s-checkpoint-a2pjdpy9/producer",
+      "set ThisBuild / tlFatalWarnings := true",
+      "compileAll",
+      "testAll",
+      "app/fastLinkJS",
+      "cli/run edition --out target/edition",
+      "app/editionBundle",
+      "cli/run voyage --document /private/tmp/storymodel4s-checkpoint-a2pjdpy9/producer/docs/refactor/evidence/workspace-m1-packet-20260922/fixtures/bell.voyage.json --out target/bell-voyage",
+      "githubWorkflowGenerate",
+      "scalafmtCheckAll",
+      "scalafmtSbtCheck",
+      "githubWorkflowCheck"
+    ],
+    "cwd": "/private/tmp/storymodel4s-checkpoint-a2pjdpy9/atlas",
+    "log": "/Users/bbuchsbaum/code/scala/storymodel4s/.agent-work/checkpoint-20261006/consumer-baseline-02.log",
+    "exit_code": 0,
+    "child_returncode": 0,
+    "reason": "exited",
+    "detail": null,
+    "timeout_seconds": 3600.0,
+    "log_bytes": 32433
+  },
+  "log_sha256": "0483b00f5ff4c1d422e313137ac200f3c34f91091e2bfaed36b6583007425586",
+  "cells": [
+    {
+      "module": "layoutJVM",
+      "total": 22,
+      "failed": 0,
+      "errors": 0,
+      "passed": 22,
+      "skipped": 0
+    },
+    {
+      "module": "layoutJS",
+      "total": 26,
+      "failed": 0,
+      "errors": 0,
+      "passed": 26,
+      "skipped": 0
+    },
+    {
+      "module": "intaglioJVM",
+      "total": 98,
+      "failed": 0,
+      "errors": 0,
+      "passed": 98,
+      "skipped": 0
+    },
+    {
+      "module": "intaglioJS",
+      "total": 98,
+      "failed": 0,
+      "errors": 0,
+      "passed": 98,
+      "skipped": 0
+    },
+    {
+      "module": "editionJVM",
+      "total": 13,
+      "failed": 0,
+      "errors": 0,
+      "passed": 13,
+      "skipped": 0
+    },
+    {
+      "module": "editionJS",
+      "total": 13,
+      "failed": 0,
+      "errors": 0,
+      "passed": 13,
+      "skipped": 0
+    },
+    {
+      "module": "shellJVM",
+      "total": 74,
+      "failed": 0,
+      "errors": 0,
+      "passed": 74,
+      "skipped": 0
+    },
+    {
+      "module": "shellJS",
+      "total": 74,
+      "failed": 0,
+      "errors": 0,
+      "passed": 74,
+      "skipped": 0
+    },
+    {
+      "module": "cli",
+      "total": 58,
+      "failed": 0,
+      "errors": 0,
+      "passed": 58,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "total": 4,
+      "failed": 0,
+      "errors": 0,
+      "passed": 4,
+      "skipped": 0
+    }
+  ],
+  "sum": {
+    "total": 480,
+    "passed": 480,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "loaded_sources": {
+    "producer": {
+      "head": "9339172694484aad98e2a75f961728dbdb0012b5",
+      "clean": true
+    },
+    "grakern": {
+      "head": "0329c43c88a0b71e9aa4456723bb16bac2fa3841",
+      "clean": true
+    },
+    "gale": {
+      "head": "d55fe2f97196a76ab7879e1a12f1e92403aeba06",
+      "clean": true
+    },
+    "graph4s": {
+      "head": "ea5d2d762f85f5a0f97ee188deb5fac0ef2bcbaf",
+      "clean": true
+    },
+    "intaglio": {
+      "head": "2fa5c682f4a95b8e73daad78dd9302d7aff46e11",
+      "clean": true
+    }
+  },
+  "overrides": "producer only, exact clean qualified SHA equals declared pin; remaining dependencies default public pins",
+  "workflow_generate_changed_files": [],
+  "browser_qualification": false,
+  "scope": "producer pin only, browser-free edition/Bell exports and readback; no UI or new scientific claim"
+}
