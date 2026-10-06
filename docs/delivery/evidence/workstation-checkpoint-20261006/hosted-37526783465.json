@@ -1,0 +1,383 @@
+{
+  "candidate": "d67dccfb7eec07e184ce3ef8fe6ccc16c3745523",
+  "repo": "bbuchsbaum/storyatlas4s",
+  "run": 37526783465,
+  "url": "https://github.com/bbuchsbaum/storyatlas4s/actions/runs/37526783465",
+  "conclusion": "success",
+  "retrieval": "fresh raw per-step GitHub API archive, not the CLI stitched view",
+  "jobs": [
+    {
+      "name": "Test (ubuntu-22.04, 3.7.4, temurin@17, rootJS)",
+      "url": "https://github.com/bbuchsbaum/storyatlas4s/actions/runs/37526783465/job/112485693293",
+      "conclusion": "success",
+      "test_log_entry": "Test (ubuntu-22.04, 3.7.4, temurin@17, rootJS)/11_Test.txt",
+      "test_log_bytes": 25820,
+      "test_log_sha256": "fe42dbc73293ea50853f3d0ab3bfbd27371981aafbcd7664fdf8f74ce8f404b0",
+      "test_cells": [
+        {
+          "total": 4,
+          "failed": 0,
+          "errors": 0,
+          "passed": 4,
+          "skipped": 0
+        },
+        {
+          "total": 26,
+          "failed": 0,
+          "errors": 0,
+          "passed": 26,
+          "skipped": 0
+        },
+        {
+          "total": 98,
+          "failed": 0,
+          "errors": 0,
+          "passed": 98,
+          "skipped": 0
+        },
+        {
+          "total": 13,
+          "failed": 0,
+          "errors": 0,
+          "passed": 13,
+          "skipped": 0
+        },
+        {
+          "total": 74,
+          "failed": 0,
+          "errors": 0,
+          "passed": 74,
+          "skipped": 0
+        }
+      ],
+      "sum": {
+        "passed": 215,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout current branch (full)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup sbt",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup Java (temurin@17)",
+          "conclusion": "success"
+        },
+        {
+          "name": "sbt update",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup Java (temurin@21)",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "sbt update",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Check that workflows are up to date",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check formatting",
+          "conclusion": "success"
+        },
+        {
+          "name": "scalaJSLink",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check binary compatibility",
+          "conclusion": "success"
+        },
+        {
+          "name": "Generate API documentation",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup Java (temurin@17)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup sbt",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Checkout current branch (full)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "Test (ubuntu-22.04, 3.7.4, temurin@21, rootJVM)",
+      "url": "https://github.com/bbuchsbaum/storyatlas4s/actions/runs/37526783465/job/112485693581",
+      "conclusion": "success",
+      "test_log_entry": "Test (ubuntu-22.04, 3.7.4, temurin@21, rootJVM)/11_Test.txt",
+      "test_log_bytes": 34207,
+      "test_log_sha256": "13efa3e7ce8694af827ac5a7502f59b836cfe814e41a9e38949f2c3563d26359",
+      "test_cells": [
+        {
+          "total": 22,
+          "failed": 0,
+          "errors": 0,
+          "passed": 22,
+          "skipped": 0
+        },
+        {
+          "total": 98,
+          "failed": 0,
+          "errors": 0,
+          "passed": 98,
+          "skipped": 0
+        },
+        {
+          "total": 13,
+          "failed": 0,
+          "errors": 0,
+          "passed": 13,
+          "skipped": 0
+        },
+        {
+          "total": 58,
+          "failed": 0,
+          "errors": 0,
+          "passed": 58,
+          "skipped": 0
+        },
+        {
+          "total": 74,
+          "failed": 0,
+          "errors": 0,
+          "passed": 74,
+          "skipped": 0
+        }
+      ],
+      "sum": {
+        "passed": 265,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout current branch (full)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup sbt",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup Java (temurin@17)",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "sbt update",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Setup Java (temurin@21)",
+          "conclusion": "success"
+        },
+        {
+          "name": "sbt update",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check that workflows are up to date",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check formatting",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "scalaJSLink",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check binary compatibility",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Generate API documentation",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Setup Java (temurin@21)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup sbt",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Checkout current branch (full)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "Test (ubuntu-22.04, 3.7.4, temurin@17, rootJVM)",
+      "url": "https://github.com/bbuchsbaum/storyatlas4s/actions/runs/37526783465/job/112485693814",
+      "conclusion": "success",
+      "test_log_entry": "Test (ubuntu-22.04, 3.7.4, temurin@17, rootJVM)/11_Test.txt",
+      "test_log_bytes": 34210,
+      "test_log_sha256": "86480ad2acc87a5296c55c5fc139a356595eebfd330524679467cdeb2de7b02f",
+      "test_cells": [
+        {
+          "total": 22,
+          "failed": 0,
+          "errors": 0,
+          "passed": 22,
+          "skipped": 0
+        },
+        {
+          "total": 98,
+          "failed": 0,
+          "errors": 0,
+          "passed": 98,
+          "skipped": 0
+        },
+        {
+          "total": 13,
+          "failed": 0,
+          "errors": 0,
+          "passed": 13,
+          "skipped": 0
+        },
+        {
+          "total": 58,
+          "failed": 0,
+          "errors": 0,
+          "passed": 58,
+          "skipped": 0
+        },
+        {
+          "total": 74,
+          "failed": 0,
+          "errors": 0,
+          "passed": 74,
+          "skipped": 0
+        }
+      ],
+      "sum": {
+        "passed": 265,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout current branch (full)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup sbt",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup Java (temurin@17)",
+          "conclusion": "success"
+        },
+        {
+          "name": "sbt update",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup Java (temurin@21)",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "sbt update",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Check that workflows are up to date",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check formatting",
+          "conclusion": "success"
+        },
+        {
+          "name": "scalaJSLink",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check binary compatibility",
+          "conclusion": "success"
+        },
+        {
+          "name": "Generate API documentation",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup Java (temurin@17)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup sbt",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Checkout current branch (full)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "sum": {
+    "passed": 745,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "archive": "hosted-37526783465.zip",
+  "archive_bytes": 138113,
+  "archive_sha256": "6f7fd68608e203499dbf3db72b3d77a2d3d28a3c67ea2b098111ab6e7f20e88a",
+  "scope": "declared public source dependency pins; no private data or dependency override in committed CI"
+}
