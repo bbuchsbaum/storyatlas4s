@@ -1,0 +1,103 @@
+{
+  "candidate": "b6746d3d6bbebf2c4088abff335e09cd4dc0ae8d",
+  "diagnosis": "Intaglio crossScalaVersions 3.3.8/3.9.0 makes ++3 ambiguous",
+  "fix": "exact ++3.7.4 without forcing independent external builds",
+  "compiler_observations": [
+    "[info] Falling back dataJVM to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back exprNative to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back indexedJVM to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back rootJS to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back coreNative to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back indexedJS to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back lawsNative to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back coreJS to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back exprJVM to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back indexedNative to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back lawsJS to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back coreJVM to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back rootJVM to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back rootNative to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back algorithmsJS to listed 3.3.8 instead of unlisted 3.7.4",
+    "[info] Falling back algorithmsJVM to listed 3.3.8 instead of unlisted 3.7.4"
+  ],
+  "cells": [
+    "[info] Passed: Total 22, Failed 0, Errors 0, Passed 22",
+    "[info] Passed: Total 26, Failed 0, Errors 0, Passed 26",
+    "[info] Passed: Total 98, Failed 0, Errors 0, Passed 98",
+    "[info] Passed: Total 98, Failed 0, Errors 0, Passed 98",
+    "[info] Passed: Total 13, Failed 0, Errors 0, Passed 13",
+    "[info] Passed: Total 13, Failed 0, Errors 0, Passed 13",
+    "[info] Passed: Total 74, Failed 0, Errors 0, Passed 74",
+    "[info] Passed: Total 74, Failed 0, Errors 0, Passed 74",
+    "[info] Passed: Total 58, Failed 0, Errors 0, Passed 58",
+    "[info] Passed: Total 4, Failed 0, Errors 0, Passed 4"
+  ],
+  "sum": {
+    "passed": 480,
+    "failed": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "name": "scala-selector-red",
+      "run": {
+        "schema_version": 1,
+        "started_utc": "2026-10-06T18:02:27.641476+00:00",
+        "finished_utc": "2026-10-06T18:02:42.752359+00:00",
+        "duration_seconds": 15.110698,
+        "command": [
+          "sbt",
+          "-batch",
+          "-Dstoryatlas4s.storymodel4s.build=/private/tmp/storymodel4s-checkpoint-a2pjdpy9/producer",
+          "project rootJVM",
+          "++ 3"
+        ],
+        "cwd": "/private/tmp/storymodel4s-checkpoint-a2pjdpy9/atlas",
+        "log": "/Users/bbuchsbaum/code/scala/storymodel4s/.agent-work/checkpoint-20261006/scala-selector-red.log",
+        "exit_code": 1,
+        "child_returncode": 1,
+        "reason": "exited",
+        "detail": null,
+        "timeout_seconds": 300.0,
+        "log_bytes": 7939
+      },
+      "log_sha256": "b9eaa56dc7331a44bfdaf03529ee5670ed9a2dde529eff62425defa172345c98"
+    },
+    {
+      "name": "scala-selector-green",
+      "run": {
+        "schema_version": 1,
+        "started_utc": "2026-10-06T18:06:23.217855+00:00",
+        "finished_utc": "2026-10-06T18:08:17.319634+00:00",
+        "duration_seconds": 114.101138,
+        "command": [
+          "sbt",
+          "-batch",
+          "-Dstoryatlas4s.storymodel4s.build=/private/tmp/storymodel4s-checkpoint-a2pjdpy9/producer",
+          "project rootJVM",
+          "++ 3.7.4",
+          "show scalaVersion",
+          "show {https://github.com/canardlapin/intaglio.git#2fa5c682f4a95b8e73daad78dd9302d7aff46e11}coreJVM/scalaVersion",
+          "project root",
+          "set ThisBuild / tlFatalWarnings := true",
+          "compileAll",
+          "testAll",
+          "app/fastLinkJS",
+          "githubWorkflowGenerate",
+          "scalafmtCheckAll",
+          "scalafmtSbtCheck",
+          "githubWorkflowCheck"
+        ],
+        "cwd": "/private/tmp/storymodel4s-checkpoint-a2pjdpy9/atlas",
+        "log": "/Users/bbuchsbaum/code/scala/storymodel4s/.agent-work/checkpoint-20261006/scala-selector-green.log",
+        "exit_code": 0,
+        "child_returncode": 0,
+        "reason": "exited",
+        "detail": null,
+        "timeout_seconds": 1800.0,
+        "log_bytes": 24311
+      },
+      "log_sha256": "1522472490f84b63b888e94c8249a1862dfc30e4733d92b7c3255fba5e37c0d6"
+    }
+  ]
+}
