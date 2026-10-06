@@ -19,6 +19,8 @@ ThisBuild / developers := List(
 
 ThisBuild / scalaVersion := Scala3
 ThisBuild / crossScalaVersions := Seq(Scala3)
+// Keep external build Scala lines independent; CI selects this exact compiler.
+ThisBuild / githubWorkflowScalaVersions := Seq(Scala3)
 ThisBuild / tlJdkRelease := Some(11)
 ThisBuild / githubWorkflowJavaVersions := Seq(
   JavaSpec.temurin("17"),
