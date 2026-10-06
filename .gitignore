@@ -11,3 +11,7 @@ target/
 
 # agent git worktrees (never committed)
 .worktrees/
+
+# Local tracker scratch and qualification logs
+.mote/tmp/
+.agent-work/
