@@ -26,14 +26,14 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
 )
 
 // storymodel4s (the scientific compilers; ADR 0002) is consumed as an immutable source pin of its
-// `view`, `fixtures`, and `codec` modules. Its own build pins grakern by ProjectRef and, until
-// grakern has a remote, REQUIRES `-Dstorymodel4s.grakern.build=/path/to/grakern` on every command
-// line that loads it. The local override below points at a checkout for coordinated development.
+// `view`, `fixtures`, and `codec` modules. Its own build pins published grakern sources.
+// The local override below points at a clean checkout for coordinated development; qualification
+// binds its exact revision to the declared pin and exported receipts.
 //
 // The pin moves with the change (docs/plans/2026-09-03-visualization-recovery-plan.md §5): any
 // storymodel4s `view` change bumps this revision in the same slice, so the viewer can never again
 // drift behind the model it draws.
-lazy val storymodel4sRevision = "48457bdbfd2ca012bdc9144b3395d4d8e5d4ec10"
+lazy val storymodel4sRevision = "9339172694484aad98e2a75f961728dbdb0012b5"
 lazy val storymodel4sBuild =
   sys.props
     .get("storyatlas4s.storymodel4s.build")
