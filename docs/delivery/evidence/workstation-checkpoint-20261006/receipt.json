@@ -146,7 +146,11 @@
     }
   },
   "overrides": "producer only, exact clean qualified SHA equals declared pin; remaining dependencies default public pins",
-  "workflow_generate_changed_files": [],
+  "workflow_generate_changed_files": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/clean.yml (uncommitted default generation, discarded in favor of source-only CI)"
+  ],
   "browser_qualification": false,
-  "scope": "producer pin only, browser-free edition/Bell exports and readback; no UI or new scientific claim"
+  "scope": "producer pin only, browser-free edition/Bell exports and readback; no UI or new scientific claim",
+  "workflow_check_scope": "Original local gate checked generated untracked workflows. Source-only committed CI is being separately qualified; original gate is consumer engineering evidence."
 }

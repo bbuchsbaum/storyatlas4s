@@ -25,6 +25,13 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
   JavaSpec.temurin("21")
 )
 
+// Source-only development CI; release publishing and artifact cleanup are not enabled.
+ThisBuild / tlCiReleaseBranches := Seq()
+ThisBuild / tlCiReleaseTags := false
+ThisBuild / githubWorkflowArtifactUpload := false
+ThisBuild / tlCiHeaderCheck := false
+ThisBuild / tlCiDependencyGraphJob := false
+
 // storymodel4s (the scientific compilers; ADR 0002) is consumed as an immutable source pin of its
 // `view`, `fixtures`, and `codec` modules. Its own build pins published grakern sources.
 // The local override below points at a clean checkout for coordinated development; qualification
