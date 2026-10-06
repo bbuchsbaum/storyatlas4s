@@ -20,7 +20,10 @@ The producer's first exact433 attempt had two Native30-second timeouts under mea
 its reviewed unchanged-SHA continuation passes the entire failing module and complete remaining
 scope. Failed receipts stay in the producer's checkpoint. These are engineering/CLI checks;
 Atlas browser interaction and private-corpus scientific mapping remain separate qualification.
-GitHub main synchronization remains pending in both repositories.
+Reviewed producer23d0c73c and consumer22bf1f50 were non-force published to main, with
+local/tracking/live equality and clean BUC-GW01 main checkout readback. Later metadata-only
+tracker receipts do not change the qualified source433/consumerd67 inputs. The checkpoint bead
+closed after publication; unrelated primary work remains intact.
 
 
 Exact consumer419b636 loads clean producer93391726; declared and exported producer identity agree. All ten JVM/JS cells pass (480 passed, zero failures/errors/skips), fastLinkJS succeeds, public WOG edition and synthetic Bell Voyage export, every receipt-bound file hash reads back, SVGs parse and bundled JavaScript syntax checks. The original gate generated untracked default workflows; workflow checking then passed against those generated files. It modified no previously tracked file. A follow-up source-only CI configuration disables publishing, artifact uploads/cleanup and dependency submission; that configuration is qualified separately before publication. Complete command, totals, loaded dependency identities and full log are retained.
