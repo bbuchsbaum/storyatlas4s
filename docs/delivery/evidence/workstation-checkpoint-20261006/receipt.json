@@ -152,5 +152,53 @@
   ],
   "browser_qualification": false,
   "scope": "producer pin only, browser-free edition/Bell exports and readback; no UI or new scientific claim",
-  "workflow_check_scope": "Original local gate checked generated untracked workflows. Source-only committed CI is being separately qualified; original gate is consumer engineering evidence."
+  "workflow_check_scope": "Original local gate checked generated untracked workflows. Source-only committed CI is being separately qualified; original gate is consumer engineering evidence.",
+  "source_ci_followup": {
+    "candidate": "5cc277b1612faa1feaebd2db460c737c2b8fc4fc",
+    "run": {
+      "schema_version": 1,
+      "started_utc": "2026-10-06T17:46:52.760557+00:00",
+      "finished_utc": "2026-10-06T17:48:02.147913+00:00",
+      "duration_seconds": 69.387295,
+      "command": [
+        "sbt",
+        "-batch",
+        "-Dstoryatlas4s.storymodel4s.build=/private/tmp/storymodel4s-checkpoint-a2pjdpy9/producer",
+        "set ThisBuild / tlFatalWarnings := true",
+        "compileAll",
+        "testAll",
+        "app/fastLinkJS",
+        "githubWorkflowGenerate",
+        "scalafmtCheckAll",
+        "scalafmtSbtCheck",
+        "githubWorkflowCheck"
+      ],
+      "cwd": "/private/tmp/storymodel4s-checkpoint-a2pjdpy9/atlas",
+      "log": "/Users/bbuchsbaum/code/scala/storymodel4s/.agent-work/checkpoint-20261006/consumer-source-ci-final.log",
+      "exit_code": 0,
+      "child_returncode": 0,
+      "reason": "exited",
+      "detail": null,
+      "timeout_seconds": 1800.0,
+      "log_bytes": 17794
+    },
+    "log_sha256": "08de79106b7e8146f7af874fe250d891f6dda95d50233c0bd7aed6069e0448de",
+    "totals": [
+      "[info] Passed: Total 22, Failed 0, Errors 0, Passed 22",
+      "[info] Passed: Total 26, Failed 0, Errors 0, Passed 26",
+      "[info] Passed: Total 98, Failed 0, Errors 0, Passed 98",
+      "[info] Passed: Total 98, Failed 0, Errors 0, Passed 98",
+      "[info] Passed: Total 13, Failed 0, Errors 0, Passed 13",
+      "[info] Passed: Total 13, Failed 0, Errors 0, Passed 13",
+      "[info] Passed: Total 74, Failed 0, Errors 0, Passed 74",
+      "[info] Passed: Total 74, Failed 0, Errors 0, Passed 74",
+      "[info] Passed: Total 58, Failed 0, Errors 0, Passed 58",
+      "[info] Passed: Total 4, Failed 0, Errors 0, Passed 4"
+    ],
+    "generated_committed_workflows": [
+      ".github/workflows/ci.yml"
+    ],
+    "release_and_artifact_cleanup_jobs": false,
+    "private_data": false
+  }
 }
