@@ -8,11 +8,18 @@ producer `433aa1056f6aa5e88b63b4b665079e9959a266ae` and Intaglio
 The fresh complete per-step API ZIP and [receipt](hosted-37526783465.json) bind all test totals
 and hashes to that SHA. Existing receipts below are historical qualification at their named pins.
 
-Exact current-code workstation acceptance and public WOG/Bell export readback are still pending
-on BUC-GW01. The producer's first exact433 attempt hit two Native30-second timeouts under
-measured host load; its reviewed unchanged-SHA continuation waits for available CPU before
-running. The consumer then builds from its default public source pins, with no local overrides
-or private inputs. Old output hashes below do not qualify the new producer pin or browser use.
+Exact current-code workstation acceptance is complete on BUC-GW01:10 JVM/JS cells,480 passed,
+0 failed/errors/skipped. Compilation/linking, public WOG edition and synthetic Bell Voyage
+exports, every receipt-bound hash, SVG XML, JavaScript syntax, formatting and workflow checks
+pass. Five actual loaded dependency checkouts are clean and match the declared source pins;
+there are no local overrides or private inputs. [Completed status](workstation-04-status.json),
+compressed full log, [edition receipt](workstation-04-edition-receipt.json) and
+[Bell receipt](workstation-04-bell-receipt.json) preserve the commands, bytes and identities.
+
+The producer's first exact433 attempt had two Native30-second timeouts under measured load;
+its reviewed unchanged-SHA continuation passes the entire failing module and complete remaining
+scope. Failed receipts stay in the producer's checkpoint. These are engineering/CLI checks;
+Atlas browser interaction and private-corpus scientific mapping remain separate qualification.
 GitHub main synchronization remains pending in both repositories.
 
 

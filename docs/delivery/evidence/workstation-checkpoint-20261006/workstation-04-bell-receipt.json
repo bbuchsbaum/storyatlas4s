@@ -1,0 +1,39 @@
+{
+  "edition": "storyatlas4s",
+  "artifact": "recall-voyage",
+  "document": "/Users/bbuchsbaum/code/scala/storymodel4s/docs/refactor/evidence/workspace-m1-packet-20260922/fixtures/bell.voyage.json",
+  "documentSha256": "33122371e74240eb9361df8911d2c4f33ae43896859cda914c13b6cb9ad0d498",
+  "basis": "supplied alignment artifact with synthetic presentation clocks; execution provenance and recording correspondence unestablished",
+  "sourceChecksum": "4b0f0d59f3bbb44baa553b7ded1f2b161aee6c9859b5140b9e2fa4a668ff5546",
+  "configChecksum": "12e66ecdcc5bdacf4f1e7e68276328af24cfecee3c3bca784a35b4d05dfe254f",
+  "compilerVersion": "voyage-v1",
+  "storymodel4sRevision": "433aa1056f6aa5e88b63b4b665079e9959a266ae",
+  "intaglioRevision": "2fa5c682f4a95b8e73daad78dd9302d7aff46e11",
+  "plateBoxPx": "1100x738",
+  "marks": 6,
+  "names": 4,
+  "units": 4,
+  "anchored": 2,
+  "posteriorArgmax": 2,
+  "decodeBound": 0,
+  "decodeFilled": 0,
+  "unanchored": 0,
+  "untimed": 2,
+  "externalDominant": 0,
+  "codedAgreement": null,
+  "coding": null,
+  "files": [
+    {
+      "file": "voyage.svg",
+      "sha256": "7869fd5ba97cf98bcca2e6285b92b2d19fa3570513b48288af01630715beb905"
+    },
+    {
+      "file": "voyage.txt",
+      "sha256": "2345cfe698a72aa661b337c744e91b998f18cc91eb9b7ec9cf6f7ba1e180f007"
+    },
+    {
+      "file": "voyage.html",
+      "sha256": "6323eefc713886b58107dccaf8acb7224647f728408bf90e369ace09ead04d17"
+    }
+  ]
+}

@@ -1,0 +1,371 @@
+{
+  "edition": "storyatlas4s",
+  "model": "war-of-the-ghosts",
+  "basis": "researcher-reviewed narrative acceptance fixture",
+  "validationScope": "Local graph validation; original compiler promotion policy is not replayed. Derivation gaps and abstentions retain the draft view.",
+  "draft": null,
+  "features": "no feature record: no features.json beside the model",
+  "sourceChecksum": "36c52efe94a95da4b1b6ba1df479f53bf51a74b751acfa75d2d84dea5924d93e",
+  "modelReceiptChecksum": null,
+  "compilerVersion": "storymodel4s@433aa1056f6aa5e88b63b4b665079e9959a266ae",
+  "storymodel4sRevision": "433aa1056f6aa5e88b63b4b665079e9959a266ae",
+  "intaglioRevision": "2fa5c682f4a95b8e73daad78dd9302d7aff46e11",
+  "atlasBoxPx": "1600x1080px",
+  "codexOverlayBoxPx": "1600x640px",
+  "pageBoxPx": "480x640px",
+  "sharedState": [
+    "horizon:omniscient",
+    "focus:none",
+    "relation:Causal",
+    "relation:Reference",
+    "feature:none"
+  ],
+  "files": [
+    {
+      "file": "atlas-story-hidden.svg",
+      "artifact": "atlas",
+      "detail": "zoom Story/Hidden, box 1600x1080px",
+      "configChecksum": "4b76bc742e0907e8ceb275adaa57cba905f65ed110523fdcb38f02a9efb0b107",
+      "names": 26,
+      "sha256": "7eb1f7421b0eb902479c251d9952e691e3b99c247a8dad65c60b0b07ba9b5bb6"
+    },
+    {
+      "file": "atlas-story-hidden.txt",
+      "artifact": "atlas-twin",
+      "detail": "zoom Story/Hidden, box 1600x1080px",
+      "configChecksum": "4b76bc742e0907e8ceb275adaa57cba905f65ed110523fdcb38f02a9efb0b107",
+      "names": 26,
+      "sha256": "0ae3fa72afe23975f3c9fb8c105f946ca382ed0206d112ba434a3e7a4c3773fe"
+    },
+    {
+      "file": "atlas-story-sentences.svg",
+      "artifact": "atlas",
+      "detail": "zoom Story/Sentences, box 1600x1080px",
+      "configChecksum": "172b7ffbb547a25edf8ad9d5a91bfed015083a99146fa41ac09fadb50903ef6f",
+      "names": 76,
+      "sha256": "9bf810f1fd4436a0ad1a4ca8fdf8005ed329715c3bbf18eda2f7bfadb8f5670d"
+    },
+    {
+      "file": "atlas-story-sentences.txt",
+      "artifact": "atlas-twin",
+      "detail": "zoom Story/Sentences, box 1600x1080px",
+      "configChecksum": "172b7ffbb547a25edf8ad9d5a91bfed015083a99146fa41ac09fadb50903ef6f",
+      "names": 76,
+      "sha256": "d79ecf8918561ee59c925e5d3093d56c19c7cd870d70ca7da613a7c6ea8734a6"
+    },
+    {
+      "file": "atlas-story-tokens.svg",
+      "artifact": "atlas",
+      "detail": "zoom Story/Tokens, box 1600x1080px",
+      "configChecksum": "3b223142bdd4d65a159faaf551feebb580d077023cc6bf37ce38f1c1d2db42d4",
+      "names": 593,
+      "sha256": "328abf40e3ee6830eb680440b827de56b0a61ff2580d2c98e1b7c32c6b02f70c"
+    },
+    {
+      "file": "atlas-story-tokens.txt",
+      "artifact": "atlas-twin",
+      "detail": "zoom Story/Tokens, box 1600x1080px",
+      "configChecksum": "3b223142bdd4d65a159faaf551feebb580d077023cc6bf37ce38f1c1d2db42d4",
+      "names": 593,
+      "sha256": "411451b8cbe42ced4321ed53ccd7edcc497d622c1cd9cf710c72317d2bc9ce6f"
+    },
+    {
+      "file": "atlas-episode-hidden.svg",
+      "artifact": "atlas",
+      "detail": "zoom Episode/Hidden, box 1600x1080px",
+      "configChecksum": "714e5362b1d646e9f3dfdd5166ce337375080a45a85c7851ba0a1cbec936fe85",
+      "names": 35,
+      "sha256": "d55a64caa42a20f52341a932fa91eeba4372e6265a78f43c65be7605fc6d830d"
+    },
+    {
+      "file": "atlas-episode-hidden.txt",
+      "artifact": "atlas-twin",
+      "detail": "zoom Episode/Hidden, box 1600x1080px",
+      "configChecksum": "714e5362b1d646e9f3dfdd5166ce337375080a45a85c7851ba0a1cbec936fe85",
+      "names": 35,
+      "sha256": "5687b6e1b42e745e306a13c6996f325bd5f37eb3eb330ebddc22620430265769"
+    },
+    {
+      "file": "atlas-episode-sentences.svg",
+      "artifact": "atlas",
+      "detail": "zoom Episode/Sentences, box 1600x1080px",
+      "configChecksum": "f8d2f056d720c8e8d7b90e17cffce214acffead014cdb7f9059972ae52efdf70",
+      "names": 85,
+      "sha256": "60e1982f99b66bf58a470c6cb5ccd18009f294d6d3d3eafe785008b1446c23ca"
+    },
+    {
+      "file": "atlas-episode-sentences.txt",
+      "artifact": "atlas-twin",
+      "detail": "zoom Episode/Sentences, box 1600x1080px",
+      "configChecksum": "f8d2f056d720c8e8d7b90e17cffce214acffead014cdb7f9059972ae52efdf70",
+      "names": 85,
+      "sha256": "feddb9ecc855b0ad3f31efd1c3c859c8d1b74dc5757ace582d5c82687026eaaf"
+    },
+    {
+      "file": "atlas-episode-tokens.svg",
+      "artifact": "atlas",
+      "detail": "zoom Episode/Tokens, box 1600x1080px",
+      "configChecksum": "c7194de5cc275ae5f01e71f1f8486bb5063e659dbec45af43fe68b4a955bcb55",
+      "names": 602,
+      "sha256": "ceffd02aa3db5a221a9b529d20310254c51b039c9398b62eae6facb895b70886"
+    },
+    {
+      "file": "atlas-episode-tokens.txt",
+      "artifact": "atlas-twin",
+      "detail": "zoom Episode/Tokens, box 1600x1080px",
+      "configChecksum": "c7194de5cc275ae5f01e71f1f8486bb5063e659dbec45af43fe68b4a955bcb55",
+      "names": 602,
+      "sha256": "d19ae30427dd7e1f08f95cbbcb8ebc1a30ee921036c3d4f4c5461c50daf74320"
+    },
+    {
+      "file": "atlas-scene-hidden.svg",
+      "artifact": "atlas",
+      "detail": "zoom Scene/Hidden, box 1600x1080px",
+      "configChecksum": "f95f7358479e2a4325e38c7a1f97a739c577b64e94ed4b0d53f4afb817bbcc12",
+      "names": 122,
+      "sha256": "7d6cd21d8dbace52e1362c4a4cf9b0eb35dc53a0480a06c0d2f8bd73a659f0c8"
+    },
+    {
+      "file": "atlas-scene-hidden.txt",
+      "artifact": "atlas-twin",
+      "detail": "zoom Scene/Hidden, box 1600x1080px",
+      "configChecksum": "f95f7358479e2a4325e38c7a1f97a739c577b64e94ed4b0d53f4afb817bbcc12",
+      "names": 122,
+      "sha256": "63144ba28c6ce707d00763dfba560b5c3b4615d200f81932c509841e52cc6d37"
+    },
+    {
+      "file": "atlas-scene-sentences.svg",
+      "artifact": "atlas",
+      "detail": "zoom Scene/Sentences, box 1600x1080px",
+      "configChecksum": "5104dd0c7bcbc2951a6a04cf4474ef7eff2335fadfc45d7ee57f0a5e8babda8d",
+      "names": 172,
+      "sha256": "6441a550a6d5428c12f56c914fe122b08dd701ce8f5a2b11cf081d33475b2867"
+    },
+    {
+      "file": "atlas-scene-sentences.txt",
+      "artifact": "atlas-twin",
+      "detail": "zoom Scene/Sentences, box 1600x1080px",
+      "configChecksum": "5104dd0c7bcbc2951a6a04cf4474ef7eff2335fadfc45d7ee57f0a5e8babda8d",
+      "names": 172,
+      "sha256": "967a2d09327c479707d2559e51f97ec359f3a4855389686803cbdd594283df7c"
+    },
+    {
+      "file": "atlas-scene-tokens.svg",
+      "artifact": "atlas",
+      "detail": "zoom Scene/Tokens, box 1600x1080px",
+      "configChecksum": "815bdfd007422e0d84120718339478d34affc8a9268f5d00dfb29194519cd46c",
+      "names": 689,
+      "sha256": "87eed4049542ae3c1173e4d33c87e36d08e9dcf5981845b48b9c82be32d95a58"
+    },
+    {
+      "file": "atlas-scene-tokens.txt",
+      "artifact": "atlas-twin",
+      "detail": "zoom Scene/Tokens, box 1600x1080px",
+      "configChecksum": "815bdfd007422e0d84120718339478d34affc8a9268f5d00dfb29194519cd46c",
+      "names": 689,
+      "sha256": "fc3ed4b495b855eadca830403413fd0fc9ac821b247ea5daa71c90cde8e4ca4d"
+    },
+    {
+      "file": "codex-reading.svg",
+      "artifact": "codex",
+      "detail": "lens Reading",
+      "configChecksum": "b7ec1a6ff310561c8c0ece4f4fdfaa2641dff23fafefab354d1d127ab704a967",
+      "names": 0,
+      "sha256": "6ddb3d2a9d2d33cb36a00067f0b905387b17118853a46db0a1067d8f351b31bc"
+    },
+    {
+      "file": "codex-reading.txt",
+      "artifact": "codex-twin",
+      "detail": "lens Reading",
+      "configChecksum": "b7ec1a6ff310561c8c0ece4f4fdfaa2641dff23fafefab354d1d127ab704a967",
+      "names": 0,
+      "sha256": "7e803571cea84a13dcfba7fe838ad9725988800daa409169cb5022e88f5dfb0c"
+    },
+    {
+      "file": "codex-reading.html",
+      "artifact": "codex-pages",
+      "detail": "lens Reading",
+      "configChecksum": "b7ec1a6ff310561c8c0ece4f4fdfaa2641dff23fafefab354d1d127ab704a967",
+      "names": 0,
+      "sha256": "22870b93dd56a8f0275cca4b0f129bb1e41153fb4fb8062f4b2e11d3bf7522f3",
+      "layout": {
+        "paginator": "storyatlas4s-paginator/1",
+        "pageWidthPx": "480",
+        "pageHeightPx": "640",
+        "linesPerPage": "33",
+        "measurer": "monospace-table/1",
+        "fontFamily": "monospace",
+        "fontSizePx": "16",
+        "unitsPerPixel": "1000",
+        "lineHeight": "19200",
+        "metricsChecksum": "044598115f7ec7314aabd0f74cfdc09299aeb3938ddfcc661bdce99835578c28",
+        "sourceChecksum": "36c52efe94a95da4b1b6ba1df479f53bf51a74b751acfa75d2d84dea5924d93e",
+        "configChecksum": "b7ec1a6ff310561c8c0ece4f4fdfaa2641dff23fafefab354d1d127ab704a967",
+        "pages": "2",
+        "lines": "46",
+        "annotations": "0",
+        "annotationFragments": "0",
+        "overflowingLines": "0"
+      }
+    },
+    {
+      "file": "codex-reading-pages.txt",
+      "artifact": "codex-pages-twin",
+      "detail": "lens Reading",
+      "configChecksum": "b7ec1a6ff310561c8c0ece4f4fdfaa2641dff23fafefab354d1d127ab704a967",
+      "names": 0,
+      "sha256": "94f90fccbcc5e666b8da9ca0411a6bf2bc38d28ebbd9bf444b4aeade7f5a4811",
+      "layout": {
+        "paginator": "storyatlas4s-paginator/1",
+        "pageWidthPx": "480",
+        "pageHeightPx": "640",
+        "linesPerPage": "33",
+        "measurer": "monospace-table/1",
+        "fontFamily": "monospace",
+        "fontSizePx": "16",
+        "unitsPerPixel": "1000",
+        "lineHeight": "19200",
+        "metricsChecksum": "044598115f7ec7314aabd0f74cfdc09299aeb3938ddfcc661bdce99835578c28",
+        "sourceChecksum": "36c52efe94a95da4b1b6ba1df479f53bf51a74b751acfa75d2d84dea5924d93e",
+        "configChecksum": "b7ec1a6ff310561c8c0ece4f4fdfaa2641dff23fafefab354d1d127ab704a967",
+        "pages": "2",
+        "lines": "46",
+        "annotations": "0",
+        "annotationFragments": "0",
+        "overflowingLines": "0"
+      }
+    },
+    {
+      "file": "codex-overview.svg",
+      "artifact": "codex",
+      "detail": "lens Overview",
+      "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+      "names": 131,
+      "sha256": "2c333328a04e9248fbd7b9dcd6aafdb6f2a6537119cc556cfcc31091e2d36316"
+    },
+    {
+      "file": "codex-overview.txt",
+      "artifact": "codex-twin",
+      "detail": "lens Overview",
+      "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+      "names": 131,
+      "sha256": "cf467c842ee739568204e6f75414dac3796dc24f7a1508417ae6e73999321963"
+    },
+    {
+      "file": "codex-overview.html",
+      "artifact": "codex-pages",
+      "detail": "lens Overview",
+      "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+      "names": 648,
+      "sha256": "3290f3b0074c1a03b4b2822593dc030574da829eb10bcef33105ba8a253f804e",
+      "layout": {
+        "paginator": "storyatlas4s-paginator/1",
+        "pageWidthPx": "480",
+        "pageHeightPx": "640",
+        "linesPerPage": "33",
+        "measurer": "monospace-table/1",
+        "fontFamily": "monospace",
+        "fontSizePx": "16",
+        "unitsPerPixel": "1000",
+        "lineHeight": "19200",
+        "metricsChecksum": "044598115f7ec7314aabd0f74cfdc09299aeb3938ddfcc661bdce99835578c28",
+        "sourceChecksum": "36c52efe94a95da4b1b6ba1df479f53bf51a74b751acfa75d2d84dea5924d93e",
+        "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+        "pages": "2",
+        "lines": "46",
+        "annotations": "131",
+        "annotationFragments": "648",
+        "overflowingLines": "0"
+      }
+    },
+    {
+      "file": "codex-overview-pages.txt",
+      "artifact": "codex-pages-twin",
+      "detail": "lens Overview",
+      "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+      "names": 648,
+      "sha256": "da718d098f4f849ad879bab6327be4d6fbf9b2b5e68f7829c59dbd4c512ed9a7",
+      "layout": {
+        "paginator": "storyatlas4s-paginator/1",
+        "pageWidthPx": "480",
+        "pageHeightPx": "640",
+        "linesPerPage": "33",
+        "measurer": "monospace-table/1",
+        "fontFamily": "monospace",
+        "fontSizePx": "16",
+        "unitsPerPixel": "1000",
+        "lineHeight": "19200",
+        "metricsChecksum": "044598115f7ec7314aabd0f74cfdc09299aeb3938ddfcc661bdce99835578c28",
+        "sourceChecksum": "36c52efe94a95da4b1b6ba1df479f53bf51a74b751acfa75d2d84dea5924d93e",
+        "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+        "pages": "2",
+        "lines": "46",
+        "annotations": "131",
+        "annotationFragments": "648",
+        "overflowingLines": "0"
+      }
+    },
+    {
+      "file": "preview.html",
+      "artifact": "static-preview",
+      "detail": "lens Overview",
+      "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+      "names": 648,
+      "sha256": "3290f3b0074c1a03b4b2822593dc030574da829eb10bcef33105ba8a253f804e",
+      "layout": {
+        "paginator": "storyatlas4s-paginator/1",
+        "pageWidthPx": "480",
+        "pageHeightPx": "640",
+        "linesPerPage": "33",
+        "measurer": "monospace-table/1",
+        "fontFamily": "monospace",
+        "fontSizePx": "16",
+        "unitsPerPixel": "1000",
+        "lineHeight": "19200",
+        "metricsChecksum": "044598115f7ec7314aabd0f74cfdc09299aeb3938ddfcc661bdce99835578c28",
+        "sourceChecksum": "36c52efe94a95da4b1b6ba1df479f53bf51a74b751acfa75d2d84dea5924d93e",
+        "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+        "pages": "2",
+        "lines": "46",
+        "annotations": "131",
+        "annotationFragments": "648",
+        "overflowingLines": "0"
+      }
+    },
+    {
+      "file": "preview.txt",
+      "artifact": "static-preview-twin",
+      "detail": "lens Overview",
+      "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+      "names": 648,
+      "sha256": "da718d098f4f849ad879bab6327be4d6fbf9b2b5e68f7829c59dbd4c512ed9a7",
+      "layout": {
+        "paginator": "storyatlas4s-paginator/1",
+        "pageWidthPx": "480",
+        "pageHeightPx": "640",
+        "linesPerPage": "33",
+        "measurer": "monospace-table/1",
+        "fontFamily": "monospace",
+        "fontSizePx": "16",
+        "unitsPerPixel": "1000",
+        "lineHeight": "19200",
+        "metricsChecksum": "044598115f7ec7314aabd0f74cfdc09299aeb3938ddfcc661bdce99835578c28",
+        "sourceChecksum": "36c52efe94a95da4b1b6ba1df479f53bf51a74b751acfa75d2d84dea5924d93e",
+        "configChecksum": "64fcb81ea2f72b7806de2fbae0ac9342fc2d5dcf16792263564ae3971ba3a7b1",
+        "pages": "2",
+        "lines": "46",
+        "annotations": "131",
+        "annotationFragments": "648",
+        "overflowingLines": "0"
+      }
+    },
+    {
+      "file": "features.html",
+      "artifact": "feature-index",
+      "detail": "not supplied",
+      "configChecksum": "0802d4011f1e84191711830c2b0508f2c02fc9c9b3ed7138c2acea703b91e567",
+      "names": 0,
+      "sha256": "461f9e834d5641578cfec9578ea20b02bc448535841cdbded11b0597f5b73d73"
+    }
+  ]
+}

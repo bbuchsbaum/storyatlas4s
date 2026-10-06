@@ -1,0 +1,255 @@
+{
+  "schema": 1,
+  "pid": 35924,
+  "machine": "BUC-GW01",
+  "candidate": "d67dccfb7eec07e184ce3ef8fe6ccc16c3745523",
+  "producer": "433aa1056f6aa5e88b63b4b665079e9959a266ae",
+  "intaglio": "2fa5c682f4a95b8e73daad78dd9302d7aff46e11",
+  "started_utc": "2026-10-06T22:37:28.494663+00:00",
+  "stages": [
+    {
+      "name": "fetch",
+      "command": [
+        "git",
+        "fetch",
+        "origin",
+        "codex/workstation-checkpoint-20261006"
+      ],
+      "log": "/Users/bbuchsbaum/.local/share/storymodel4s/checkpoints/20261006/integrated-consumer-04-fetch.log",
+      "started_utc": "2026-10-06T22:37:28.632149+00:00",
+      "child_pid": 35928,
+      "exit_code": 0,
+      "bytes": 227,
+      "sha256": "a36c9c1e2e621ee4f5d4f7ec374374ef4e7cf1027655b8480dd13806c25719af",
+      "totals": [],
+      "finished_utc": "2026-10-06T22:37:29.313164+00:00"
+    },
+    {
+      "name": "fast-forward",
+      "command": [
+        "git",
+        "merge",
+        "--ff-only",
+        "d67dccfb7eec07e184ce3ef8fe6ccc16c3745523"
+      ],
+      "log": "/Users/bbuchsbaum/.local/share/storymodel4s/checkpoints/20261006/integrated-consumer-04-fast-forward.log",
+      "started_utc": "2026-10-06T22:37:29.332161+00:00",
+      "child_pid": 35940,
+      "exit_code": 0,
+      "bytes": 1204,
+      "sha256": "86c4d4a7513973913327ee609f19d4450540036ddcd0f1310703c6d2dc204c56",
+      "totals": [],
+      "finished_utc": "2026-10-06T22:37:29.380983+00:00"
+    },
+    {
+      "name": "full",
+      "command": [
+        "sbt",
+        "-batch",
+        "-Dsbt.log.noformat=true",
+        "set ThisBuild / tlFatalWarnings := true",
+        "compileAll",
+        "testAll",
+        "app/fastLinkJS",
+        "cli/run edition --out target/edition",
+        "app/editionBundle",
+        "cli/run voyage --document /Users/bbuchsbaum/code/scala/storymodel4s/docs/refactor/evidence/workspace-m1-packet-20260922/fixtures/bell.voyage.json --out target/workstation-checkpoint/bell-voyage",
+        "githubWorkflowGenerate",
+        "scalafmtCheckAll",
+        "scalafmtSbtCheck",
+        "githubWorkflowCheck"
+      ],
+      "log": "/Users/bbuchsbaum/.local/share/storymodel4s/checkpoints/20261006/integrated-consumer-04-full.log",
+      "started_utc": "2026-10-06T22:37:29.516326+00:00",
+      "child_pid": 35950,
+      "exit_code": 0,
+      "bytes": 34526,
+      "sha256": "2ff261083ed504312911fd8ebd747be35714ab5f18dd5d7439d4ad66af395eee",
+      "totals": [
+        {
+          "total": 22,
+          "failed": 0,
+          "errors": 0,
+          "passed": 22,
+          "skipped": 0
+        },
+        {
+          "total": 26,
+          "failed": 0,
+          "errors": 0,
+          "passed": 26,
+          "skipped": 0
+        },
+        {
+          "total": 98,
+          "failed": 0,
+          "errors": 0,
+          "passed": 98,
+          "skipped": 0
+        },
+        {
+          "total": 98,
+          "failed": 0,
+          "errors": 0,
+          "passed": 98,
+          "skipped": 0
+        },
+        {
+          "total": 13,
+          "failed": 0,
+          "errors": 0,
+          "passed": 13,
+          "skipped": 0
+        },
+        {
+          "total": 13,
+          "failed": 0,
+          "errors": 0,
+          "passed": 13,
+          "skipped": 0
+        },
+        {
+          "total": 74,
+          "failed": 0,
+          "errors": 0,
+          "passed": 74,
+          "skipped": 0
+        },
+        {
+          "total": 74,
+          "failed": 0,
+          "errors": 0,
+          "passed": 74,
+          "skipped": 0
+        },
+        {
+          "total": 58,
+          "failed": 0,
+          "errors": 0,
+          "passed": 58,
+          "skipped": 0
+        },
+        {
+          "total": 4,
+          "failed": 0,
+          "errors": 0,
+          "passed": 4,
+          "skipped": 0
+        }
+      ],
+      "finished_utc": "2026-10-06T22:41:11.182586+00:00"
+    },
+    {
+      "name": "javascript-syntax",
+      "command": [
+        "node",
+        "--check",
+        "target/edition/app.js"
+      ],
+      "log": "/Users/bbuchsbaum/.local/share/storymodel4s/checkpoints/20261006/integrated-consumer-04-javascript-syntax.log",
+      "started_utc": "2026-10-06T22:41:11.215210+00:00",
+      "child_pid": 46211,
+      "exit_code": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "totals": [],
+      "finished_utc": "2026-10-06T22:41:11.480155+00:00"
+    }
+  ],
+  "private_data_used": false,
+  "state": "completed",
+  "producer_gate_finished_utc": "2026-10-06T22:37:28.389076+00:00",
+  "java": "openjdk version \"21.0.12.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS, mixed mode, sharing)",
+  "node": "v24.21.0",
+  "outputs": [
+    {
+      "output": "target/edition",
+      "files": 32,
+      "bytes": 19676231,
+      "receipt_bound_files": 29,
+      "producer": "433aa1056f6aa5e88b63b4b665079e9959a266ae",
+      "intaglio": "2fa5c682f4a95b8e73daad78dd9302d7aff46e11",
+      "hashes": {
+        "app.js": "b9df960db6a65a1e83cd10dbfe18e719ba79e54e41c56b95899c6565f6ad78e1",
+        "atlas-episode-hidden.svg": "d55a64caa42a20f52341a932fa91eeba4372e6265a78f43c65be7605fc6d830d",
+        "atlas-episode-hidden.txt": "5687b6e1b42e745e306a13c6996f325bd5f37eb3eb330ebddc22620430265769",
+        "atlas-episode-sentences.svg": "60e1982f99b66bf58a470c6cb5ccd18009f294d6d3d3eafe785008b1446c23ca",
+        "atlas-episode-sentences.txt": "feddb9ecc855b0ad3f31efd1c3c859c8d1b74dc5757ace582d5c82687026eaaf",
+        "atlas-episode-tokens.svg": "ceffd02aa3db5a221a9b529d20310254c51b039c9398b62eae6facb895b70886",
+        "atlas-episode-tokens.txt": "d19ae30427dd7e1f08f95cbbcb8ebc1a30ee921036c3d4f4c5461c50daf74320",
+        "atlas-scene-hidden.svg": "7d6cd21d8dbace52e1362c4a4cf9b0eb35dc53a0480a06c0d2f8bd73a659f0c8",
+        "atlas-scene-hidden.txt": "63144ba28c6ce707d00763dfba560b5c3b4615d200f81932c509841e52cc6d37",
+        "atlas-scene-sentences.svg": "6441a550a6d5428c12f56c914fe122b08dd701ce8f5a2b11cf081d33475b2867",
+        "atlas-scene-sentences.txt": "967a2d09327c479707d2559e51f97ec359f3a4855389686803cbdd594283df7c",
+        "atlas-scene-tokens.svg": "87eed4049542ae3c1173e4d33c87e36d08e9dcf5981845b48b9c82be32d95a58",
+        "atlas-scene-tokens.txt": "fc3ed4b495b855eadca830403413fd0fc9ac821b247ea5daa71c90cde8e4ca4d",
+        "atlas-story-hidden.svg": "7eb1f7421b0eb902479c251d9952e691e3b99c247a8dad65c60b0b07ba9b5bb6",
+        "atlas-story-hidden.txt": "0ae3fa72afe23975f3c9fb8c105f946ca382ed0206d112ba434a3e7a4c3773fe",
+        "atlas-story-sentences.svg": "9bf810f1fd4436a0ad1a4ca8fdf8005ed329715c3bbf18eda2f7bfadb8f5670d",
+        "atlas-story-sentences.txt": "d79ecf8918561ee59c925e5d3093d56c19c7cd870d70ca7da613a7c6ea8734a6",
+        "atlas-story-tokens.svg": "328abf40e3ee6830eb680440b827de56b0a61ff2580d2c98e1b7c32c6b02f70c",
+        "atlas-story-tokens.txt": "411451b8cbe42ced4321ed53ccd7edcc497d622c1cd9cf710c72317d2bc9ce6f",
+        "codex-overview-pages.txt": "da718d098f4f849ad879bab6327be4d6fbf9b2b5e68f7829c59dbd4c512ed9a7",
+        "codex-overview.html": "3290f3b0074c1a03b4b2822593dc030574da829eb10bcef33105ba8a253f804e",
+        "codex-overview.svg": "2c333328a04e9248fbd7b9dcd6aafdb6f2a6537119cc556cfcc31091e2d36316",
+        "codex-overview.txt": "cf467c842ee739568204e6f75414dac3796dc24f7a1508417ae6e73999321963",
+        "codex-reading-pages.txt": "94f90fccbcc5e666b8da9ca0411a6bf2bc38d28ebbd9bf444b4aeade7f5a4811",
+        "codex-reading.html": "22870b93dd56a8f0275cca4b0f129bb1e41153fb4fb8062f4b2e11d3bf7522f3",
+        "codex-reading.svg": "6ddb3d2a9d2d33cb36a00067f0b905387b17118853a46db0a1067d8f351b31bc",
+        "codex-reading.txt": "7e803571cea84a13dcfba7fe838ad9725988800daa409169cb5022e88f5dfb0c",
+        "features.html": "461f9e834d5641578cfec9578ea20b02bc448535841cdbded11b0597f5b73d73",
+        "index.html": "bb07bdd81c399bccfa35d7de6891aefa1cbaadb4d2450dce82157fce72453f33",
+        "preview.html": "3290f3b0074c1a03b4b2822593dc030574da829eb10bcef33105ba8a253f804e",
+        "preview.txt": "da718d098f4f849ad879bab6327be4d6fbf9b2b5e68f7829c59dbd4c512ed9a7",
+        "receipt.json": "08fb96fff4bf1172ef22ccb8891cb4f8d7b0d314aaa56e423cb06dd8ec542549"
+      },
+      "svg_xml_valid": true
+    },
+    {
+      "output": "target/workstation-checkpoint/bell-voyage",
+      "files": 4,
+      "bytes": 33589,
+      "receipt_bound_files": 3,
+      "producer": "433aa1056f6aa5e88b63b4b665079e9959a266ae",
+      "intaglio": "2fa5c682f4a95b8e73daad78dd9302d7aff46e11",
+      "hashes": {
+        "voyage-receipt.json": "1f7f7743ea761128053d09750ca4dcdb36b9abab5fe0a9708cd2fefe4474fb48",
+        "voyage.html": "6323eefc713886b58107dccaf8acb7224647f728408bf90e369ace09ead04d17",
+        "voyage.svg": "7869fd5ba97cf98bcca2e6285b92b2d19fa3570513b48288af01630715beb905",
+        "voyage.txt": "2345cfe698a72aa661b337c744e91b998f18cc91eb9b7ec9cf6f7ba1e180f007"
+      },
+      "svg_xml_valid": true
+    }
+  ],
+  "loaded_sources": [
+    {
+      "head": "433aa1056f6aa5e88b63b4b665079e9959a266ae",
+      "clean": true,
+      "path": "/Users/bbuchsbaum/.sbt/1.0/staging/03520133332742a403ab/storymodel4s"
+    },
+    {
+      "head": "ea5d2d762f85f5a0f97ee188deb5fac0ef2bcbaf",
+      "clean": true,
+      "path": "/Users/bbuchsbaum/.sbt/1.0/staging/8d03f2d14a9e2c9f6990/graph4s"
+    },
+    {
+      "head": "d55fe2f97196a76ab7879e1a12f1e92403aeba06",
+      "clean": true,
+      "path": "/Users/bbuchsbaum/.sbt/1.0/staging/c6b5fe94c20cf0d05b05/gale"
+    },
+    {
+      "head": "0329c43c88a0b71e9aa4456723bb16bac2fa3841",
+      "clean": true,
+      "path": "/Users/bbuchsbaum/.sbt/1.0/staging/f3b1adf9bc38121bce64/grakern"
+    },
+    {
+      "head": "2fa5c682f4a95b8e73daad78dd9302d7aff46e11",
+      "clean": true,
+      "path": "/Users/bbuchsbaum/.sbt/1.0/staging/ffdee2506b5275eea097/intaglio"
+    }
+  ],
+  "tracked_tree_clean": true,
+  "exit_code": 0,
+  "finished_utc": "2026-10-06T22:41:12.048877+00:00",
+  "completed": true
+}
