@@ -43,7 +43,7 @@ ThisBuild / tlCiDependencyGraphJob := false
 // The pin moves with the change (docs/plans/2026-09-03-visualization-recovery-plan.md §5): any
 // storymodel4s `view` change bumps this revision in the same slice, so the viewer can never again
 // drift behind the model it draws.
-lazy val storymodel4sRevision = "d5a7aefd20e695d2c1dfe3b55d20ca1c4be8fc19"
+lazy val storymodel4sRevision = "a2d795b26e64ca9cf304c861216c7622bb807190"
 lazy val storymodel4sBuild =
   sys.props
     .get("storyatlas4s.storymodel4s.build")

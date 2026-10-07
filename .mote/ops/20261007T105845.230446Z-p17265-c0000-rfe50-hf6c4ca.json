@@ -1,0 +1,1 @@
+{"actor":"codex-s2a3-20261007","entity":"bd-01M4B0211MEJ90G4JW4NNGZY2D","kind":"reserve_open","mode":"exclusive","op":"20261007T105845.230446Z-p17265-c0000-rfe50-hf6c4ca","paths":["build.sbt","cli/src/test/scala/storyatlas4s/cli/ModelInputSuite.scala"],"reservation_id":"rv-01M4B081VEE5D9WKWEXTBTTVS0","ts":"2026-10-07T10:58:45.230446Z","ttl_s":14400,"v":2}
