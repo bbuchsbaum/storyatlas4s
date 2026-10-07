@@ -369,7 +369,7 @@ class ModelInputSuite extends FunSuite:
       val featurePages = edition.files.filter(_.artifact == "feature-reading")
       assertEquals(featurePages.size, 2)
       assert(featurePages.forall(_.content.contains("aria-label=\"Measure and grain\"")))
-      assert(featurePages.exists(_.content.contains("missing=Excluded")))
+      assert(featurePages.exists(_.content.contains("ineligible")))
       assert(featurePages.exists(_.content.contains("circularity=NotAssessed")))
       val twins = edition.files.filter(_.artifact == "feature-twin")
       assertEquals(twins.size, 2)
@@ -403,7 +403,7 @@ class ModelInputSuite extends FunSuite:
         draftFeatures.find(_.name == "features.html").exists(_.content.contains("draft build"))
       )
 
-      assert(edition.receipt.contains("measure:token-length/v1"), edition.receipt)
+      assert(edition.receipt.contains("measure:token-length/v2"), edition.receipt)
       assert(edition.receipt.contains(m.artifact.tracks.head.file), edition.receipt)
 
   temp.test("a features.json written for another model is refused, never paired"): dir =>
@@ -416,6 +416,68 @@ class ModelInputSuite extends FunSuite:
         assert(message.contains("modelChecksum"), message)
         assert(message.contains("is not the feature record of"), message)
       case Right(read) => fail(s"paired a foreign feature record: ${read.features.render}")
+
+  temp.test("Ineligible survives the sidecar, reading class, SVG metadata and textual twin"): dir =>
+    import storymodel4s.codec.FeatureMaterializer
+    import storymodel4s.core.*
+    import storymodel4s.features.*
+    val sequence = SurfaceSequence(receiptedDraft.atlas)
+    val estimates: Vector[Estimate[Double]] = Vector(
+      Estimate.observed(0.0),
+      Estimate.missing(MissingReason.ProviderAbstained),
+      Estimate.missing(MissingReason.Excluded),
+      Estimate.Ineligible
+    )
+    val space = FeatureSpace[Double](
+      FeatureSpaceId.unsafe("eligibility-court"),
+      "synthetic eligibility outcomes",
+      FeatureValueSchema.Scalar(None),
+      None,
+      Fingerprint.unsafe("test:eligibility:v1"),
+      normalized = false
+    )
+    val observations = estimates.zipWithIndex.map { (e, i) =>
+      FeatureObservation(
+        FeatureTarget.Token(TokenIndex.unsafe(i)),
+        e,
+        Some(SpanSet.one(sequence.tokens(i).span)),
+        Some(Coverage.unsafe(if e.isEligible then 1 else 0, if e.isObserved then 1 else 0))
+      )
+    }
+    val raw = FeatureTrack.raw(
+      space,
+      observations,
+      TrackProvenance(
+        Provenance.deterministic("eligibility-court", Checksum.ofText("four-states")),
+        Some(receiptedDraft.source.canonicalChecksum)
+      )
+    )
+    val materialized = ok(FeatureMaterializer.materialize(receiptedDraft, Vector(raw)))
+    val artifact = ok(FeaturesArtifact.of(materialized.model, materialized.tracks))
+    assertEquals(materialized.tracks.head.manifest.rowCount, 1)
+    val read =
+      ok(ModelInput.read(writeBundle(dir, materialized.model, artifact, materialized.sidecars)))
+    read.features match
+      case FeatureRecord.Supplied(_, tracks) =>
+        assertEquals(tracks.head.observations.map(_.estimate), estimates)
+        assertEquals(tracks.head.coverage, Coverage.unsafe(3, 1))
+      case other => fail(s"expected materialized feature record: $other")
+    val edition = ok(Edition.fromRead(read))
+    val html = edition.files.find(_.artifact == "feature-reading").get.content
+    Vector("observed", "missing", "excluded", "ineligible").foreach(cls =>
+      assert(html.contains(s"class=\"$cls\""), s"missing outcome class $cls")
+    )
+    assert(html.contains("missing=ProviderAbstained"))
+    assert(html.contains("missing=Excluded"))
+    assert(html.contains("ineligible"))
+    assert(html.contains("double underline"), "ineligible monochrome treatment is not explained")
+    val svg = edition.files.find(_.artifact == "feature-atlas").get.content
+    assert(svg.contains("ineligible"))
+    assert(svg.contains("missing=Excluded"))
+    val twin = edition.files.find(_.artifact == "feature-twin").get.content
+    assert(twin.contains("ineligible"))
+    assert(twin.contains("missing=ProviderAbstained"))
+    assert(twin.contains("missing=Excluded"))
 
   temp.test("a track whose manifest is not the model's sidecar for its space is refused"): dir =>
     val m = measured(receiptedDraft)
