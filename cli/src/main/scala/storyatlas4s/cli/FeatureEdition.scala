@@ -15,9 +15,9 @@ object FeatureEdition:
   private def menuLabel(track: FeatureTrack[FeatureTarget, Double], grain: FeatureScale): String =
     val input = track.derivation.filter(_.inputs.length == 1).fold(track.space.id)(_.inputs.head)
     val measure = input.value match
-      case "measure:token-length/v1"   => "Token length"
-      case "measure:type-frequency/v1" => "Type frequency"
-      case _                           =>
+      case "measure:token-length/v1" | "measure:token-length/v2"     => "Token length"
+      case "measure:type-frequency/v1" | "measure:type-frequency/v2" => "Type frequency"
+      case _                                                         =>
         track.space.description
           .stripSuffix(" — aggregate mean")
           .stripPrefix("word-level values from lexicon ")
@@ -204,7 +204,8 @@ object FeatureEdition:
       val cls = v.estimate match
         case Estimate.Missing(MissingReason.Excluded) => "excluded"
         case Estimate.Missing(_)                      => "missing"
-        case _                                        => "observed"
+        case Estimate.Ineligible                      => "ineligible"
+        case Estimate.Observed(_, _)                  => "observed"
       s"class=\"$cls\" style=\"background-color:rgb($shade,$shade,$shade)\""
     def piece(f: VisualPrimitive.Feature, span: TextSpan): String =
       s"<a ${ink(f)} href=\"#${esc(f.identity.mark.value)}\" title=\"${esc(f.value.description)}\">${esc(text.substring(span.start, span.endExclusive))}</a>"
@@ -245,6 +246,7 @@ object FeatureEdition:
       article a{text-decoration:none;border-bottom:2px solid #6c857b}article a:focus,article a:hover{outline:2px solid #005a4c}
       .missing{background-image:repeating-linear-gradient(135deg,transparent 0 6px,#d5d9d1 6px 7px);border-bottom:2px dashed #374b45!important}
       .excluded{border-bottom:2px dotted #374b45!important}.situation{padding:9px 0;border-bottom:1px solid #bfc6bd}.gap{color:#666;font-size:13px}
+      .ineligible{border-bottom:3px double #374b45!important}
       .plate svg{width:100%;height:auto}.inspector{padding:30px 5vw}details{border-top:1px solid #bfc6bd;padding:10px 0}details:target{outline:2px solid #005a4c}details p{overflow-wrap:anywhere}code{font-size:12px;overflow-wrap:anywhere}
       @media(max-width:850px){nav{grid-template-columns:1fr}main{display:block}.plate{margin-top:30px}}@media print{nav{display:none}main{display:block}}
       </style></head><body><header><a href="features.html">Measured features</a> · <a href="codex-reading.html">Read story</a> · <a href="${esc(
@@ -257,6 +259,6 @@ object FeatureEdition:
       )}</p><nav aria-label="Measure and grain">$navigation</nav>
       <p>${esc(
         displayRange
-      )}</p><p>Validation here concerns the graph structure; derivation gaps and abstentions remain partial work.</p><p>Value is shade; hatching is missing; a dotted underline is excluded. The plate's separate lower bars show coverage. Select words to inspect their recorded value and support. Aggregate circularity is not assessed.</p></header>
+      )}</p><p>Validation here concerns the graph structure; derivation gaps and abstentions remain partial work.</p><p>Value is shade; hatching is missing; a dotted underline is excluded; a double underline is ineligible (outside this measure's population). The plate's separate lower bars show coverage. Select words to inspect their recorded value and support. Aggregate circularity is not assessed.</p></header>
       <main><article aria-label="Measured source">$reading</article><section class="plate" aria-label="Measured atlas">$svg</section></main>
       <section class="inspector"><h2>Measurements and evidence</h2>$inspector</section></body></html>"""

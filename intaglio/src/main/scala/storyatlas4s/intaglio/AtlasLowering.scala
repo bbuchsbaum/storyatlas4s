@@ -1230,7 +1230,7 @@ object AtlasLowering:
       val domain = v.domain.fold("no observed values")(d => s"${d.minimum} – ${d.maximum}")
       Vector(
         s"${v.space.description} · ${scene.featureLayer.scale.label}",
-        s"$domain ${v.space.units.getOrElse("units unspecified")} · × missing · dotted excluded · ${v.circularity}",
+        s"$domain ${v.space.units.getOrElse("units unspecified")} · × missing · dotted excluded · hollow dashed ineligible · ${v.circularity}",
         "Coverage below: outlined bar = eligible; fill = observed; dashed = not recorded; circle = no eligible units"
       )
     }
@@ -1243,17 +1243,19 @@ object AtlasLowering:
         val y = plan.featureTopPx + 52 + plan.featureRows(mark.identity.mark.value) * 18.0
         val fraction = v.estimate.toOption.flatMap(n => v.domain.map(_.fraction(n)))
         val intensity = fraction.fold(245)(f => (235.0 - 150.0 * f).round.toInt)
-        val missing = v.estimate match
-          case storymodel4s.features.Estimate.Missing(r) => Some(r)
-          case _                                         => None
+        val (missing, ineligible) = v.estimate match
+          case storymodel4s.features.Estimate.Missing(r)     => (Some(r), false)
+          case storymodel4s.features.Estimate.Ineligible     => (None, true)
+          case storymodel4s.features.Estimate.Observed(_, _) => (None, false)
         for
           colour <- ig.Rgba(intensity, intensity, intensity)
           ink <- ig.Rgba(45, 55, 52)
           gp <- ig.GraphicParams.checked(
             stroke = Some(ink),
-            fill = Some(colour),
+            fill = if ineligible then None else Some(colour),
             lineType =
-              if missing.contains(storymodel4s.features.MissingReason.Excluded) then
+              if ineligible then ig.LineType.Dashed
+              else if missing.contains(storymodel4s.features.MissingReason.Excluded) then
                 ig.LineType.Dotted
               else ig.LineType.Solid
           )
