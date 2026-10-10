@@ -12,9 +12,12 @@ import storymodel4s.core.*
 import storymodel4s.recall.*
 import storymodel4s.view.{WorkspaceContentGrant, WorkspaceRefusal}
 
-/** JVM consumer courts use an actual checked mapping execution; a property can select a producer packet. */
+/** JVM consumer courts use an actual checked mapping execution; a property can select a producer
+  * packet.
+  */
 class SurfaceWorkspaceControllerSuite extends FunSuite:
-  private def right[E, A](value: Either[E, A]): A = value.fold(error => fail(error.toString), identity)
+  private def right[E, A](value: Either[E, A]): A =
+    value.fold(error => fail(error.toString), identity)
 
   private lazy val syntheticPacket: Vector[Byte] =
     val sourceText = "Anna arrived. Bob left."
@@ -52,7 +55,8 @@ class SurfaceWorkspaceControllerSuite extends FunSuite:
       DeclaredUniverse.of(view.nodes.map(_.ref), TargetGrain.SingleLevel(0))
     )
     val grouping = right(
-      StructuredReconstruction.Grouping.of(view, view.nodes.zipWithIndex.map((node, i) => node.ref -> i))
+      StructuredReconstruction.Grouping
+        .of(view, view.nodes.zipWithIndex.map((node, i) => node.ref -> i))
     )
     val execution = right(
       MappingRun.compute(
@@ -93,7 +97,8 @@ class SurfaceWorkspaceControllerSuite extends FunSuite:
     sys.props.get("storyatlas.surfaceWorkspace.fixture") match
       case Some(value) =>
         val path = Path.of(value)
-        if !Files.isRegularFile(path) then fail(s"surface workspace fixture is not a regular file: $value")
+        if !Files.isRegularFile(path) then
+          fail(s"surface workspace fixture is not a regular file: $value")
         Files.readAllBytes(path).toVector
       case None => syntheticPacket
 
@@ -141,14 +146,21 @@ class SurfaceWorkspaceControllerSuite extends FunSuite:
 
   test("packet and saved surface descriptor restore through public import in either file order") {
     val initial = controller
-    val selected = initial.dispatch(SurfaceWorkspaceAction.Recall(
-      initial.investigation.inventory.units.head.id)).toOption.get
-    val descriptor = "selection.json" -> SurfaceWorkspaceController.encode(selected).getBytes(UTF_8).toVector
+    val selected = initial
+      .dispatch(SurfaceWorkspaceAction.Recall(initial.investigation.inventory.units.head.id))
+      .toOption
+      .get
+    val descriptor =
+      "selection.json" -> SurfaceWorkspaceController.encode(selected).getBytes(UTF_8).toVector
     val files = Vector("packet.json" -> packet, descriptor)
     Vector(files, files.reverse).foreach { ordered =>
-      val reopened = WorkspaceImport.open(ordered, None).toOption.collect {
-        case WorkspaceSession.SurfaceInvestigation(value) => value
-      }.getOrElse(fail("public import did not restore surface investigation"))
+      val reopened = WorkspaceImport
+        .open(ordered, None)
+        .toOption
+        .collect { case WorkspaceSession.SurfaceInvestigation(value) =>
+          value
+        }
+        .getOrElse(fail("public import did not restore surface investigation"))
       assertEquals(reopened.state, selected.state)
       assertEquals(reopened.investigation.identity, selected.investigation.identity)
     }

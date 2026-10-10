@@ -178,11 +178,11 @@ object WorkspaceHost:
           Option(dom.document.getElementById("fixture-header"))
             .foreach(_.setAttribute("hidden", ""))
           session match
-            case WorkspaceSession.Investigation(controller) => WorkspaceView(controller)
+            case WorkspaceSession.Investigation(controller)        => WorkspaceView(controller)
             case WorkspaceSession.SurfaceInvestigation(controller) =>
               SurfaceWorkspaceView(controller)
-            case WorkspaceSession.Voyage(document)          => VoyageView(document)
-            case WorkspaceSession.Source(source)            =>
+            case WorkspaceSession.Voyage(document) => VoyageView(document)
+            case WorkspaceSession.Source(source)   =>
               val choice = Var(ViewChoice.initial.copy(measurer = MeasurerChoice.Monospace))
               sourceReading = Some(() => {
                 val pane = dom.document.getElementById("workspace-source-only")

@@ -6,7 +6,7 @@ import storymodel4s.align.SourceNodeRef
 import storymodel4s.codec.{Canonical, SurfaceWorkspaceCodecs}
 import storymodel4s.core.*
 import storymodel4s.recall.RecallUnitId
-import storymodel4s.view.WorkspaceRefusal
+import storymodel4s.view.{ArtifactId, WorkspaceRefusal}
 
 /** Host-neutral inspection state for one imported surface-workspace packet. */
 final case class SurfaceWorkspaceState(
@@ -34,10 +34,10 @@ final class SurfaceWorkspaceController private (
       action: SurfaceWorkspaceAction
   ): Either[WorkspaceRefusal, SurfaceWorkspaceController] =
     val next = action match
-      case SurfaceWorkspaceAction.Policy(id) => state.copy(policy = id)
-      case SurfaceWorkspaceAction.Recall(id) => state.copy(recall = Some(id))
+      case SurfaceWorkspaceAction.Policy(id)  => state.copy(policy = id)
+      case SurfaceWorkspaceAction.Recall(id)  => state.copy(recall = Some(id))
       case SurfaceWorkspaceAction.Source(ref) => state.copy(source = Some(ref))
-      case SurfaceWorkspaceAction.Clear => state.copy(recall = None, source = None)
+      case SurfaceWorkspaceAction.Clear       => state.copy(recall = None, source = None)
     SurfaceWorkspaceController.restore(investigation, next)
 
 object SurfaceWorkspaceController:
@@ -78,17 +78,30 @@ object SurfaceWorkspaceController:
     for
       json <- Canonical.parse(text).left.map(_ => WorkspaceRefusal.UnsupportedContent)
       _ <- Either.cond(Canonical.print(json) == text.trim, (), WorkspaceRefusal.UnsupportedContent)
-      schema <- json.hcursor.get[String]("schemaVersion").left
+      schema <- json.hcursor
+        .get[String]("schemaVersion")
+        .left
         .map(_ => WorkspaceRefusal.UnsupportedContent)
-      identity <- json.hcursor.get[String]("workspace").left
+      identity <- json.hcursor
+        .get[String]("workspace")
+        .left
         .map(_ => WorkspaceRefusal.UnsupportedContent)
       _ <- Either.cond(schema == Version, (), WorkspaceRefusal.UnsupportedVersion)
       _ <- Either.cond(identity == investigation.identity.hex, (), WorkspaceRefusal.StaleArtifacts)
-      policy <- json.hcursor.get[String]("policy").toOption.flatMap(ArtifactId.from(_).toOption)
+      policy <- json.hcursor
+        .get[String]("policy")
+        .toOption
+        .flatMap(ArtifactId.from(_).toOption)
         .toRight(WorkspaceRefusal.IncompatiblePolicy)
-      recall <- json.hcursor.get[Option[String]]("recall").toOption.flatten
+      recall <- json.hcursor
+        .get[Option[String]]("recall")
+        .toOption
+        .flatten
         .traverse(RecallUnitId.from(_).left.map(_ => WorkspaceRefusal.InvalidSelection))
-      source <- json.hcursor.get[Option[String]]("source").toOption.flatten
+      source <- json.hcursor
+        .get[Option[String]]("source")
+        .toOption
+        .flatten
         .traverse(key =>
           investigation.source.targets
             .find(_.ref.key == key)
