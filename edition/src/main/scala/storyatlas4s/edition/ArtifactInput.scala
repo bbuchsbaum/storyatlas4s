@@ -8,6 +8,7 @@ import storymodel4s.view.{RecallVoyageDocument, WorkspaceRefusal}
 
 enum ImportedArtifact:
   case Workspace(value: SourceRecallWorkspace)
+  case SurfaceWorkspace(value: SurfaceWorkspaceCodecs.Investigation)
   case Source(value: ImportedSource)
   case Voyage(value: RecallVoyageDocument)
 
@@ -32,6 +33,8 @@ object ArtifactInput:
       utf8(files.head._2).flatMap { value =>
         Canonical.parse(value).left.map(_ => WorkspaceRefusal.UnsupportedContent).flatMap { j =>
           j.hcursor.get[String]("schemaVersion").toOption match
+            case Some(WorkspaceArchiveCodec.SurfaceSchemaVersion) =>
+              SurfaceWorkspaceCodecs.decode(value).map(ImportedArtifact.SurfaceWorkspace(_))
             case Some(WorkspaceArchiveCodec.SchemaVersion) =>
               WorkspaceCodecs.decode(value).map(ImportedArtifact.Workspace(_))
             case Some(StoryModel.SchemaVersion) =>

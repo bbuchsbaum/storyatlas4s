@@ -8,6 +8,7 @@ import storymodel4s.view.{RecallVoyageDocument, WorkspaceRefusal}
 
 enum WorkspaceSession:
   case Investigation(controller: WorkspaceController)
+  case SurfaceInvestigation(controller: SurfaceWorkspaceController)
   case Source(source: ImportedSource)
   case Voyage(document: RecallVoyageDocument)
 
@@ -78,7 +79,10 @@ object WorkspaceImport:
           Canonical
             .parse(value)
             .toOption
-            .filter(_.hcursor.get[String]("schemaVersion").contains(WorkspaceSave.Version))
+            .filter(j =>
+              j.hcursor.get[String]("schemaVersion").contains(WorkspaceSave.Version) ||
+                j.hcursor.get[String]("schemaVersion").contains(SurfaceWorkspaceController.Version)
+            )
             .map(_ => name -> value)
         }
       }
@@ -94,6 +98,10 @@ object WorkspaceImport:
             ArtifactInput.open(artifacts).flatMap {
               case ImportedArtifact.Workspace(workspace) =>
                 WorkspaceController.open(workspace).map(WorkspaceSession.Investigation(_))
+              case ImportedArtifact.SurfaceWorkspace(workspace) =>
+                SurfaceWorkspaceController
+                  .open(workspace)
+                  .map(WorkspaceSession.SurfaceInvestigation(_))
               case ImportedArtifact.Source(source)   => Right(WorkspaceSession.Source(source))
               case ImportedArtifact.Voyage(document) => Right(WorkspaceSession.Voyage(document))
             }
@@ -105,6 +113,10 @@ object WorkspaceImport:
                 WorkspaceSave
                   .decode(text, controller.workspace)
                   .map(WorkspaceSession.Investigation(_))
+              case WorkspaceSession.SurfaceInvestigation(controller) =>
+                SurfaceWorkspaceController
+                  .decode(text, controller.investigation)
+                  .map(WorkspaceSession.SurfaceInvestigation(_))
               case _ => Left(WorkspaceRefusal.SemanticJoinMismatch)
           }
         yield restored.getOrElse(session)
