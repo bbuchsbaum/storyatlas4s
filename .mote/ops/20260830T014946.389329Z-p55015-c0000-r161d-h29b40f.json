@@ -1,0 +1,1 @@
+{"actor":"codex-storyatlas-root","idempotency_key":"session-status-wait-auth-20260830-0149","kind":"session_status","message":"Candidate 003f12b ready; waiting for formal authorizer CAS before local landing","op":"20260830T014946.389329Z-p55015-c0000-r161d-h29b40f","session_id":"sess-01M185NSRYKYRKR5BH81Z76ATG","status":"waiting","ts":"2026-08-30T01:49:46.389329Z","v":1}
