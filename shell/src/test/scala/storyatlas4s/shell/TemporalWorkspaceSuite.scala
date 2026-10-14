@@ -244,6 +244,12 @@ object TemporalBrowserFixtures:
     }
     write("timed.json", bytes)
     write("plain.json", right(workspace.exportBytes))
+    write(
+      "untimed.json",
+      right(
+        TemporalInspectionCodecs.encode(right(TemporalInspectionCodecs.checked(workspace, None)))
+      )
+    )
     write("failed.json", right(TemporalInspectionCodecs.encode(failed)))
     write("denied.json", repack(Map.empty, WorkspaceContentGrant.Denied))
     val c = right(SurfaceWorkspaceController.open(session))

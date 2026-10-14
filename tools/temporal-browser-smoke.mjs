@@ -105,9 +105,17 @@ try {
   await page.setViewportSize({width:390,height:844});await settle();
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile document has no horizontal overflow');
   await page.screenshot({path:path.join(out,'mobile.png'),fullPage:true});
+  await page.locator('#temporal-bins').fill('64');
+  await page.getByRole('button',{name:'Apply source window',exact:true}).click();
+  await page.getByRole('button',{name:'Next bins',exact:true}).click();
+  const secondPage=await page.locator('.temporal-grid thead').textContent();
+  await page.getByRole('button',{name:'Recall 1',exact:true}).click();await settle();
+  check((await page.locator('.temporal-grid thead').textContent())===secondPage,'source column page survives recall selection');
   await open(fixture('failed.json'));
   check(await page.locator('.temporal-grid tbody tr').count()===2,'failed rows remain visible');
   check((await page.locator('.temporal-grid tbody').textContent()).includes('Failed'),'failed processing status remains distinct from zero');
+  await open(fixture('untimed.json'));
+  check(await page.getByRole('button',{name:'Apply recall window',exact:true}).isDisabled(),'untimed temporal packet opens with no invented clock');
   await open(fixture('plain.json'));
   check(await page.getByRole('button',{name:'Apply recall window',exact:true}).isDisabled(),'missing clock cannot acquire a recall-window estimate');
   await open(fixture('denied.json'));

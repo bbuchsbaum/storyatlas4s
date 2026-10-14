@@ -10,6 +10,7 @@ object SurfaceWorkspaceView:
     val controller = Var(initial)
     val notice = Var("")
     val temporalPage = Var(0)
+    val temporalColumnPage = Var(0)
     def dispatch(action: SurfaceWorkspaceAction): Unit = controller.now().dispatch(action) match
       case Left(_)     => notice.set("This selection is unavailable in the opened investigation.")
       case Right(next) =>
@@ -75,7 +76,7 @@ object SurfaceWorkspaceView:
         }
       ),
       child <-- controller.signal.map(c =>
-        TemporalWorkspaceView(c, dispatch, notice, temporalPage)
+        TemporalWorkspaceView(c, dispatch, notice, temporalPage, temporalColumnPage)
       ),
       div(
         cls("joined-columns"),

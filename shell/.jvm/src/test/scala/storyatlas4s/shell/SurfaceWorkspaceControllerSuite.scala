@@ -131,7 +131,7 @@ class SurfaceWorkspaceControllerSuite extends FunSuite:
       .flatMap(_.dispatch(SurfaceWorkspaceAction.Source(source)))
       .toOption
       .get
-    val saved = SurfaceWorkspaceController.encode(selected)
+    val saved = right(SurfaceWorkspaceController.encode(selected))
 
     assertEquals(
       SurfaceWorkspaceController.decode(saved, selected.investigation).toOption.map(_.state),
@@ -151,7 +151,9 @@ class SurfaceWorkspaceControllerSuite extends FunSuite:
       .toOption
       .get
     val descriptor =
-      "selection.json" -> SurfaceWorkspaceController.encode(selected).getBytes(UTF_8).toVector
+      "selection.json" -> right(SurfaceWorkspaceController.encode(selected))
+        .getBytes(UTF_8)
+        .toVector
     val files = Vector("packet.json" -> packet, descriptor)
     Vector(files, files.reverse).foreach { ordered =>
       val reopened = WorkspaceImport

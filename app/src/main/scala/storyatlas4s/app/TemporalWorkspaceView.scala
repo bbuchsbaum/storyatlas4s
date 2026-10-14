@@ -39,7 +39,8 @@ object TemporalWorkspaceView:
       surface: SurfaceWorkspaceController,
       dispatch: SurfaceWorkspaceAction => Unit,
       notice: Var[String],
-      page: Var[Int]
+      page: Var[Int],
+      columnPage: Var[Int]
   ): HtmlElement = surface.temporal match
     case None =>
       sectionTag(
@@ -49,14 +50,15 @@ object TemporalWorkspaceView:
           "This packet does not supply an inspectable temporal axis. Source and recall evidence remain available below."
         )
       )
-    case Some(current) => render(surface, current, dispatch, notice, page)
+    case Some(current) => render(surface, current, dispatch, notice, page, columnPage)
 
   private def render(
       surface: SurfaceWorkspaceController,
       current: TemporalWorkspaceController,
       dispatch: SurfaceWorkspaceAction => Unit,
       notice: Var[String],
-      page: Var[Int]
+      page: Var[Int],
+      columnPage: Var[Int]
   ): HtmlElement =
     val projection = current.projection
     val workspace = current.session.workspace
@@ -184,7 +186,8 @@ object TemporalWorkspaceView:
       )
     val rowsPerPage = 24
     val columnsPerPage = 32
-    val columnPage = Var(0)
+    val lastColumnPage = (projection.regions.size - 1).max(0) / columnsPerPage
+    if columnPage.now() > lastColumnPage then columnPage.set(lastColumnPage)
     def currentRegions(index: Int) =
       projection.regions.zipWithIndex.slice(index * columnsPerPage, (index + 1) * columnsPerPage)
     val selectedRow = surface.state.recall.flatMap(id => projection.rows.find(_.unit == id))
