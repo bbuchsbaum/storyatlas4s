@@ -106,6 +106,24 @@ object SurfaceWorkspaceController:
       .map(refusal)
       .flatMap(session => restore(session, state, temporal))
 
+  /** Derive host selection from the checked receipt, preserving its actual policy and clock. */
+  private[shell] def fromTemporal(
+      temporal: TemporalWorkspaceController
+  ): Either[WorkspaceRefusal, SurfaceWorkspaceController] =
+    val recalls = temporal.selection.toVector.flatMap(temporal.session.recallAddresses.get)
+    val sources = temporal.selection.toVector.flatMap(temporal.session.sourceAddresses.get)
+    if recalls.size > 1 || sources.size > 1 then Left(WorkspaceRefusal.InvalidSelection)
+    else
+      restore(
+        temporal.session,
+        SurfaceWorkspaceState(
+          temporal.projection.policy.id,
+          recalls.headOption,
+          sources.headOption
+        ),
+        Some(temporal)
+      )
+
   private def restore(
       session: TemporalInspectionCodecs.Session,
       state: SurfaceWorkspaceState,

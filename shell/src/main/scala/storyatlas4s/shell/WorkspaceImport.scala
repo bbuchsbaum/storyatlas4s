@@ -145,7 +145,7 @@ object WorkspaceImport:
                     .map(SurfaceWorkspaceController.refusal)
                     .flatMap { temporal =>
                       SurfaceWorkspaceController
-                        .restore(controller.investigation, controller.state, Some(temporal))
+                        .fromTemporal(temporal)
                         .map(WorkspaceSession.SurfaceInvestigation(_))
                     }
                 else

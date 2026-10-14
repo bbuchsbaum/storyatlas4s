@@ -91,6 +91,29 @@ class TemporalWorkspaceSuite extends FunSuite:
       case _ => fail("wrong restored mode")
   }
 
+  test(
+    "standalone temporal receipt reopens with its original clock policy and semantic selection"
+  ) {
+    val selected = right(
+      right(opened.dispatch(SurfaceWorkspaceAction.Policy(reference)))
+        .dispatch(SurfaceWorkspaceAction.Recall(inventory.units.head.id))
+    )
+    val temporal = selected.temporal.get
+    val receipt = right(temporal.encode)
+    val restored = right(
+      WorkspaceImport.open(
+        Vector(file("data.json", TemporalTestData.bytes), file("receipt.json", receipt)),
+        None
+      )
+    )
+    restored match
+      case WorkspaceSession.SurfaceInvestigation(value) =>
+        assertEquals(value.session, selected.session)
+        assertEquals(value.state, selected.state)
+        assertEquals(right(value.temporal.get.encode), receipt)
+      case _ => fail("wrong restored mode")
+  }
+
   test("foreign semantic addresses clocks and view bytes refuse without replacing current state") {
     val start = opened
     val noTiming = right(TemporalInspectionCodecs.checked(workspace, None))
@@ -179,3 +202,93 @@ class TemporalWorkspaceSuite extends FunSuite:
     assertEquals(SurfaceWorkspaceController.encode(start), Left(WorkspaceRefusal.PermissionDenied))
     assertEquals(start.temporal.get.encode, Left(TemporalInspectionCodecs.Error.PermissionDenied))
   }
+
+  test("interactive region and bin limits refuse before all-failed row traversal") {
+    val t = right(SurfaceWorkspaceController.open(failed)).temporal.get
+    val empty = right(
+      TemporalQuery.Region.onTimeAxis(t.projection.coordinate.axis, Vector.empty, Vector.empty)
+    )
+    assert(t.dispatch(TemporalWorkspaceAction.Region(Vector.fill(128)(empty))).isRight)
+    assertEquals(
+      t.dispatch(TemporalWorkspaceAction.Region(Vector.fill(129)(empty))),
+      Left(TemporalInspectionCodecs.Error.Grid(TemporalInspection.Refusal.TooManyBins))
+    )
+    assertEquals(
+      t.dispatch(TemporalWorkspaceAction.Bins(Vector.fill(129)(0L -> 1L))),
+      Left(TemporalInspectionCodecs.Error.Grid(TemporalInspection.Refusal.TooManyBins))
+    )
+    val descriptor = right(t.encode)
+    val json = right(Canonical.parse(descriptor))
+    val roi = right(Canonical.parse("""{"intervals":[],"points":[]}"""))
+    val excessive =
+      Canonical.print(json.mapObject(_.add("roi", io.circe.Json.fromValues(Vector.fill(129)(roi)))))
+    assertEquals(
+      TemporalWorkspaceController.restore(excessive, session),
+      Left(TemporalInspectionCodecs.Error.ForeignView)
+    )
+    assertEquals(
+      TemporalWorkspaceController.restore(excessive, failed),
+      Left(TemporalInspectionCodecs.Error.Grid(TemporalInspection.Refusal.TooManyBins))
+    )
+  }
+
+/** Emit only the admitted synthetic controls for the local browser court. */
+object TemporalBrowserFixtures:
+  def main(args: Array[String]): Unit =
+    require(args.isEmpty)
+    import TemporalTestData.*
+    import io.circe.Json
+    val files = Vector.newBuilder[(String, Json)]
+    def write(name: String, value: String): Unit = {
+      val _ = files += name -> Json.fromString(value)
+    }
+    write("timed.json", bytes)
+    write("plain.json", right(workspace.exportBytes))
+    write("failed.json", right(TemporalInspectionCodecs.encode(failed)))
+    write("denied.json", repack(Map.empty, WorkspaceContentGrant.Denied))
+    val c = right(SurfaceWorkspaceController.open(session))
+    val r = right(c.dispatch(SurfaceWorkspaceAction.Policy(reference)))
+    val a = right(
+      r.dispatch(
+        SurfaceWorkspaceAction.Temporal(
+          TemporalWorkspaceAction.Allocation(TemporalQuery.Allocation.UniformIntervals)
+        )
+      )
+    )
+    val projection = a.temporal.get.projection
+    val rows = projection.rows.flatMap { row =>
+      projection.regions.zipWithIndex.map { (region, index) =>
+        val grid = right(row.grid)
+        val geometry = region.geometry.get
+        Json.obj(
+          "unit" -> Json.fromString(row.unit.value),
+          "bin" -> Json.fromString(
+            (geometry.intervals.map(i => s"${i.start}:${i.endExclusive}") ++ geometry.points.map(
+              p => s"@${p.at}"
+            )).mkString(", ")
+          ),
+          "allocated" -> Json.fromDoubleOrNull(grid.allocatedAt(index).get),
+          "lower" -> Json.fromDoubleOrNull(grid.boundsAt(index).get._1),
+          "upper" -> Json.fromDoubleOrNull(grid.boundsAt(index).get._2)
+        )
+      }
+    }
+    write("expected-grid.json", Canonical.print(Json.fromValues(rows)))
+    val original = right(SurfaceWorkspaceController.open(session)).temporal.get
+    val quarter = right(
+      original.dispatch(TemporalWorkspaceAction.Allocation(TemporalQuery.Allocation.Mixture(0.25)))
+    )
+    write("quarter-view.json", right(quarter.encode))
+    val declared = original.projection.request.declarations.zipWithIndex.map((d, i) =>
+      d.copy(allocation =
+        if i == 0 then TemporalQuery.Allocation.UniformIntervals
+        else TemporalQuery.Allocation.SupportOnly
+      )
+    )
+    val heterogeneous = right(
+      original.dispatch(
+        TemporalWorkspaceAction.Request(original.projection.request.copy(declarations = declared))
+      )
+    )
+    write("heterogeneous-view.json", right(heterogeneous.encode))
+    println("TEMPORAL_BROWSER_FIXTURES=" + Canonical.print(Json.obj(files.result()*)))

@@ -2,6 +2,7 @@ package storyatlas4s.app
 
 import com.raquo.laminar.api.L.*
 import storyatlas4s.shell.*
+import org.scalajs.dom
 
 /** Imported claims stay inspectable alongside their exact source and recall evidence. */
 object SurfaceWorkspaceView:
@@ -11,7 +12,17 @@ object SurfaceWorkspaceView:
     val temporalPage = Var(0)
     def dispatch(action: SurfaceWorkspaceAction): Unit = controller.now().dispatch(action) match
       case Left(_)     => notice.set("This selection is unavailable in the opened investigation.")
-      case Right(next) => controller.set(next); notice.set("")
+      case Right(next) =>
+        val focusId = Option(dom.document.activeElement).map(_.id).filter(_.nonEmpty)
+        controller.set(next)
+        notice.set("")
+        val _ = dom.window.requestAnimationFrame { _ =>
+          if dom.document.activeElement == dom.document.body then
+            focusId.flatMap(id => Option(dom.document.getElementById(id))).foreach {
+              case element: dom.html.Element => element.focus()
+              case _                         => ()
+            }
+        }
     div(
       idAttr("surface-workspace"),
       cls("joined-workspace"),
@@ -76,6 +87,7 @@ object SurfaceWorkspaceView:
               li(
                 button(
                   typ("button"),
+                  idAttr(s"surface-source-${target.ref.key}"),
                   value.investigation.sourceText(target.ref).getOrElse("Source text unavailable"),
                   aria.pressed := value.state.source.contains(target.ref).toString,
                   onClick --> (_ => dispatch(SurfaceWorkspaceAction.Source(target.ref)))
@@ -99,6 +111,7 @@ object SurfaceWorkspaceView:
               li(
                 button(
                   typ("button"),
+                  idAttr(s"surface-recall-${unit.id.value}"),
                   value.investigation.recallText(unit.id).getOrElse("Recall text unavailable"),
                   aria.pressed := value.state.recall.contains(unit.id).toString,
                   onClick --> (_ => dispatch(SurfaceWorkspaceAction.Recall(unit.id)))

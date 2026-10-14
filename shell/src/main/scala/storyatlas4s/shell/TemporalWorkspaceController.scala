@@ -43,11 +43,14 @@ final class TemporalWorkspaceController private (
       action: TemporalWorkspaceAction
   ): Either[TemporalInspectionCodecs.Error, TemporalWorkspaceController] = action match
     case TemporalWorkspaceAction.Request(value) =>
-      session.compile(projection.policy.id, projection.measure, value).flatMap { next =>
-        val nextRoi =
-          if next.coordinate.axis == projection.coordinate.axis then roi else next.regions
-        TemporalWorkspaceController.checked(session, next, selection, nextRoi, topK)
-      }
+      TemporalWorkspaceController
+        .bounded(value.bins.size)
+        .flatMap(_ => session.compile(projection.policy.id, projection.measure, value))
+        .flatMap { next =>
+          val nextRoi =
+            if next.coordinate.axis == projection.coordinate.axis then roi else next.regions
+          TemporalWorkspaceController.checked(session, next, selection, nextRoi, topK)
+        }
     case TemporalWorkspaceAction.Region(value) =>
       TemporalWorkspaceController.checked(session, projection, selection, value, topK)
     case TemporalWorkspaceAction.TopK(value) =>
@@ -73,6 +76,16 @@ final class TemporalWorkspaceController private (
 object TemporalWorkspaceController:
   val Version = "storyatlas-temporal-workspace/v1"
 
+  /** Interactive views admit at most 128 source bins and region pieces; larger requests refuse. */
+  val MaximumRegions: Int = 128
+
+  private def bounded(count: Int): Either[TemporalInspectionCodecs.Error, Unit] =
+    Either.cond(
+      count <= MaximumRegions,
+      (),
+      TemporalInspectionCodecs.Error.Grid(TemporalInspection.Refusal.TooManyBins)
+    )
+
   private def invalid[A]: Either[TemporalInspectionCodecs.Error, A] =
     Left(TemporalInspectionCodecs.Error.Invalid)
 
@@ -96,15 +109,16 @@ object TemporalWorkspaceController:
           ) ||
           y.points.exists(p => x.intervals.exists(i => i.start <= p.at && p.at < i.endExclusive))
         case _ => false
-    if values.exists(_.axis != projection.coordinate.axis) then invalid
+    val pieces =
+      values.foldLeft(0L)((n, r) => n + r.geometry.fold(0)(g => g.intervals.size + g.points.size))
+    if values.size > MaximumRegions || pieces > MaximumRegions then
+      Left(TemporalInspectionCodecs.Error.Grid(TemporalInspection.Refusal.TooManyBins))
+    else if values.exists(_.axis != projection.coordinate.axis) then invalid
     else if values.indices.exists(i =>
         values.indices.drop(i + 1).exists(j => intersects(values(i), values(j)))
       )
     then Left(TemporalInspectionCodecs.Error.Grid(TemporalInspection.Refusal.Overlap))
-    else
-      projection.rows
-        .flatMap(_.grid.toOption)
-        .traverse_(_.rebin(values).left.map(TemporalInspectionCodecs.Error.Grid(_)))
+    else Right(())
 
   private def checked(
       session: TemporalInspectionCodecs.Session,
@@ -223,7 +237,7 @@ object TemporalWorkspaceController:
           .left
           .map(TemporalInspectionCodecs.Error.Query(_))
       )
-      result <- checked(session, projection, addresses(session), roi, 10)
+      result <- checked(session, projection, Set.empty, roi, 10)
     yield result
 
   private def switchPolicy(
@@ -295,6 +309,16 @@ object TemporalWorkspaceController:
         .map(_ => TemporalInspectionCodecs.Error.Invalid)
       _ <- Either.cond(digest == session.digest.hex, (), TemporalInspectionCodecs.Error.ForeignView)
       view <- json.hcursor.get[String]("view").left.map(_ => TemporalInspectionCodecs.Error.Invalid)
+      saved <- Canonical.parse(view).left.map(_ => TemporalInspectionCodecs.Error.Invalid)
+      requestBytes <- saved.hcursor
+        .get[String]("request")
+        .left
+        .map(_ => TemporalInspectionCodecs.Error.Invalid)
+      request <- storymodel4s.codec.TemporalProjectionCodecs
+        .decodeRequest(requestBytes, session.workspace.source)
+        .left
+        .map(_ => TemporalInspectionCodecs.Error.Invalid)
+      _ <- bounded(request.bins.size)
       projection <- TemporalInspectionCodecs.restoreView(view, session)
       topK <- json.hcursor.get[Int]("topK").left.map(_ => TemporalInspectionCodecs.Error.Invalid)
       rendered <- json.hcursor
@@ -305,6 +329,24 @@ object TemporalWorkspaceController:
         .get[Vector[Json]]("roi")
         .left
         .map(_ => TemporalInspectionCodecs.Error.Invalid)
+      _ <- bounded(encodedRoi.size)
+      roiPieces <- encodedRoi.traverse { value =>
+        for
+          intervals <- value.hcursor
+            .get[Vector[Json]]("intervals")
+            .left
+            .map(_ => TemporalInspectionCodecs.Error.Invalid)
+          points <- value.hcursor
+            .get[Vector[Json]]("points")
+            .left
+            .map(_ => TemporalInspectionCodecs.Error.Invalid)
+        yield intervals.size.toLong + points.size.toLong
+      }
+      _ <- Either.cond(
+        roiPieces.sum <= MaximumRegions,
+        (),
+        TemporalInspectionCodecs.Error.Grid(TemporalInspection.Refusal.TooManyBins)
+      )
       roi <- encodedRoi.traverse { value =>
         for
           intervals <- value.hcursor

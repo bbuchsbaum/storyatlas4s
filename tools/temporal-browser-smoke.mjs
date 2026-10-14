@@ -1,0 +1,126 @@
+#!/usr/bin/env node
+// Synthetic Anna/Bob controls from TemporalArtifactSuite; no participant content.
+// Usage: node tools/temporal-browser-smoke.mjs <edition/index.html> <fixtures-dir> <evidence-dir>
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';
+const require=createRequire(import.meta.url);
+const base=path.resolve(path.dirname(new URL(import.meta.url).pathname),'../e2e/static');
+const {chromium}=require(require.resolve('playwright',{paths:[base]}));
+const version=require(require.resolve('playwright/package.json',{paths:[base]})).version;
+assert.equal(version,'1.55.1');
+const [entry,fixtures,out]=process.argv.slice(2).map(p=>path.resolve(p));
+fs.mkdirSync(out,{recursive:true});
+const report={playwright:version,platform:os.platform(),architecture:os.arch(),cpu:os.cpus()[0]?.model,checks:[],errors:[],requests:[],latencyMs:{}};
+const check=(ok,name)=>{report.checks.push({name,ok});assert.ok(ok,name);};
+const input=(name,text)=>({name,mimeType:'application/json',buffer:Buffer.from(text)});
+const fixturePacket = fs.statSync(fixtures).isDirectory() ? null : JSON.parse(fs.readFileSync(fixtures,'utf8').split('\n').find(l=>l.includes('TEMPORAL_BROWSER_FIXTURES=')).split('TEMPORAL_BROWSER_FIXTURES=')[1]);
+const fixtureText=name=>fixturePacket ? fixturePacket[name] : fs.readFileSync(path.join(fixtures,name),'utf8');
+const fixture=name=>input(name,fixtureText(name));
+let browser;
+try {
+  browser=await chromium.launch({headless:true});
+  report.browser=browser.version();
+  const context=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
+  const page=await context.newPage();
+  page.on('pageerror',e=>report.errors.push(String(e)));
+  page.on('console',m=>{if(m.type()==='error')report.errors.push(m.text());});
+  page.on('request',r=>{if(/^https?:/.test(r.url()))report.requests.push(r.url());});
+  const settle=()=>page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+  const open=async(files,expected='Opened')=>{
+    await page.locator('#workspace-open').setInputFiles(files);
+    await page.waitForFunction(s=>document.querySelector('[data-open-status]')?.getAttribute('data-open-status')?.startsWith(s),expected);
+    await settle();
+  };
+  const download=async(name,file)=>{
+    const pending=page.waitForEvent('download');
+    await page.getByRole('button',{name,exact:true}).click();
+    const d=await pending;const target=path.join(out,file);await d.saveAs(target);return fs.readFileSync(target,'utf8');
+  };
+  await page.goto(pathToFileURL(entry).href);
+  const t0=performance.now();await open(fixture('timed.json'));report.latencyMs.syntheticImport=performance.now()-t0;
+  check(await page.locator('.temporal-grid tbody tr').count()===2,'all synthetic recall rows visible');
+  check(await page.locator('.temporal-grid thead th').count()===33,'at most32source bins rendered');
+  check(await page.locator('.temporal-onset').count()===1,'automatic viewport retains final supplied onset');
+  check(await page.locator('.temporal-interval').count()===1,'supplied interval represented separately');
+  check((await page.locator('#temporal-workspace').textContent()).includes('Unestablished'),'unestablished physical clock remains explicit');
+  const supportCsv=await download('Export table','support-only.csv');
+  const supportRows=supportCsv.trimEnd().split('\n').slice(1).map(l=>l.slice(1,-1).split('","'));
+  check(supportRows.every(r=>r[3]==='' && r[7]==='unavailable' && Number(r[9])>0),'support-only table preserves absent allocation and ledger');
+  await open([fixture('timed.json'),fixture('quarter-view.json')]);
+  check((await page.locator('#temporal-allocation option:checked').textContent()).includes('0.25'),'custom mixture retains its exact assumption label');
+  await open([fixture('timed.json'),fixture('heterogeneous-view.json')]);
+  check((await page.locator('#temporal-allocation option:checked').textContent()).includes('per-target'),'heterogeneous allocations are not relabeled as a uniform assumption');
+  await open(fixture('timed.json'));
+  await page.getByRole('button',{name:'Reference',exact:true}).click();
+  await page.locator('#temporal-allocation').selectOption('intervals');
+  const t1=performance.now();
+  await page.getByRole('button',{name:'Recall 1',exact:true}).focus();await page.keyboard.press('Enter');await settle();
+  report.latencyMs.selectRecall=performance.now()-t1;
+  check(await page.evaluate(()=>document.activeElement?.id==='temporal-recall-u0'),'keyboard selection restores its semantic control focus');
+  check((await page.locator('.temporal-inspector').first().textContent()).includes('Anna arrived.'),'keyboard recall selection opens original evidence');
+  await page.locator('#temporal-region').fill('10:15,80:85');
+  await page.getByRole('button',{name:'Inspect region',exact:true}).click();
+  await page.locator('#temporal-topk').fill('1');await page.getByRole('button',{name:'Apply top-k',exact:true}).click();
+  await page.locator('#temporal-recall-start').fill('0');await page.locator('#temporal-recall-end').fill('4');
+  await page.getByRole('button',{name:'Apply recall window',exact:true}).click();
+  const receipt=await download('Export view receipt','temporal-receipt.json');
+  await open([fixture('timed.json'),input('receipt.json',receipt)]);
+  assert.equal(await download('Export view receipt','replayed-receipt.json'),receipt);
+  check(true,'standalone exported temporal receipt reopens with exact clock policy and selections');
+  const saved=await download('Save view','view.json');
+  const state=JSON.parse(saved),temporal=JSON.parse(state.temporal);
+  check(state.schemaVersion==='surface-workspace-selection/v2' && temporal.topK===1,'saved view retains admitted temporal descriptor');
+  check((await page.locator('.temporal-inspector').first().textContent()).includes('Omitted by top-k'),'top-k omission remains visible');
+  const csv=await download('Export table','table.csv');
+  const csvRows=csv.trimEnd().split('\n').map(l=>l.slice(1,-1).split('","').map(v=>v.replaceAll('""','"')));
+  check(csvRows.length===65,'table exports every row and bin');
+  const expected=JSON.parse(fixtureText('expected-grid.json'));
+  for (const [unit,measure,bin,allocated,lower,upper] of csvRows.slice(1)) {
+    const row=expected.find(r=>r.unit===unit && r.bin===bin);
+    assert.ok(row,`expected ${unit} ${bin}`);
+    assert.equal(measure,'NormalizedScoreMass');
+    assert.equal(Number(allocated),row.allocated);assert.equal(Number(lower),row.lower);assert.equal(Number(upper),row.upper);
+  }
+  check(true,'export table agrees with checked producer values without display rounding');
+  const figure=await download('Export figure','figure.svg');
+  check(figure.includes('<rect') && figure.includes('original row denominator') && figure.includes('<desc>'),'figure includes quantities and replay descriptor');
+  await page.locator('#temporal-recall-start').fill('4');await page.locator('#temporal-recall-end').fill('5');
+  await page.getByRole('button',{name:'Apply recall window',exact:true}).click();
+  check(await page.locator('.temporal-onset,.temporal-interval').count()===0,'out-of-window observations are hidden rather than clamped to an edge');
+  await open([fixture('timed.json'),input('view.json',saved)]);
+  assert.equal(await download('Save view','replayed-view.json'),saved);check(true,'save reopen is byte-identical');
+  const before=await download('Save view','before-refusal.json');
+  await open([fixture('plain.json'),input('view.json',saved)],'Refused');
+  assert.equal(await download('Save view','after-refusal.json'),before);check(true,'foreign timing refusal retains current view');
+  await page.locator('#temporal-axis').selectOption('1');
+  const switched=JSON.parse(JSON.parse(await download('Save view','other-axis.json')).temporal);
+  check(switched.session===temporal.session,'source-axis switch retains original session clock');
+  await open([fixture('timed.json'),input('view.json',saved)]);
+  await page.screenshot({path:path.join(out,'desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});await settle();
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile document has no horizontal overflow');
+  await page.screenshot({path:path.join(out,'mobile.png'),fullPage:true});
+  await open(fixture('failed.json'));
+  check(await page.locator('.temporal-grid tbody tr').count()===2,'failed rows remain visible');
+  check((await page.locator('.temporal-grid tbody').textContent()).includes('Failed'),'failed processing status remains distinct from zero');
+  await open(fixture('plain.json'));
+  check(await page.getByRole('button',{name:'Apply recall window',exact:true}).isDisabled(),'missing clock cannot acquire a recall-window estimate');
+  await open(fixture('denied.json'));
+  let downloads=0;page.on('download',()=>downloads++);
+  await page.getByRole('button',{name:'Save view',exact:true}).click();await settle();
+  check((await page.locator('.workspace-notice').textContent()).includes('does not permit'),'denied saving explains refusal');
+  await page.getByRole('button',{name:'Export table',exact:true}).click();await settle();
+  check(downloads===0,'denied packet grants no export');
+  check(report.errors.length===0,'no browser errors');check(report.requests.length===0,'local artifacts remain offline');
+  report.status='passed';
+} catch(error) { report.status='failed';report.failure=String(error.stack||error);throw error; }
+finally {
+  if(browser)await browser.close();
+  report.files=fs.readdirSync(out).filter(n=>n!=='report.json').map(name=>{const bytes=fs.readFileSync(path.join(out,name));return {name,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};});
+  fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2)+'\n');
+}

@@ -158,7 +158,8 @@ object TemporalWorkspaceView:
         case _                                          => None)
       val visibleMarks = marks.filter { (a, b, point) =>
         recallLimits.exists { (lo, hi) =>
-          if point then a >= lo && (a < hi || lo == hi && a == lo) else b > lo && a < hi
+          if point then a >= lo && (a < hi || projection.request.recallWindow.isEmpty && a == hi)
+          else b > lo && a < hi
         }
       }
       div(
@@ -271,18 +272,53 @@ object TemporalWorkspaceView:
           )
         )
     def exportRows: Vector[Vector[String]] =
-      Vector(Vector("unit", "measure", "bin", "allocated", "lower", "upper", "processing")) ++
+      Vector(
+        Vector(
+          "unit",
+          "measure",
+          "bin",
+          "allocated",
+          "lower",
+          "upper",
+          "processing",
+          "allocation_status",
+          "allocated_source",
+          "support_without_allocation",
+          "location_unavailable",
+          "external",
+          "normalization_scope",
+          "projection",
+          "policy_bytes"
+        )
+      ) ++
         projection.rows.flatMap { row =>
           projection.regions.zipWithIndex.map { (region, index) =>
             val grid = row.grid.toOption
+            val ledger = grid.map(_.prepared.ledger)
+            val allocationStatus = ledger.fold("not-computed") { l =>
+              if l.supportWithoutAllocation + l.unavailableLocation == 0 then "available"
+              else if l.allocatedSource > 0 then "partial"
+              else "unavailable"
+            }
             Vector(
               row.unit.value,
               projection.measure.toString,
               regionText(region),
-              grid.flatMap(_.allocatedAt(index)).fold("")(_.toString),
+              grid
+                .filter(_ => allocationStatus == "available" || allocationStatus == "partial")
+                .flatMap(_.allocatedAt(index))
+                .fold("")(_.toString),
               grid.flatMap(_.boundsAt(index)).fold("")(b => b._1.toString),
               grid.flatMap(_.boundsAt(index)).fold("")(b => b._2.toString),
-              row.processing.toString
+              row.processing.toString,
+              allocationStatus,
+              ledger.fold("")(_.allocatedSource.toString),
+              ledger.fold("")(_.supportWithoutAllocation.toString),
+              ledger.fold("")(_.unavailableLocation.toString),
+              ledger.fold("")(_.external.map(_._2).sum.toString),
+              "original-row",
+              projection.digest.hex,
+              projection.policy.byteDigest.hex
             )
           }
         }
@@ -339,6 +375,16 @@ object TemporalWorkspaceView:
               )}</text><text x="16" y="84">Source bin numbers; equal display width. Export table and view receipt retain exact extents.</text>$bins$labels$cells</g></svg>"""
             download("temporal-quantities.svg", svg, "image/svg+xml;charset=utf-8")
         notice.set("Exported the supplied quantities with the current temporal view.")
+    val allocations = projection.request.declarations.map(_.allocation).distinct
+    val allocationKey = allocations match
+      case Vector(TemporalQuery.Allocation.SupportOnly)                    => "support"
+      case Vector(TemporalQuery.Allocation.UniformIntervals)               => "intervals"
+      case Vector(TemporalQuery.Allocation.UniformPoints)                  => "points"
+      case Vector(TemporalQuery.Allocation.Mixture(value)) if value == 0.5 => "mixed"
+      case _                                                               => "supplied"
+    val suppliedLabel =
+      if allocations.size == 1 then s"Supplied: ${allocations.head}"
+      else "Supplied per-target allocations"
     sectionTag(
       idAttr("temporal-workspace"),
       cls("temporal-workspace"),
@@ -384,6 +430,12 @@ object TemporalWorkspaceView:
           span("Allocation assumption"),
           select(
             idAttr("temporal-allocation"),
+            option(
+              value := "supplied",
+              selected := (allocationKey == "supplied"),
+              disabled(true),
+              suppliedLabel
+            ),
             Vector(
               "support" -> "Support only",
               "intervals" -> "Uniform within intervals",
@@ -392,11 +444,7 @@ object TemporalWorkspaceView:
             ).map((key, text) =>
               option(
                 value := key,
-                selected := (projection.request.declarations.headOption.map(_.allocation) match
-                  case Some(TemporalQuery.Allocation.UniformIntervals) => key == "intervals"
-                  case Some(TemporalQuery.Allocation.UniformPoints)    => key == "points"
-                  case Some(TemporalQuery.Allocation.Mixture(_))       => key == "mixed"
-                  case _                                               => key == "support"),
+                selected := (allocationKey == key),
                 text
               )
             ),
@@ -416,6 +464,7 @@ object TemporalWorkspaceView:
         field("Region: start:end, @point", roiInput, "temporal-region"),
         button(
           typ("button"),
+          idAttr("temporal-apply-region"),
           "Inspect region",
           onClick --> { _ =>
             geometry(roiInput.now()).fold(refused())(region =>
@@ -426,6 +475,7 @@ object TemporalWorkspaceView:
         field("Top alternatives", top, "temporal-topk"),
         button(
           typ("button"),
+          idAttr("temporal-apply-topk"),
           "Apply top-k",
           onClick --> { _ =>
             top
@@ -448,6 +498,7 @@ object TemporalWorkspaceView:
         button(
           typ("button"),
           disabled := current.session.timing.isEmpty,
+          idAttr("temporal-apply-recall"),
           "Apply recall window",
           onClick --> { _ =>
             (current.session.timing, seconds(recallStart.now()), seconds(recallEnd.now())) match
@@ -462,6 +513,7 @@ object TemporalWorkspaceView:
         ),
         button(
           typ("button"),
+          idAttr("temporal-apply-clear-recall"),
           "Clear recall window",
           onClick --> (_ => action(TemporalWorkspaceAction.RecallWindow(None)))
         )
@@ -498,6 +550,7 @@ object TemporalWorkspaceView:
                   button(
                     typ("button"),
                     aria.pressed := surface.state.recall.contains(row.unit).toString,
+                    idAttr(s"temporal-recall-${row.unit.value}"),
                     ordinal(row.unit),
                     onClick --> (_ => dispatch(SurfaceWorkspaceAction.Recall(row.unit)))
                   ),

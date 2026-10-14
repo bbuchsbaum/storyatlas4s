@@ -1,0 +1,40 @@
+{
+  "baseline_focused": {
+    "passed": 11,
+    "failed": 0
+  },
+  "mutations": [
+    {
+      "name": "receipt-clock",
+      "compiled": true,
+      "passed": 10,
+      "failed": 1,
+      "log_sha256": "f7d8f0290e08f5644761907a44e8772dba35ccbbfd0c752a7bd3386e4b870724",
+      "log_bytes": 611
+    },
+    {
+      "name": "foreign-session",
+      "compiled": true,
+      "passed": 10,
+      "failed": 1,
+      "log_sha256": "7e78a8c34e5288db2d8f07373c3fa6a4005920d6b92f1592ae60b2d82384840f",
+      "log_bytes": 887
+    },
+    {
+      "name": "region-bound",
+      "compiled": true,
+      "passed": 10,
+      "failed": 1,
+      "log_sha256": "0ccc927cb0bddf45f3f7d36c21f845dd6c7ccbfbc3bd38edff23c41e2e62d136",
+      "log_bytes": 1101
+    },
+    {
+      "name": "region-overlap",
+      "compiled": true,
+      "passed": 10,
+      "failed": 1,
+      "log_sha256": "e5e154fbb57cc8c7d33880ffc7cba05260158149939ee5bce6aaeca8b91ade13",
+      "log_bytes": 1023
+    }
+  ]
+}
