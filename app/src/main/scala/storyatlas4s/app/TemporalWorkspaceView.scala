@@ -213,6 +213,157 @@ object TemporalWorkspaceView:
       yield result
     def ordinal(id: RecallUnitId): String =
       workspace.inventory.units.find(_.id == id).fold(id.value)(u => s"Recall ${u.ordinal + 1}")
+    def timingBasis(basis: RecallTiming.Basis): String = basis match
+      case RecallTiming.Basis.SourceReported(_) => "source-reported"
+      case RecallTiming.Basis.Estimated(_)      => "estimated"
+    def observationText(observation: RecallTiming.Observation): String = observation match
+      case RecallTiming.Observation.Interval(start, endExclusive, basis) =>
+        s"[${rational(start)}, ${rational(endExclusive)}) seconds; ${timingBasis(basis)}"
+      case RecallTiming.Observation.OnsetOnly(at, basis) =>
+        s"onset ${rational(at)} seconds; duration unavailable; ${timingBasis(basis)}"
+      case RecallTiming.Observation.Missing(reason) => s"unavailable: $reason"
+    def temporalSeries(pageIndex: Int): HtmlElement =
+      val seriesPage = pageIndex.min((projection.rows.size - 1).max(0) / rowsPerPage)
+      val offset = seriesPage * rowsPerPage
+      def marks(
+          point: TemporalSeries.Point,
+          measure: String,
+          value: String
+      ): HtmlElement =
+        val coordinates = point.observations.flatMap {
+          case RecallTiming.Observation.Interval(start, endExclusive, _) =>
+            Some((decimal(start), decimal(endExclusive), false))
+          case RecallTiming.Observation.OnsetOnly(at, _) => Some((decimal(at), decimal(at), true))
+          case _                                         => None
+        }
+        val visible = coordinates.filter { (start, end, onset) =>
+          recallLimits.exists { (lo, hi) =>
+            if onset then
+              start >= lo && (start < hi || projection.request.recallWindow.isEmpty && start == hi)
+            else end > lo && start < hi
+          }
+        }
+        val observations = point.observations.map(observationText).mkString("; ")
+        div(
+          cls("temporal-series-track"),
+          role("img"),
+          aria.label(
+            s"$measure for ${ordinal(point.unit)}: $value. Recall observations: $observations"
+          ),
+          title(s"$measure: $value"),
+          if coordinates.isEmpty then span(cls("temporal-series-no-mark"), "No recall coordinate")
+          else if visible.isEmpty then span(cls("temporal-series-no-mark"), "Outside recall window")
+          else
+            div(visible.map { (start, end, onset) =>
+              val (lo, hi) = recallLimits.get
+              val left = if hi > lo then ((start - lo) / (hi - lo) * 100).max(0).min(100) else 50.0
+              val width =
+                if hi > lo then
+                  ((end.max(lo).min(hi) - start.max(lo).min(hi)) / (hi - lo) * 100).max(0)
+                else 0.0
+              span(
+                cls(
+                  if onset then "temporal-series-onset"
+                  else "temporal-series-interval"
+                ),
+                styleAttr(s"left:$left%;width:$width%;")
+              )
+            })
+        )
+      TemporalSeries.read(current, offset, rowsPerPage) match
+        case Left(reason) =>
+          p(cls("temporal-missing"), s"Recall-clock series unavailable: $reason")
+        case Right(None) =>
+          p(
+            cls("temporal-missing"),
+            "Recall-clock series unavailable: original recall timing was not supplied."
+          )
+        case Right(Some(series)) =>
+          val plot = div(
+            cls("temporal-series-plot"),
+            p(
+              "Each bar or tick is placed at a supplied recall observation. The two tracks repeat the row value at those coordinates and do not connect points across observations or gaps."
+            ),
+            series.points.map { point =>
+              val observations =
+                if point.observations.isEmpty then "No supplied observation"
+                else point.observations.map(observationText).mkString("; ")
+              val mass = point.regionMass.fold(reason => s"Unavailable: $reason", number)
+              val precision = point.sourceWidePrecisionTicks.fold(
+                reason => s"Unavailable: $reason",
+                width => s"$width source ticks for 50% of allocated source quantity"
+              )
+              div(
+                cls("temporal-series-row"),
+                button(
+                  typ("button"),
+                  idAttr(s"temporal-series-recall-${point.unit.value}"),
+                  aria.label(s"Inspect ${ordinal(point.unit)} in series"),
+                  aria.pressed := surface.state.recall.contains(point.unit).toString,
+                  ordinal(point.unit),
+                  onClick --> (_ => dispatch(SurfaceWorkspaceAction.Recall(point.unit)))
+                ),
+                div(
+                  cls("temporal-series-measure"),
+                  span("Region mass"),
+                  marks(point, "Region mass", mass),
+                  small(cls("temporal-series-value"), mass)
+                ),
+                div(
+                  cls("temporal-series-measure"),
+                  span("Source-wide concentration width"),
+                  marks(point, "Source-wide concentration width", precision),
+                  small(cls("temporal-series-value"), precision)
+                ),
+                small(observations)
+              )
+            }
+          )
+          div(
+            plot,
+            div(
+              cls("temporal-series-table-scroll"),
+              table(
+                cls("temporal-series"),
+                caption(
+                  s"Recall-clock series on ${series.clock.key.value}, recalls ${offset + 1}-${offset + series.points.size} of ${projection.rows.size}. Region mass uses the selected ROI. Source-wide concentration width searches the producer's unchanged source allocation, so the ROI does not condition or renormalize it."
+                ),
+                thead(
+                  tr(
+                    th("Recall"),
+                    th("Supplied recall observations"),
+                    th("Region mass"),
+                    th("Source-wide concentration width")
+                  )
+                ),
+                tbody(series.points.map { point =>
+                  val observations =
+                    if point.observations.isEmpty then "No supplied observation"
+                    else point.observations.map(observationText).mkString("; ")
+                  tr(
+                    th(
+                      button(
+                        typ("button"),
+                        idAttr(s"temporal-series-table-recall-${point.unit.value}"),
+                        aria.label(s"Inspect ${ordinal(point.unit)} in series table"),
+                        aria.pressed := surface.state.recall.contains(point.unit).toString,
+                        ordinal(point.unit),
+                        onClick --> (_ => dispatch(SurfaceWorkspaceAction.Recall(point.unit)))
+                      )
+                    ),
+                    td(observations),
+                    td(point.regionMass.fold(reason => s"Unavailable: $reason", number)),
+                    td(
+                      point.sourceWidePrecisionTicks.fold(
+                        reason => s"Unavailable: $reason",
+                        width => s"$width source ticks for 50% of allocated source quantity"
+                      )
+                    )
+                  )
+                })
+              )
+            )
+          )
     def readoutTable(row: TemporalInspectionCodecs.Row): HtmlElement = query(row) match
       case Left(reason)  => p(cls("temporal-missing"), s"${ordinal(row.unit)}: ${reason.toString}")
       case Right(result) =>
@@ -644,6 +795,14 @@ object TemporalWorkspaceView:
             "Select a recall row to inspect original alternatives, omitted quantities and conditional precision."
           )
         )(readoutTable)
+      ),
+      sectionTag(
+        cls("temporal-inspector temporal-series-panel"),
+        h3("Recall-clock region series"),
+        p(
+          "Region mass uses the selected source region. Source-wide concentration width is a separate producer quantity over the unchanged allocated source axis. Supplied recall observations set the coordinates; unavailable observations and quantities remain explicit."
+        ),
+        child <-- page.signal.map(temporalSeries)
       ),
       surface.state.source.fold[HtmlElement](span()) { ref =>
         sectionTag(
