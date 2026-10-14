@@ -9,6 +9,7 @@ import storymodel4s.view.{RecallVoyageDocument, WorkspaceRefusal}
 enum ImportedArtifact:
   case Workspace(value: SourceRecallWorkspace)
   case SurfaceWorkspace(value: SurfaceWorkspaceCodecs.Investigation)
+  case TemporalWorkspace(value: TemporalInspectionCodecs.Session)
   case Source(value: ImportedSource)
   case Voyage(value: RecallVoyageDocument)
 
@@ -35,6 +36,12 @@ object ArtifactInput:
           j.hcursor.get[String]("schemaVersion").toOption match
             case Some(WorkspaceArchiveCodec.SurfaceSchemaVersion) =>
               SurfaceWorkspaceCodecs.decode(value).map(ImportedArtifact.SurfaceWorkspace(_))
+            case Some(TemporalInspectionCodecs.SchemaVersion) =>
+              TemporalInspectionCodecs
+                .decode(value)
+                .left
+                .map(_ => WorkspaceRefusal.UnsupportedContent)
+                .map(ImportedArtifact.TemporalWorkspace(_))
             case Some(WorkspaceArchiveCodec.SchemaVersion) =>
               WorkspaceCodecs.decode(value).map(ImportedArtifact.Workspace(_))
             case Some(StoryModel.SchemaVersion) =>

@@ -275,6 +275,39 @@ body:has(.design-workspace) { background:#f7f5f0; }
 #workspace-voyage .brush-window { position: absolute; top: 0; bottom: 0; border: 2px solid #176f5f; background: #176f5f18; pointer-events: none; }
 #workspace-voyage .tip { position: absolute; max-width: 24em; padding: 12px; background: #fff; border: 1px solid #53665e; pointer-events: none; z-index: 4; }
 @media (max-width: 850px) { #workspace-voyage .panes { grid-template-columns: minmax(0, 1fr); } }
+
+/* Temporal inspection: exact values remain available in the keyboard-operable table. */
+.temporal-workspace { margin:20px 0; padding:20px; background:#fbfaf6; border:1px solid #dcd8ce; color:#1c2622; }
+.temporal-workspace header { padding:0; border:0; background:none; }
+.temporal-workspace h2 { font:600 24px/1.25 'Iowan Old Style',Charter,Georgia,serif; margin:0 0 8px; }
+.temporal-workspace h3 { margin:12px 0 8px; }
+.temporal-controls { display:flex; flex-wrap:wrap; align-items:end; gap:10px 16px; margin:14px 0; }
+.temporal-controls label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:#4f5b55; }
+.temporal-controls input { width:10em; min-height:36px; padding:6px 8px; font:inherit; border:1px solid #9bada5; border-radius:5px; background:#fff; }
+.temporal-controls input#temporal-region { width:23em; max-width:100%; }
+.temporal-controls select { max-width:24em; }
+.temporal-contract { max-width:85ch; color:#4f5b55; font-size:13px; }
+.temporal-grid-scroll { overflow:auto; max-height:480px; border:1px solid #dcd8ce; background:#fff; }
+.temporal-grid { border-collapse:separate; border-spacing:0; width:max-content; min-width:100%; font-variant-numeric:tabular-nums; }
+.temporal-grid caption { text-align:left; padding:12px; width:100%; position:sticky; left:0; background:#fbfaf6; font-size:12px; }
+.temporal-grid th,.temporal-grid td { border-right:1px solid #e4e5df; border-bottom:1px solid #e4e5df; padding:3px; min-width:72px; font-size:11px; text-align:center; }
+.temporal-grid th:first-child { position:sticky; left:0; z-index:1; background:#fbfaf6; width:190px; min-width:190px; text-align:left; }
+.temporal-grid th small { display:block; max-width:190px; font-weight:400; color:#4f5b55; }
+.temporal-grid td button { display:block; width:100%; min-height:38px; padding:4px; border-radius:0; border:1px solid transparent; font-size:11px; }
+.temporal-grid .temporal-supported { background:#d4e7df; color:#173f36; border-bottom:2px solid #376b5c; }
+.temporal-grid .temporal-empty { background:#fafaf7; color:#56655e; }
+.temporal-workspace button:focus-visible { outline:3px solid #215f93; outline-offset:1px; }
+.temporal-inspector { max-width:1000px; margin:24px 0; padding-top:16px; border-top:1px solid #dcd8ce; }
+.temporal-inspector blockquote { margin:10px 0; padding-left:16px; border-left:2px solid #376b5c; }
+.temporal-accounting { display:grid; grid-template-columns:minmax(180px,1fr) minmax(160px,2fr); gap:6px 16px; font-size:13px; }
+.temporal-accounting dt { color:#4f5b55; }.temporal-accounting dd { margin:0; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.temporal-inspector table { width:100%; border-collapse:collapse; font-size:13px; }.temporal-inspector th,.temporal-inspector td { text-align:left; padding:8px; border-bottom:1px solid #dcd8ce; }
+.temporal-workspace pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; }
+@media(max-width:650px) { .temporal-workspace { padding:14px 10px; margin:14px 0; }.temporal-controls { gap:10px; }.temporal-controls label { max-width:100%; }.temporal-controls select { max-width:100%; }.temporal-accounting { display:block; }.temporal-accounting dt { margin-top:10px; }.temporal-grid th:first-child { width:135px; min-width:135px; }.temporal-grid th small { max-width:135px; } }
+.temporal-recall-lane { position:relative; height:22px; margin:4px 2px; border-bottom:1px solid #b6c6bd; background:#f1f3ed; overflow:hidden; }
+.temporal-recall-lane > span { font-size:10px; color:#58675e; }
+.temporal-recall-lane .temporal-interval { position:absolute; top:7px; height:7px; background:#376b5c; border:1px solid #173f36; }
+.temporal-recall-lane .temporal-onset { position:absolute; top:3px; height:15px; border-left:2px solid #173f36; transform:translateX(-1px); }
 </style>
 </head>
 <body>

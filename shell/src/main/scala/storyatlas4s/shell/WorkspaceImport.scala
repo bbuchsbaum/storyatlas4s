@@ -3,7 +3,7 @@ package storyatlas4s.shell
 import java.nio.charset.StandardCharsets.UTF_8
 import cats.syntax.all.*
 import storyatlas4s.edition.{ArtifactInput, ImportedArtifact, ImportedSource}
-import storymodel4s.codec.{Canonical, StoryModelCodec}
+import storymodel4s.codec.{Canonical, StoryModelCodec, TemporalInspectionCodecs}
 import storymodel4s.view.{RecallVoyageDocument, WorkspaceRefusal}
 
 enum WorkspaceSession:
@@ -81,7 +81,13 @@ object WorkspaceImport:
             .toOption
             .filter(j =>
               j.hcursor.get[String]("schemaVersion").contains(WorkspaceSave.Version) ||
-                j.hcursor.get[String]("schemaVersion").contains(SurfaceWorkspaceController.Version)
+                j.hcursor
+                  .get[String]("schemaVersion")
+                  .contains(SurfaceWorkspaceController.Version) ||
+                j.hcursor
+                  .get[String]("schemaVersion")
+                  .contains(SurfaceWorkspaceController.Version2) ||
+                j.hcursor.get[String]("schemaVersion").contains(TemporalWorkspaceController.Version)
             )
             .map(_ => name -> value)
         }
@@ -102,6 +108,10 @@ object WorkspaceImport:
                 SurfaceWorkspaceController
                   .open(workspace)
                   .map(WorkspaceSession.SurfaceInvestigation(_))
+              case ImportedArtifact.TemporalWorkspace(session) =>
+                SurfaceWorkspaceController.open(session).map { controller =>
+                  WorkspaceSession.SurfaceInvestigation(controller)
+                }
               case ImportedArtifact.Source(source)   => Right(WorkspaceSession.Source(source))
               case ImportedArtifact.Voyage(document) => Right(WorkspaceSession.Voyage(document))
             }
@@ -114,9 +124,34 @@ object WorkspaceImport:
                   .decode(text, controller.workspace)
                   .map(WorkspaceSession.Investigation(_))
               case WorkspaceSession.SurfaceInvestigation(controller) =>
-                SurfaceWorkspaceController
-                  .decode(text, controller.investigation)
-                  .map(WorkspaceSession.SurfaceInvestigation(_))
+                if Canonical
+                    .parse(text)
+                    .toOption
+                    .flatMap(_.hcursor.get[String]("schemaVersion").toOption)
+                    .contains(SurfaceWorkspaceController.Version2)
+                then
+                  SurfaceWorkspaceController
+                    .decode(text, controller.session)
+                    .map(WorkspaceSession.SurfaceInvestigation(_))
+                else if Canonical
+                    .parse(text)
+                    .toOption
+                    .flatMap(_.hcursor.get[String]("schemaVersion").toOption)
+                    .contains(TemporalWorkspaceController.Version)
+                then
+                  TemporalWorkspaceController
+                    .restore(text, controller.session)
+                    .left
+                    .map(SurfaceWorkspaceController.refusal)
+                    .flatMap { temporal =>
+                      SurfaceWorkspaceController
+                        .restore(controller.investigation, controller.state, Some(temporal))
+                        .map(WorkspaceSession.SurfaceInvestigation(_))
+                    }
+                else
+                  SurfaceWorkspaceController
+                    .decode(text, controller.investigation)
+                    .map(WorkspaceSession.SurfaceInvestigation(_))
               case _ => Left(WorkspaceRefusal.SemanticJoinMismatch)
           }
         yield restored.getOrElse(session)

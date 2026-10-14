@@ -8,6 +8,7 @@ object SurfaceWorkspaceView:
   def apply(initial: SurfaceWorkspaceController): HtmlElement =
     val controller = Var(initial)
     val notice = Var("")
+    val temporalPage = Var(0)
     def dispatch(action: SurfaceWorkspaceAction): Unit = controller.now().dispatch(action) match
       case Left(_)     => notice.set("This selection is unavailable in the opened investigation.")
       case Right(next) => controller.set(next); notice.set("")
@@ -27,13 +28,13 @@ object SurfaceWorkspaceView:
             typ("button"),
             "Save view",
             onClick --> { _ =>
-              WorkspaceHost.download(
-                "storyatlas-view.json",
-                SurfaceWorkspaceController.encode(controller.now())
-              )
-              notice.set(
-                "View saved. Open it together with the original investigation to restore your selections."
-              )
+              SurfaceWorkspaceController.encode(controller.now()) match
+                case Left(_)      => notice.set("This packet does not permit saving this view.")
+                case Right(bytes) =>
+                  WorkspaceHost.download("storyatlas-view.json", bytes)
+                  notice.set(
+                    "View saved. Open it with the original investigation to restore selections, clocks and regions."
+                  )
             }
           ),
           button(
@@ -61,6 +62,9 @@ object SurfaceWorkspaceView:
             )
           })
         }
+      ),
+      child <-- controller.signal.map(c =>
+        TemporalWorkspaceView(c, dispatch, notice, temporalPage)
       ),
       div(
         cls("joined-columns"),
