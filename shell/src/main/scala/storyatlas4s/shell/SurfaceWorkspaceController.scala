@@ -181,7 +181,22 @@ object SurfaceWorkspaceController:
       )
     )
 
+  /** The ordinary workspace overload restores v2 only with an absent timing attachment. */
   def decode(
+      text: String,
+      investigation: SurfaceWorkspaceCodecs.Investigation
+  ): Either[WorkspaceRefusal, SurfaceWorkspaceController] =
+    Canonical.parse(text).left.map(_ => WorkspaceRefusal.UnsupportedContent).flatMap { json =>
+      if json.hcursor.get[String]("schemaVersion").contains(Version2) then
+        TemporalInspectionCodecs
+          .checked(investigation, None)
+          .left
+          .map(refusal)
+          .flatMap(session => decode(text, session))
+      else decodeV1(text, investigation)
+    }
+
+  private def decodeV1(
       text: String,
       investigation: SurfaceWorkspaceCodecs.Investigation
   ): Either[WorkspaceRefusal, SurfaceWorkspaceController] =

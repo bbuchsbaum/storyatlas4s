@@ -117,6 +117,10 @@ class TemporalWorkspaceSuite extends FunSuite:
   test("foreign semantic addresses clocks and view bytes refuse without replacing current state") {
     val start = opened
     val noTiming = right(TemporalInspectionCodecs.checked(workspace, None))
+    assertEquals(
+      SurfaceWorkspaceController.decode(right(SurfaceWorkspaceController.encode(start)), workspace),
+      Left(WorkspaceRefusal.StaleArtifacts)
+    )
     val foreign = noTiming.recallAddress(inventory.units.head.id).get
     assert(start.temporal.get.dispatch(TemporalWorkspaceAction.Selection(Set(foreign))).isLeft)
     assert(
