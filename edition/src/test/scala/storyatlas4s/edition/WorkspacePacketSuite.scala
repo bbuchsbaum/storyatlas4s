@@ -102,7 +102,10 @@ class WorkspacePacketSuite extends FunSuite:
     assertEquals(row.cell(Destination.Target(quiet)).get.normalized, Some(0.25))
     assertEquals(row.cell(Destination.External(ExternalState.Intrusion)).get.normalized, Some(0.5))
     assertEquals(row.cell(Destination.Target(ring)).get.posterior, Vector.empty)
-    assertEquals(row.outcome.decision.get.rawArgmax.map(_._1), Some(Destination.Target(ring)))
+    assertEquals(
+      row.outcome.decision.get.numerical.get.rawArgmax.map(_._1),
+      Some(Destination.Target(ring))
+    )
     assertEquals(row.outcome.decision.get.chosen, Some(Destination.Target(quiet)))
     assertEquals(
       workspace.policy(b).get.matrix.row(u0).get.cell(Destination.Target(quiet)).get.normalized,

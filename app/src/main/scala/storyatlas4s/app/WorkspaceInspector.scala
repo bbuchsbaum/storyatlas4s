@@ -146,7 +146,9 @@ private[app] object WorkspaceInspector:
               p(s"Localization: ${row.outcome.localization}"),
               p(
                 row.outcome.decision.fold("Decision basis: not supplied")(d =>
-                  s"Decision basis: ${d.basis.kind}"
+                  d.numerical.fold("Decision basis: categorical choice (no scores)")(n =>
+                    s"Decision basis: ${n.basis.kind}"
+                  )
                 )
               ),
               p(s"Inference policy: ${c.policy.record.policies.inference}"),
